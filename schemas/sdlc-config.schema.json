@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "sdlc-config",
+  "title": "SDLC Artifact Factory — Product Configuration",
+  "description": "Product configuration collected by the /sdlc-start interactive questionnaire. Saved to sdlc-config.json and consumed by all skills and agents for this product run.",
+  "type": "object",
+  "required": ["product_name", "problem_statement", "target_language"],
+  "additionalProperties": false,
+  "properties": {
+    "product_name": {
+      "type": "string",
+      "description": "Product codename used in artifact headers, repo names, and the manifest. Lowercase, hyphen-separated (e.g. data-estate-map)."
+    },
+    "problem_statement": {
+      "type": "string",
+      "description": "The full problem statement provided at /sdlc-start. Used as context by all skills."
+    },
+    "target_language": {
+      "type": "string",
+      "description": "Primary programming language for generated code artifacts.",
+      "default": "go",
+      "examples": ["go", "typescript", "python", "java", "rust"]
+    },
+    "compliance_frameworks": {
+      "type": "array",
+      "description": "Compliance frameworks in scope for this product. Drives compliance-design, compliance-test-spec, and compliance-assessor artifacts.",
+      "items": {
+        "type": "string",
+        "enum": ["SOC2", "GDPR", "HIPAA", "ISO27001", "PCIDSS", "none"]
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "tenancy_model": {
+      "type": "string",
+      "description": "How the product handles multiple customers/tenants.",
+      "enum": ["single-tenant", "logical-multi-tenant", "physical-multi-tenant"],
+      "default": "single-tenant"
+    },
+    "deployment_target": {
+      "type": "string",
+      "description": "Where the product is deployed.",
+      "enum": ["customer-cloud", "managed-private", "both"],
+      "default": "customer-cloud"
+    },
+    "cloud_providers": {
+      "type": "array",
+      "description": "Cloud providers the IaC and deployment artifacts must support.",
+      "items": {
+        "type": "string",
+        "enum": ["aws", "azure", "gcp", "multi-cloud"]
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "graph_database": {
+      "type": "string",
+      "description": "Graph database to use. 'none' if the product does not require a graph store.",
+      "enum": ["apache-age", "neo4j", "none"],
+      "default": "none"
+    },
+    "mongodb_hybrid": {
+      "type": "boolean",
+      "description": "Whether MongoDB is used as an optional document store for variable-schema bounded contexts (e.g. entity extraction output, crawl metadata).",
+      "default": false
+    },
+    "sensitive_data_types": {
+      "type": "array",
+      "description": "Categories of sensitive data this product handles. Drives data-classification, privacy-design, and compliance artifacts.",
+      "items": {
+        "type": "string",
+        "enum": ["PII", "PHI", "financial", "IP", "government", "all"]
+      },
+      "default": [],
+      "uniqueItems": true
+    },
+    "repo_strategy": {
+      "type": "string",
+      "description": "Repository structure. multi-repo is the default; repos are derived from bounded context mapping.",
+      "enum": ["mono-repo", "multi-repo"],
+      "default": "multi-repo"
+    },
+    "github_org": {
+      "type": "string",
+      "description": "GitHub organisation or user under which product repos will be created (e.g. acme-corp). Required for multi-repo strategy."
+    },
+    "nl_querying": {
+      "type": "boolean",
+      "description": "Whether the product includes natural language querying via a locally hosted LLM. Adds infrastructure and model hosting requirements to the deployment architecture.",
+      "default": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this config was created."
+    }
+  }
+}

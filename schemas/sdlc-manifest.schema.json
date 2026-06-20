@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "sdlc-manifest",
+  "title": "SDLC Artifact Factory — Product Run Manifest",
+  "description": "Tracks phase state, artifact inventory, DoD status, warnings, and acknowledged risks for a single product run.",
+  "type": "object",
+  "required": ["product", "problem_statement", "config", "current_phase", "phases", "created_at", "updated_at"],
+  "additionalProperties": false,
+  "properties": {
+    "product": {
+      "type": "string",
+      "description": "Product codename. Used in directory naming and artifact headers."
+    },
+    "problem_statement": {
+      "type": "string",
+      "description": "The original problem statement provided at /sdlc-start."
+    },
+    "config": {
+      "type": "string",
+      "description": "Relative path to the sdlc-config.json for this product run."
+    },
+    "current_phase": {
+      "type": "string",
+      "description": "The phase currently in progress.",
+      "enum": ["strategy", "ideate", "design", "implement", "data", "quality", "deploy", "validate", "complete"]
+    },
+    "phases": {
+      "type": "object",
+      "description": "State of each SDLC phase.",
+      "properties": {
+        "strategy":  { "$ref": "#/definitions/phase" },
+        "ideate":    { "$ref": "#/definitions/phase" },
+        "design":    { "$ref": "#/definitions/phase" },
+        "implement": { "$ref": "#/definitions/phase" },
+        "data":      { "$ref": "#/definitions/phase" },
+        "quality":   { "$ref": "#/definitions/phase" },
+        "deploy":    { "$ref": "#/definitions/phase" },
+        "validate":  { "$ref": "#/definitions/phase" }
+      },
+      "additionalProperties": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this product run was initialised."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of the last manifest update."
+    }
+  },
+  "definitions": {
+    "phase": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Current state of this phase.",
+          "enum": ["not_started", "in_progress", "review_pending", "approved", "skipped"]
+        },
+        "started_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When this phase was entered."
+        },
+        "approved_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When this phase was approved and /sdlc-next was confirmed."
+        },
+        "artifacts": {
+          "type": "array",
+          "description": "Relative paths to all artifacts produced in this phase.",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "dod_gaps": {
+          "type": "array",
+          "description": "DoD checklist items not yet satisfied at last check.",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "warnings": {
+          "type": "array",
+          "description": "Methodology or terminology warnings raised by hooks during this phase.",
+          "items": {
+            "type": "object",
+            "required": ["code", "message", "artifact", "raised_at"],
+            "properties": {
+              "code":      { "type": "string", "description": "Warning code (e.g. TERM_DRIFT, TDD_MISSING, SOLID_VIOLATION)" },
+              "message":   { "type": "string", "description": "Human-readable warning description" },
+              "artifact":  { "type": "string", "description": "Artifact path that triggered the warning" },
+              "raised_at": { "type": "string", "format": "date-time" }
+            }
+          },
+          "default": []
+        },
+        "acknowledged_risks": {
+          "type": "array",
+          "description": "DoD gaps or warnings explicitly acknowledged by the user before advancing.",
+          "items": {
+            "type": "object",
+            "required": ["item", "justification", "acknowledged_at"],
+            "properties": {
+              "item":            { "type": "string", "description": "The DoD gap or warning code being acknowledged" },
+              "justification":   { "type": "string", "description": "Reason provided by the user for accepting this risk" },
+              "acknowledged_at": { "type": "string", "format": "date-time" }
+            }
+          },
+          "default": []
+        }
+      }
+    }
+  }
+}

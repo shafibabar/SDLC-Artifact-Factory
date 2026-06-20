@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "PostToolCall": [],
+    "PreToolCall": [],
+    "Stop": []
+  }
+}
