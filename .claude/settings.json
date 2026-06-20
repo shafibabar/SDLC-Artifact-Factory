@@ -1,7 +1,80 @@
 {
   "hooks": {
-    "PostToolCall": [],
+    "PostToolCall": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[SDLC Hook] post-artifact-created: Artifact written. Run /sdlc-glossary validate on this artifact and update sdlc-manifest.json artifact list for the current phase.'",
+            "description": "post-artifact-created: reminds Claude to run glossary validation and register artifact in manifest after every Write tool call that creates an artifact"
+          }
+        ]
+      }
+    ],
     "PreToolCall": [],
-    "Stop": []
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"$(find . -name 'sdlc-manifest.json' -maxdepth 3 | head -1)\" ]; then echo '[SDLC] Active product run detected. Run /sdlc-status to see current phase and next actions.'; fi",
+            "description": "Reminds the user of the active product run at the end of each session"
+          }
+        ]
+      }
+    ]
+  },
+  "sdlc": {
+    "hooks": {
+      "pre-phase-advance": {
+        "description": "DoD gate enforced by /sdlc-next command. Reads current phase DoD from CLAUDE.md, checks artifact inventory in sdlc-manifest.json, surfaces gaps as advisory warnings, requires acknowledgment before advancing.",
+        "implemented_in": ".claude/commands/sdlc-next.md"
+      },
+      "post-artifact-created": {
+        "description": "After any artifact is written: (1) invoke core/glossary → validate on the artifact, (2) invoke core/artifact-manifest → register artifact in sdlc-manifest.json for the current phase, (3) if TERM_DRIFT or methodology violations found, add warning to manifest.",
+        "implemented_in": ".claude/skills/core/glossary.md and .claude/skills/core/artifact-manifest.md"
+      },
+      "pre-event-storming": {
+        "description": "Before /sdlc-event-storm: verify that functional requirements and NFRs exist in artifacts/ideate/requirements/. If not, block with advisory message.",
+        "implemented_in": ".claude/commands/sdlc-event-storm.md"
+      },
+      "pre-implement": {
+        "description": "Before any implement/* skill generates code: verify that a TDD spec exists at artifacts/implement/specs/{feature}.md. If not, warn and require acknowledgment.",
+        "implemented_in": ".claude/commands/sdlc-artifact.md"
+      },
+      "pre-code-generation": {
+        "description": "Before implement/service-skeleton: verify coding-standards.md and repo-structure.md exist. If not, block.",
+        "implemented_in": ".claude/commands/sdlc-artifact.md"
+      },
+      "pre-deploy": {
+        "description": "Before any deploy/* skill: verify quality/test-plan.md and design/security/threat-model.md exist. If not, warn.",
+        "implemented_in": ".claude/commands/sdlc-artifact.md"
+      },
+      "pre-uat": {
+        "description": "Before validate/uat-plan: verify quality/reports/ contains at least one test execution report and validate/acceptance-checklist.md exists.",
+        "implemented_in": ".claude/commands/sdlc-artifact.md"
+      },
+      "terminology-drift-detector": {
+        "description": "Cross-artifact terminology scan. Invoked by /sdlc-review or on-demand via /sdlc-glossary validate.",
+        "implemented_in": ".claude/skills/core/glossary.md"
+      },
+      "adr-conflict-detector": {
+        "description": "After design/adr skill writes a new ADR: read all existing ADRs and check for conflicts or supersession. Report as warning if found.",
+        "implemented_in": ".claude/skills/design/adr.md"
+      },
+      "contract-compliance-checker": {
+        "description": "After design/event-schema or implement/contract-definition: check generated schema against existing consumer contracts in artifacts/implement/contracts/.",
+        "implemented_in": ".claude/skills/design/event-schema.md"
+      },
+      "security-gate": {
+        "description": "After any design/* artifact touching auth, data access, encryption, or external APIs: add a manifest warning flagging the artifact for Security Reviewer agent review.",
+        "implemented_in": ".claude/skills/design/security-architecture.md"
+      },
+      "compliance-gate": {
+        "description": "After any artifact tagged [COMPLIANCE]: record in manifest that this artifact needs Compliance Assessor agent review. Track coverage per framework.",
+        "implemented_in": ".claude/skills/core/artifact-manifest.md"
+      }
+    }
   }
 }
