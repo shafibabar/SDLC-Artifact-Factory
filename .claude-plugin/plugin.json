@@ -1,0 +1,75 @@
+{
+  "name": "sdlc-artifact-factory",
+  "version": "0.1.0",
+  "description": "A Claude Code plugin that drives any product through its full SDLC lifecycle — Strategy → Ideate → Design → Implement → Data → Quality → Deploy → Customer Validation — producing real, reviewable, methodology-compliant artifacts at every phase.",
+  "author": "Shafi Babar",
+  "license": "MIT",
+  "repository": "https://github.com/shafibabar/SDLC-Artifact-Factory",
+
+  "components": {
+    "skills": "skills/",
+    "agents": "agents/",
+    "commands": "commands/",
+    "hooks": "hooks/",
+    "tools": "tools/",
+    "lsp": "lsp/",
+    "mcp": ".mcp.json",
+    "monitors": "monitors/",
+    "bin": "bin/",
+    "scripts": "scripts/"
+  },
+
+  "sdlc_phases": [
+    "strategy",
+    "ideate",
+    "design",
+    "implement",
+    "data",
+    "quality",
+    "deploy",
+    "customer-validation"
+  ],
+
+  "entry_commands": [
+    "/sdlc-start",
+    "/sdlc-status",
+    "/sdlc-next"
+  ],
+
+  "agents": [
+    "product-strategist",
+    "requirements-analyst",
+    "domain-modeler",
+    "enterprise-architect",
+    "ux-architect",
+    "data-architect",
+    "data-engineer",
+    "security-architect",
+    "security-engineer",
+    "backend-engineer",
+    "frontend-engineer",
+    "test-strategist",
+    "platform-engineer"
+  ],
+
+  "methodology": {
+    "required": ["DDD", "Event Storming", "TDD", "BDD", "SOLID"],
+    "enforcement": "blocking — absence in an applicable artifact is a defect"
+  },
+
+  "tech_stack_defaults": {
+    "backend_language": "Go",
+    "api_framework": "net/http + chi",
+    "frontend": "React + TypeScript",
+    "database": "PostgreSQL + pgx",
+    "message_broker": "Redpanda",
+    "ci_cd": "GitHub Actions",
+    "iac": "OpenTofu + Helm",
+    "container_orchestration": "Kubernetes",
+    "observability": "OpenTelemetry + Prometheus + Tempo + Grafana"
+  },
+
+  "settings": "settings.json",
+  "standards": "CLAUDE.md",
+  "context": "sdlc-context.json"
+}

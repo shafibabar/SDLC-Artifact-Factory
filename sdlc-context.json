@@ -1,0 +1,486 @@
+{
+  "_meta": {
+    "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
+    "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
+    "last_updated": "2026-06-24",
+    "updated_by": "Chunk 4 — canonical glossary and methodology-review skills complete"
+  },
+
+  "project": {
+    "name": "SDLC Artifact Factory",
+    "repository": "SDLC-Artifact-Factory",
+    "author": "Shafi Babar",
+    "email": "shafi.babar.work@gmail.com",
+    "version": "0.1.0",
+    "created": "2026-06-24",
+    "status": "active-development",
+    "type": "Claude Code plugin",
+    "description": "A Claude Code plugin that takes a problem statement and drives a product through its full SDLC lifecycle — Strategy → Ideate → Design → Implement → Data → Quality → Deploy → Customer Validation — producing real, reviewable, methodology-compliant artifacts at every phase."
+  },
+
+  "working_agreements": {
+    "operator": "Shafi Babar. Product Manager. Solo operator (Han Solo). Not a programmer. Provides problem statements, reviews artifacts, approves each chunk before proceeding.",
+    "claude_role": "Principal engineer. Does all implementation — skills, agents, commands, hooks, tools, code generation. Shafi approves; Claude builds.",
+    "session_startup": "Read sdlc-context.json first. Restore context from this file, not from conversation history.",
+    "chunk_gate": "After Chunk 4: each subsequent chunk is planned, discussed, and explicitly approved by Shafi before execution. No chunk starts without a go.",
+    "build_discipline": "One chunk at a time. One commit per chunk. Nothing in a later chunk is started while an earlier chunk is incomplete.",
+    "budget_posture": "Frugal. Open-source preferred. No paid APIs, no expensive tooling. Process and methodology are the investment, not tooling.",
+    "timeline": "Iterative. No deadlines. Quality over speed."
+  },
+
+  "methodology": {
+    "non_negotiables": [
+      "Domain-Driven Design (DDD) — Ubiquitous Language, Bounded Contexts, Domain Events, Aggregates",
+      "Event Storming — applied at Design phase for every domain and subdomain",
+      "Test-Driven Development (TDD) — tests written before implementation code, always",
+      "Behavior-Driven Development (BDD) — Gherkin feature files for all acceptance criteria",
+      "SOLID — applied across all generated code artifacts"
+    ],
+    "enforcement": "Absence of an applicable methodology in any artifact is a defect, not a warning. Phase gate hooks enforce compliance before advancing.",
+    "event_driven_patterns": [
+      "Transactional Outbox", "Change Data Capture", "Dead Letter Queue",
+      "Circuit Breaker", "Retry and Backoff", "Idempotency",
+      "Event Choreography", "Eventual Consistency", "Immutable Events"
+    ],
+    "design_principles": [
+      "API-First Design", "Contract-First Design", "Consumer-Driven Contracts",
+      "Separation of Concerns", "Single Responsibility", "DRY",
+      "Zero Trust Architecture", "Security by Design", "Privacy by Design",
+      "Principle of Least Privilege"
+    ]
+  },
+
+  "tech_stack": {
+    "_note": "These are the default target-stack decisions. Parameterized per product at /sdlc-start time. Saved to sdlc-config.json per product.",
+    "confirmed": {
+      "primary_language": "Go",
+      "api_framework": "net/http + chi — idiomatic, lightweight, no magic, code-reviewable. Chosen over Gin/Echo/Fiber for compliance-grade transparency.",
+      "primary_database": "PostgreSQL + pgx — ACID, audit log, config store, outbox table. Default for all services.",
+      "search_and_alerts": "Elasticsearch — document indexing, full-text search, alert storage.",
+      "message_broker": "Redpanda — Kafka-API compatible, no JVM, frugal, familiar Kafka tooling.",
+      "graph_database": "Apache AGE (default, PostgreSQL extension, zero extra infra). Neo4j Community as selectable alternative when graph is primary product surface.",
+      "ci_cd": "GitHub Actions — native to GitHub repos, free tier, zero hosting overhead.",
+      "iac": "OpenTofu (infrastructure provisioning, open-source Terraform fork) + Helm (application deployment onto Kubernetes).",
+      "service_mesh": "Linkerd — Rust data plane, automatic mTLS, lowest resource overhead, CNCF graduated.",
+      "container_orchestration": "Kubernetes. EKS/AKS/GKE via OpenTofu for customer cloud. k3s for managed private tenants. kind for local development. Single Helm chart per service, environment differences in values.yaml.",
+      "observability": "OpenTelemetry (Go SDK) + Prometheus (metrics) + Elasticsearch + Fluent Bit (logs) + Tempo (traces) + Grafana (single pane). Kibana optional for deep log analysis.",
+      "frontend": "React + TypeScript",
+      "optional_database": "MongoDB — variable-schema bounded contexts (entity extraction output, crawl metadata). Exposed as config option at /sdlc-start. Not default."
+    },
+    "pending": [],
+    "sdlc_start_questionnaire": "Interactive questionnaire at /sdlc-start saves answers to sdlc-config.json per product. Allows per-product overrides of defaults above."
+  },
+
+  "first_product": {
+    "name": "Data Estate Mapping and Compliance Intelligence",
+    "codename": "TBD",
+    "target_market": "SMBs (50–500 employees), private deployment",
+    "core_value": "Maps an organisation's data estate across storage systems, extracts entities, builds a relationship graph, and provides compliance intelligence — with zero data ever leaving customer infrastructure.",
+    "architecture_style": "Event-driven microservices with physical tenant isolation",
+    "pipeline": "Worker nodes at customer storage → Message Queue → File Processing → Entity Extraction → Graph Update → Compliance Rule Engine → Alert + Audit",
+    "key_patterns": ["Transactional Outbox", "Dead Letter Queue", "Circuit Breaker", "Consumer group isolation", "Golden Record", "Master Data Management", "ACID + Eventual Consistency (graph layer)"],
+    "deployment_model": "Option A: one-click deploy to customer's own AWS/Azure/GCP. Option B: managed private cloud with dedicated tenant, no data commingling.",
+    "security": "Zero Trust, OAuth 2.0 + JWT, mTLS via Linkerd, ABAC claim-based authorization, API-First (UI is first-party API consumer only)",
+    "mvp_scope": {
+      "file_formats": ["PDF", "DOCX", "XLSX"],
+      "storage_connectors": ["Google Drive", "AWS S3"],
+      "compliance_frameworks": ["SOC 2 — CC6, CC7, A1"],
+      "out_of_scope": "Remediation workflows (post-MVP)"
+    },
+    "test_strategy": "TDD as default. Test layers: Unit, Integration, Contract, E2E, Extraction quality, Security.",
+    "status": "Not yet started — plugin must be built first."
+  },
+
+  "plugin_architecture": {
+    "pattern": "workflow-first",
+    "description": "Commands drive phases. Phases activate agents. Agents draw on skills for expertise and tools for atomic actions. Hooks enforce governance automatically. Artifacts are outputs of the workflow, not the inputs.",
+    "component_hierarchy": "Command → Agent → Skill | Agent → Tool | Hook → Tool",
+    "axioms": {
+      "Skills": "Expertise — domain knowledge, standards, patterns. No reasoning.",
+      "Agents": "Reasoning — decisions, analysis, design, code generation. Use skills for knowledge.",
+      "Commands": "Workflows — user-facing phase drivers and cross-cutting operations.",
+      "Hooks": "Governance — event-driven, lightweight, fast, idempotent. No business logic.",
+      "Tools": "Atomic actions — deterministic, stateless, single-purpose.",
+      "MCP": "External system integration — deferred.",
+      "LSP": "Code intelligence — pending Chunk 3."
+    }
+  },
+
+  "agents": [
+    { "name": "product-strategist",   "skill_domains": ["strategy"],              "status": "planned" },
+    { "name": "requirements-analyst", "skill_domains": ["discovery", "validation"], "status": "planned" },
+    { "name": "domain-modeler",        "skill_domains": ["domain-modeling"],        "status": "planned" },
+    { "name": "enterprise-architect",  "skill_domains": ["architecture"],           "status": "planned" },
+    { "name": "ux-architect",          "skill_domains": ["ux"],                     "status": "planned" },
+    { "name": "data-architect",        "skill_domains": ["data-architecture"],      "status": "planned" },
+    { "name": "data-engineer",         "skill_domains": ["data-analytics"],         "status": "planned" },
+    { "name": "security-architect",    "skill_domains": ["security (design)"],      "status": "planned" },
+    { "name": "security-engineer",     "skill_domains": ["security (implementation)"], "status": "planned" },
+    { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "planned" },
+    { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "planned" },
+    { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "planned" },
+    { "name": "platform-engineer",     "skill_domains": ["platform", "observability (stack)"], "status": "planned" },
+    { "name": "ai-ml-architect",       "skill_domains": ["ml (TBD)"],               "status": "deferred — added when a product requires ML" }
+  ],
+
+  "skill_domains": [
+    {
+      "domain": "strategy",
+      "path": "skills/strategy/",
+      "owner": "product-strategist",
+      "planned_skills": ["vision-statement", "mission-statement", "gtm-strategy", "roadmap-authoring", "okr-authoring", "stakeholder-mapping", "competitive-analysis", "business-model-canvas"],
+      "status": "planned"
+    },
+    {
+      "domain": "discovery",
+      "path": "skills/discovery/",
+      "owner": "requirements-analyst",
+      "planned_skills": ["requirements-analysis", "nfr-specification", "user-story-writing", "epic-definition", "acceptance-criteria", "impact-mapping", "jtbd-analysis", "example-mapping", "user-persona", "moscow-prioritization"],
+      "status": "planned"
+    },
+    {
+      "domain": "domain-modeling",
+      "path": "skills/domain-modeling/",
+      "owner": "domain-modeler",
+      "planned_skills": ["ubiquitous-language", "bounded-context-mapping", "domain-event-catalog", "aggregate-design", "command-catalog", "read-model-design", "event-storming-facilitation", "domain-storytelling", "context-map-patterns"],
+      "status": "planned"
+    },
+    {
+      "domain": "architecture",
+      "path": "skills/architecture/",
+      "owner": "enterprise-architect",
+      "planned_skills": ["system-context-diagram", "container-diagram", "component-diagram", "adr-authoring", "api-contract-design", "integration-design", "multi-tenancy-design", "cqrs-pattern", "event-driven-patterns"],
+      "status": "planned"
+    },
+    {
+      "domain": "security",
+      "path": "skills/security/",
+      "owner": "security-architect (design) + security-engineer (implementation)",
+      "planned_skills": ["threat-modeling", "security-architecture", "access-control-model", "secrets-management", "privacy-design", "compliance-design", "zero-trust-design", "security-implementation", "compliance-verification"],
+      "status": "planned"
+    },
+    {
+      "domain": "ux",
+      "path": "skills/ux/",
+      "owner": "ux-architect",
+      "planned_skills": ["ux-flow-design", "information-architecture", "ui-component-spec", "user-journey-mapping"],
+      "status": "planned"
+    },
+    {
+      "domain": "data-architecture",
+      "path": "skills/data-architecture/",
+      "owner": "data-architect",
+      "planned_skills": ["data-model-design", "data-pipeline-design", "data-lineage-design", "data-classification", "data-retention-policy", "canonical-data-model", "event-schema-design"],
+      "status": "planned"
+    },
+    {
+      "domain": "backend-engineering",
+      "path": "skills/backend-engineering/",
+      "owner": "backend-engineer",
+      "planned_skills": ["go-project-structure", "go-service-skeleton", "go-chi-handler", "go-domain-model", "go-repository-pattern", "go-event-publisher", "go-event-consumer", "go-service-layer", "go-middleware", "go-migration", "go-dockerfile", "go-makefile", "go-openapi-codegen"],
+      "status": "planned"
+    },
+    {
+      "domain": "frontend-engineering",
+      "path": "skills/frontend-engineering/",
+      "owner": "frontend-engineer",
+      "planned_skills": ["react-project-structure", "react-component-design", "typescript-types", "react-state-management", "react-api-client", "react-routing", "react-graph-visualization", "react-dashboard-components", "react-accessibility", "react-dockerfile", "react-component-testing", "react-e2e-testing"],
+      "status": "planned"
+    },
+    {
+      "domain": "test-engineering",
+      "path": "skills/test-engineering/",
+      "owner": "test-strategist",
+      "planned_skills": ["go-unit-test", "go-integration-test", "go-contract-test", "go-e2e-test", "bdd-feature-file", "go-performance-test", "go-load-test", "go-security-test", "go-compliance-test", "go-chaos-test", "go-mutation-test", "test-fixture-design", "mock-generation"],
+      "status": "planned"
+    },
+    {
+      "domain": "observability",
+      "path": "skills/observability/",
+      "owner": "backend-engineer (instrumentation) + platform-engineer (stack)",
+      "planned_skills": ["opentelemetry-instrumentation", "prometheus-metrics-design", "structured-logging-design", "distributed-tracing-design", "health-check-design", "slo-definition", "alerting-rules-design"],
+      "status": "planned"
+    },
+    {
+      "domain": "platform",
+      "path": "skills/platform/",
+      "owner": "platform-engineer",
+      "planned_skills": ["ci-pipeline", "cd-pipeline", "dockerfile-patterns", "helm-chart", "opentofu-module", "kubernetes-manifest", "environment-config", "feature-flag-design", "blue-green-deployment", "canary-deployment", "disaster-recovery-plan", "runbook-authoring"],
+      "status": "planned"
+    },
+    {
+      "domain": "data-analytics",
+      "path": "skills/data-analytics/",
+      "owner": "data-engineer",
+      "planned_skills": ["analytics-requirements", "dashboard-specification", "reporting-spec", "data-storytelling", "data-quality-rules", "data-pipeline-implementation", "metrics-instrumentation-plan"],
+      "status": "planned"
+    },
+    {
+      "domain": "validation",
+      "path": "skills/validation/",
+      "owner": "requirements-analyst",
+      "planned_skills": ["uat-plan", "uat-scenario", "beta-program-design", "feedback-template", "acceptance-sign-off"],
+      "status": "planned"
+    },
+    {
+      "domain": "governance",
+      "path": "skills/governance/",
+      "owner": "factory internals — hooks and commands",
+      "planned_skills": ["artifact-manifest", "methodology-review", "risk-register", "value-stream-map", "sdlc-config-management", "glossary-management"],
+      "status": "planned"
+    }
+  ],
+
+  "commands": {
+    "_note": "Phase driver commands activate the right agents in sequence, enforce entry conditions, and produce the full artifact set for that phase.",
+    "phase_drivers": ["sdlc-start", "sdlc-strategy", "sdlc-ideate", "sdlc-design", "sdlc-implement", "sdlc-data", "sdlc-quality", "sdlc-deploy", "sdlc-validate"],
+    "navigation": ["sdlc-status", "sdlc-next"],
+    "cross_cutting": ["sdlc-event-storm", "sdlc-adr", "sdlc-review", "sdlc-artifact"],
+    "status": "planned"
+  },
+
+  "hooks": {
+    "_note": "All hooks are fast (<2s), idempotent, and deterministic. Business logic belongs in agents and skills, not hooks.",
+    "planned": [
+      "pre-phase-advance — validates all required artifacts exist before phase advances",
+      "post-artifact-created — updates sdlc-context.json when an artifact is created",
+      "validate-artifact-structure — validates frontmatter and required sections before save",
+      "terminology-drift-detector — checks canonical glossary terms are used",
+      "methodology-compliance-check — verifies DDD/TDD/BDD/SOLID presence where required",
+      "pre-code-generation — ensures architecture artifacts exist before code is written",
+      "pre-implement — ensures Design phase is complete before Implement phase starts",
+      "tdd-gate — ensures test files exist before implementation code (TDD enforcement)",
+      "naming-convention-enforcer — validates component names follow conventions"
+    ],
+    "status": "planned"
+  },
+
+  "tools": {
+    "planned": [
+      "validate-sdlc-artifact — validates artifact structure and required fields",
+      "validate-openapi-contract — validates OpenAPI specifications",
+      "validate-event-schema — validates domain event schemas",
+      "check-methodology-compliance — checks DDD/TDD/BDD/SOLID presence in an artifact",
+      "generate-artifact-id — generates unique artifact identifiers",
+      "cross-reference-checker — verifies all referenced components exist"
+    ],
+    "status": "planned"
+  },
+
+  "build_checklist": [
+    {
+      "chunk": 1,
+      "title": "Skeleton folder structure",
+      "status": "complete",
+      "date_completed": "2026-06-24",
+      "deliverables": [
+        "All plugin directories created (skills/[15 domains], agents/, commands/, hooks/, tools/, mcp/, lsp/, monitors/, output-styles/, themes/, bin/, scripts/, schemas/)",
+        ".claude-plugin/plugin.json (stub)",
+        ".mcp.json (stub)", ".lsp.json (stub)", "settings.json (stub)",
+        "CHANGELOG.md", "LICENSE"
+      ]
+    },
+    {
+      "chunk": 2,
+      "title": "sdlc-context.json — factory memory and session state",
+      "status": "complete",
+      "date_completed": "2026-06-24",
+      "deliverables": ["sdlc-context.json"]
+    },
+    {
+      "chunk": 3,
+      "title": "Plugin manifest + CLAUDE.md + settings.json",
+      "status": "complete",
+      "date_completed": "2026-06-24",
+      "deliverables": [".claude-plugin/plugin.json (full)", "CLAUDE.md", "settings.json (full)", ".lsp.json (stub)"]
+    },
+    {
+      "chunk": 4,
+      "title": "Canonical glossary + methodology standards (cross-cutting foundation)",
+      "status": "complete",
+      "date_completed": "2026-06-24",
+      "deliverables": [
+        "skills/governance/glossary-management/ (SKILL.md + full ubiquitous language glossary)",
+        "skills/governance/methodology-review/ (SKILL.md)"
+      ]
+    },
+    {
+      "chunk": 5,
+      "title": "strategy/ skills + product-strategist agent",
+      "status": "pending — requires Chunk 4 approval first",
+      "deliverables": ["8 SKILL.md files in skills/strategy/", "agents/product-strategist/AGENT.md"]
+    },
+    {
+      "chunk": 6,
+      "title": "discovery/ skills + requirements-analyst agent",
+      "status": "pending",
+      "deliverables": ["10 SKILL.md files in skills/discovery/", "agents/requirements-analyst/AGENT.md"]
+    },
+    {
+      "chunk": 7,
+      "title": "domain-modeling/ skills + domain-modeler agent",
+      "status": "pending",
+      "deliverables": ["9 SKILL.md files in skills/domain-modeling/", "agents/domain-modeler/AGENT.md"]
+    },
+    {
+      "chunk": 8,
+      "title": "architecture/ skills + enterprise-architect agent",
+      "status": "pending",
+      "deliverables": ["9 SKILL.md files in skills/architecture/", "agents/enterprise-architect/AGENT.md"]
+    },
+    {
+      "chunk": 9,
+      "title": "security/ skills + security-architect agent + security-engineer agent",
+      "status": "pending",
+      "deliverables": ["9 SKILL.md files in skills/security/", "agents/security-architect/AGENT.md", "agents/security-engineer/AGENT.md"]
+    },
+    {
+      "chunk": 10,
+      "title": "ux/ skills + ux-architect agent",
+      "status": "pending",
+      "deliverables": ["4 SKILL.md files in skills/ux/", "agents/ux-architect/AGENT.md"]
+    },
+    {
+      "chunk": 11,
+      "title": "data-architecture/ skills + data-architect agent",
+      "status": "pending",
+      "deliverables": ["7 SKILL.md files in skills/data-architecture/", "agents/data-architect/AGENT.md"]
+    },
+    {
+      "chunk": 12,
+      "title": "backend-engineering/ + observability (instrumentation) skills + backend-engineer agent",
+      "status": "pending",
+      "deliverables": ["13 SKILL.md files in skills/backend-engineering/", "agents/backend-engineer/AGENT.md"]
+    },
+    {
+      "chunk": 13,
+      "title": "frontend-engineering/ skills + frontend-engineer agent",
+      "status": "pending",
+      "deliverables": ["12 SKILL.md files in skills/frontend-engineering/", "agents/frontend-engineer/AGENT.md"]
+    },
+    {
+      "chunk": 14,
+      "title": "test-engineering/ skills + test-strategist agent",
+      "status": "pending",
+      "deliverables": ["13 SKILL.md files in skills/test-engineering/", "agents/test-strategist/AGENT.md"]
+    },
+    {
+      "chunk": 15,
+      "title": "platform/ + observability (stack) skills + platform-engineer agent",
+      "status": "pending",
+      "deliverables": ["12 SKILL.md files in skills/platform/", "7 SKILL.md files in skills/observability/", "agents/platform-engineer/AGENT.md"]
+    },
+    {
+      "chunk": 16,
+      "title": "data-analytics/ skills + data-engineer agent",
+      "status": "pending",
+      "deliverables": ["7 SKILL.md files in skills/data-analytics/", "agents/data-engineer/AGENT.md"]
+    },
+    {
+      "chunk": 17,
+      "title": "validation/ skills (owned by requirements-analyst)",
+      "status": "pending",
+      "deliverables": ["5 SKILL.md files in skills/validation/"]
+    },
+    {
+      "chunk": 18,
+      "title": "governance/ skills (factory internals)",
+      "status": "pending",
+      "deliverables": ["Remaining 4 SKILL.md files in skills/governance/"]
+    },
+    {
+      "chunk": 19,
+      "title": "All commands (phase drivers + cross-cutting)",
+      "status": "pending",
+      "deliverables": ["15 COMMAND.md files in commands/"]
+    },
+    {
+      "chunk": 20,
+      "title": "All hooks (phase gates + governance)",
+      "status": "pending",
+      "deliverables": ["9 HOOK.md files in hooks/"]
+    },
+    {
+      "chunk": 21,
+      "title": "Schemas (sdlc-config, sdlc-manifest)",
+      "status": "pending",
+      "deliverables": ["schemas/sdlc-config.schema.json", "schemas/sdlc-manifest.schema.json"]
+    },
+    {
+      "chunk": 22,
+      "title": "ai-ml-architect agent + ML skills",
+      "status": "deferred — activated when a product requires ML capability"
+    }
+  ],
+
+  "decisions": [
+    {
+      "id": "D001",
+      "date": "2026-06-24",
+      "decision": "Plugin uses top-level directory structure (Option B — plugin spec layout)",
+      "rationale": "Matches the Claude Code plugin specification exactly. Correct for distribution. MCP/LSP/monitors/themes follow the plugin manifest contract.",
+      "alternatives_rejected": ["Option A (.claude/ layout) — better for solo dev auto-discovery but wrong for a distributable plugin", "Option C (both) — premature; add distribution packaging when needed"]
+    },
+    {
+      "id": "D002",
+      "date": "2026-06-24",
+      "decision": "Architecture pattern is workflow-first, not artifact-first",
+      "rationale": "Commands drive phases. Agents activate within phases. Artifacts are outputs of the workflow. The previous build was artifact-first — a knowledge library, not a factory.",
+      "alternatives_rejected": ["Artifact-first — the old approach. Produced documents but no orchestration."]
+    },
+    {
+      "id": "D003",
+      "date": "2026-06-24",
+      "decision": "Skills organized by knowledge domain, not SDLC phase",
+      "rationale": "DDD, TDD, BDD apply across multiple phases. Phase-locked skills cause duplication or get skipped when the phase doesn't match. Domain organization makes skills reusable across phases.",
+      "alternatives_rejected": ["Phase-locked skills (strategy/, ideate/, design/, implement/ etc.) — used in old build, caused duplication"]
+    },
+    {
+      "id": "D004",
+      "date": "2026-06-24",
+      "decision": "13 active agents, 1 deferred (ai-ml-architect)",
+      "rationale": "Every role named in SDLC-artifact-factory.md §1 is represented. data-engineer and security-engineer added from previous roster of 12 — they were missing from the initial plan. Each agent has single, non-overlapping responsibility.",
+      "alternatives_rejected": ["12 agents — was missing data-engineer and security-engineer"]
+    },
+    {
+      "id": "D005",
+      "date": "2026-06-24",
+      "decision": "backend-engineer, frontend-engineer, and test-strategist produce full-range outputs including actual runnable code and executable tests",
+      "rationale": "Shafi confirmed agents must produce real outputs — not just design documents. backend-engineer produces runnable Go code. frontend-engineer produces runnable React+TS code. test-strategist produces executable test files. All three also produce design and documentation outputs.",
+      "alternatives_rejected": ["Design-only outputs — insufficient; the plugin must produce shippable artifacts"]
+    },
+    {
+      "id": "D006",
+      "date": "2026-06-24",
+      "decision": "Frontend stack: React + TypeScript",
+      "rationale": "The first product requires graph visualization (Obsidian-style) and compliance dashboards. React has mature graph libraries (D3, Cytoscape, Sigma.js). Component-level reactivity suits dashboards. HTMX+templ would create ongoing pain for the graph view.",
+      "alternatives_rejected": ["HTMX + templ — insufficient for complex graph visualization", "Vue — viable but React has richer graph library ecosystem"]
+    },
+    {
+      "id": "D007",
+      "date": "2026-06-24",
+      "decision": "MCPs deferred — defined per product at /sdlc-start time",
+      "rationale": "MCP servers are product-specific integration points. Building them as plugin-level defaults would be premature and potentially wrong for different products.",
+      "alternatives_rejected": ["Pre-built MCPs for GitHub, Jira, Google Drive — premature for a generic factory"]
+    },
+    {
+      "id": "D008",
+      "date": "2026-06-24",
+      "decision": "sdlc-context.json is the session memory — read at the start of every session",
+      "rationale": "Context window compaction and new sessions lose conversation history. This file must be self-sufficient to restore full project context, architecture decisions, and build position.",
+      "alternatives_rejected": ["Relying on Claude's memory files only — insufficient for full architectural context"]
+    }
+  ],
+
+  "open_questions": [],
+
+  "anti_patterns": [
+    "Skill that reasons or decides — reasoning belongs in an Agent",
+    "Agent that stores large domain knowledge — knowledge belongs in Skills",
+    "Command that contains methodology or domain expertise — belongs in Skills",
+    "Hook that runs a workflow — hooks validate only, they do not orchestrate",
+    "Tool that makes business decisions — decisions belong in Agents",
+    "MCP that implements business workflows — MCPs expose atomic capabilities only",
+    "Agent with overlapping responsibilities — every agent has single, non-overlapping ownership"
+  ]
+}

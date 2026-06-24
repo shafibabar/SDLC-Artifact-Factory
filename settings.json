@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(go vet:*)",
+      "Bash(go mod:*)",
+      "Bash(go generate:*)",
+      "Bash(make:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx:*)"
+    ]
+  },
+
+  "env": {
+    "SDLC_CONTEXT_FILE": "sdlc-context.json",
+    "SDLC_CONFIG_SCHEMA": "schemas/sdlc-config.schema.json",
+    "SDLC_MANIFEST_SCHEMA": "schemas/sdlc-manifest.schema.json"
+  },
+
+  "hooks": {
+    "config": "hooks/"
+  },
+
+  "output_style": "structured — every agent response includes: artifact produced, methodology applied, phase position, what comes next"
+}
