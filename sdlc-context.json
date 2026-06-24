@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-24",
-    "updated_by": "Chunk 4 — canonical glossary and methodology-review skills complete"
+    "updated_by": "Chunk 5 — strategy skills (8) and product-strategist agent complete"
   },
 
   "project": {
@@ -307,7 +307,8 @@
     {
       "chunk": 5,
       "title": "strategy/ skills + product-strategist agent",
-      "status": "pending — requires Chunk 4 approval first",
+      "status": "complete",
+      "date_completed": "2026-06-24",
       "deliverables": ["8 SKILL.md files in skills/strategy/", "agents/product-strategist/AGENT.md"]
     },
     {
