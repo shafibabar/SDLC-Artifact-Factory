@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-24",
-    "updated_by": "Chunk 5 — strategy skills (8) and product-strategist agent complete"
+    "updated_by": "Chunk 6 — discovery skills (11) and requirements-analyst agent complete"
   },
 
   "project": {
@@ -135,8 +135,8 @@
       "domain": "discovery",
       "path": "skills/discovery/",
       "owner": "requirements-analyst",
-      "planned_skills": ["requirements-analysis", "nfr-specification", "user-story-writing", "epic-definition", "acceptance-criteria", "impact-mapping", "jtbd-analysis", "example-mapping", "user-persona", "moscow-prioritization"],
-      "status": "planned"
+      "planned_skills": ["requirements-analysis", "nfr-specification", "user-story-writing", "epic-definition", "acceptance-criteria", "impact-mapping", "jtbd-analysis", "example-mapping", "user-persona", "story-mapping", "moscow-prioritization"],
+      "status": "complete"
     },
     {
       "domain": "domain-modeling",
@@ -314,8 +314,22 @@
     {
       "chunk": 6,
       "title": "discovery/ skills + requirements-analyst agent",
-      "status": "pending",
-      "deliverables": ["10 SKILL.md files in skills/discovery/", "agents/requirements-analyst/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-24",
+      "deliverables": [
+        "skills/discovery/requirements-analysis/SKILL.md",
+        "skills/discovery/nfr-specification/SKILL.md",
+        "skills/discovery/user-persona/SKILL.md",
+        "skills/discovery/jtbd-analysis/SKILL.md",
+        "skills/discovery/impact-mapping/SKILL.md",
+        "skills/discovery/epic-definition/SKILL.md",
+        "skills/discovery/user-story-writing/SKILL.md",
+        "skills/discovery/acceptance-criteria/SKILL.md",
+        "skills/discovery/example-mapping/SKILL.md",
+        "skills/discovery/story-mapping/SKILL.md",
+        "skills/discovery/moscow-prioritization/SKILL.md",
+        "agents/requirements-analyst/AGENT.md"
+      ]
     },
     {
       "chunk": 7,
