@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-25",
-    "updated_by": "Chunk 7 — domain-modeling skills (9) and domain-modeler agent complete"
+    "updated_by": "Chunk 8 — architecture skills (9) and enterprise-architect agent complete"
   },
 
   "project": {
@@ -150,7 +150,7 @@
       "path": "skills/architecture/",
       "owner": "enterprise-architect",
       "planned_skills": ["system-context-diagram", "container-diagram", "component-diagram", "adr-authoring", "api-contract-design", "integration-design", "multi-tenancy-design", "cqrs-pattern", "event-driven-patterns"],
-      "status": "planned"
+      "status": "complete"
     },
     {
       "domain": "security",
@@ -352,8 +352,20 @@
     {
       "chunk": 8,
       "title": "architecture/ skills + enterprise-architect agent",
-      "status": "pending",
-      "deliverables": ["9 SKILL.md files in skills/architecture/", "agents/enterprise-architect/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-25",
+      "deliverables": [
+        "skills/architecture/system-context-diagram/SKILL.md",
+        "skills/architecture/container-diagram/SKILL.md",
+        "skills/architecture/component-diagram/SKILL.md",
+        "skills/architecture/adr-authoring/SKILL.md",
+        "skills/architecture/api-contract-design/SKILL.md",
+        "skills/architecture/integration-design/SKILL.md",
+        "skills/architecture/multi-tenancy-design/SKILL.md",
+        "skills/architecture/cqrs-pattern/SKILL.md",
+        "skills/architecture/event-driven-patterns/SKILL.md",
+        "agents/enterprise-architect/AGENT.md"
+      ]
     },
     {
       "chunk": 9,
