@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-25",
-    "updated_by": "Chunk 8 — architecture skills (9) and enterprise-architect agent complete"
+    "updated_by": "Chunk 9 — security skills (9) and security-architect + security-engineer agents complete"
   },
 
   "project": {
@@ -157,7 +157,7 @@
       "path": "skills/security/",
       "owner": "security-architect (design) + security-engineer (implementation)",
       "planned_skills": ["threat-modeling", "security-architecture", "access-control-model", "secrets-management", "privacy-design", "compliance-design", "zero-trust-design", "security-implementation", "compliance-verification"],
-      "status": "planned"
+      "status": "complete"
     },
     {
       "domain": "ux",
@@ -370,8 +370,21 @@
     {
       "chunk": 9,
       "title": "security/ skills + security-architect agent + security-engineer agent",
-      "status": "pending",
-      "deliverables": ["9 SKILL.md files in skills/security/", "agents/security-architect/AGENT.md", "agents/security-engineer/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-25",
+      "deliverables": [
+        "skills/security/threat-modeling/SKILL.md",
+        "skills/security/zero-trust-design/SKILL.md",
+        "skills/security/access-control-model/SKILL.md",
+        "skills/security/secrets-management/SKILL.md",
+        "skills/security/security-architecture/SKILL.md",
+        "skills/security/privacy-design/SKILL.md",
+        "skills/security/compliance-design/SKILL.md",
+        "skills/security/security-implementation/SKILL.md",
+        "skills/security/compliance-verification/SKILL.md",
+        "agents/security-architect/AGENT.md",
+        "agents/security-engineer/AGENT.md"
+      ]
     },
     {
       "chunk": 10,
