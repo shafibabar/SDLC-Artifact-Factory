@@ -2,8 +2,8 @@
   "_meta": {
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
-    "last_updated": "2026-06-24",
-    "updated_by": "Chunk 6 — discovery skills (11) and requirements-analyst agent complete"
+    "last_updated": "2026-06-25",
+    "updated_by": "Chunk 7 — domain-modeling skills (9) and domain-modeler agent complete"
   },
 
   "project": {
@@ -143,7 +143,7 @@
       "path": "skills/domain-modeling/",
       "owner": "domain-modeler",
       "planned_skills": ["ubiquitous-language", "bounded-context-mapping", "domain-event-catalog", "aggregate-design", "command-catalog", "read-model-design", "event-storming-facilitation", "domain-storytelling", "context-map-patterns"],
-      "status": "planned"
+      "status": "complete"
     },
     {
       "domain": "architecture",
@@ -334,8 +334,20 @@
     {
       "chunk": 7,
       "title": "domain-modeling/ skills + domain-modeler agent",
-      "status": "pending",
-      "deliverables": ["9 SKILL.md files in skills/domain-modeling/", "agents/domain-modeler/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-25",
+      "deliverables": [
+        "skills/domain-modeling/ubiquitous-language/SKILL.md",
+        "skills/domain-modeling/event-storming-facilitation/SKILL.md",
+        "skills/domain-modeling/bounded-context-mapping/SKILL.md",
+        "skills/domain-modeling/domain-event-catalog/SKILL.md",
+        "skills/domain-modeling/aggregate-design/SKILL.md",
+        "skills/domain-modeling/command-catalog/SKILL.md",
+        "skills/domain-modeling/read-model-design/SKILL.md",
+        "skills/domain-modeling/domain-storytelling/SKILL.md",
+        "skills/domain-modeling/context-map-patterns/SKILL.md",
+        "agents/domain-modeler/AGENT.md"
+      ]
     },
     {
       "chunk": 8,
