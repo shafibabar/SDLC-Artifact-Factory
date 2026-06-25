@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-25",
-    "updated_by": "Chunk 13 — frontend-engineering skills (14) and frontend-engineer agent complete"
+    "updated_by": "Chunk 14 — test-engineering skills (12) and test-strategist agent complete"
   },
 
   "project": {
@@ -118,7 +118,7 @@
     { "name": "security-engineer",     "skill_domains": ["security (implementation)"], "status": "planned" },
     { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "complete" },
     { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "complete" },
-    { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "planned" },
+    { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "complete" },
     { "name": "platform-engineer",     "skill_domains": ["platform", "observability (stack)"], "status": "planned" },
     { "name": "ai-ml-architect",       "skill_domains": ["ml (TBD)"],               "status": "deferred — added when a product requires ML" }
   ],
@@ -193,8 +193,9 @@
       "domain": "test-engineering",
       "path": "skills/test-engineering/",
       "owner": "test-strategist",
-      "planned_skills": ["go-unit-test", "go-integration-test", "go-contract-test", "go-e2e-test", "bdd-feature-file", "go-performance-test", "go-load-test", "go-security-test", "go-compliance-test", "go-chaos-test", "go-mutation-test", "test-fixture-design", "mock-generation"],
-      "status": "planned"
+      "planned_skills": ["test-pyramid", "bdd-feature-file", "go-unit-test", "mock-generation", "test-fixture-design", "go-integration-test", "go-contract-test", "go-mutation-test", "go-e2e-test", "go-performance-test", "go-load-test", "go-chaos-test"],
+      "_scope_note": "12 skills (was 13 planned). Chunk 14 dropped go-security-test and go-compliance-test (owned by security-engineer via security-implementation + compliance-verification — avoiding overlap) and added test-pyramid (the shift-left/shift-right strategy spine). Organized around Shafi's shift-left (prevent bugs) / shift-right (validate resilience) objective; frugal tooling per Shafi's filtered SDET blueprint.",
+      "status": "complete"
     },
     {
       "domain": "observability",
@@ -475,8 +476,24 @@
     {
       "chunk": 14,
       "title": "test-engineering/ skills + test-strategist agent",
-      "status": "pending",
-      "deliverables": ["13 SKILL.md files in skills/test-engineering/", "agents/test-strategist/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-25",
+      "scope_note": "Reshaped from 13 to 12 skills per Shafi's filtered SDET blueprint: dropped go-security-test + go-compliance-test (security-engineer owns these, Chunk 9), added test-pyramid (shift-left/shift-right strategy spine). Frugal tooling (schema-based contracts not Pact broker; toxiproxy not chaos platform; mutation periodic not per-PR). Built in two approved passes (shift-left, then shift-right). Boundary: test-strategist owns the discipline + cross-cutting/system tests; backend/frontend engineers apply unit/integration/component skills test-first.",
+      "deliverables": [
+        "skills/test-engineering/test-pyramid/SKILL.md",
+        "skills/test-engineering/bdd-feature-file/SKILL.md",
+        "skills/test-engineering/go-unit-test/SKILL.md",
+        "skills/test-engineering/mock-generation/SKILL.md",
+        "skills/test-engineering/test-fixture-design/SKILL.md",
+        "skills/test-engineering/go-integration-test/SKILL.md",
+        "skills/test-engineering/go-contract-test/SKILL.md",
+        "skills/test-engineering/go-mutation-test/SKILL.md",
+        "skills/test-engineering/go-e2e-test/SKILL.md",
+        "skills/test-engineering/go-performance-test/SKILL.md",
+        "skills/test-engineering/go-load-test/SKILL.md",
+        "skills/test-engineering/go-chaos-test/SKILL.md",
+        "agents/test-strategist/AGENT.md"
+      ]
     },
     {
       "chunk": 15,
