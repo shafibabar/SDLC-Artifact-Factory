@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-25",
-    "updated_by": "Chunk 11 — data-architecture skills (7) and data-architect agent complete"
+    "updated_by": "Chunk 12 — backend-engineering skills (16) + observability instrumentation skills (4) and backend-engineer agent complete"
   },
 
   "project": {
@@ -116,7 +116,7 @@
     { "name": "data-engineer",         "skill_domains": ["data-analytics"],         "status": "planned" },
     { "name": "security-architect",    "skill_domains": ["security (design)"],      "status": "planned" },
     { "name": "security-engineer",     "skill_domains": ["security (implementation)"], "status": "planned" },
-    { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "planned" },
+    { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "complete" },
     { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "planned" },
     { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "planned" },
     { "name": "platform-engineer",     "skill_domains": ["platform", "observability (stack)"], "status": "planned" },
@@ -177,8 +177,9 @@
       "domain": "backend-engineering",
       "path": "skills/backend-engineering/",
       "owner": "backend-engineer",
-      "planned_skills": ["go-project-structure", "go-service-skeleton", "go-chi-handler", "go-domain-model", "go-repository-pattern", "go-event-publisher", "go-event-consumer", "go-service-layer", "go-middleware", "go-migration", "go-dockerfile", "go-makefile", "go-openapi-codegen"],
-      "status": "planned"
+      "planned_skills": ["go-project-structure", "go-service-skeleton", "go-chi-handler", "go-domain-model", "go-repository-pattern", "go-event-publisher", "go-event-consumer", "go-service-layer", "go-middleware", "go-migration", "go-dockerfile", "go-makefile", "go-openapi-codegen", "go-concurrency-patterns", "go-error-handling", "go-performance-optimization"],
+      "_skills_note": "16 skills. go-concurrency-patterns, go-error-handling, go-performance-optimization added in Chunk 12 from Shafi's Go Backend & Observability Engineer behavioral blueprint (mechanical sympathy, leak-free concurrency, errors-as-values, profiling).",
+      "status": "complete"
     },
     {
       "domain": "frontend-engineering",
@@ -199,7 +200,8 @@
       "path": "skills/observability/",
       "owner": "backend-engineer (instrumentation) + platform-engineer (stack)",
       "planned_skills": ["opentelemetry-instrumentation", "prometheus-metrics-design", "structured-logging-design", "distributed-tracing-design", "health-check-design", "slo-definition", "alerting-rules-design"],
-      "status": "planned"
+      "_split_note": "Domain co-owned. Instrumentation skills (opentelemetry-instrumentation, distributed-tracing-design, structured-logging-design, health-check-design) built in Chunk 12 by backend-engineer. Stack skills (prometheus-metrics-design, slo-definition, alerting-rules-design) pending in Chunk 15 with platform-engineer.",
+      "status": "partial — instrumentation complete (Chunk 12); stack pending (Chunk 15)"
     },
     {
       "domain": "platform",
@@ -418,8 +420,32 @@
     {
       "chunk": 12,
       "title": "backend-engineering/ + observability (instrumentation) skills + backend-engineer agent",
-      "status": "pending",
-      "deliverables": ["13 SKILL.md files in skills/backend-engineering/", "agents/backend-engineer/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-25",
+      "scope_note": "Expanded from 13 to 16 backend-engineering skills per Shafi's Go Backend & Observability Engineer behavioral blueprint; observability instrumentation (4 skills) included per the branch scope. Built in two approved passes (backend skills, then observability instrumentation).",
+      "deliverables": [
+        "skills/backend-engineering/go-project-structure/SKILL.md",
+        "skills/backend-engineering/go-service-skeleton/SKILL.md",
+        "skills/backend-engineering/go-domain-model/SKILL.md",
+        "skills/backend-engineering/go-repository-pattern/SKILL.md",
+        "skills/backend-engineering/go-service-layer/SKILL.md",
+        "skills/backend-engineering/go-chi-handler/SKILL.md",
+        "skills/backend-engineering/go-middleware/SKILL.md",
+        "skills/backend-engineering/go-event-publisher/SKILL.md",
+        "skills/backend-engineering/go-event-consumer/SKILL.md",
+        "skills/backend-engineering/go-concurrency-patterns/SKILL.md",
+        "skills/backend-engineering/go-error-handling/SKILL.md",
+        "skills/backend-engineering/go-performance-optimization/SKILL.md",
+        "skills/backend-engineering/go-migration/SKILL.md",
+        "skills/backend-engineering/go-openapi-codegen/SKILL.md",
+        "skills/backend-engineering/go-dockerfile/SKILL.md",
+        "skills/backend-engineering/go-makefile/SKILL.md",
+        "skills/observability/opentelemetry-instrumentation/SKILL.md",
+        "skills/observability/distributed-tracing-design/SKILL.md",
+        "skills/observability/structured-logging-design/SKILL.md",
+        "skills/observability/health-check-design/SKILL.md",
+        "agents/backend-engineer/AGENT.md"
+      ]
     },
     {
       "chunk": 13,
