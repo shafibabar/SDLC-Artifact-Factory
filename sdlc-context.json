@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-25",
-    "updated_by": "Chunk 10 — ux skills (4) and ux-architect agent complete"
+    "updated_by": "Chunk 11 — data-architecture skills (7) and data-architect agent complete"
   },
 
   "project": {
@@ -171,7 +171,7 @@
       "path": "skills/data-architecture/",
       "owner": "data-architect",
       "planned_skills": ["data-model-design", "data-pipeline-design", "data-lineage-design", "data-classification", "data-retention-policy", "canonical-data-model", "event-schema-design"],
-      "status": "planned"
+      "status": "complete"
     },
     {
       "domain": "backend-engineering",
@@ -402,8 +402,18 @@
     {
       "chunk": 11,
       "title": "data-architecture/ skills + data-architect agent",
-      "status": "pending",
-      "deliverables": ["7 SKILL.md files in skills/data-architecture/", "agents/data-architect/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-25",
+      "deliverables": [
+        "skills/data-architecture/data-model-design/SKILL.md",
+        "skills/data-architecture/canonical-data-model/SKILL.md",
+        "skills/data-architecture/event-schema-design/SKILL.md",
+        "skills/data-architecture/data-pipeline-design/SKILL.md",
+        "skills/data-architecture/data-classification/SKILL.md",
+        "skills/data-architecture/data-lineage-design/SKILL.md",
+        "skills/data-architecture/data-retention-policy/SKILL.md",
+        "agents/data-architect/AGENT.md"
+      ]
     },
     {
       "chunk": 12,
