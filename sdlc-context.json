@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-06-25",
-    "updated_by": "Chunk 12 — backend-engineering skills (16) + observability instrumentation skills (4) and backend-engineer agent complete"
+    "updated_by": "Chunk 13 — frontend-engineering skills (14) and frontend-engineer agent complete"
   },
 
   "project": {
@@ -117,7 +117,7 @@
     { "name": "security-architect",    "skill_domains": ["security (design)"],      "status": "planned" },
     { "name": "security-engineer",     "skill_domains": ["security (implementation)"], "status": "planned" },
     { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "complete" },
-    { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "planned" },
+    { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "complete" },
     { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "planned" },
     { "name": "platform-engineer",     "skill_domains": ["platform", "observability (stack)"], "status": "planned" },
     { "name": "ai-ml-architect",       "skill_domains": ["ml (TBD)"],               "status": "deferred — added when a product requires ML" }
@@ -185,8 +185,9 @@
       "domain": "frontend-engineering",
       "path": "skills/frontend-engineering/",
       "owner": "frontend-engineer",
-      "planned_skills": ["react-project-structure", "react-component-design", "typescript-types", "react-state-management", "react-api-client", "react-routing", "react-graph-visualization", "react-dashboard-components", "react-accessibility", "react-dockerfile", "react-component-testing", "react-e2e-testing"],
-      "status": "planned"
+      "planned_skills": ["react-project-structure", "react-component-design", "typescript-types", "react-state-management", "react-api-client", "react-routing", "react-graph-visualization", "react-dashboard-components", "react-accessibility", "react-dockerfile", "react-component-testing", "react-e2e-testing", "react-performance-optimization", "react-observability"],
+      "_skills_note": "14 skills. react-performance-optimization and react-observability added in Chunk 13 from Shafi's React+TypeScript Frontend Engineer behavioral blueprint (critical rendering path, RUM/Core Web Vitals, OTel Web with W3C traceparent propagation, error boundaries).",
+      "status": "complete"
     },
     {
       "domain": "test-engineering",
@@ -450,8 +451,26 @@
     {
       "chunk": 13,
       "title": "frontend-engineering/ skills + frontend-engineer agent",
-      "status": "pending",
-      "deliverables": ["12 SKILL.md files in skills/frontend-engineering/", "agents/frontend-engineer/AGENT.md"]
+      "status": "complete",
+      "date_completed": "2026-06-25",
+      "scope_note": "Expanded from 12 to 14 frontend-engineering skills per Shafi's React+TypeScript Frontend Engineer behavioral blueprint (added react-performance-optimization and react-observability). Built in two approved passes (foundations/architecture/perf, then specialized UI/observability/testing/container). All React + TypeScript per decision D006.",
+      "deliverables": [
+        "skills/frontend-engineering/react-project-structure/SKILL.md",
+        "skills/frontend-engineering/typescript-types/SKILL.md",
+        "skills/frontend-engineering/react-component-design/SKILL.md",
+        "skills/frontend-engineering/react-state-management/SKILL.md",
+        "skills/frontend-engineering/react-api-client/SKILL.md",
+        "skills/frontend-engineering/react-routing/SKILL.md",
+        "skills/frontend-engineering/react-performance-optimization/SKILL.md",
+        "skills/frontend-engineering/react-graph-visualization/SKILL.md",
+        "skills/frontend-engineering/react-dashboard-components/SKILL.md",
+        "skills/frontend-engineering/react-accessibility/SKILL.md",
+        "skills/frontend-engineering/react-observability/SKILL.md",
+        "skills/frontend-engineering/react-component-testing/SKILL.md",
+        "skills/frontend-engineering/react-e2e-testing/SKILL.md",
+        "skills/frontend-engineering/react-dockerfile/SKILL.md",
+        "agents/frontend-engineer/AGENT.md"
+      ]
     },
     {
       "chunk": 14,
