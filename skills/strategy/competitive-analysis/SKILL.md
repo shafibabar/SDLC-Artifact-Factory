@@ -6,9 +6,10 @@ description: >
   defensible differentiation points. Covers direct competitors, indirect competitors,
   and substitutes. Used by the product-strategist agent during the Strategy phase
   to ground GTM strategy and roadmap prioritisation in market reality.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, competitive-analysis, positioning, differentiation, gtm]
 ---
 
@@ -89,6 +90,24 @@ Flag any competitor that: is moving toward your position, has recently announced
 
 ---
 
+## Worked Example (Matrix Excerpt)
+
+For the first product (Data Estate Mapping and Compliance Intelligence), the capability matrix rows with the strongest signal:
+
+| Dimension | Our product | BigID | Varonis | AWS Macie | Compliance consultant (substitute) |
+|---|---|---|---|---|---|
+| Private deployment — no data leaves customer infrastructure | ✓ | ~ | ~ | ✗ | ✓ |
+| SMB fit (price + setup effort, 50–500 employees) | ✓ | ✗ | ✗ | ~ | ~ |
+| Cross-source relationship graph (Drive + S3) | ✓ | ~ | ✗ | ✗ | ✗ |
+| SOC 2 control mapping (CC6, CC7, A1) | ✓ | ~ | ~ | ✗ | ✓ |
+| Time to first insight | < 30 min | Weeks (sales-led POC) | Weeks | Hours (S3 only) | Weeks |
+
+**Positioning map axes:** deployment privacy (x) × SMB accessibility (y). The top-right position — fully private *and* SMB-accessible — is empty: the enterprise platforms fail on accessibility, AWS Macie fails on coverage and privacy posture, and the substitute (a consultant with a spreadsheet) cannot provide continuous monitoring. Note the honest cells: the substitute matches us on privacy and SOC 2 knowledge — the differentiation against it is continuity and cost, not capability. A matrix where the substitute scores zero everywhere is a flattering matrix.
+
+See `references/competitive-analysis-template.md` for the full worked artifact.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -118,7 +137,7 @@ Flag any competitor that: is moving toward your position, has recently announced
 
 ```markdown
 ---
-artifact: competitive-analysis
+name: competitive-analysis
 product: [product name]
 version: 1.0.0
 phase: strategy

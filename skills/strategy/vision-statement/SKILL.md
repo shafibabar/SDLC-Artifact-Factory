@@ -5,9 +5,10 @@ description: >
   of the future state a product is working toward. Covers the required components,
   proven formats, quality criteria, and anti-patterns. Used by the product-strategist
   agent at the start of every Strategy phase to anchor all subsequent artifacts.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, vision, product-discovery, north-star]
 ---
 
@@ -86,6 +87,27 @@ Lead with purpose (Why), follow with approach (How), close with offering (What).
 
 ---
 
+## Worked Example
+
+Applying Format 1 to the first product (Data Estate Mapping and Compliance Intelligence):
+
+> For operations and compliance teams at SMBs of 50–500 employees handling regulated data,
+> who cannot say what sensitive data they hold, where it lives, or whether it puts their compliance obligations at risk,
+> the product is a data estate intelligence platform
+> that makes every file, extracted entity, and compliance gap visible within 30 minutes of connecting a storage source.
+> Unlike cloud DLP suites that require data to be uploaded for analysis,
+> our product runs entirely inside the customer's own infrastructure — no data ever leaves their boundary.
+
+**Validation:** 84 words — fails the ≤ 60 word criterion. Every clause earns its place, so tighten by merging, not deleting components:
+
+> For SMB compliance teams who cannot see their own regulated data, [Product] is a data estate intelligence platform that reveals every file, entity, and compliance gap within 30 minutes — running entirely inside the customer's own infrastructure, with no data ever leaving their boundary.
+
+**Validation:** 43 words. All five required components survive the compression. Passes all seven quality criteria: 3–5 year horizon, named user group, technology-agnostic, and a differentiator (zero data egress) that SaaS-architected competitors cannot match without rebuilding.
+
+**North Star implication:** time from first storage source connection to first compliance gap discovered.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -129,7 +151,7 @@ Produce the vision statement as a Markdown artifact with frontmatter:
 
 ```markdown
 ---
-artifact: vision-statement
+name: vision-statement
 product: [product name]
 version: 1.0.0
 phase: strategy

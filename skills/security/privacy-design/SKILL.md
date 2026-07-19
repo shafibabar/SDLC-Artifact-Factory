@@ -7,9 +7,10 @@ description: >
   Article 30 data processing register requirements, and Data Protection Impact
   Assessment (DPIA) triggers. Used by the security-architect agent during the
   Design phase for products that process personally identifiable information.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: security-architect
+created: 2026-06-25
 tags: [design, security, privacy, gdpr, pii, data-minimisation, dpia, privacy-by-design]
 ---
 
@@ -41,7 +42,7 @@ The first step in privacy design is identifying every category of personal data 
 
 | Data category | Examples | Collected from | Purpose | Retention | Basis (GDPR Art 6) |
 |---|---|---|---|---|---|
-| User identity | Name, email, role | User onboarding | Authentication and authorisation | Account lifetime + 90 days | Legitimate interest (contract performance) |
+| User identity | Name, email, role | User onboarding | Authentication and authorisation | Account lifetime + 90 days | Contract performance (Art 6(1)(b)) |
 | File metadata | File path, file name, file type, size | Storage source scan | Data estate mapping | 90 days (configurable) | Legitimate interest |
 | Extracted PII entities | Person names, email addresses, ID numbers found in files | Entity extraction | Compliance detection | Same as file metadata | Legitimate interest |
 | Access logs | User ID, action, timestamp, IP address | All API requests | Security audit, Non-Repudiation | 7 years (compliance requirement) | Legal obligation |
@@ -147,6 +148,20 @@ A DPIA is required (GDPR Article 35) when processing is "likely to result in a h
 | Erasure path defined | Erasure procedure documented per data category | No erasure path for user account data |
 | Art 30 register exists | Processing activities documented | No processing register |
 | DPIA conducted if triggered | DPIA on file if any trigger applies | DPIA triggers present but no DPIA conducted |
+| Correct legal basis | Each basis matches an Art 6(1) ground precisely (contract ≠ legitimate interest) | Bases conflated or listed as "GDPR" |
+
+---
+
+## Anti-Patterns
+
+- **Storing what you promised not to.** The architecture says "file contents are never stored" — then a debug log, a cache, or an error message captures raw extracted text ("found entity: John Smith, SSN 078-05-1120"). Store entity **types and counts** only, and treat any raw-text capture as a privacy defect, not a logging bug.
+- **Privacy as a module.** A `privacy-service` bolted beside the domain instead of privacy constraints embedded in the domain model (retention on the `DataAsset` aggregate, purpose tags at the data access layer). Principle 3 is architectural, not organisational.
+- **"Operational purposes."** Purposes so generic they permit anything. A purpose that cannot generate a prohibited-uses list is not a purpose.
+- **Conflating legal bases.** Citing "legitimate interest" for processing that is actually necessary for contract performance (Art 6(1)(b)), or claiming consent from users who cannot meaningfully refuse (employees of the customer). Each basis has distinct obligations — legitimate interest requires a documented balancing test.
+- **Hard-deleting audit history to satisfy erasure.** Erasure requests never justify destroying access logs under legal retention. Decline with the legal reference; anonymise the user record instead.
+- **Confusing controller and processor obligations.** For extracted entities, the customer is the controller and holds the relationship with data subjects. Routing individual erasure requests for in-document PII to the processor short-circuits the legal chain — direct them to the controller.
+- **DPIA after go-live.** A DPIA conducted once the system is built can only document risk, not design it out. DPIA triggers are evaluated in the Design phase, before architecture is fixed.
+- **Retention as a config nobody enforces.** A documented 90-day retention with no scheduled deletion job. Retention is only real when a mechanism (cron job, partition drop, TTL) provably deletes on schedule and the deletion is itself audited.
 
 ---
 
@@ -154,7 +169,7 @@ A DPIA is required (GDPR Article 35) when processing is "likely to result in a h
 
 ```markdown
 ---
-artifact: privacy-design
+name: privacy-design
 product: [product name]
 version: 1.0.0
 phase: design

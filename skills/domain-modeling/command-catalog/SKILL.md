@@ -8,9 +8,10 @@ description: >
   The Command Catalog is the authoritative record of all write operations in a
   Bounded Context. Used by the domain-modeler agent after Event Storming and
   Aggregate design.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, commands, cqrs, write-model, idempotency, go]
 ---
 
@@ -152,6 +153,13 @@ func (h *ClassifyDataAssetHandler) Handle(ctx context.Context, cmd ClassifyDataA
 }
 ```
 
+**Edge cases the naive pattern misses:**
+
+- **Same transaction or nothing.** The state change and the `command_log` insert must commit in the same database transaction. If the handler commits the change and then crashes before recording the key, the retry re-applies the change. A check-then-process split across transactions is not idempotent.
+- **Concurrent duplicates.** Two simultaneous requests with the same key can both pass the `Find` check. The `PRIMARY KEY` constraint on `idempotency_key` rejects the loser at insert — treat that unique-violation error as "already processed" and return the first result, not an error.
+- **Return the stored result.** The duplicate invocation must return the *same* response as the original (the `result` column exists for this), including the original's failure if the Command was rejected. Returning a fresh success for a Command that originally failed breaks the contract.
+- **Retention.** Prune `command_log` on a schedule, but keep rows at least as long as the longest client retry horizon — a key pruned too early re-opens the duplicate window.
+
 ---
 
 ## Commands and API Endpoints
@@ -182,11 +190,25 @@ The mapping is documented in the Command Catalog and used as the authoritative i
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **CRUD-shaped Commands** — `UpdateDataAsset` carrying a bag of optional fields | One Command hides many intents; guards cannot be stated because the intent is unknown | One Command per business intent: `ClassifyDataAsset`, `ArchiveDataAsset`, each with its own guards |
+| **Command targeting two Aggregates** | Requires a cross-Aggregate transaction, violating one-Aggregate-per-transaction | Target one Aggregate; coordinate the second via the emitted Domain Event or a Saga |
+| **Command that returns read data** — handler queries and returns a view | Blurs the CQRS split; write path grows read concerns and their performance profile | Return the identifier and status only; clients query the Read Model for state |
+| **Guards in the handler instead of the Aggregate** | Business rules escape the domain model; any other caller of the Aggregate skips them | Handlers do structural validation and orchestration only; guards live on the root |
+| **Idempotency by payload hash** — deriving the key from Command contents | Two legitimate identical Commands (re-classify to the same level after a change elsewhere) are wrongly deduplicated | The client generates an explicit per-invocation idempotency key |
+| **Fire-and-forget Command over the broker with no result path** | The sender cannot distinguish rejection from loss; failures vanish | Commands are point-to-point with a synchronous accept/reject; only Domain Events are broadcast |
+| **Naming the Domain Event after the Command** — `ClassifyDataAssetEvent` | The event is a fact, not an echo of the request | Past-tense fact naming: `DataAssetClassified` |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: command-catalog
+name: command-catalog
 product: [product name]
 bounded-context: [context name]
 version: 1.0.0

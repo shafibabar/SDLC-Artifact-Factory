@@ -7,9 +7,10 @@ description: >
   connect directly to BDD feature files. Acceptance criteria are the primary
   handoff from the requirements-analyst to the test-strategist. Used during the
   Ideate phase after user stories are written.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, acceptance-criteria, bdd, gherkin, testing, product-discovery]
 ---
 
@@ -156,11 +157,25 @@ When handing off to the test-strategist, include:
 
 ---
 
+## Anti-Patterns
+
+**Criteria written after implementation:** documenting what was built instead of defining "done" before building. This inverts the entire BDD flow — the criteria become a mirror of the code, and every bug in the code is faithfully reflected as a "requirement."
+
+**UI-coupled criteria:** "Then the green Export button appears in the top-right corner." Brittle against every redesign and says nothing about the outcome. Describe what the user can now *do or know* ("Then the gap report can be exported as PDF"), not the pixels that enable it.
+
+**Compound When:** "When the user connects a source and triggers a scan…" — two actions means a failing test cannot tell you which action broke. One When, one action; the first action belongs in the Given as established state.
+
+**Implementation-observable Then:** "Then a row is inserted into the `classifications` table." No user can observe a table row. Then-statements must be observable at the persona's surface (UI, report, notification) or at an explicitly named operational surface (audit log, metrics endpoint).
+
+**Boundary-blind criteria:** happy path plus one error case, with the interesting limits unexamined — the 500,001st file, the empty Google Drive, the scan that hits the 30-minute mark exactly. The Golden Triangle requires the edge angle for a reason: production incidents live at the boundaries.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: acceptance-criteria
+name: acceptance-criteria
 product: [product name]
 story-id: US-[ID]
 version: 1.0.0

@@ -7,9 +7,10 @@ description: >
   test integration, vulnerability scan interpretation, and how to produce a
   compliance evidence package for SOC 2, GDPR, and ISO 27001 audits. Used by
   the security-engineer agent during the Quality phase.
-version: 1.0.0
+version: 1.1.0
 phase: quality
 owner: security-engineer
+created: 2026-06-25
 tags: [quality, security, compliance-verification, soc2, gdpr, penetration-testing, evidence]
 ---
 
@@ -56,7 +57,8 @@ deny[msg] {
 ### Mode 3: Vulnerability Scan (weekly + on dependency update)
 
 ```bash
-# Go vulnerability scan
+# Go vulnerability scan — reports only vulnerabilities in symbols the code
+# actually calls, so a finding is always actionable (no reachability noise)
 govulncheck ./...
 
 # Container image scan
@@ -195,7 +197,7 @@ Annual penetration test scope (minimum):
 | Test area | What is tested |
 |---|---|
 | Authentication bypass | Can an attacker access APIs without a valid JWT? |
-| JWT attacks | Algorithm confusion, signature bypass, expired token reuse |
+| JWT attacks | Algorithm confusion (`alg: none`, RS256→HS256 downgrade), signature bypass, `kid` header injection, expired token reuse, missing audience/issuer validation |
 | Privilege escalation | Can a low-privilege user access admin endpoints? |
 | Cross-tenant access | Can a tenant-A user access tenant-B data? |
 | Input validation | SQL injection, command injection, path traversal |
@@ -223,11 +225,23 @@ Penetration test findings are classified by severity (Critical, High, Medium, Lo
 
 ---
 
+## Anti-Patterns
+
+- **Verification without design linkage.** Tests that verify whatever was convenient to test, with no traceability to the controls in `compliance-design`. Every test name carries its control ID (`TestCC61_...`) so coverage gaps are visible.
+- **Passing by exclusion.** Quietly excluding failing endpoints from the endpoint registry so the suite goes green. The registry is generated from `openapi.yaml`; exclusions (`/healthz`, `/readyz`) are an explicit, reviewed allowlist.
+- **Evidence generated outside the pipeline.** A test run on a developer laptop produces a JSON file indistinguishable from a CI run — until an auditor asks which commit and environment it verified. Evidence records without `BuildID`, `CommitSHA`, and `Environment` are not evidence.
+- **Confirming existence to the wrong tenant.** Asserting 403 on cross-tenant access. A 403 tells tenant B that tenant A's resource ID exists. Cross-tenant requests must be indistinguishable from requests for resources that do not exist (404).
+- **Scan-and-shelve.** Running vulnerability scans on schedule but never gating on the results. `trivy --exit-code 1 --severity HIGH,CRITICAL` fails the pipeline; a report nobody reads does not.
+- **Pentest as a ritual.** Commissioning the annual pentest against a stale environment or with cross-tenant access out of scope. For a multi-tenant compliance product, cross-tenant access is the single most important item in the scope.
+- **Treating FAIL evidence as embarrassing.** Deleting or suppressing failed evidence records. A failed check followed by a remediation and a passing re-run is exactly the operating-effectiveness story a SOC 2 Type II auditor wants to see. The append-only store keeps both.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: compliance-verification-report
+name: compliance-verification-report
 product: [product name]
 period: [audit period]
 frameworks: [SOC 2, GDPR, ISO 27001]

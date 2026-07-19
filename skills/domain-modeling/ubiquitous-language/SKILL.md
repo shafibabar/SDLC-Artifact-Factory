@@ -7,9 +7,10 @@ description: >
   domain understanding deepens. Ubiquitous Language is the foundation of all
   DDD work; every other domain-modeling artifact depends on it. Used by the
   domain-modeler agent at the start of every Design phase domain session.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, ubiquitous-language, bounded-context, glossary]
 ---
 
@@ -142,11 +143,25 @@ A Ubiquitous Language is not static. As the team's understanding of the domain d
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **The global glossary** — one enterprise-wide vocabulary forced on every context | Homonyms are legitimate at context boundaries; flattening them produces vague, lowest-common-denominator definitions that fit nobody | One language per Bounded Context; document homonyms and their boundary mechanisms |
+| **Developer dialect** — code uses `FileRecord`, conversation uses "DataAsset" | The translation layer lives in engineers' heads; every hand-off re-introduces semantic drift | The canonical term appears verbatim in type names, table names, API fields, and Gherkin scenarios |
+| **Definition by implementation** — "A DataAsset is a row in the `data_assets` table" | Ties the concept to today's storage; says nothing about meaning, rules, or boundary | Define in domain terms with invariants; the table is a consequence, not a definition |
+| **Hedged definitions** — "usually", "generally", "in most cases" | A hedge marks an undiscovered rule or a hidden second concept; ambiguity ships as bugs | Chase the hedge: name the exception explicitly or split the term in two |
+| **Glossary shelfware** — terms defined once, never enforced | The language decays immediately; six months later the glossary describes a system that no longer exists | Wire enforcement into code review, API review, and the terminology drift detector; evolve terms via the Language Evolution triggers |
+| **Qualifier inflation** — `DataAssetV2`, `RealDataAsset`, `NewScan` to dodge a naming conflict | Version-suffixed names mean two models are competing inside one context | Resolve the conflict: evolve the single definition, or split the Bounded Context where the meaning genuinely diverges |
+| **Banning synonyms without renaming code** — the glossary bans "file" while `File` types remain | The glossary and the codebase disagree; the codebase wins and the glossary loses authority | A synonym ban is complete only when code, tests, APIs, and docs are renamed |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: ubiquitous-language
+name: ubiquitous-language
 product: [product name]
 bounded-context: [Bounded Context name]
 version: 1.0.0

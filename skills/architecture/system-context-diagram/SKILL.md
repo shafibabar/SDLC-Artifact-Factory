@@ -7,9 +7,10 @@ description: >
   Context Diagram is the first architecture artifact produced and the entry point
   for all more detailed diagrams. Used by the enterprise-architect agent at the
   start of the Design phase architecture work, after domain modelling is complete.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, c4, system-context, diagrams]
 ---
 
@@ -157,11 +158,25 @@ For this plugin, diagrams are expressed in ASCII for PM-reviewable Markdown. The
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Container Diagram in disguise** — internal services, databases, or brokers drawn at Level 1 | The one diagram every stakeholder can read is destroyed by detail only engineers need | One system box; push all internal structure down to Level 2 |
+| **The split system** — "Frontend" and "Backend" as two context-level boxes | The system boundary fragments; users appear to interact with implementation halves | One box for the whole system being built; frontend/backend is a Level 2 concern |
+| **Generic "User"** | Hides the distinct roles, goals, and permissions discovered in personas and Domain Storytelling | One Person element per role, named in the Ubiquitous Language |
+| **Forgotten supporting systems** — the IdP, email/alerting gateway, or monitoring SaaS omitted | These integrations carry auth, compliance, and availability consequences that surface late | Cross-check against Event Storming pink cards and the NFR specification before approval |
+| **Technology labels at Level 1** — "React SPA", "PostgreSQL" on context elements | Invites technology debate before the boundary is agreed; excludes non-technical reviewers | Technology first appears on the Container Diagram |
+| **Ambiguous arrows** — unlabelled or double-headed relationships | "Integrates with" hides who initiates, what flows, and which side depends on which | Every arrow: initiator → target, labelled with what flows |
+| **Context set in stone** — the diagram never revisited when a new external integration is added | Detail diagrams start contradicting Level 1; the anchor becomes misleading | Any new external system or user role triggers a context diagram update and re-approval |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: system-context-diagram
+name: system-context-diagram
 product: [product name]
 version: 1.0.0
 phase: design

@@ -8,9 +8,10 @@ description: >
   files by making implicit rules explicit through concrete examples. Used by the
   requirements-analyst agent during the Ideate phase after acceptance criteria
   are drafted.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, example-mapping, bdd, acceptance-criteria, discovery, three-amigos]
 ---
 
@@ -142,11 +143,25 @@ Scenario: All gaps shown regardless of severity
 
 ---
 
+## Anti-Patterns
+
+**Abstract green cards:** examples that restate the rule in different words ("Example: the report shows all gaps"). A green card must contain concrete data — counts, file names, severities, timings ("3 critical, 12 high, 200 low → all 215 shown"). If you cannot write the concrete data, you do not yet understand the rule.
+
+**Debating instead of carding:** resolving a disagreement about how a rule should work through argument in the session. Write the red card and move on — the session's job is to *find* the questions, not to answer them under time pressure with whoever argues loudest winning.
+
+**Mapping after development:** running Example Mapping on a story that is already built, to document it. The technique's entire value is discovering scope *before* it is expensive; post-hoc maps are test documentation, not discovery.
+
+**Examples without rules:** a pile of green cards with no blue cards extracted. The rules are the acceptance criteria — examples that never generalise into rules leave the developer to infer the rule themselves, which is exactly the ambiguity the technique exists to remove.
+
+**The marathon session:** a single story taking more than about 25–30 minutes to map. That duration is itself a signal: the story is too big or too poorly understood for one sprint item. Stop mapping and split the story rather than pushing through.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: example-map
+name: example-map
 product: [product name]
 story-id: US-[ID]
 version: 1.0.0

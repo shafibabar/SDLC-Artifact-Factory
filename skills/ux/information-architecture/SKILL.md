@@ -8,9 +8,10 @@ description: >
   Read Models. A well-designed IA makes the Ubiquitous Language visible in the
   product's navigation and reduces cognitive load for users. Produced by the
   ux-architect agent during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: ux-architect
+created: 2026-06-25
 tags: [design, ux, information-architecture, navigation, content-hierarchy, ia]
 ---
 
@@ -188,6 +189,20 @@ Before handoff to the frontend-engineer:
 | URL consistency | All URLs follow the defined pattern | Inconsistent URL schemes across sections |
 | Command accessibility | Every Command has a reachable entry point | Commands with no navigation path |
 | Empty states identified | All list views have empty state noted | List views with no empty state consideration |
+| Depth budget | Any record reachable in ≤ 3 clicks from the root | Content buried four or more levels deep |
+
+---
+
+## Anti-Patterns
+
+- **Org-chart navigation.** Structuring sections around internal teams or system architecture ("Ingestion", "Pipeline", "Admin Tools") instead of user tasks and domain concepts. Maya Chen looks for "Compliance", not for the name of the service that computes it.
+- **Synonym drift.** The domain says DataAsset, the sidebar says "Files", the page title says "Items", the button says "Records". Every synonym is a translation the user performs on your behalf. One term — the Ubiquitous Language term — everywhere.
+- **Implementation jargon in labels.** "Projections", "Aggregates", "Read Models" appearing in the UI. The IA maps *to* these concepts; it never displays them.
+- **The junk-drawer section.** A "Tools", "More", or "Other" section that accumulates everything without a home. If an item has no section, the IA is missing a section — not a drawer.
+- **Orphan Commands.** A Command exists in the domain (BulkClassifyDataAssets) but no navigation path reaches it. Features that cannot be found do not exist.
+- **Mirroring the database.** One nav section per table, including join tables and lookup entities. The IA reflects Read Models and user tasks, not the schema.
+- **Deep nesting as organisation.** Five levels of hierarchy where filters would serve. If users must drill Source → Folder → Subfolder → Type → Asset, a filterable flat list of assets is the better IA.
+- **URL scheme per developer.** `/dataAssets/42`, `/asset-detail?id=42`, and `/assets/view/42` coexisting. The URL pattern table is normative — every new route matches it or the pattern is deliberately revised.
 
 ---
 
@@ -195,7 +210,7 @@ Before handoff to the frontend-engineer:
 
 ```markdown
 ---
-artifact: information-architecture
+name: information-architecture
 product: [product name]
 version: 1.0.0
 phase: design

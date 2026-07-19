@@ -8,9 +8,10 @@ description: >
   events in a Bounded Context and the primary contract between services in an
   event-driven architecture. Used by the domain-modeler agent after Event
   Storming, as a prerequisite to service design.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, domain-events, event-catalog, event-driven, transactional-outbox]
 ---
 
@@ -166,6 +167,7 @@ CREATE INDEX ON outbox_events (published, created_at) WHERE NOT published;
 - The outbox relay runs as a separate process — it is not part of the request path
 - If the relay fails, events remain in the outbox until the relay recovers (at-least-once delivery)
 - Consumers must be idempotent — they may receive the same event more than once
+- The relay publishes with `aggregate_id` as the Redpanda partition key and reads rows in `created_at` order — this preserves per-Aggregate event ordering, which consumers may rely on; cross-Aggregate ordering is never guaranteed and consumers must not depend on it
 
 ---
 
@@ -177,6 +179,65 @@ When a consumer cannot process an event after exhausting retries, the event is m
 - Every event in the DLQ must be monitored and alerted on
 - Events in the DLQ must not be silently discarded — they represent processing failures that require investigation
 - Reprocessing from the DLQ must be a safe, monitored operation
+- **Ordering caveat:** parking an event in the DLQ lets later events for the same Aggregate be processed first. A consumer whose logic depends on per-Aggregate ordering must either halt that partition until the poison event is resolved, or be designed to reconcile out-of-order redelivery when the DLQ event is replayed. Choose per consumer and record the choice in the catalog.
+
+---
+
+## Worked Example
+
+```
+Event:           DataAssetClassified
+Bounded Context: Classification Engine
+Aggregate:       DataAsset
+Version:         1.0.0
+
+Description:     A DataAsset has been assigned a SensitivityLevel, either by the
+                 classification engine or by a human override.
+
+Trigger:         ClassifyDataAsset Command accepted by the DataAsset Aggregate
+Consumers:       Compliance Intelligence (gap analysis), Graph Context (node labelling)
+Retention:       90 days on the broker; indefinitely in the audit store
+Idempotency Key: eventId
+
+Payload:
+  dataAssetId:      UUID           — the classified asset
+  storageSourceId:  UUID           — where the asset lives (reference by ID)
+  sensitivityLevel: string         — one of: Public, Internal, Confidential, Restricted
+  previousLevel:    string|null    — null on first classification
+  classifiedBy:     string         — "engine" or a user ID for manual override
+  confidence:       number|null    — engine confidence 0.0–1.0; null for manual override
+
+Invariants:
+  - sensitivityLevel is always a valid SensitivityLevel value
+  - previousLevel ≠ sensitivityLevel (a no-op reclassification emits no event)
+  - confidence is null if and only if classifiedBy is a user ID
+
+Policy:          Whenever DataAssetClassified with sensitivityLevel = Restricted,
+                 EvaluateComplianceGap (Compliance Intelligence context)
+```
+
+```json
+{
+  "eventId": "8f14e45f-ceea-467f-a0e6-b2d9b3b0a1c2",
+  "eventType": "DataAssetClassified",
+  "version": "1.0.0",
+  "occurredAt": "2026-07-01T14:32:09Z",
+  "aggregateId": "3c9909af-9d2a-4c9c-8b1a-6e2f1a7d4e88",
+  "aggregateType": "DataAsset",
+  "correlationId": "a1b2c3d4-0000-4000-8000-000000000001",
+  "causationId": "a1b2c3d4-0000-4000-8000-000000000001",
+  "boundedContext": "classification-engine",
+  "tenantId": "b7e23ec2-9d0a-4f5b-9c3d-2f8e6a1b4c7d",
+  "payload": {
+    "dataAssetId": "3c9909af-9d2a-4c9c-8b1a-6e2f1a7d4e88",
+    "storageSourceId": "5d2c1f0e-7a8b-4c3d-9e0f-1a2b3c4d5e6f",
+    "sensitivityLevel": "Restricted",
+    "previousLevel": "Internal",
+    "classifiedBy": "engine",
+    "confidence": 0.94
+  }
+}
+```
 
 ---
 
@@ -189,8 +250,22 @@ When a consumer cannot process an event after exhausting retries, the event is m
 | Idempotency key defined | Every event names the field(s) consumers use to deduplicate | Events with no idempotency key — consumers cannot be idempotent |
 | Consumer list | Every event lists its known consumers | Events with no consumer documentation — orphan events |
 | Versioning strategy | Additive vs breaking change handling is defined | Events with no versioning strategy |
-| Transactional Outbox | All event publication uses the Outbox pattern | Events published directly from the request path (dual-write anti-pattern) |
+| Transactional Outbox | All event publication uses the Transactional Outbox | Events published directly from the request path (dual-write anti-pattern) |
 | DLQ defined | Every consumer topic has a corresponding DLQ topic | Events that are silently discarded on consumer failure |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Event as state dump** — the payload carries the Aggregate's entire current state | Consumers couple to the full write model; every internal field change is a schema change | Carry the fact and the fields consumers need to react; consumers query a Read Model for anything more |
+| **Anaemic event** — payload is only an ID, forcing every consumer to call back | Turns event-driven integration into hidden synchronous coupling; the emitter's availability gates every consumer | Include the business-meaningful fields of the fact itself (what changed, from what, by whom) |
+| **CRUD event names** — `DataAssetUpdated` as the only event | The business meaning is erased; consumers must diff payloads to guess what happened | One event per business fact: `DataAssetClassified`, `DataAssetArchived`, each with precise triggers |
+| **Mutating a published schema in place** — editing v1 instead of versioning | Deployed consumers break without warning; the immutable-fact contract is violated | Additive change → minor bump with tolerant readers; breaking change → new major version run in parallel |
+| **Dual write** — request handler writes the database and publishes to the broker directly | A crash between the two writes loses events or publishes phantom ones | All publication goes through the Transactional Outbox |
+| **Commands disguised as events** — `SendComplianceReport` published as an "event" | An instruction broadcast to many consumers has no single accountable handler and cannot be rejected | Name the fact (`ComplianceGapDetected`) and let a Policy in the consuming context issue the Command |
+| **Consumer coupling to cross-Aggregate order** | Only per-Aggregate order is guaranteed by the partition key; cross-partition order is an accident of timing | Design consumers around per-Aggregate ordering plus `correlationId`/`causationId` for causal reconstruction |
 
 ---
 
@@ -198,7 +273,7 @@ When a consumer cannot process an event after exhausting retries, the event is m
 
 ```markdown
 ---
-artifact: domain-event-catalog
+name: domain-event-catalog
 product: [product name]
 bounded-context: [context name]
 version: 1.0.0

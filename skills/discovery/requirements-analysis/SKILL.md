@@ -7,9 +7,10 @@ description: >
   logging, and gap analysis. Produces a Functional Requirements Document (FRD)
   that is the authoritative input to the Design phase. Used by the
   requirements-analyst agent during the Ideate phase.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, requirements, functional-requirements, frd, traceability, product-discovery]
 ---
 
@@ -136,11 +137,27 @@ Gaps found during gap analysis become open questions. Log them and resolve with 
 
 ---
 
+## Anti-Patterns
+
+**Solution smuggled into a requirement:** "The system must store classifications in PostgreSQL." Unless it is a genuine constraint imposed from outside (customer mandate, regulatory rule), technology choices belong to the Design phase. Write the capability ("classifications must survive restarts and be queryable within 1 second"), and let architecture decide the means.
+
+**Compound requirement:** "The system must scan Google Drive and S3 and produce a gap report." Three separately verifiable capabilities in one ID means one test result cannot tell you which capability failed. One requirement, one verifiable behaviour — split it.
+
+**Unbounded qualifier:** "classify files quickly", "handle large estates". Every qualifier needs a number and a condition ("within 30 minutes for estates up to 500,000 files") or it belongs in the open questions, not the FRD.
+
+**Memory-sourced requirements:** skipping the elicitation techniques and writing requirements from general knowledge of "what compliance products need." Every requirement invented this way is an untracked assumption; the elicitation order exists precisely to force each requirement through a traceable source.
+
+**Gold-plating by momentum:** keeping a requirement with no traceable source because "it's cheap to build" or "competitors have it." Cheap-to-build is not a source. Either trace it (competitive analysis table-stakes counts as a source) or cut it.
+
+**Assumption laundering:** stating an assumption inside the requirement text ("assuming the customer grants OAuth access, the system must…") instead of the assumption log. Assumptions buried in prose are never revisited when they break.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: functional-requirements-document
+name: functional-requirements-document
 product: [product name]
 version: 1.0.0
 phase: ideate

@@ -8,9 +8,10 @@ description: >
   canonical model relates to (and must not violate) each context's own model.
   The canonical model is the translation target for Anti-Corruption Layers.
   Produced by the data-architect during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: data-architect
+created: 2026-06-25
 tags: [design, data-architecture, canonical-model, mdm, golden-record, integration, acl]
 ---
 
@@ -53,6 +54,11 @@ When two sources disagree about an attribute, a survivorship rule decides which 
 | Completeness | A non-null value beats a null |
 | Confidence | The value with the higher extraction confidence wins |
 
+Two rules make survivorship trustworthy:
+
+- **Deterministic termination.** Every survivorship chain must end in a deterministic tie-breaker (e.g., lowest source record id). Re-running assembly over the same source records must always produce the same Golden Record — otherwise the Golden Record is not reproducible and cannot serve as evidence.
+- **Reversibility.** Because match decisions are recorded (below), an incorrect merge is reversible: retract the match decision and replay assembly without it. A Golden Record that cannot be un-merged forces manual data surgery when identity resolution gets it wrong.
+
 ```
 Golden Record assembly for Person:
   email        ← source priority: IdP > extracted   (IdP value survives)
@@ -69,7 +75,26 @@ Before survivorship, records must be matched — deciding that two source record
 | Deterministic (exact key match) | A shared strong identifier exists (verified email, government ID) |
 | Probabilistic (fuzzy) | No shared strong key; match on weighted similarity of name + attributes above a threshold |
 
-Every match decision is recorded for lineage (see `data-lineage-design`) — so a Golden Record can always be traced back to its contributing source records.
+Every match decision is recorded for lineage (see `data-lineage-design`) — so a Golden Record can always be traced back to its contributing source records. The record of decisions is what makes reversibility real:
+
+```sql
+CREATE TABLE match_decisions (
+    id                UUID PRIMARY KEY,
+    tenant_id         UUID NOT NULL,
+    canonical_id      UUID NOT NULL,           -- the canonical Person this source record was matched into
+    source_system     TEXT NOT NULL,
+    source_record_id  TEXT NOT NULL,
+    method            TEXT NOT NULL CHECK (method IN ('deterministic','probabilistic','manual')),
+    score             NUMERIC(4,3) CHECK (score IS NULL OR (score >= 0 AND score <= 1)),
+    decided_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+    retracted_at      TIMESTAMPTZ,             -- un-merge = set this, never DELETE — retraction is auditable
+    UNIQUE (tenant_id, source_system, source_record_id, canonical_id)
+);
+```
+
+The Golden Record itself is a deterministic Read Model over the source records plus the *active* (non-retracted) match decisions, stored in PostgreSQL and rebuildable at any time. It is never hand-edited: a correction is either a change to a source record, a retraction of a match decision, or a new survivorship rule — followed by replay of assembly.
+
+**Matching is tenant-scoped.** Identity resolution never compares records across tenants. Two tenants may each hold records describing the same real-world person; they still get two separate Golden Records, one per tenant. Cross-tenant matching would be a data leak — it reveals to one tenant that another tenant holds data about the same person.
 
 ---
 
@@ -128,6 +153,8 @@ These are related but distinct (and owned by the same agent — keep them aligne
 
 When a Domain Event crosses a context boundary carrying master data, its payload uses the canonical representation, and its schema is governed by `event-schema-design`.
 
+**Evolution interplay:** because event payloads carry canonical shapes, changing the canonical model changes wire contracts. Adding an *optional* canonical attribute is additive and survives the registry's `BACKWARD` compatibility check. Adding a *required* canonical attribute, renaming one, or changing its type is a breaking change to **every** event schema that carries the entity — it must follow the breaking-change versioning procedure in `event-schema-design` (new version, parallel publication), not be edited in place. Plan canonical attributes as optional-with-default wherever possible.
+
 ---
 
 ## Quality Criteria
@@ -140,6 +167,20 @@ When a Domain Event crosses a context boundary carrying master data, its payload
 | Mappings complete | Every source has a field-level mapping to canonical; gaps documented | Sources feeding canonical with no documented mapping |
 | Lineage preserved | Every Golden Record traces to contributing source records | Reconciled records with no provenance |
 | Aligned with ACL | Canonical model is the named translation target in integration-design | Canonical model disconnected from the ACL design |
+| Survivorship deterministic | Every rule chain ends in a deterministic tie-breaker; assembly is reproducible | Two runs over the same sources can yield different Golden Records |
+| Matching tenant-scoped | Identity resolution never crosses tenants | Cross-tenant matching leaking entity existence between tenants |
+| Golden Record is a Read Model | Rebuildable from source records + active match decisions | Hand-edited canonical records that replay would overwrite |
+
+---
+
+## Anti-Patterns
+
+- **The enterprise canonical schema.** Forcing every Bounded Context to adopt the canonical model as its internal schema. This recreates the shared-database monolith: every context is coupled to one shape, and no context's Ubiquitous Language survives. The canonical model lives only at boundaries.
+- **Golden Record without survivorship rules.** Declaring a "single source of truth" while sources still disagree. Without documented matching and survivorship, the "truth" is whichever write happened last.
+- **Merge without provenance.** Reconciling records and discarding the contributing source records or match decisions. The Golden Record can no longer be traced, disputed values cannot be arbitrated, and a bad merge cannot be reversed.
+- **Confidence stored as fact.** Promoting an extraction-confidence-weighted value into the canonical model without keeping the confidence as survivorship input. A 0.51-confidence email should be beatable by a better source later.
+- **Canonical model edited in place.** Adding a required attribute or renaming an attribute directly, silently breaking every event schema and ACL mapping that carries the entity. Canonical changes follow the same evolution discipline as event schemas.
+- **Sensitivity survivorship by recency.** Letting the most recent source set `classification`. Sensitivity always survives by highest-sensitivity-wins (the max rule from `data-classification`) — a newer, lower-sensitivity source must never downgrade a Golden Record's protection.
 
 ---
 
@@ -147,7 +188,7 @@ When a Domain Event crosses a context boundary carrying master data, its payload
 
 ```markdown
 ---
-artifact: canonical-data-model
+name: canonical-data-model
 product: [product name]
 version: 1.0.0
 phase: design

@@ -7,9 +7,10 @@ description: >
   and the connection between UI components and the domain's Read Models and Commands.
   Component specs are the primary input to the frontend-engineer's React+TypeScript
   implementation. Produced by the ux-architect agent during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: ux-architect
+created: 2026-06-25
 tags: [design, ux, ui-components, react, typescript, accessibility, component-spec]
 ---
 
@@ -92,14 +93,17 @@ Document every user interaction and its response:
 
 Every component must meet WCAG 2.1 AA. Document component-specific requirements:
 
-| Requirement | Implementation |
-|---|---|
-| Keyboard navigation | Tab order follows visual order; all actions reachable by keyboard |
-| Screen reader | Table has `aria-label`; column headers use `<th scope="col">`; sort state announced via `aria-sort` |
-| Focus management | After modal opens, focus moves to first interactive element; after modal closes, focus returns to trigger |
-| Colour contrast | All text meets 4.5:1 contrast ratio; status badges meet 3:1 for large text |
-| Loading state | `aria-busy="true"` on table during loading; screen reader hears "Loading data assets" |
-| Error state | Error message has `role="alert"` so screen readers announce it immediately |
+| Requirement | WCAG 2.1 AA criterion | Implementation |
+|---|---|---|
+| Keyboard navigation | 2.1.1 Keyboard, 2.1.2 No Keyboard Trap | Tab order follows visual order; all actions reachable by keyboard; focus can always leave the component |
+| Visible focus | 2.4.7 Focus Visible | Every interactive element has a visible focus indicator — never `outline: none` without a replacement |
+| Screen reader | 1.3.1 Info and Relationships, 4.1.2 Name Role Value | Table has `aria-label`; column headers use `<th scope="col">`; sort state announced via `aria-sort` |
+| Focus management | 2.4.3 Focus Order | After modal opens, focus moves to first interactive element; after modal closes, focus returns to trigger |
+| Colour contrast | 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast | Normal text ≥ 4.5:1; large text (≥ 24px, or ≥ 18.66px bold) ≥ 3:1; non-text UI parts (badge boundaries, icons, focus indicators, input borders) ≥ 3:1 |
+| Colour independence | 1.4.1 Use of Color | Sensitivity levels are never conveyed by colour alone — the badge always carries the level text (Public / Internal / Confidential / Restricted) |
+| Loading state | 4.1.3 Status Messages | `aria-busy="true"` on table during loading; a polite live region announces "Loading data assets" |
+| Error state | 4.1.3 Status Messages, 3.3.1 Error Identification | Error message has `role="alert"` so screen readers announce it immediately; the field in error is identified in text |
+| Reflow | 1.4.10 Reflow | Component remains usable at 320px width / 400% zoom without two-dimensional scrolling (data tables may scroll horizontally as an allowed exception) |
 
 ---
 
@@ -203,6 +207,20 @@ Priority 1 components are needed for the MVP slice. Priority 2 for the full feat
 | Accessibility documented | Every component has WCAG 2.1 AA requirements | Components with no accessibility spec |
 | TypeScript types | All props have TypeScript types | Props with `any` or no type |
 | Domain language | Component props and labels use Ubiquitous Language | Props named with technical or informal terms |
+| WCAG criteria cited | Accessibility rows reference the specific WCAG 2.1 AA success criterion | "Must be accessible" with no testable criterion |
+
+---
+
+## Anti-Patterns
+
+- **Happy-state specs.** Specifying only the populated state and leaving loading, empty, error, and permission-denied states to the implementer's imagination. The states table is where most rework hides — five states specified is the floor, not thoroughness.
+- **Screenshot-as-spec.** Handing over a mockup image with no props, states, or interaction table. A picture specifies one state at one viewport with one dataset; the frontend-engineer needs the contract.
+- **`data: any`.** Props typed as `any`, `object`, or `unknown` defer the type decision to implementation time, where it will be made inconsistently. Prop types come from the Read Model's TypeScript definitions.
+- **Business logic in the component spec.** A spec that says "disable Save if the user lacks data-assets:write and the asset is Restricted" is embedding policy in the UI. The API decides authorisation; the component renders the decision (e.g. a `canClassify` prop) — never re-derives it.
+- **Accessibility as a footer note.** "Component must be WCAG compliant" with no criterion, no implementation note, no testable statement. Every accessibility row cites its success criterion and how the component meets it.
+- **Colour-only status.** A red/amber/green badge with no text. Fails 1.4.1 and fails every colour-blind Compliance Officer reading a gap report.
+- **Modal spawn without focus contract.** Specifying that a modal opens but not where focus goes, whether it is trapped, or where it returns. Unspecified focus behaviour is how keyboard users get lost.
+- **Duplicating domain state client-side.** A spec that has the component compute derived compliance status from raw fields, when `ComplianceGapReportView` already provides it. Components display Read Models; they do not re-implement them.
 
 ---
 
@@ -210,7 +228,7 @@ Priority 1 components are needed for the MVP slice. Priority 2 for the full feat
 
 ```markdown
 ---
-artifact: ui-component-spec
+name: ui-component-spec
 product: [product name]
 version: 1.0.0
 phase: design
@@ -242,6 +260,6 @@ owner: ux-architect
 |---|---|---|
 
 ### Accessibility
-| Requirement | Implementation |
-|---|---|
+| Requirement | WCAG 2.1 AA criterion | Implementation |
+|---|---|---|
 ```

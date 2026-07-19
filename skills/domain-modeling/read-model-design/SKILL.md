@@ -7,9 +7,10 @@ description: >
   strategies, Go struct design for Read Models, and how Read Models connect to
   API response contracts and frontend data requirements. Used by the domain-modeler
   agent after the domain-event-catalog is complete.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, cqrs, read-model, projections, query-side, go]
 ---
 
@@ -127,6 +128,17 @@ func (p *DataAssetListProjector) Project(ctx context.Context, event domain.Domai
 - Projectors never issue Commands — they only read events and write Read Models
 - Projectors must handle all events they care about; unrecognised events are silently ignored (not errors)
 - Projectors must be replayable from event position 0 — the Read Model can always be rebuilt from the event stream
+- Projectors track their position — the last processed event position (broker offset) is committed together with the Read Model write, so a crash-restart resumes without skipping events; idempotency covers the redelivered tail
+- Rebuilds happen into a shadow table — project from position 0 into `<view>_rebuild`, then swap names in one transaction; the live Read Model keeps serving queries throughout
+
+---
+
+## Handling Eventual Consistency
+
+Read Models lag the Write Model by the projection delay (normally milliseconds; unbounded during incidents). Two rules keep this honest:
+
+1. **Read-your-own-writes:** a client that just issued a Command may immediately query a Read Model that has not caught up. The Command response therefore returns the Aggregate's new `version`; Read Model rows carry the last applied Aggregate version, so the client (or BFF) can poll until `appliedVersion >= expectedVersion` instead of showing stale data as fresh. Do not "fix" this by reading from the Aggregate table — that silently reintroduces the coupling CQRS removed.
+2. **Staleness is part of the contract:** every Aggregate View / dashboard Read Model includes an `AsOf` timestamp, and the API exposes it. A dashboard that cannot say how old it is will be trusted exactly until the first incident.
 
 ---
 
@@ -163,6 +175,21 @@ This is intentional: if the API response requires significant transformation of 
 | Replayable | Read Model can be fully rebuilt from the event stream from position 0 | Read Models that cannot be rebuilt (missing projector coverage) |
 | One shape per Read Model | Each Read Model maps to one API response shape | Read Models that require query-time transformation |
 | Storage named | Read Model storage table is named and defined | Undocumented Read Model storage |
+| Tenant scoping | Every Read Model row carries `tenant_id` and every query filters on it | Cross-tenant rows reachable through a Read Model query |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Querying the Write Model for reads** — "just this one JOIN on the Aggregate tables" | Reintroduces the coupling CQRS exists to remove; query load and indexes now shape the domain schema | Build a Read Model projected from the Domain Events that carry the needed fields |
+| **Command handler updates the Read Model** — writing the view in the same code path as the Aggregate | The view can no longer be rebuilt from events; a handler bug corrupts both sides at once | Only Projectors write Read Models, consuming events after commit |
+| **One Read Model to rule them all** — a single wide view serving list, detail, and dashboard | Every consumer pays for every field; the view acquires query-time transformation for each caller | One Read Model per query shape; multiple Projectors may consume the same events |
+| **Projector issuing Commands** — a projection triggering business behaviour | Replays and rebuilds re-fire the behaviour; rebuilding a view must never change domain state | Reactions to events are Policies in the write side; Projectors only write view rows |
+| **Append-only projector for upsert semantics** — inserting a row per event | Replay produces duplicates; idempotency is broken by construction | Key the Read Model on the Aggregate ID and upsert |
+| **Treating the Read Model as source of truth** — validating Commands against a projection | The projection lags and can be rebuilt arbitrarily; guards checked against it race reality | Invariants are checked inside the Aggregate; Read Models inform Actors, never enforce rules |
+| **Silent staleness** — serving dashboard numbers with no freshness indicator | Users cannot distinguish "zero gaps" from "projector down for six hours" | Every summary Read Model carries and exposes `AsOf`; alert when projection lag exceeds threshold |
 
 ---
 
@@ -170,7 +197,7 @@ This is intentional: if the API response requires significant transformation of 
 
 ```markdown
 ---
-artifact: read-model-design
+name: read-model-design
 product: [product name]
 bounded-context: [context name]
 version: 1.0.0

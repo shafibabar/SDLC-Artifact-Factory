@@ -8,9 +8,10 @@ description: >
   compliance, audit, and right-to-erasure questions. Lineage is what lets the system
   prove where a compliance finding came from. Produced by the data-architect during
   the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: data-architect
+created: 2026-06-25
 tags: [design, data-architecture, lineage, provenance, openlineage, audit, compliance]
 ---
 
@@ -60,7 +61,7 @@ Note the input file content is **transient** — lineage records that an entity 
 
 ## Capturing Lineage at Each Stage
 
-Lineage is emitted by the pipeline, not reconstructed after the fact. Each stage (from `data-pipeline-design`) emits a lineage record as part of its work — in the same transaction as its output, so lineage can never disagree with reality.
+Lineage is emitted by the pipeline, not reconstructed after the fact. Each stage (from `data-pipeline-design`) writes its lineage record in the **same PostgreSQL transaction** as the state change it describes and the Transactional Outbox row that announces it — so lineage can never disagree with committed reality. Emitting lineage asynchronously to a separate collector (the naive OpenLineage HTTP-endpoint setup) is exactly the trap: the collector is down for an hour and an hour of outputs exist with no provenance. Lineage lands in PostgreSQL first; an OpenLineage-format export for external tools is a projection *from* `lineage_edges`, never the primary capture path.
 
 ```sql
 CREATE TABLE lineage_edges (
@@ -72,17 +73,21 @@ CREATE TABLE lineage_edges (
     input_ref       UUID NOT NULL,          -- e.g. the data_asset id
     output_dataset  TEXT NOT NULL,          -- e.g. 'extracted_entities'
     output_ref      UUID NOT NULL,          -- e.g. the entity id
-    occurred_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+    occurred_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT lineage_edge_natural_key UNIQUE
+        (tenant_id, run_id, input_dataset, input_ref, output_dataset, output_ref)
 );
 CREATE INDEX idx_lineage_output ON lineage_edges (tenant_id, output_dataset, output_ref);
 CREATE INDEX idx_lineage_input  ON lineage_edges (tenant_id, input_dataset, input_ref);
 ```
 
+The natural-key uniqueness matters because the pipeline is at-least-once: on redelivery a stage may re-execute, and lineage capture must be exactly as idempotent as the stage itself — insert with `ON CONFLICT ON CONSTRAINT lineage_edge_natural_key DO NOTHING`. Without it, every redelivery mints duplicate edges and lineage counts stop being evidence.
+
 Two indexes because lineage is traversed in both directions:
 - **Backward (provenance):** given an output, find its inputs → "what produced this finding?"
 - **Forward (impact):** given an input, find its outputs → "what is affected if this source changes?"
 
-The lineage graph can also be projected into Apache AGE (`DERIVED_FROM` edges) when multi-hop traversal queries are common.
+The lineage graph can also be projected into Apache AGE (`DERIVED_FROM` edges) when multi-hop traversal queries are common. The relational `lineage_edges` table remains the system of record; the AGE projection is replayable and disposable — the standing rule that a non-PostgreSQL (or non-relational) store is never a system of record applies to lineage too.
 
 ---
 
@@ -121,6 +126,19 @@ Lineage records are part of the compliance evidence chain (see security `complia
 | Answers the key questions | All standard lineage questions are answerable | A required question cannot be answered |
 | Privacy-respecting | Records derivation references, not raw sensitive content | Raw sensitive values copied into lineage |
 | Append-only & tenant-scoped | Immutable, tenant-isolated, time-stamped | Mutable or cross-tenant lineage |
+| Idempotent capture | Edge inserts deduplicated on the natural key | Redelivery mints duplicate lineage edges |
+| Retention aligned | Lineage retained as long as the longest-retained artifact it describes | Lineage purged while the derived artifact survives (or vice versa) |
+
+---
+
+## Anti-Patterns
+
+- **Archaeology lineage.** Reconstructing provenance after the fact from logs, timestamps, and guesswork. Lineage that is inferred rather than captured is a hypothesis, not evidence — an auditor will treat it accordingly.
+- **The async collector.** Emitting lineage to a separate service outside the stage's transaction. Any gap between "output committed" and "lineage recorded" is a window where derived data exists with no provenance — and collector downtime makes the window hours wide.
+- **Raw values in the lineage record.** Copying the sensitive content that was derived (the email text, the SSN) into `lineage_edges` "for context". Lineage records references and derivation structure; the moment it holds raw Restricted values it becomes another store to protect, purge, and crypto-shred.
+- **Field-level everywhere.** Recording column-level lineage for every stage because it is "more complete". Field-level lineage is expensive to capture and query; require it where a question demands it (Golden Record survivorship) and stay dataset-level elsewhere.
+- **Mutable lineage.** Updating or "correcting" edges in place. Lineage is append-only history; a wrong derivation is superseded by a new run's edges, not rewritten — otherwise the evidence chain at a past point in time is unreconstructable.
+- **Orphaned retention.** Purging lineage on its own schedule, detached from the artifacts it describes. Lineage must live exactly as long as the longest-retained artifact that depends on it for evidence (see `data-retention-policy`), and be purged with it.
 
 ---
 
@@ -128,7 +146,7 @@ Lineage records are part of the compliance evidence chain (see security `complia
 
 ```markdown
 ---
-artifact: data-lineage-design
+name: data-lineage-design
 product: [product name]
 version: 1.0.0
 phase: design

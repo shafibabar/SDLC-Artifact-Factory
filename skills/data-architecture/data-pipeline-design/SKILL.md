@@ -8,9 +8,10 @@ description: >
   and how the pipeline preserves tenant isolation and feeds lineage. This is the
   architecture and contract of the pipeline — implementation is owned by the
   data-engineer. Produced by the data-architect during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: data-architect
+created: 2026-06-25
 tags: [design, data-architecture, pipeline, redpanda, dlq, idempotency, backpressure, outbox]
 ---
 
@@ -20,7 +21,7 @@ tags: [design, data-architecture, pipeline, redpanda, dlq, idempotency, backpres
 
 A data pipeline moves data through a series of stages, transforming it at each step. For the first product, the pipeline is the core engine: it takes files discovered at customer storage and turns them into classified, graph-linked, compliance-evaluated knowledge — without raw content ever leaving customer infrastructure.
 
-This skill designs the pipeline's *architecture*: its stages, the contracts between them, how it behaves under failure and load, and how it guarantees correctness. The data-engineer implements it (Chunk 16); the backend-engineer builds the producers and consumers. This skill is the blueprint they build to.
+This skill designs the pipeline's *architecture*: its stages, the contracts between them, how it behaves under failure and load, and how it guarantees correctness. The data-engineer implements it; the backend-engineer builds the producers and consumers. This skill is the blueprint they build to.
 
 ---
 
@@ -94,6 +95,8 @@ on receive(event):
 
 The dedup record and the work commit atomically. Either both happen or neither does — no partial processing on crash.
 
+**`processed_events` is not append-forever.** Unpruned, it grows without bound and its primary-key index degrades every insert. Prune rows older than the maximum possible redelivery horizon — topic retention plus the longest tolerated consumer outage plus a margin. Prune *earlier* than that horizon and a late redelivery slips past the dedup check, reintroducing exactly the double-processing the table exists to prevent. The pruning window is therefore a designed number in the stage contract, not an ops afterthought.
+
 ---
 
 ## The Transactional Outbox at Stage Boundaries
@@ -115,7 +118,7 @@ This guarantees the pipeline never loses an event between stages and never publi
 
 ## Dead Letter Queue
 
-A message that cannot be processed after a bounded number of retries is routed to a **Dead Letter Queue** — it must never block the pipeline or be silently dropped.
+A message that cannot be processed after a bounded number of retries is routed to a **Dead Letter Queue (DLQ)** — it must never block the pipeline or be silently dropped.
 
 | Concern | Design |
 |---|---|
@@ -141,7 +144,7 @@ When a downstream stage is slower than its upstream, the design must degrade gra
 | Bounded concurrency | Each consumer caps in-flight work to protect downstream stores from overload |
 | Rate limiting at ingress | The worker tier throttles discovery so a huge estate cannot flood the pipeline faster than it drains |
 
-**Partitioning rule:** partition by `tenant_id` so one tenant's volume cannot starve another, and ordering is preserved per tenant where it matters.
+**Partitioning rule:** the partition key is chosen for *ordering* first, parallelism second. All events for one Aggregate must land on one partition — key by `aggregateId` — or a consumer can apply `DataAssetClassified` before the `FileDiscovered` that created the asset. In the first product's physical multi-tenancy, topics are already tenant-scoped, so `aggregateId` keying gives per-Aggregate order *and* horizontal parallelism. In a shared-topic deployment, keying by `tenant_id` instead buys starvation isolation and per-tenant ordering — at the cost of capping each tenant's throughput at one partition. Name the trade-off you chose; do not inherit it by accident.
 
 ---
 
@@ -177,11 +180,24 @@ For each stage, the design documents a contract the implementer builds to:
 |---|---|---|
 | Stages decoupled via topics | Stages communicate only through events | Stages calling each other synchronously |
 | Idempotent consumers | Every stage dedups on event id | A stage that double-applies on redelivery |
-| Outbox at boundaries | Output events written transactionally with state | Publish-after-commit two-step that can lose events |
+| Transactional Outbox at boundaries | Output events written transactionally with state | Publish-after-commit two-step that can lose events |
 | DLQ defined and monitored | Every stage has a DLQ + alert on depth | Failed messages dropped or blocking the stage |
 | Backpressure handled | Lag monitored; partitioned for scale; bounded concurrency | Pipeline collapses or loses data under load |
 | Tenant isolation end to end | `tenant_id` in every envelope; partitioned by tenant | Cross-tenant processing in one unit of work |
 | Lineage emitted | Each stage records input→output provenance | Pipeline with no lineage trail |
+| Dedup table lifecycle designed | `processed_events` pruned on a window ≥ the redelivery horizon | Unbounded growth, or pruning inside the redelivery window |
+
+---
+
+## Anti-Patterns
+
+- **The dual write.** "Save the state, then publish the event" as two operations. A crash between them either loses the event (downstream never hears) or, in the publish-first ordering, announces work that rolled back. The Transactional Outbox exists precisely to make this impossible — there is no acceptable fast path around it.
+- **"We'll deduplicate later."** Shipping a non-idempotent stage on the promise that duplicates are rare. At-least-once delivery makes redelivery a certainty, not an edge case; the first consumer-group rebalance under load corrupts data.
+- **The orchestrator on the happy path.** A central coordinator invoking each stage in turn. It reintroduces the single point of failure and the deployment lockstep that choreography removed. Orchestration (a Saga) is reserved for flows needing coordinated compensation — not the default topology.
+- **DLQ as landfill.** A Dead Letter Queue nobody monitors, with no runbook and no replay procedure. Dead-lettered messages are unprocessed customer data; a growing, un-alerted DLQ is silent data loss with extra steps.
+- **Exactly-once everywhere.** Paying broker-transaction cost across every stage when idempotent consumers already make duplicates harmless. Exactly-once is a targeted tool for the rare non-idempotent-by-nature effect, not the pipeline default.
+- **Raw content in the event.** Putting file contents or raw extracted PII values into pipeline events "so the next stage doesn't have to fetch". Payloads carry references and metadata — raw content in an immutable, replicated log is a privacy and retention liability (see `data-retention-policy`).
+- **Retry without backoff or jitter.** Tight-loop retries that hammer a struggling downstream into full outage, and synchronized retries that arrive as a thundering herd. Every retry policy states its backoff curve, jitter, and attempt cap.
 
 ---
 
@@ -189,7 +205,7 @@ For each stage, the design documents a contract the implementer builds to:
 
 ```markdown
 ---
-artifact: data-pipeline-design
+name: data-pipeline-design
 product: [product name]
 version: 1.0.0
 phase: design

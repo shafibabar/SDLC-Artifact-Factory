@@ -8,9 +8,10 @@ description: >
   security architecture connects to the NFR specification's security requirements.
   Produced by the security-architect agent after threat modeling and Zero Trust
   design are complete.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: security-architect
+created: 2026-06-25
 tags: [design, security, security-architecture, defence-in-depth, controls, nfr]
 ---
 
@@ -34,7 +35,8 @@ Defence in depth means that no single control failure results in a complete brea
 ├─────────────────────────────────────────────────────────────┤
 │  Layer 5: Application                                       │
 │  ABAC policy enforcement, input validation, output          │
-│  encoding, OWASP Top 10 controls, dependency scanning       │
+│  encoding, OWASP Top 10 + API Security Top 10 controls,     │
+│  dependency scanning                                        │
 ├─────────────────────────────────────────────────────────────┤
 │  Layer 4: Workload                                          │
 │  Non-root containers, read-only filesystems, security       │
@@ -42,7 +44,7 @@ Defence in depth means that no single control failure results in a complete brea
 ├─────────────────────────────────────────────────────────────┤
 │  Layer 3: Service-to-Service                                │
 │  mTLS (Linkerd), deny-by-default Linkerd policies,          │
-│  service account least privilege                            │
+│  Principle of Least Privilege for service accounts          │
 ├─────────────────────────────────────────────────────────────┤
 │  Layer 2: Network                                           │
 │  Kubernetes NetworkPolicy (deny-all default),               │
@@ -120,7 +122,7 @@ Defence in depth means that no single control failure results in a complete brea
 
 | Threat ID | Threat | Controls that mitigate it | Layer |
 |---|---|---|---|
-| THR-001 | JWT forgery | RS256 signing, short expiry, audience claim | Application |
+| THR-001 | JWT forgery | RS256 signing with algorithm pinning (reject `alg` substitution), short expiry, issuer + audience validation | Application |
 | THR-002 | Cross-tenant data leak | Physical namespace isolation, ABAC tenant check | Infrastructure + Application |
 | THR-003 | Service impersonation | mTLS, Linkerd deny-by-default, workload identity | Service-to-Service |
 | THR-004 | Secret compromise | Vault dynamic secrets, short-lived credentials, no env var secrets | Application + Workload |
@@ -150,6 +152,18 @@ Every security NFR from the NFR specification must map to at least one control i
 | NFR traceability | Every security NFR maps to a control | Security NFRs with no implementation |
 | Verification method | Every control has a stated verification test | Controls with no way to verify they work |
 | Defence in depth | Every critical asset has controls at multiple layers | Single-layer defence for critical assets |
+| Residual risks explicit | Unmitigated threats listed with acceptance rationale | Gaps silently omitted from the document |
+
+---
+
+## Anti-Patterns
+
+- **Single-layer trust.** "The network is isolated, so the application check is redundant." Every control in this document assumes the layers around it will fail. Physical tenant isolation does not remove the ABAC tenant check; mTLS does not remove JWT validation.
+- **Controls without verification.** A control that cannot be tested is a hope, not a control. "Encryption at rest is enabled" means nothing without the IaC assertion and the restore test that prove it.
+- **Copy-paste security architecture.** Importing a generic control catalogue without mapping it to this product's threat register. The Security Control Matrix exists to force the question "which threat does this control mitigate?" — a control mitigating no listed threat is either missing its threat or is decoration.
+- **Perimeter thinking.** Concentrating controls at Layers 1-2 and treating everything inside as trusted. This contradicts Zero Trust Architecture: the interior layers (workload, application, data) carry their own full set of controls.
+- **NFRs and controls drifting apart.** Security NFRs written in Discovery that no control implements, or controls added ad hoc with no NFR or threat justifying them. The two traceability tables must close in both directions.
+- **Hiding residual risk.** Presenting the architecture as fully mitigated when specific threats are accepted, deferred, or partially covered. Residual risks are documented with an owner and rationale — an auditor finding an undocumented gap is far worse than one finding an accepted risk.
 
 ---
 
@@ -157,7 +171,7 @@ Every security NFR from the NFR specification must map to at least one control i
 
 ```markdown
 ---
-artifact: security-architecture
+name: security-architecture
 product: [product name]
 version: 1.0.0
 phase: design

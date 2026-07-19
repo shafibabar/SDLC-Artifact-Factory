@@ -8,9 +8,10 @@ description: >
   Correct Aggregate design is the primary determinant of whether the domain model
   can enforce its own rules without distributed coordination. Used by the
   domain-modeler agent after Event Storming and Bounded Context mapping.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, aggregate, entity, value-object, invariants, go]
 ---
 
@@ -141,6 +142,16 @@ Use these heuristics from Event Storming output:
 3. **Event emission:** Which Domain Objects combine to produce a single Domain Event? They likely belong in the same Aggregate.
 4. **Contention check:** How many concurrent users will modify this Aggregate simultaneously? High contention → split the Aggregate. Low contention → aggregating is safe.
 
+### Sizing Under Contention
+
+Optimistic concurrency (the `version` field) makes each Aggregate *instance* a serialisation point: only one Command can commit against an instance at a time, and every concurrent writer pays a conflict-and-retry. Apply these rules:
+
+- **Estimate contention per instance, not per type.** A `DataAsset` mutated by at most one scan at a time is safe. A `StorageSource` whose root mutates once per file discovered during a scan is a hotspot — thousands of Commands converge on one row.
+- **Rollups are rarely invariants.** If a counter, status summary, or "last seen" field is the only reason writers collide, move it out of the Aggregate into a Read Model updated from Domain Events. Keep only invariant-enforcing state behind the version check.
+- **Split along the invariant seam.** If two invariants never share state, they never justify sharing an Aggregate — separate them even when the concepts feel related.
+- **Retry-on-conflict handles occasional collisions, not sustained load.** If conflict retries appear in normal operation rather than edge cases, the boundary is wrong.
+- **Unbounded collections force a split.** A child collection with no fixed upper bound (e.g. every `ExtractedEntity` ever found in a file) makes load time and transaction size grow without limit. Promote the children to their own Aggregate that references the parent by ID; keep at most a bounded, invariant-relevant subset inside the root.
+
 ---
 
 ## Aggregate Design Worksheet
@@ -188,11 +199,25 @@ Contention estimate: [Low / Medium / High — justification]
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Anemic Aggregate** — exported fields or getter/setter pairs, invariants enforced in an application service | Invariant enforcement scatters across every caller; nothing guarantees it runs | All mutation goes through root methods that enforce invariants before applying change |
+| **God Aggregate** — one Aggregate absorbs every related concept "to be safe" | Every write serialises on one instance; contention and transaction size grow with usage | Keep only invariant-participating state; split the rest into separate Aggregates linked by ID |
+| **Repository per Entity** — a repository for each Entity inside the Aggregate | Callers load and mutate internals without the root, bypassing invariants | One repository per Aggregate, keyed by the root's ID, loading the whole cluster |
+| **Cross-Aggregate transaction** — one transaction saves two Aggregates | Couples their locks and availability; violates Rule 3 | Emit a Domain Event from the first; update the second eventually, or coordinate with a Saga |
+| **Leaking internal collections** — a getter returns the root's internal slice | Callers mutate the slice directly, bypassing the root | Return copies or read-only views; expose behaviour, not structure |
+| **Querying another Aggregate inside a command method** | Hidden coupling; the check races with concurrent changes to the other Aggregate | Pass required data into the Command, or relax to eventual consistency with a compensating action |
+| **Publishing Domain Events before commit** | Consumers act on state that may roll back | Collect events on the root; publish via the Transactional Outbox after commit |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: aggregate-design
+name: aggregate-design
 product: [product name]
 bounded-context: [context name]
 version: 1.0.0

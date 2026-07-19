@@ -7,9 +7,10 @@ description: >
   friction points and opportunities. User journey maps bridge the persona and
   JTBD analysis from the Ideate phase to the UX flow and component design in the
   Design phase. Produced by the ux-architect agent during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: ux-architect
+created: 2026-06-25
 tags: [design, ux, user-journey, persona, jtbd, touchpoints, friction, opportunity]
 ---
 
@@ -185,11 +186,23 @@ Before designing individual journeys, produce the journey map inventory. Every p
 
 ---
 
+## Anti-Patterns
+
+- **The generic user.** Mapping the journey of "a user" instead of Maya Chen with her audit deadline and her anxiety about the auditor's arrival. Without a persona's stakes, the Thoughts and Emotions rows become fiction and the friction points become guesses.
+- **Feature tour dressed as a journey.** Stages named after product screens ("Dashboard stage", "Reports stage") rather than the user's progression through their job. The journey belongs to the persona; the product is only the touchpoints row.
+- **Happy-feelings mapping.** Every stage marked Satisfied or Delighted. A journey map with no valley is not evidence of a great product — it is evidence the map was written to flatter the design. The valleys are the deliverable.
+- **Invented verbatims.** Writing plausible-sounding Thoughts with no basis in user research, interviews, or support tickets — and not marking them as assumptions. Unvalidated thoughts are hypotheses; label them so they can be tested.
+- **Friction with no follow-through.** A friction row full of pain points that never become a user story, a UX flow decision, or an explicitly accepted limitation. The Friction → Action log is what makes the map an artifact instead of a poster.
+- **Mapping every persona's every job.** Ten journey maps of uniform shallow depth. Map the highest-value job per primary persona deeply; add journeys only when they will change a design decision.
+- **One-time artifact.** Mapping the journey once at design time and never revisiting after usability findings or support data contradict it. The journey map is updated when reality disagrees with it — reality wins.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: user-journey-map
+name: user-journey-map
 product: [product name]
 version: 1.0.0
 phase: design

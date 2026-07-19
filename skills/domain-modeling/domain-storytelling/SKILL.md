@@ -8,9 +8,10 @@ description: >
   boundaries, and complements Event Storming by revealing the human narrative
   behind the event flow. Used by the domain-modeler agent at the start of the
   Design phase, typically before or alongside Event Storming.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, domain-storytelling, ubiquitous-language, discovery, bounded-context]
 ---
 
@@ -140,6 +141,27 @@ Start coarse-grained, then zoom into the fine-grained for processes identified a
 
 ---
 
+## Worked Example
+
+Fine-grained story: "The compliance officer investigates a newly flagged Restricted document."
+
+| Step | Actor | Activity | Work Object | Annotation |
+|---|---|---|---|---|
+| 1 | Compliance Officer | reviews | Classification Alert | Alert raised when a DataAsset was classified Restricted |
+| 2 | Compliance Officer | opens | DataAsset detail view | Shows SensitivityLevel, StorageSource, extracted entities |
+| 3 | Compliance Officer | checks | StorageSource permissions | "I always check who can see the folder it lives in" |
+| 4 | Compliance Officer | requests | Access Review | Sent to the storage owner — a different team |
+| 5 | Storage Owner | confirms or amends | Sharing Settings | Boundary: this happens in Google Drive, outside our system |
+| 6 | Compliance Officer | records | Audit Record | "If I don't write it down, the auditor assumes it never happened" |
+
+Discoveries from this story:
+- **Term:** the expert said "flagged document", never "classified asset" — candidate synonym conflict for the Ubiquitous Language (`DataAsset` vs "document"); resolved to keep `DataAsset` in the model and "document" only in UI copy.
+- **Boundary marker:** step 5 crosses into Google Drive — confirms the Storage Integration context boundary and its ACL.
+- **Policy candidate:** "whenever a DataAsset is classified Restricted, an Access Review is requested" — feeds Event Storming as a Policy following the `DataAssetClassified` Domain Event.
+- **Variation explored:** "what if the storage owner never responds?" → escalation after 5 business days — an edge case for `acceptance-criteria`.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -153,11 +175,25 @@ Start coarse-grained, then zoom into the fine-grained for processes identified a
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Designing while drawing** — the modeller draws the system they intend to build, not the story being told | The session stops being discovery; the expert validates the modeller's assumptions instead of narrating reality | Draw only what the expert says, in the expert's words; design later, from the validated story |
+| **Translating on the fly** — replacing the expert's words with technical vocabulary ("so, a record gets persisted...") | The Ubiquitous Language candidates are destroyed at the moment of capture | Write the expert's exact terms; reconcile them with the model afterwards via the `ubiquitous-language` skill |
+| **Committee storytelling** — several experts narrating one story together | The story becomes a negotiated average that matches nobody's actual work | One narrator per story; run additional sessions to capture other perspectives, then compare |
+| **Abstract process description** — "usually what happens is..." accepted as a story | Generalisations hide the exceptions and hand-offs that concrete stories reveal | Insist on one specific, remembered occasion with real (roleised) people and real objects |
+| **Interrogation instead of narration** — observers interrupting with questions throughout | Breaks the expert's flow; the story fragments into answers shaped by the questions | Hold all questions until after the read-back (Step 4) |
+| **Happy path only** | The costly behaviour lives in the exceptions; a happy-path model under-specifies the domain | Always run at least one variation scenario (Step 5) |
+| **Shelfware story** — the drawing is filed and nothing downstream references it | The session cost is sunk; Event Storming and the glossary re-discover the same facts later | Every story ends with a filled "Feeds Forward To" table naming target artifacts |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: domain-story
+name: domain-story
 product: [product name]
 domain: [domain or subdomain name]
 scenario: [one-line description of the story]

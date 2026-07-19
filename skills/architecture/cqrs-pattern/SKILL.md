@@ -8,9 +8,10 @@ description: >
   handlers, and when CQRS is appropriate vs when it adds unnecessary complexity.
   Companion to the domain-event-catalog and read-model-design skills. Used by
   the enterprise-architect and backend-engineer agents.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, cqrs, write-model, read-model, event-sourcing, go]
 ---
 
@@ -39,7 +40,7 @@ CQRS and Event Sourcing are often discussed together but are independent pattern
 
 **This plugin uses CQRS by default.** Event Sourcing is an option for specific Bounded Contexts where full event history replay is required (e.g., audit trail reconstruction), but it is not the default — it adds significant complexity.
 
-The default approach: Aggregates store state in a standard PostgreSQL table, emit Domain Events to the Outbox, and Projectors build Read Models from those events.
+The default approach: Aggregates store state in a standard PostgreSQL table, emit Domain Events via the Transactional Outbox, and Projectors build Read Models from those events.
 
 ---
 
@@ -201,12 +202,26 @@ No file crosses the boundary. A command handler never queries a Read Model store
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Command returns no data | Command handlers return only `error` — no domain data | Command handler returns the updated Aggregate state |
+| Command returns no data | Command handlers return no domain data — an `error`, plus at most the new Aggregate ID and version (for `201` responses and read-your-own-writes) | Command handler returns the updated Aggregate state or a query result |
 | Query changes no state | Query handlers call no Aggregates; perform no writes | Query handler with a side effect |
 | Separate packages | `application/commands/` and `application/queries/` are distinct packages | Mixed file with both commands and queries |
 | Read Models from events | Read Models built by Projectors consuming Domain Events | Read Models built by querying Aggregate tables directly |
 | Domain interface for repo | Repository interface in `domain/ports.go` | Repository interface in `infrastructure/` |
 | Idempotency in command handler | All command handlers check idempotency before processing | Command handlers with no idempotency check |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **CQRS everywhere** — full write/read separation for trivial CRUD contexts | Projectors, outbox rows, and eventual consistency are pure overhead where one model would do | Apply the "When to Apply CQRS" table honestly; support contexts may use a plain repository |
+| **Guards checked against Read Models** — a command handler validating against a projection | The projection lags the Write Model; the guard races reality and passes on stale data | Invariants are enforced inside the Aggregate against transactionally-loaded state |
+| **Command handler with a query habit** — returning view data from the write path | The write path inherits read-side performance and shape concerns; the separation dissolves | Return only the error / new ID and version; the client queries a Read Model |
+| **Query with a side effect** — "just bump the view counter while reading" | Reads become non-repeatable and non-cacheable; load tests mutate production state | Queries change nothing; if the domain cares about views, that is a Command emitting a Domain Event |
+| **Synchronous projection in the command transaction** — updating Read Model tables alongside the Aggregate write | Couples every view's schema and latency to the write path; rebuild-from-events is no longer true | Projectors consume events after commit via the Transactional Outbox and broker |
+| **CQRS assumed to mean Event Sourcing** — dropping the state table because events exist | Event Sourcing's replay, snapshotting, and versioning costs arrive uninvited | Keep state-stored Aggregates by default; adopt Event Sourcing per Bounded Context via an ADR |
+| **One handler class for everything** — `DataAssetService` exposing both commands and queries | Dependencies of both sides accumulate in one type; the separation exists only in method names | One handler per Command and per Query, in `application/commands/` and `application/queries/` |
 
 ---
 

@@ -8,9 +8,10 @@ description: >
   code is written. They are the primary input to the backend-engineer's Go project
   structure and the frontend-engineer's React component architecture. Used by the
   enterprise-architect agent per service, after the Container Diagram is approved.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, c4, component-diagram, layered-architecture, go, solid]
 ---
 
@@ -85,7 +86,7 @@ Every Go service in this plugin follows a layered architecture with strict depen
 
 - Receives Commands and Queries from the API layer
 - Orchestrates the domain — loads the Aggregate from the repository, calls domain methods, saves back
-- Publishes domain events to the outbox (via infrastructure)
+- Publishes Domain Events to the outbox table (via infrastructure — the Transactional Outbox)
 - Handles idempotency (checks command log)
 - **Command handlers:** one handler per Command; all in `application/commands/`
 - **Query handlers:** one handler per Read Model query; all in `application/queries/`
@@ -214,11 +215,26 @@ The Component Diagram maps directly to the Go package structure:
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Layered in name only** — the directories exist but `domain/` imports `pgx` or `chi` | The dependency rule is the architecture; without it the layers are cosmetic folders | Domain depends on the standard library only; enforce with a lint rule or import test in CI |
+| **Layer skipping** — a handler calls the repository directly "because it's just a read" | Idempotency, authorisation, and orchestration in the Application layer are silently bypassed | Handlers call Application handlers only; even trivial queries go through a query handler |
+| **God service struct** — one `DataAssetService` with every method for the entity | Single Responsibility dies first; the struct accretes dependencies until nothing is testable in isolation | One Command handler and one Query handler per operation, each with only the dependencies it uses |
+| **Interfaces defined in infrastructure** — `postgres/repository.go` declares its own interface | Inverts nothing: the domain now conforms to what the database code offers | Interfaces live in `domain/ports.go`, shaped by what the domain needs (Dependency Inversion) |
+| **Shared `models/` package** — one struct serves as HTTP DTO, domain type, and DB row | Every layer's concerns leak into one type; a JSON tag change alters the database mapping | Each layer owns its types; mapping functions at the boundaries are the cost of decoupling |
+| **`utils/` and `common/` dumping grounds** | Packages named for what they are not; dependencies flow everywhere and the diagram stops matching reality | Name packages by responsibility; if code has no owner layer, it has no defined responsibility yet |
+| **Anemic domain, fat application** — invariants enforced in Command handlers | The domain layer degenerates to data structs; business rules scatter and duplicate across handlers | Handlers orchestrate (load, call, save); every invariant lives on the Aggregate |
+| **Diagram as archaeology** — drawing the Component Diagram after implementation | The diagram documents accidents, and the package structure was never reviewed against SOLID | Produce the diagram before code; the backend-engineer scaffolds from it |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: component-diagram
+name: component-diagram
 product: [product name]
 service: [service / container name]
 bounded-context: [bounded context name]

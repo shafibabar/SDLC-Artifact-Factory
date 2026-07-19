@@ -9,9 +9,10 @@ description: >
   from domain modelling. The OpenAPI spec is the authoritative contract between
   the backend-engineer and frontend-engineer. Used by the enterprise-architect
   agent after the Command Catalog and Read Model designs are complete.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, api-first, openapi, contract-first, rest]
 ---
 
@@ -83,7 +84,7 @@ Every Command from the Command Catalog maps to a `POST`, `PUT`, `PATCH`, or `DEL
 |---|---|
 | `200 OK` | Successful GET, PUT, PATCH |
 | `201 Created` | Successful POST that creates a resource |
-| `202 Accepted` | Command accepted for async processing (the result will come via event) |
+| `202 Accepted` | Command accepted for async processing — the body returns the resource ID and a status URL; the domain outcome arrives via a Domain Event |
 | `204 No Content` | Successful DELETE, or action with no response body |
 
 ### Error responses
@@ -186,6 +187,17 @@ parameters:
 
 ---
 
+## Pagination, Filtering, and Sorting
+
+Collection endpoints share one convention — never invent a per-endpoint variant:
+
+- **Cursor pagination is the default.** `?cursor=[opaque token]&limit=[n]` with `limit` capped (default 25, max 100). The response's `pagination` object carries `nextCursor` (null on the last page). Cursors are opaque to clients — encode the sort key position server-side, never a raw offset. Offset pagination (`?page=3`) is permitted only for small, stable admin collections: on large or frequently-written collections it skips or duplicates rows as data moves between pages.
+- **Filters are named query parameters** using canonical field names: `?sensitivityLevel=Restricted&storageSourceId=...`. Multiple values repeat the parameter. Every filterable field is declared in the spec — undocumented filters do not exist.
+- **Sorting:** `?sort=classifiedAt&order=desc`. Only fields the Read Model indexes are sortable; the spec enumerates them.
+- **Stable ordering is a contract.** Every paginated response has a deterministic total order (sort field plus ID tiebreaker); otherwise cursors are meaningless.
+
+---
+
 ## OpenAPI Spec Structure
 
 ```yaml
@@ -256,6 +268,22 @@ components:
 | Versioned | Path includes `/v1/` prefix | Unversioned paths |
 | Auth on all endpoints | BearerAuth applied globally; health checks excluded | Endpoints missing authentication |
 | Idempotency header | Documented on all mutating endpoints | POST endpoints with no idempotency support |
+| Pagination convention | All collection endpoints use the shared cursor pagination shape | Per-endpoint pagination variants, or uncapped `limit` |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Code-first contract** — generating the OpenAPI spec from handler annotations after implementation | The contract describes whatever got built; breaking changes ship silently because nothing gates them | Spec is written first, reviewed, and CI-validated; code is generated from or validated against it |
+| **CRUD-over-tables API** — `POST /v1/data-asset-rows`, one endpoint per database table | The schema leaks into the contract; every migration becomes a breaking API change | Resources mirror the Ubiquitous Language and the Command Catalog, not storage |
+| **Verb endpoints** — `POST /v1/classifyDataAsset` | Verbs proliferate without structure; caching, permissions, and tooling conventions all assume nouns | Commands map onto resource state transitions: `PATCH /v1/data-assets/{id}/classification` |
+| **The 200-with-error-body** — errors returned as `200 OK` with `{"success": false}` | Clients, gateways, retries, and monitoring all key on status codes; errors become invisible | Correct 4xx/5xx status plus the standard ErrorResponse envelope |
+| **Tunnelling through GET** — `GET /v1/data-assets/{id}/reclassify` | GET must be safe and cacheable; proxies may prefetch or retry it, mutating state unpredictably | Mutations use POST/PUT/PATCH/DELETE, always |
+| **Chatty resource design** — a detail view requiring N follow-up calls per item | Front ends compensate with request storms; latency and rate limits are hit immediately | Shape the Read Model (and its GET response) to serve the whole view in one call |
+| **Internal errors in responses** — stack traces, SQL, or Go error strings in `message` | Leaks implementation detail and creates an unintended contract that clients parse | `500` returns `INTERNAL_ERROR` with a correlation ID; detail goes to logs and traces |
+| **Sunset by surprise** — deleting `/v1/` when `/v2/` ships | Every consumer breaks at once; trust in the contract collapses | Parallel-run with `Deprecation` headers and the announced 6-month minimum sunset |
 
 ---
 
@@ -269,7 +297,7 @@ Accompanied by a contract summary:
 
 ```markdown
 ---
-artifact: api-contract-summary
+name: api-contract-summary
 product: [product name]
 service: [service name]
 version: 1.0.0

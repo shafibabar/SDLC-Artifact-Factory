@@ -6,9 +6,10 @@ description: >
   distinguishing the core job from related and consumption jobs, and translating
   job stories into testable product requirements. Used by the requirements-analyst
   agent during the Ideate phase, after user personas are complete.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, jtbd, job-stories, product-discovery, user-needs]
 ---
 
@@ -139,11 +140,25 @@ For each job story, identify what product capability is implied. This becomes in
 
 ---
 
+## Anti-Patterns
+
+**Solution-shaped jobs:** "When I open the compliance dashboard, I want to…" — the situation names the product. Jobs exist independent of any solution; if the product disappeared, the job would remain. Rewrite the situation from the person's work context, not the product's UI.
+
+**Jobs at task altitude:** "Export a CSV of flagged files" is a task inside a job, not a job. If the statement would be satisfied by a single button, it is too low. The job is what the export is *for* — "assemble evidence the auditor will accept."
+
+**Multiple jobs in one story:** "I want to scan, classify, and report on our estate…" — three motivations fused into one story produce one blurred capability. One story, one motivation, one outcome. Split.
+
+**Backwards JTBD:** writing job stories to justify a feature that has already been decided. The tell: every story's implied capability happens to match the existing roadmap exactly. JTBD run this way is theatre — it discovers nothing and launders decisions as research.
+
+**Functional-only analysis:** ignoring the emotional and social dimensions because they feel "soft." For the compliance domain they are frequently decisive: the fear of a surprise audit finding (emotional) and standing with the CISO (social) drive purchases that the functional job alone would not.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: jtbd-analysis
+name: jtbd-analysis
 product: [product name]
 version: 1.0.0
 phase: ideate
