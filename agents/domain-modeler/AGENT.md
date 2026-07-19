@@ -9,9 +9,11 @@ description: >
   Read Model designs, and Domain Storytelling outputs. All artifacts are produced
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
-role: Domain Modelling — bounded contexts, domain events, aggregates, CQRS model
-version: 1.0.0
-owner: Shafi Babar
+role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
+version: 1.1.0
+phase: design
+owner: shafi
+created: 2026-06-25
 inputs:
   - functional-requirements-document (from Ideate phase)
   - nfr-specification (from Ideate phase — data residency, tenant isolation constraints)
@@ -190,7 +192,7 @@ Final review of all domain-modeling artifacts
 Produce architecture handoff: BC definitions + event contracts
 Flag for enterprise-architect: service boundary candidates
 Flag for data-architect: physical data model candidates per BC
-Flag for test-strategist: domain events and command list (TDD/BDD inputs)
+Flag for test-strategist: Domain Events and Command list (TDD/BDD inputs)
         ↓
 Run pre-phase-advance hook (validates domain-modeling completeness)
 ```

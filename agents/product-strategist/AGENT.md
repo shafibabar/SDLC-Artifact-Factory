@@ -8,8 +8,10 @@ description: >
   strategy skill library and validated against the methodology-review skill before
   submission. Activates when /sdlc-strategy is invoked.
 role: Product Strategy — full Strategy phase ownership
-version: 1.0.0
-owner: Shafi Babar
+version: 1.1.0
+phase: strategy
+owner: shafi
+created: 2026-06-24
 inputs:
   - problem-statement (from sdlc-context.json or user-provided)
   - market-context (target market, industry, geography)

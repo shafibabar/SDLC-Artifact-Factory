@@ -9,8 +9,10 @@ description: >
   produced using the discovery skill library and validated before submission.
   Activates when /sdlc-ideate is invoked.
 role: Requirements & Discovery — full Ideate phase ownership
-version: 1.0.0
-owner: Shafi Babar
+version: 1.1.0
+phase: ideate
+owner: shafi
+created: 2026-06-24
 inputs:
   - vision-statement (from Strategy phase artifacts)
   - mission-statement (from Strategy phase artifacts)

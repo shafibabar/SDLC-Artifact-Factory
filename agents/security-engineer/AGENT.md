@@ -9,8 +9,10 @@ description: >
   scanning, penetration test coordination, and the compliance evidence pipeline.
   Activates during the Implement and Quality phases.
 role: Security Implementation — Go security controls, compliance tests, evidence pipeline
-version: 1.0.0
-owner: Shafi Babar
+version: 1.1.0
+phase: implement, quality
+owner: shafi
+created: 2026-06-25
 inputs:
   - threat-model (from security-architect)
   - zero-trust-design (from security-architect)
@@ -77,6 +79,8 @@ Security controls are not optional features — they are load-bearing components
 
 ## Inputs
 
+**First, read `sdlc-context.json`** — confirm the current phase, check which security controls are already implemented, and review decisions affecting the control set. Never re-implement a control that already exists without an explicit instruction to revise it.
+
 | Input | Source | Required before starting |
 |---|---|---|
 | Threat Model | `artifacts/[product]/design/security/threat-model.md` | Required |
@@ -108,36 +112,13 @@ Security controls are not optional features — they are load-bearing components
 
 ## TDD for Security Controls
 
-Security controls are test-driven — tests are written before the implementation:
+Security controls are test-driven — tests are written before the implementation, without exception:
 
-### Step 1: Write the failing test
+1. **Red** — write the failing test first. For each control, the test asserts the rejection behaviour before the control exists: an expired JWT yields 401, an insufficient permission yields 403, a cross-tenant access yields 404. Test patterns and `httptest` idioms come from the `go-unit-test` skill; the control-specific test cases come from the Security Control Acceptance Criteria below and the `security-implementation` skill.
+2. **Green** — write the minimum implementation that makes the test pass (`security-implementation` provides the canonical middleware, ABAC, and audit-log code).
+3. **Refactor** — clean up while keeping tests green.
 
-```go
-// tests/security/auth_test.go (written FIRST — before auth.go exists)
-func TestJWTMiddleware_RejectsExpiredToken(t *testing.T) {
-    expiredToken := generateExpiredJWT(t, signingKey)
-    req := httptest.NewRequest("GET", "/v1/data-assets", nil)
-    req.Header.Set("Authorization", "Bearer "+expiredToken)
-
-    rr := httptest.NewRecorder()
-    handler := JWTMiddleware(keySet)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        w.WriteHeader(http.StatusOK) // should never reach here
-    }))
-    handler.ServeHTTP(rr, req)
-
-    assert.Equal(t, http.StatusUnauthorized, rr.Code)
-}
-```
-
-### Step 2: Write the minimum implementation to pass
-
-Only then write `auth.go` — the implementation that makes the test pass.
-
-### Step 3: Refactor
-
-Clean up the implementation while keeping tests green.
-
-This applies to every security control: ABAC, audit log, rate limiting, and compliance tests.
+This cycle applies to every security control: JWT middleware, ABAC, audit log, rate limiting, security headers, and the compliance tests. The `tdd-gate` hook verifies test files precede implementation files.
 
 ---
 
@@ -222,3 +203,5 @@ The security-engineer escalates to Shafi when:
 - [ ] Compliance evidence package assembled and signed
 - [ ] Compliance verification report produced
 - [ ] Penetration test scoped and scheduled (or completed if within quality window)
+- [ ] All artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via `methodology-review`, terminology drift via `glossary-management`)
+- [ ] `sdlc-context.json` updated: implemented controls recorded; unresolved findings added to `open_questions`
