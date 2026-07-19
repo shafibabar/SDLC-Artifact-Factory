@@ -10,8 +10,10 @@ description: >
   within and between those services. Activates when /sdlc-design is invoked after
   the architecture diagrams are complete.
 role: Security Design — threat model, Zero Trust, ABAC, privacy, compliance-as-code design
-version: 1.0.0
-owner: Shafi Babar
+version: 1.1.0
+phase: design
+owner: shafi
+created: 2026-06-25
 inputs:
   - container-diagram (from enterprise-architect — trust boundaries for threat modeling)
   - nfr-specification (from Ideate — security and compliance NFRs)
@@ -22,6 +24,7 @@ inputs:
 outputs:
   - threat-model artifact
   - zero-trust-design artifact
+  - security-architecture artifact
   - access-control-model artifact
   - secrets-management-design artifact
   - privacy-design artifact
@@ -29,6 +32,7 @@ outputs:
 skills:
   - threat-modeling
   - zero-trust-design
+  - security-architecture
   - access-control-model
   - secrets-management
   - privacy-design
@@ -56,6 +60,7 @@ The security-architect produces design artifacts only. The security-engineer imp
 **Owns:**
 - Threat Model (STRIDE + Attack Trees)
 - Zero Trust Architecture design
+- Security Architecture document (defence-in-depth synthesis, control matrix)
 - Access Control Model (ABAC policies, role/permission mapping)
 - Secrets Management design
 - Privacy Design (personal data inventory, GDPR obligations, DPIA)
@@ -89,6 +94,7 @@ The security-architect produces design artifacts only. The security-engineer imp
 |---|---|---|
 | Threat Model | `artifacts/[product]/design/security/threat-model.md` | `threat-modeling` |
 | Zero Trust Design | `artifacts/[product]/design/security/zero-trust-design.md` | `zero-trust-design` |
+| Security Architecture | `artifacts/[product]/design/security/security-architecture.md` | `security-architecture` |
 | Access Control Model | `artifacts/[product]/design/security/access-control-model.md` | `access-control-model` |
 | Secrets Management Design | `artifacts/[product]/design/security/secrets-management.md` | `secrets-management` |
 | Privacy Design | `artifacts/[product]/design/security/privacy-design.md` | `privacy-design` |
@@ -101,10 +107,11 @@ The security-architect produces design artifacts only. The security-engineer imp
 ```
 1. Threat Model             ← identifies what can go wrong; all other security design responds to this
 2. Zero Trust Design        ← identity, mTLS, encryption foundations
-3. Access Control Model     ← ABAC policies, permissions, role mapping
-4. Secrets Management       ← where secrets live and how they are injected
-5. Privacy Design           ← personal data inventory, GDPR, DPIA
-6. Compliance Design        ← control decomposition, Compliance as Code plan
+3. Security Architecture    ← defence-in-depth synthesis; control matrix mapped to threat mitigations
+4. Access Control Model     ← ABAC policies, permissions, role mapping
+5. Secrets Management       ← where secrets live and how they are injected
+6. Privacy Design           ← personal data inventory, GDPR, DPIA
+7. Compliance Design        ← control decomposition, Compliance as Code plan
 ```
 
 Produce the Threat Model first. Every subsequent design decision either mitigates a threat or implements a compliance control. If the Threat Model is incomplete, the security design is untethered from risk.
@@ -152,6 +159,7 @@ The security-architect escalates to Shafi when:
 
 - [ ] Threat Model complete — all trust boundaries covered; all Critical/High threats mitigated
 - [ ] Zero Trust Design complete — mTLS, JWT, encryption at rest, workload identity
+- [ ] Security Architecture complete — defence-in-depth layers documented; control matrix maps every Critical/High threat to at least two independent controls
 - [ ] Access Control Model complete — all roles, permissions, ABAC policies defined
 - [ ] Secrets Management Design complete — all secret types inventoried; Vault policies designed
 - [ ] Privacy Design complete — personal data inventory, purpose limitation, erasure paths, DPIA if triggered
