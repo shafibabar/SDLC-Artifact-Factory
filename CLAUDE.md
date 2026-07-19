@@ -32,6 +32,31 @@ Each phase has defined inputs, outputs, and applicable methodologies. Phase gate
 
 ---
 
+## Working in This Repository
+
+This repository **is the plugin itself** — component definitions in Markdown plus JSON configuration. There is currently no application code, no build step, and no test suite to run. Validation is structural (frontmatter, naming, glossary terms) until governance hooks land (Chunk 20). The `go`/`npm` permissions in `settings.json` are for code the plugin *generates*, not for this repo.
+
+**Layout:**
+
+```
+.claude-plugin/plugin.json        Plugin manifest — component paths, agent roster, phases, tech defaults
+sdlc-context.json                 Factory memory — build checklist, decisions, open questions
+CLAUDE.md                         This file — always-on standards
+settings.json                     Permissions, env vars, hook config
+skills/<domain>/<name>/SKILL.md   One skill per directory, grouped by domain
+agents/<role>/AGENT.md            One agent per directory
+commands/ hooks/ tools/ schemas/  Empty until Chunks 19–21
+mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
+```
+
+**Build workflow:**
+
+- One chunk = one feature branch = one PR to `main`. Branch names follow `feature/<n>-<chunk-description>` (e.g. `feature/11-test-engineering-skills-and-test-strategist-agent`).
+- After a chunk merges, update `build_checklist` status in `sdlc-context.json` and its `_meta.last_updated`/`updated_by` fields in the same piece of work.
+- A chunk typically delivers one skill domain directory plus its owning agent(s) together.
+
+---
+
 ## Non-Negotiable Methodology
 
 These five methodologies are mandatory. Their absence in any artifact where they apply is a **defect** — not a warning, not advisory.
@@ -74,6 +99,10 @@ Hook → Tool
 - Hook that runs a workflow → hooks validate only
 - Tool that makes business decisions → decisions belong in Agents
 
+**Two boundary clarifications:**
+- Decision *criteria* — selection tables, "use when / do not use when" guides, defaults — are knowledge and belong in Skills. *Applying* those criteria to a specific system is reasoning and belongs in Agents. A pattern-selection table in a skill is not a violation.
+- An agent may carry a compressed **Behavioral Directives** index: short imperative bullets that each cite the owning skill in parentheses. This is a table of contents into skills, not stored knowledge. Any directive whose substance is not actually present in the cited skill is a defect — move the substance into the skill.
+
 ---
 
 ## Naming Conventions
@@ -82,7 +111,7 @@ All component names must match: `^[a-z0-9]+(-[a-z0-9]+)*$`
 
 | Component | Convention | Examples |
 |---|---|---|
-| Skills | `<domain-noun>` or `<action-noun>` | `vision-statement`, `go-chi-handler`, `tdd-feature-file` |
+| Skills | `<domain-noun>` or `<action-noun>` | `vision-statement`, `go-chi-handler`, `bdd-feature-file` |
 | Agents | `<role-noun>` | `backend-engineer`, `domain-modeler` |
 | Commands | `/sdlc-<verb-or-noun>` | `/sdlc-start`, `/sdlc-implement`, `/sdlc-adr` |
 | Hooks | `<validate/check/enforce/tdd>-<noun>` | `pre-phase-advance`, `tdd-gate` |
@@ -142,6 +171,19 @@ Every artifact produced by this plugin must:
 3. Be traceable — reference the requirement, event, or decision that caused it to exist.
 4. Apply all non-negotiable methodologies applicable to its type.
 5. Be reviewable by Shafi without IDE tooling — plain Markdown, clear structure.
+
+This applies to artifacts the plugin *emits* (vision statements, ADRs, feature files, …) and to every `## Output Format` template inside a skill — templates use the key `name:`, never `artifact:`.
+
+### Component Frontmatter
+
+The plugin's own components carry these canonical schemas — no other shapes are permitted:
+
+| Component | Required frontmatter fields, in order |
+|---|---|
+| SKILL.md | `name, description, version, phase, owner, created, tags` |
+| AGENT.md | `name, description, role, version, phase, owner, created, inputs, outputs, skills, tools, tags` |
+
+Every agent's `skills:` list includes `glossary-management` and `methodology-review` in addition to its domain skills. Agents that run shell commands (build, test, scan) declare `tools: [Bash]`.
 
 ---
 

@@ -5,9 +5,10 @@ description: >
   Defines every domain term used across all agents, skills, commands, hooks, and artifacts.
   Provides the reference all agents consult to prevent terminology drift. When any agent
   is unsure whether a term is canonical, they check this skill first.
-version: 1.0.0
+version: 1.1.0
 phase: cross-cutting
 owner: factory-governance
+created: 2026-06-24
 tags: [ddd, ubiquitous-language, glossary, governance, cross-cutting]
 ---
 
@@ -23,7 +24,7 @@ Every agent must consult this skill before introducing a term into an artifact. 
 
 **One term, one meaning, used consistently everywhere.**
 
-If a term appears in the canonical glossary, use it exactly as defined. Do not substitute synonyms. Do not abbreviate. Do not redefine within a bounded context unless the redefinition is explicitly declared in that context's ubiquitous language glossary.
+If a term appears in the canonical glossary, use it exactly as defined. Do not substitute synonyms. Do not abbreviate. Do not redefine within a Bounded Context unless the redefinition is explicitly declared in that context's Ubiquitous Language glossary.
 
 ## How to Use This Skill
 
@@ -58,7 +59,7 @@ Terms may not be silently removed or redefined. Any change requires:
 ## Bounded Context Overrides
 
 A Bounded Context may use a term with a meaning that differs from the canonical definition. When this happens:
-1. The Bounded Context's own ubiquitous language glossary (produced by the `domain-modeler` agent) must document the override explicitly.
+1. The Bounded Context's own Ubiquitous Language glossary (produced by the `domain-modeler` agent) must document the override explicitly.
 2. The override must reference the canonical term and explain why the meaning differs within this context.
 3. The canonical glossary is updated with a note that the term has a context-specific meaning in that Bounded Context.
 
@@ -76,3 +77,40 @@ The glossary is organised into nine categories:
 - Testing and Quality
 - Delivery and Platform
 - Product and Discovery
+
+## Drift Quick Reference
+
+The terms below drift most often in practice. When reviewing, search for the drifted forms explicitly — they are the highest-yield checks.
+
+| Canonical form | Common drifted forms to reject |
+|---|---|
+| Transactional Outbox | "Outbox pattern", "outbox table pattern" |
+| Dead Letter Queue (DLQ) | "DLQ" on first use without expansion, "dead-letter channel" |
+| Circuit Breaker | "circuit breaker" lowercased when naming the pattern |
+| Principle of Least Privilege | "least privilege" lowercased when naming the principle |
+| Domain Event | "domain event" lowercased when naming the concept, "message", "notification" |
+| Bounded Context | "domain boundary", "service boundary" (a Bounded Context is a model boundary, not a deployment boundary) |
+| Consumer-Driven Contract | "CDC" (collides with Change Data Capture); plural form when naming the pattern or defining the term (plural is fine when referring to multiple contract instances) |
+| Given/When/Then | "given-when-then", "GWT" |
+| Read Model / Write Model | "query model" / "command model", "projection" used as a synonym for Read Model |
+| Infrastructure as Code | "IaC" on first use without expansion |
+
+Lowercase use is acceptable only when the words are used adjectivally in ordinary prose ("a least-privilege configuration"), never when naming the pattern or principle itself.
+
+## Quality Criteria
+
+| Criterion | Pass | Fail |
+|---|---|---|
+| Term lookup performed | Every domain term in the artifact appears in `references/ubiquitous-language.md` or is proposed as a new entry | Artifact introduces terms that are neither canonical nor proposed |
+| Exact form | Terms match the canonical spelling, casing, and singular/plural form | Any drifted form from the Drift Quick Reference appears |
+| One meaning | Each term is used with its canonical definition throughout the artifact | The same term is used with two meanings, or two terms for one concept |
+| Overrides declared | Any Bounded Context override is documented in that context's glossary and noted in the canonical glossary | A term is silently redefined within a context |
+| Abbreviation discipline | Abbreviations are expanded on first use: "Dead Letter Queue (DLQ)" | Bare abbreviation on first use |
+
+## Anti-Patterns
+
+- **Synonym enrichment** — varying vocabulary for readability ("event", then "message", then "notification"). Prose style never outranks the Ubiquitous Language.
+- **Silent redefinition** — using a canonical term with a locally convenient meaning instead of declaring a Bounded Context override.
+- **Glossary bloat** — adding a term used in only one artifact. A glossary entry must represent genuinely shared vocabulary (two or more artifacts).
+- **Abbreviation-first writing** — introducing "DLQ" or "IaC" before the expanded form has appeared in the artifact.
+- **Definition drift by paraphrase** — restating a canonical definition "in other words" inside an artifact. Link or quote the glossary; do not paraphrase it.
