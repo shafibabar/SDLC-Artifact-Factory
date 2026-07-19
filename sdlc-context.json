@@ -2,8 +2,8 @@
   "_meta": {
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
-    "last_updated": "2026-06-25",
-    "updated_by": "Chunk 14 — test-engineering skills (12) and test-strategist agent complete"
+    "last_updated": "2026-07-19",
+    "updated_by": "Content improvement campaign PR 1 — standards, governance, repo metadata (decisions D009–D011)"
   },
 
   "project": {
@@ -107,15 +107,15 @@
   },
 
   "agents": [
-    { "name": "product-strategist",   "skill_domains": ["strategy"],              "status": "planned" },
-    { "name": "requirements-analyst", "skill_domains": ["discovery", "validation"], "status": "planned" },
-    { "name": "domain-modeler",        "skill_domains": ["domain-modeling"],        "status": "planned" },
-    { "name": "enterprise-architect",  "skill_domains": ["architecture"],           "status": "planned" },
-    { "name": "ux-architect",          "skill_domains": ["ux"],                     "status": "planned" },
-    { "name": "data-architect",        "skill_domains": ["data-architecture"],      "status": "planned" },
+    { "name": "product-strategist",   "skill_domains": ["strategy"],              "status": "complete" },
+    { "name": "requirements-analyst", "skill_domains": ["discovery", "validation"], "status": "complete — validation skills pending Chunk 17" },
+    { "name": "domain-modeler",        "skill_domains": ["domain-modeling"],        "status": "complete" },
+    { "name": "enterprise-architect",  "skill_domains": ["architecture"],           "status": "complete" },
+    { "name": "ux-architect",          "skill_domains": ["ux"],                     "status": "complete" },
+    { "name": "data-architect",        "skill_domains": ["data-architecture"],      "status": "complete" },
     { "name": "data-engineer",         "skill_domains": ["data-analytics"],         "status": "planned" },
-    { "name": "security-architect",    "skill_domains": ["security (design)"],      "status": "planned" },
-    { "name": "security-engineer",     "skill_domains": ["security (implementation)"], "status": "planned" },
+    { "name": "security-architect",    "skill_domains": ["security (design)"],      "status": "complete" },
+    { "name": "security-engineer",     "skill_domains": ["security (implementation)"], "status": "complete" },
     { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "complete" },
     { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "complete" },
     { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "complete" },
@@ -129,7 +129,7 @@
       "path": "skills/strategy/",
       "owner": "product-strategist",
       "planned_skills": ["vision-statement", "mission-statement", "gtm-strategy", "roadmap-authoring", "okr-authoring", "stakeholder-mapping", "competitive-analysis", "business-model-canvas"],
-      "status": "planned"
+      "status": "complete"
     },
     {
       "domain": "discovery",
@@ -231,7 +231,7 @@
       "path": "skills/governance/",
       "owner": "factory internals — hooks and commands",
       "planned_skills": ["artifact-manifest", "methodology-review", "risk-register", "value-stream-map", "sdlc-config-management", "glossary-management"],
-      "status": "planned"
+      "status": "partial — glossary-management and methodology-review complete (Chunk 4); remaining four pending Chunk 18"
     }
   ],
 
@@ -600,6 +600,27 @@
       "decision": "sdlc-context.json is the session memory — read at the start of every session",
       "rationale": "Context window compaction and new sessions lose conversation history. This file must be self-sufficient to restore full project context, architecture decisions, and build position.",
       "alternatives_rejected": ["Relying on Claude's memory files only — insufficient for full architectural context"]
+    },
+    {
+      "id": "D009",
+      "date": "2026-07-19",
+      "decision": "Canonical component frontmatter schemas — SKILL.md: name/description/version/phase/owner/created/tags; AGENT.md: name/description/role/version/phase/owner/created/inputs/outputs/skills/tools/tags. Emitted artifact templates use the key 'name:', never 'artifact:'.",
+      "rationale": "Three incompatible frontmatter shapes had emerged across build chunks (CLAUDE.md artifact standard, README component specs, on-disk reality). One machine-readable schema per component type restores introspectability and lets governance hooks validate uniformly.",
+      "alternatives_rejected": ["Keeping the lean Gen-2/3 agent frontmatter (name/description/version/phase/tags) — loses machine-readable inputs/outputs/skills/tools wiring", "Renaming CLAUDE.md's required 'name' field to 'artifact' — would ripple into every governance rule"]
+    },
+    {
+      "id": "D010",
+      "date": "2026-07-19",
+      "decision": "Behavioral Directives in agents are an accepted pattern: a compressed index of imperative bullets, each citing the owning skill. Decision criteria/tables in skills are knowledge, not reasoning.",
+      "rationale": "Codifies two boundary clarifications to the component anti-pattern rules. Directives whose substance is absent from the cited skill remain defects — the substance moves into the skill.",
+      "alternatives_rejected": ["Strict reading — stripping all directive content from agents into skills; loses the at-a-glance engineering contract without reducing duplication"]
+    },
+    {
+      "id": "D011",
+      "date": "2026-07-19",
+      "decision": "Content improvement campaign before Chunk 15: full per-file pass over all skills, agents, and repo metadata, delivered as five batch PRs.",
+      "rationale": "A stronger model became available; three parallel audits found generational drift in agents, frontmatter schism, stale metadata, dead references, and terminology drift. Fixing before building Chunk 15 prevents propagating the drift into new components.",
+      "alternatives_rejected": ["Targeted fixes only — audit sampled ~20% of skills, so unsampled files would get no fresh scrutiny", "Single campaign PR — a ~120-file diff is not PM-reviewable in one sitting"]
     }
   ],
 

@@ -1,6 +1,6 @@
 # Canonical Ubiquitous Language
 
-**Last updated:** 2026-06-24
+**Last updated:** 2026-07-19
 **Maintained by:** glossary-management skill
 **Rule:** Use every term exactly as defined here. Synonyms are not acceptable substitutes.
 
@@ -36,7 +36,7 @@
 | **API Gateway** | A single entry point that routes, authenticates, rate-limits, and governs access to backend services. Consumers interact with the Gateway, not individual services. |
 | **Backward Compatibility** | A guarantee that newer versions of an API or contract do not break existing consumers. Breaking changes require a major version increment and a migration path. |
 | **Chain of Responsibility** | A design pattern where a request passes through a chain of handlers, each deciding to process it or pass it to the next handler. |
-| **Consumer-Driven Contracts** | A contract testing approach where the consumer of an API defines the expectations (the contract) it holds of the provider. The provider must satisfy all consumer contracts. |
+| **Consumer-Driven Contract** | A contract testing approach where the consumer of an API defines the expectations (the contract) it holds of the provider. The provider must satisfy all consumer contracts. |
 | **Contract-First Design** | The practice of defining integration contracts (API schemas, event schemas, message schemas) before writing any implementation code. |
 | **CQRS (Command Query Responsibility Segregation)** | An architectural pattern that separates the Write Model (commands that change state) from the Read Model (queries that return state). The two models may use different data stores. |
 | **Don't Repeat Yourself (DRY)** | Every piece of knowledge must have a single, unambiguous, authoritative representation in the system. |
@@ -137,7 +137,7 @@
 | **Behavior-Driven Development (BDD)** | A methodology that defines system behavior using human-readable specifications (Given/When/Then scenarios) before implementation. Specifications become executable tests. |
 | **Chaos Testing** | A testing discipline that deliberately introduces failures (network partitions, service crashes, resource exhaustion) into a system to verify it remains resilient. |
 | **Component Testing** | Tests that verify a single service or component in isolation, using test doubles for its dependencies. |
-| **Consumer-Driven Contract Testing** | See Consumer-Driven Contracts in Design Principles. The test implementation of that practice. |
+| **Consumer-Driven Contract Testing** | See Consumer-Driven Contract in Design Principles. The test implementation of that practice. |
 | **Contract Testing** | Tests that verify the interactions between a consumer and a provider conform to a shared contract. Prevents integration failures caused by API changes. |
 | **Continuous Testing** | The practice of executing automated tests at every stage of the delivery pipeline to provide immediate feedback on code quality. |
 | **End-to-End Testing (E2E)** | Tests that exercise a complete user journey through the full system stack, from the UI to the database and back. |

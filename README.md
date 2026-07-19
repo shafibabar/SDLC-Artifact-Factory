@@ -2,7 +2,7 @@
 
 > A Claude Code plugin that drives any product through its full software development lifecycle — from strategy to customer validation — producing real, reviewable, standards-compliant artifacts at every phase.
 
-**Author:** Shafi Babar | **Version:** 06.24.2026 | **Status:** Active Development
+**Author:** Shafi Babar | **Version:** 0.1.0 | **Status:** Active Development
 
 ---
 
@@ -79,7 +79,7 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | Greenfield — foundational design complete, implementation in progress |
+| **Maturity** | Foundation delivered — 105 skills across 12 domains and 11 agents built; commands, hooks, tools, and schemas in progress |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
@@ -178,71 +178,30 @@ A reusable, distributable plugin that any team can install into Claude Code and 
 sdlc-artifact-factory/
 ├── .claude-plugin/           # Plugin manifest (plugin.json only)
 │   └── plugin.json
-├── skills/                   # Skills — domain expertise, one folder per skill
-│   └── <skill-name>/
-│       ├── SKILL.md
-│       ├── references/
-│       ├── scripts/
-│       └── assets/
+├── CLAUDE.md                 # Always-on standards — read every session
+├── sdlc-context.json         # Factory memory: build checklist, decisions, open questions
+├── settings.json             # Default settings applied when plugin is enabled
+├── skills/                   # Skills — domain expertise, grouped by domain
+│   └── <domain>/
+│       └── <skill-name>/
+│           ├── SKILL.md
+│           └── references/   # Optional supporting templates
 ├── agents/                   # Subagent definitions
 │   └── <agent-name>/
-│       ├── AGENT.md
-│       ├── prompts/
-│       ├── examples/
-│       ├── references/
-│       └── tests/
-├── commands/                 # Slash command definitions
-│   └── <command-name>/
-│       ├── COMMAND.md
-│       ├── templates/
-│       ├── prompts/
-│       ├── examples/
-│       ├── references/
-│       └── tests/
-├── hooks/                    # Event-driven lifecycle automation
-│   └── <hook-name>/
-│       ├── HOOK.md
-│       ├── scripts/
-│       ├── rules/
-│       ├── examples/
-│       └── tests/
-├── mcp/                      # MCP server definitions
-│   └── <system>-mcp/
-│       ├── MCP.md
-│       ├── server/
-│       ├── tools/
-│       ├── schemas/
-│       ├── security/
-│       └── tests/
-├── lsp/                      # Language Server Protocol integrations
-│   └── <language>-lsp/
-│       ├── LSP.md
-│       ├── config/
-│       ├── schemas/
-│       ├── diagnostics/
-│       └── tests/
-├── tools/                    # Atomic executable tools
-│   └── <tool-name>/
-│       ├── TOOL.md
-│       ├── implementation/
-│       ├── schemas/
-│       ├── examples/
-│       └── tests/
-├── monitors/
-│   └── monitors.json
-├── output-styles/
-│   └── <style>.md
-├── themes/
-│   └── <theme>.json
-├── bin/                      # Executables added to Bash tool PATH
-├── scripts/                  # Hook and utility scripts
-├── .mcp.json                 # Active MCP server configurations
-├── .lsp.json                 # Active LSP server configurations
-├── settings.json             # Default settings applied when plugin is enabled
+│       └── AGENT.md
+├── commands/                 # Slash command definitions        (empty — Chunk 19)
+├── hooks/                    # Event-driven governance          (empty — Chunk 20)
+├── tools/                    # Atomic executable tools          (empty — Chunk 20)
+├── schemas/                  # sdlc-config / sdlc-manifest      (empty — Chunk 21)
+├── mcp/                      # MCP server definitions           (deferred)
+├── lsp/                      # LSP integrations                 (deferred)
+├── monitors/, output-styles/, themes/, bin/, scripts/   # placeholders
 ├── README.md
 ├── LICENSE
 └── CHANGELOG.md
 ```
+
+Populated component directories carry exactly one definition file per component (`SKILL.md`, `AGENT.md`); directories marked empty hold `.gitkeep` placeholders until their build chunk lands.
 
 ### Directory Reference
 
@@ -315,15 +274,15 @@ All component names must conform to the following pattern:
 ^[a-z0-9]+(-[a-z0-9]+)*$
 ```
 
-| Component | Recommended Prefix | Examples |
+| Component | Convention | Examples |
 |---|---|---|
-| Skills | domain verb or noun | `requirements-analysis`, `api-design`, `prd-authoring` |
-| Agents | noun-agent | `requirements-analyst`, `api-contract-agent`, `architecture-review-agent` |
-| Commands | action-noun | `create-prd`, `review-api`, `generate-test-plan`, `audit-compliance` |
-| Hooks | validate/check/enforce/audit/notify | `validate-frontmatter`, `check-prd-structure`, `enforce-naming` |
+| Skills | domain-noun or action-noun | `requirements-analysis`, `aggregate-design`, `go-chi-handler` |
+| Agents | role-noun | `requirements-analyst`, `enterprise-architect`, `backend-engineer` |
+| Commands | `sdlc-<verb-or-noun>` | `sdlc-start`, `sdlc-implement`, `sdlc-adr` |
+| Hooks | validate/check/enforce/tdd + noun | `pre-phase-advance`, `tdd-gate`, `terminology-drift-detector` |
 | MCP Servers | system-mcp | `github-mcp`, `jira-mcp`, `postgres-mcp` |
 | LSP Integrations | language-lsp | `go-lsp`, `typescript-lsp`, `terraform-lsp` |
-| Tools | action-noun | `validate-openapi`, `search-code`, `generate-schema` |
+| Tools | action-noun | `validate-openapi-contract`, `generate-artifact-id` |
 
 ### Folder Conventions
 
@@ -336,30 +295,36 @@ All component names must conform to the following pattern:
 
 #### Skill Frontmatter
 
-| Field | Required | Constraints |
-|---|---|---|
-| `name` | Yes | Max 64 chars, lowercase-hyphenated |
-| `description` | Yes | Max 1024 chars |
-| `license` | No | License name or reference |
-| `compatibility` | No | Max 500 chars |
-| `metadata` | No | Arbitrary key-value |
-| `allowed-tools` | No | Space-separated pre-approved tools |
+Canonical schema (all fields required, in this order — see CLAUDE.md, Component Frontmatter):
+
+| Field | Constraints |
+|---|---|
+| `name` | Max 64 chars, lowercase-hyphenated, matches directory name |
+| `description` | Max 1024 chars |
+| `version` | Semantic version |
+| `phase` | SDLC phase the skill serves, or `cross-cutting` |
+| `owner` | Owning agent role |
+| `created` | ISO date of first commit |
+| `tags` | Searchable keywords; first tag is the phase |
 
 #### Agent Frontmatter
 
-| Field | Required | Constraints |
-|---|---|---|
-| `name` | Yes | Max 64 chars, lowercase-hyphenated |
-| `description` | Yes | Max 1024 chars |
-| `role` | Yes | Primary responsibility |
-| `inputs` | Yes | Expected inputs |
-| `outputs` | Yes | Expected outputs |
-| `skills` | No | Associated skills |
-| `tools` | No | Approved tools |
-| `mcp-servers` | No | Approved MCP servers |
-| `version` | Yes | Semantic version |
-| `owner` | No | Team or maintainer |
-| `tags` | No | Searchable keywords |
+Canonical schema (all fields required, in this order — see CLAUDE.md, Component Frontmatter):
+
+| Field | Constraints |
+|---|---|
+| `name` | Max 64 chars, lowercase-hyphenated, matches directory name |
+| `description` | Max 1024 chars |
+| `role` | Primary responsibility, one line |
+| `version` | Semantic version |
+| `phase` | Primary SDLC phase(s) the agent drives |
+| `owner` | Maintainer (`shafi`) |
+| `created` | ISO date of first commit |
+| `inputs` | Expected input artifacts |
+| `outputs` | Produced artifacts |
+| `skills` | Skills consumed — always includes `glossary-management` and `methodology-review` |
+| `tools` | Approved tools; `[Bash]` for agents that run builds/tests/scans, else `[]` |
+| `tags` | Searchable keywords |
 
 #### Command Frontmatter
 
@@ -635,35 +600,23 @@ ubiquitous-language
 - Document trigger conditions and completion criteria
 - Remain reusable across projects; avoid product-specific logic
 
-**Example agents from this domain:**
+**The built agent roster:**
 
 ```text
-requirements-analyst
-architecture-review-agent
-api-contract-agent
-test-strategy-agent
-security-review-agent
-compliance-review-agent
-event-storming-facilitator
-domain-modeler
+product-strategist      requirements-analyst    domain-modeler
+enterprise-architect    ux-architect            data-architect
+security-architect      security-engineer       backend-engineer
+frontend-engineer       test-strategist
 ```
+
+Planned: `platform-engineer`, `data-engineer` (Chunks 15–16), `ai-ml-architect` (deferred).
 
 **Agent subdirectory structure:**
 
 ```
 agents/
-└── api-contract-agent/
-    ├── AGENT.md
-    ├── prompts/
-    │   ├── SYSTEM.md
-    │   └── REVIEW.md
-    ├── examples/
-    │   ├── input.md
-    │   └── output.md
-    ├── references/
-    │   └── standards.md
-    └── tests/
-        └── validation.md
+└── enterprise-architect/
+    └── AGENT.md
 ```
 
 ---
@@ -1193,17 +1146,21 @@ Any component that supports multiple tenants must enforce:
 
 ## Future Repository Evolution
 
-The following areas are planned for evolution as the repository matures. All future plans are grounded in `SDLC-artifact-factory.md`. Speculative items not present in that document are not listed here.
+### Delivered So Far
+
+- **Skills:** 105 across 12 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability instrumentation (4), frontend-engineering (14), test-engineering (12), governance (2).
+- **Agents:** 11 of 13 — product-strategist, requirements-analyst, domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist.
 
 ### Planned Components
 
 | Area | Planned Additions |
 |---|---|
-| Skills | Complete skill library for all 8 SDLC phases |
-| Agents | Full roster: requirements analyst, architect, UX architect, backend engineer, SDET, data engineer, security engineer, DevOps engineer, AI/ML engineer |
-| Commands | Phase-entry commands for all 8 phases plus cross-cutting commands |
-| Hooks | Governance hooks for all component types; phase-gate hooks |
-| MCP Servers | Source control, project management, knowledge management, cloud platforms, data platforms, communication |
+| Skills | platform (12), data-analytics (7), validation (5), observability stack (3), remaining governance (4) |
+| Agents | `platform-engineer` (Chunk 15), `data-engineer` (Chunk 16), `ai-ml-architect` (deferred until a product requires ML) |
+| Commands | Phase-driver commands for all 8 phases plus navigation and cross-cutting commands (Chunk 19) |
+| Hooks | Phase-gate and governance hooks — `pre-phase-advance`, `tdd-gate`, `methodology-compliance-check`, `terminology-drift-detector` (Chunk 20) |
+| Schemas | `sdlc-config`, `sdlc-manifest` (Chunk 21) |
+| MCP Servers | Source control, project management, knowledge management, cloud platforms, data platforms, communication (deferred — defined per product) |
 
 ### Planned Automation
 
@@ -1227,7 +1184,7 @@ Cloud Platforms         → AWS, Azure, GCP, Kubernetes
 
 ### Session State Artifact
 
-A structured JSON session-state artifact is planned to capture sufficient context to resume a session — including decisions made, artifacts completed, pending items, and principles established — without loss of continuity across context resets. Implementation details will be defined during repository evolution.
+Delivered as `sdlc-context.json` at the repository root: a structured JSON file capturing project context, working agreements, the build checklist, architectural decisions, and open questions. It is read at the start of every session to restore full context across resets — see the Session Startup rules in `CLAUDE.md`.
 
 ---
 
@@ -1288,7 +1245,7 @@ A testing approach where the consumer of an API defines the contract it expects,
 | **Change Data Capture (CDC)** | A technique for capturing row-level changes in a database as an event stream |
 | **Circuit Breaker** | A resilience pattern that stops calling a failing service to prevent cascading failures |
 | **Command** | A user-invokable workflow component that orchestrates agents, skills, and tools to produce a defined outcome |
-| **Consumer-Driven Contracts** | A contract testing approach where consumers define the expectations they have of providers |
+| **Consumer-Driven Contract** | A contract testing approach where consumers define the expectations they have of providers |
 | **CQRS (Command Query Responsibility Segregation)** | A pattern that separates read models from write models |
 | **Data Classification** | The process of categorizing data by sensitivity, regulatory scope, and handling requirements |
 | **Data Lineage** | The documented path of data from origin through transformation to consumption |
@@ -1339,12 +1296,14 @@ A testing approach where the consumer of an API defines the contract it expects,
 
 | Reference | Location |
 |---|---|
-| Foundational Design Document | `SDLC-artifact-factory.md` |
-| Plugin Manifest | `.claude-plugin/plugin.json` *(implementation pending)* |
-| Canonical Glossary Skill | `skills/ubiquitous-language/` *(implementation pending)* |
-| Hook Registry | `hooks/hooks.json` *(implementation pending)* |
-| MCP Configuration | `.mcp.json` *(implementation pending)* |
-| LSP Configuration | `.lsp.json` *(implementation pending)* |
+| Always-On Standards | `CLAUDE.md` |
+| Factory Memory / Session State | `sdlc-context.json` |
+| Plugin Manifest | `.claude-plugin/plugin.json` |
+| Canonical Glossary | `skills/governance/glossary-management/references/ubiquitous-language.md` |
+| Methodology Review Criteria | `skills/governance/methodology-review/` |
+| Hook Registry | `hooks/` *(pending — Chunk 20)* |
+| MCP Configuration | `.mcp.json` *(deferred)* |
+| LSP Configuration | `.lsp.json` *(deferred)* |
 
 ### Standards Referenced in Source Document
 
@@ -1364,4 +1323,4 @@ A testing approach where the consumer of an API defines the contract it expects,
 
 ---
 
-*SDLC Artifact Factory — README v06.24.2026 — Author: Shafi Babar*
+*SDLC Artifact Factory — README v0.1.0 — Author: Shafi Babar*
