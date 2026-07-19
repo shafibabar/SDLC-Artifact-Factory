@@ -7,9 +7,10 @@ description: >
   the distinction between authentication and authorisation, role-to-permission
   mapping, and how ABAC policies connect to JWT claims and API endpoint guards.
   Used by the security-architect agent during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: security-architect
+created: 2026-06-25
 tags: [design, security, abac, access-control, authorisation, rbac, jwt, go]
 ---
 
@@ -46,7 +47,7 @@ This skill teaches Attribute-Based Access Control (ABAC) — a model that evalua
 | `subject.tenant_id` | JWT `tenant_id` claim | `tenant-uuid` |
 | `subject.roles` | JWT `roles` claim | `["compliance-officer"]` |
 | `subject.permissions` | JWT `permissions` claim | `["data-assets:read", "reports:generate"]` |
-| `subject.email` | JWT `email` claim | `yuki@example.com` |
+| `subject.email` | JWT `email` claim | `maya.chen@example.com` |
 
 ### Resource Attributes (what is being accessed)
 
@@ -70,6 +71,8 @@ This skill teaches Attribute-Based Access Control (ABAC) — a model that evalua
 | Attribute | Source | Example |
 |---|---|---|
 | `env.ip_address` | Request header (X-Forwarded-For, validated) | `203.0.113.1` |
+
+**X-Forwarded-For is attacker-controlled.** Only trust it when the request arrived through your own edge proxy, and take the rightmost address appended by a trusted hop — never the leftmost value, which the client can set freely. If the deployment has no trusted proxy, use the TCP peer address instead.
 | `env.time` | Server time | `2026-06-25T14:30:00Z` |
 | `env.request_id` | Request context | `req-uuid` |
 
@@ -140,6 +143,8 @@ Permissions follow the pattern: `[resource-type]:[action]`
 
 Roles are shorthand for a bundle of permissions. A user's permissions are derived from their roles but stored as explicit claims in the JWT.
 
+**Staleness rule:** permissions embedded in a JWT are frozen until the token expires. Keep access-token TTL short (≤ 1 hour) so role changes propagate quickly, and revoke immediately on offboarding by checking a server-side session deny-list — never rely on token expiry alone for access removal (SOC 2 CC6.3).
+
 | Role | Permissions |
 |---|---|
 | `compliance-officer` | `data-assets:read`, `compliance-gaps:read`, `reports:generate` |
@@ -195,6 +200,8 @@ func (p *ABACPolicy) Evaluate(ctx context.Context, sub Subject, res Resource, ac
 }
 ```
 
+**Uniform denial:** the same `ErrForbidden` is returned for a wrong-tenant resource and for a missing permission. If wrong-tenant returned a different error (or a 404 only sometimes), an attacker could probe which resource IDs exist in other tenants. One error, one message, no distinguishing detail — log the real reason server-side with the request ID.
+
 **Enforcement location:** Policy evaluation happens in the Application layer (command/query handlers) — not in the API layer. The API layer validates the JWT structure; the Application layer evaluates the policy. This prevents policy bypass by calling internal methods directly.
 
 ---
@@ -215,6 +222,19 @@ For physical multi-tenancy (separate deployments per tenant), the tenant isolati
 | Policy in application layer | Access checks in Application layer command/query handlers | Access checks only in API handler middleware |
 | Permission naming convention | `[resource-type]:[action]` pattern | Ad-hoc permission names |
 | Deny by default | Default policy result is deny; allow is explicit | Default allow with explicit deny |
+| Uniform denial | Wrong-tenant and no-permission return the same error | Different errors reveal resource existence across tenants |
+
+---
+
+## Anti-Patterns
+
+- **Tenant ID from the request body.** The tenant ID used in policy evaluation must come from the JWT claim, never from a client-supplied field. A client-supplied `tenant_id` turns tenant isolation into a suggestion.
+- **Role explosion.** Creating a new role for every permission combination (`compliance-officer-readonly-no-reports`) instead of composing permissions. Roles bundle permissions; they are not the decision unit.
+- **Checking roles instead of permissions.** `if subject.HasRole("admin")` scattered through handlers couples code to the role catalogue. Check permissions; roles map to permissions in one place.
+- **Authorisation only in middleware.** Route middleware cannot see resource attributes (sensitivity, owner) because the resource has not been loaded yet. Middleware handles authentication; the Application layer handles authorisation.
+- **Confused deputy.** A background job or service-to-service call that runs with a system identity and performs actions on behalf of a user without carrying the user's subject attributes. Propagate the original subject through the call chain.
+- **Leaking the denial reason.** Returning "resource belongs to another tenant" or "you lack data-assets:write" to the caller. Both are reconnaissance gifts. Uniform error out; detailed reason in the server log.
+- **Trusting stale JWTs for offboarding.** Treating token expiry as access removal. Termination must revoke sessions server-side, immediately.
 
 ---
 
@@ -222,7 +242,7 @@ For physical multi-tenancy (separate deployments per tenant), the tenant isolati
 
 ```markdown
 ---
-artifact: access-control-model
+name: access-control-model
 product: [product name]
 version: 1.0.0
 phase: design

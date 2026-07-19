@@ -8,9 +8,10 @@ description: >
   Companion skill to bounded-context-mapping; used when the domain-modeler or
   enterprise-architect needs to reason through relationship pattern selection in
   detail.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, context-map, bounded-context, acl, ohs, shared-kernel, contracts]
 ---
 
@@ -36,7 +37,7 @@ Use this skill when:
 
 **Team dynamic:** Requires high trust and continuous communication. Cannot be forced — both teams must agree.
 
-**When to use:** Two bounded contexts are so closely aligned in purpose that independent release is impossible for a period. Treat as temporary — work toward Customer/Supplier as the relationship matures.
+**When to use:** Two Bounded Contexts are so closely aligned in purpose that independent release is impossible for a period. Treat as temporary — work toward Customer/Supplier as the relationship matures.
 
 **Risk:** High coordination cost. If the teams drift, the partnership degrades into implicit coupling without the governance of Shared Kernel.
 
@@ -122,7 +123,7 @@ The domain never imports from `adapters/`. It imports only from `ports/`. The `t
 
 **When to use:** When one context must serve many downstream consumers. Rather than negotiating privately with each Consumer, publish a standard protocol.
 
-**Risk:** The OHS becomes a lowest-common-denominator API that serves no consumer well because it tries to serve all. Design for the ICP consumer first; extend carefully.
+**Risk:** The OHS becomes a lowest-common-denominator API that serves no consumer well because it tries to serve all. Design for the primary consumer first; extend carefully.
 
 **Implementation:** OpenAPI specification (versioned). Consumer-Driven Contracts for each known consumer. Breaking changes require a major version bump; all versions are supported for a defined sunset period.
 
@@ -196,6 +197,49 @@ Every Customer/Supplier relationship in the Context Map must have:
 4. A process for the Consumer to update the contract when its needs change
 
 Without Consumer-Driven Contracts, a Customer/Supplier relationship is a verbal agreement — it will be violated.
+
+---
+
+## Worked Example
+
+Pattern Selection Rationale for the data-estate compliance product:
+
+| Relationship | Pattern selected | Rationale | Consumer-Driven Contracts required? |
+|---|---|---|---|
+| Google Drive API → Storage Integration | ACL | Vendor `File` resource model (mimeTypes, revisions, permissions arrays) must not leak into the domain; the ACL translates it into `DataAsset` candidates and `StorageSource` health signals | No (vendor will not run our tests; ACL integration tests instead) |
+| AWS S3 API → Storage Integration | ACL | Same reasoning as Google Drive; S3 object/bucket vocabulary stays behind `ports/` | No |
+| Storage Integration → Classification Engine | OHS + PL | Classification is consumed by discovery today and by future connectors; `DataAssetDiscovered` events are the Published Language, schema-registered | Yes — one contract per consumer of the OHS |
+| Classification Engine → Compliance Intelligence | Customer/Supplier | Compliance depends on `DataAssetClassified` (carrying `SensitivityLevel`) and can negotiate schema needs with the upstream | Yes |
+| Graph Context → Compliance Intelligence | Customer/Supplier | Compliance queries entity relationships for gap analysis; Graph owes it a stable query contract | Yes |
+| Classification Engine ↔ Billing (future) | Separate Ways | Usage metering can be derived from broker consumer offsets; direct integration adds coupling with no compensating value | No |
+
+Note what is absent: no Shared Kernel (single team, but contexts must stay independently deployable), no Conformist (every external model is poor enough to warrant an ACL), no Partnership (no relationship where neither side can be upstream).
+
+---
+
+## Quality Criteria
+
+| Criterion | Pass | Fail |
+|---|---|---|
+| Exhaustive coverage | Every connection on the Context Map carries exactly one of the nine patterns | Unnamed lines, or one connection carrying two conflicting patterns |
+| Rationale recorded | Each selection states why it beat the plausible alternatives | Pattern named with no rationale — the decision cannot be revisited safely |
+| ACL for external systems | Every third-party or legacy integration is behind an ACL; domain packages import only from `ports/` | Vendor SDK types appearing in domain or application packages |
+| Contracts enforce Customer/Supplier | Every Customer/Supplier and OHS relationship has a Consumer-Driven Contract suite wired as a CI gate on the Supplier | Contract exists on paper but does not block the Supplier's deployment |
+| Shared Kernel enumerated | Any Shared Kernel lists its exact contents and joint-approval rule | An open-ended "common" or "shared" package labelled Shared Kernel |
+| Temporary patterns time-boxed | Partnership and dual-schema migration states carry an explicit exit plan | Indefinite Partnership; "temporary" dual publishing with no sunset date |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Pattern archaeology** — naming whatever integration already exists as a "pattern" after the fact | The map documents accidents instead of decisions; obligations were never agreed | Select the pattern first, then build the integration to match it |
+| **Pass-through ACL** — an ACL whose translators map upstream fields 1:1 into identically-shaped downstream types | All the cost of an ACL with none of the insulation; upstream renames still break the domain | Translate into the downstream's Ubiquitous Language, or admit the relationship is Conformist |
+| **Conformist by inertia** — conforming to an internal upstream because negotiating felt hard | Cedes the downstream model to a team that owes it nothing; internal relationships can and should carry obligations | Escalate to Customer/Supplier with Consumer-Driven Contracts; reserve Conformist for genuinely non-negotiable upstreams |
+| **Union-of-wishes OHS** — extending the host protocol with every consumer's request | The API becomes a lowest common denominator that serves nobody and can never shed a field | Design for the primary consumer; additive extensions only after a named consumer commits to them |
+| **`common/` labelled Shared Kernel** — a grab-bag utility package declared a Shared Kernel retroactively | No agreed scope, no joint ownership, no governance — it is coupling wearing a pattern's name | Enumerate a minimal kernel with two-owner approval, or dissolve it into per-context code |
+| **Building against the Big Ball of Mud directly** — new services calling into the legacy tangle | The mud's instability and implicit contracts propagate into every new service | One ACL is the single entry point into the mud; all new integration goes through it |
 
 ---
 

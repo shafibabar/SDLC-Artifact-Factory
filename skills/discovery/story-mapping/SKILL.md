@@ -8,9 +8,10 @@ description: >
   isolation without regard to the user's end-to-end experience. Used by the
   requirements-analyst agent during the Ideate phase after user stories and epics
   are defined.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, story-mapping, user-journey, mvp, backlog, product-discovery]
 ---
 
@@ -156,11 +157,25 @@ After placing all stories, walk the spine and ask for each activity:
 
 ---
 
+## Anti-Patterns
+
+**The pasted backlog:** columns filled by copying the flat backlog in priority order, with no depth gradient. If the vertical axis does not read "minimum viable at the top, refinements below," the artifact is a backlog wearing a map's clothes.
+
+**The vertical-slice MVP:** building one activity completely ("all four connectors, perfectly") instead of cutting a thin horizontal slice. The user connects Google Drive flawlessly — and then hits a wall, because scanning and reporting were "next quarter." The MVP line must cross *every* activity in the spine.
+
+**The system-perspective spine:** "Ingest → Process → Store → Serve." That is the pipeline's journey, not the user's. The spine must narrate what the *persona* does ("Connect Sources → Scan & Classify → Review & Report"), or the map cannot reveal where a user gets stuck.
+
+**Orphan stories:** stories that exist in the backlog but appear nowhere on the map. Either they belong to an activity (place them), or they belong to no user journey (challenge why they exist at all).
+
+**The frozen map:** built once during discovery, never touched again. Each time a story is added, split, or re-prioritised, the map must absorb the change — a map that disagrees with the backlog is worse than no map, because it is trusted and wrong.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: story-map
+name: story-map
 product: [product name]
 version: 1.0.0
 phase: ideate

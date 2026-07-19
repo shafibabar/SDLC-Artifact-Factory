@@ -8,9 +8,10 @@ description: >
   and the Go security libraries to use (and avoid). This skill translates
   security-architect designs into working, auditable Go code. Used by the
   security-engineer agent during the Implement phase.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: security-engineer
+created: 2026-06-25
 tags: [implement, security, go, jwt, abac, sql-injection, audit-log, rate-limiting]
 ---
 
@@ -38,12 +39,18 @@ type AuthMiddleware struct {
     issuer   string
 }
 
-func NewAuthMiddleware(jwksURL, audience, issuer string) (*AuthMiddleware, error) {
-    keySet, err := jwk.Fetch(context.Background(), jwksURL)
-    if err != nil {
+func NewAuthMiddleware(ctx context.Context, jwksURL, audience, issuer string) (*AuthMiddleware, error) {
+    // jwk.Cache re-fetches the JWKS in the background, so signing-key rotation
+    // needs no restart. A one-shot jwk.Fetch would pin the keys forever.
+    cache := jwk.NewCache(ctx)
+    if err := cache.Register(jwksURL, jwk.WithMinRefreshInterval(15*time.Minute)); err != nil {
+        return nil, fmt.Errorf("registering JWKS URL: %w", err)
+    }
+    // Prime the cache so a bad URL fails at startup, not on the first request
+    if _, err := cache.Refresh(ctx, jwksURL); err != nil {
         return nil, fmt.Errorf("fetching JWKS: %w", err)
     }
-    return &AuthMiddleware{keySet: keySet, audience: audience, issuer: issuer}, nil
+    return &AuthMiddleware{keySet: jwk.NewCachedSet(cache, jwksURL), audience: audience, issuer: issuer}, nil
 }
 
 func (m *AuthMiddleware) Handler(next http.Handler) http.Handler {
@@ -63,23 +70,46 @@ func (m *AuthMiddleware) Handler(next http.Handler) http.Handler {
     })
 }
 
-// Extract subject from context — called in handlers
+// Extract subject from context — called in handlers.
+// Every claim is checked: a validly-signed token with a missing or malformed
+// claim must produce an error, never a panic (no MustParse, no bare type
+// assertions — a panic here is an attacker-triggerable denial of service).
 func SubjectFromContext(ctx context.Context) (domain.Subject, error) {
     tok, ok := ctx.Value(ctxKeyToken).(jwt.Token)
     if !ok {
         return domain.Subject{}, ErrNoSubjectInContext
     }
-    tenantID, _ := uuid.Parse(tok.PrivateClaims()["tenant_id"].(string))
-    permissions := toStringSlice(tok.PrivateClaims()["permissions"])
+    userID, err := uuid.Parse(tok.Subject())
+    if err != nil {
+        return domain.Subject{}, ErrMalformedToken
+    }
+    rawTenant, ok := tok.PrivateClaims()["tenant_id"].(string)
+    if !ok {
+        return domain.Subject{}, ErrMalformedToken
+    }
+    tenantID, err := uuid.Parse(rawTenant)
+    if err != nil {
+        return domain.Subject{}, ErrMalformedToken
+    }
+    permissions, err := toStringSlice(tok.PrivateClaims()["permissions"])
+    if err != nil {
+        return domain.Subject{}, ErrMalformedToken
+    }
     return domain.Subject{
-        ID:          uuid.MustParse(tok.Subject()),
+        ID:          userID,
         TenantID:    tenantID,
         Permissions: permissions,
     }, nil
 }
 ```
 
-**Library:** `github.com/lestrrat-go/jwx/v2` — supports RS256, JWKS endpoint fetching with automatic key rotation.
+**Library:** `github.com/lestrrat-go/jwx/v2` — supports RS256, JWKS caching with background refresh for key rotation.
+
+**JWT validation pitfalls this middleware must not fall into:**
+- **Algorithm pinning:** the accepted algorithm comes from the server's JWKS keys, never from the token's `alg` header. Publishing only RSA keys with `alg: RS256` in the JWKS prevents `alg: none` and RS256→HS256 confusion attacks.
+- **Audience and issuer are mandatory.** A token minted for another service in the same identity domain validates against the same JWKS — only `aud`/`iss` checks stop cross-service token replay.
+- **Require `exp`.** A token without an expiry claim must be rejected, not treated as never-expiring.
+- **Clock skew:** allow a small acceptance skew (≤ 2 minutes, `jwt.WithAcceptableSkew`) — no more, or "short-lived" tokens quietly stop being short-lived.
 
 ---
 
@@ -262,6 +292,10 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 
 Default rate limits: 100 requests/minute for standard endpoints; 10 requests/minute for write endpoints.
 
+**Two hardening notes:**
+- The `sync.Map` of limiters grows one entry per user forever — evict idle limiters on a timer (track last-seen and sweep entries older than ~10 minutes), or a slow enumeration attack becomes a memory leak.
+- Unauthenticated endpoints (login, token refresh) cannot key on user ID — rate-limit those by client IP at the ingress, since they are exactly the endpoints credential-stuffing targets.
+
 ---
 
 ## Audit Log Implementation with Non-Repudiation
@@ -313,6 +347,8 @@ func (r *AuditRepository) Append(ctx context.Context, entry AuditEntry) error {
 
 **Audit log database role:** A dedicated PostgreSQL role for the audit log table has `INSERT` privilege only — no `UPDATE` or `DELETE`. Even a fully compromised service account cannot delete audit entries.
 
+**Hash-chain concurrency:** two concurrent appends that read the same previous hash fork the chain, and verification then fails for honest reasons. Serialise appends per tenant inside the insert transaction — `SELECT pg_advisory_xact_lock(hashtext($1::text))` on the tenant ID before reading the previous hash — and order the chain by a monotonic `BIGSERIAL` sequence column, not by `occurred_at` (timestamps can tie or arrive out of order).
+
 ---
 
 ## Quality Criteria
@@ -325,6 +361,21 @@ func (r *AuditRepository) Append(ctx context.Context, entry AuditEntry) error {
 | Security headers set | All headers from the list applied | Missing HSTS, CSP, or X-Content-Type-Options |
 | Audit log append-only | PostgreSQL role has INSERT only; no UPDATE/DELETE | Audit table modified by the application role |
 | Rate limiting applied | All write endpoints have rate limiting | Write endpoints with no rate limiting |
+| No panics on malformed input | Claim extraction returns errors; no `MustParse` or bare type assertions on token data | Attacker-controlled data can panic a handler |
+| JWKS refresh | Key set cached with background refresh | One-shot JWKS fetch pinned for process lifetime |
+
+---
+
+## Anti-Patterns
+
+- **Trusting the token's `alg` header.** Letting the token declare its own algorithm enables `alg: none` and RS256→HS256 key-confusion attacks. The server decides the algorithm via its JWKS.
+- **`MustParse` on claim data.** Any `Must*` or unchecked type assertion on values an attacker can put in a token is a remote panic waiting to happen.
+- **Distinguishing denial reasons.** Returning "wrong tenant" vs "missing permission" vs "resource not found" as different errors from the policy. One `ErrForbidden` outward; the specific reason goes to the server log only.
+- **`fmt.Sprintf` SQL "just this once".** Dynamic table names, ORDER BY columns built from user input, or IN-lists assembled by string join. pgx `$N` parameters for values; a fixed allowlist map for identifiers — never interpolated input.
+- **Tenant filter only in the policy.** Queries without `tenant_id = $N` in the WHERE clause rely on a single control. The SQL filter is the backstop when the policy layer has a bug — defence in depth applies inside the repository too.
+- **Logging the token.** Writing the Authorization header, the raw JWT, or decoded claims into request logs. A leaked log becomes a replayable credential store until every token expires.
+- **Security middleware ordering by accident.** Rate limiting keyed on user ID placed before authentication reads an empty subject and collapses all anonymous traffic into one bucket. Order explicitly: security headers → auth → rate limit → handler.
+- **Audit write after response.** Fire-and-forget audit logging that can silently fail leaves gaps in the Non-Repudiation chain. The audit insert commits in the same transaction as the state change, or the state change does not happen.
 
 ---
 

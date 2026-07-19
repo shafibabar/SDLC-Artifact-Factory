@@ -8,9 +8,10 @@ description: >
   prevent re-litigating settled decisions and give future engineers (and future
   Claude sessions) the context needed to understand why the system is built the
   way it is. Used by the enterprise-architect agent throughout the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, adr, decision-records, governance]
 ---
 
@@ -113,13 +114,23 @@ What trade-offs were deliberately accepted?]
 
 ADRs are never deleted. Even superseded ADRs remain in the record because they show what was decided before and why the team changed course.
 
+### Superseding Chains
+
+Superseding has mechanics that keep the record navigable years later:
+
+- **Links are bidirectional.** The new ADR carries `Supersedes: ADR-NNN` in its Related ADRs; the old ADR's status becomes `Superseded by ADR-MMM`. Updating the old ADR's status line is part of accepting the new one — an unlinked supersession is a defect.
+- **Supersede whole decisions, never fractions.** If only part of a decision changes, the new ADR restates the parts being kept alongside the parts being changed, and supersedes the old ADR entirely. An ADR that is "half active" cannot be trusted by a reader who finds it first.
+- **Supersede the head of the chain.** A new decision replaces the *current* ADR, not one already superseded. Chains read `ADR-003 → superseded by ADR-017 → superseded by ADR-041`; a reader landing anywhere in the chain can walk forward to the live decision in one direction.
+- **A superseding ADR must say what changed.** Its Context section names the original decision, what shifted since (new constraint, new information, changed scale), and why the original rationale no longer holds. "We changed our minds" without new information is re-litigation, not evolution.
+- **Deprecated ≠ Superseded.** Use `Deprecated` when the decision's subject no longer exists (the feature was removed); use `Superseded` when a replacement decision exists. A Deprecated ADR has no forward link.
+
 ---
 
 ## ADR Numbering
 
 ADRs are numbered sequentially: `ADR-001`, `ADR-002`, ...
 
-Within a product, ADR numbering is product-scoped. The SDLC Artifact Factory plugin itself also has ADRs for its own design decisions (already captured in `sdlc-context.json → decisions` — those will be formalised as ADRs in Chunk 18).
+Within a product, ADR numbering is product-scoped. The SDLC Artifact Factory plugin itself also has ADRs for its own design decisions (already captured in `sdlc-context.json → decisions` — those will be formalised as ADRs when the remaining governance skills are built).
 
 ---
 
@@ -223,6 +234,21 @@ The enterprise-architect maintains an ADR index at: `artifacts/[product]/design/
 | Active decision statement | "We will..." or "We have decided to..." | Passive or hedged decision statements |
 | Status current | Status field reflects actual state | ADR still marked Proposed after it was implemented |
 | Never deleted | Superseded ADRs link to the superseding ADR; both exist | ADRs deleted when decisions change |
+| Chain integrity | Supersession links are bidirectional and always point to the chain head | One-way links, or an ADR superseding an already-superseded ADR |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **The retrofitted ADR** — writing the ADR after implementation to bless what was built | Options were never really considered; the "rationale" is reverse-engineered justification | Write the ADR at `Proposed` before implementation; acceptance is the gate to building |
+| **Advocacy context** — a Context section that argues for the chosen option | Readers cannot evaluate whether the forces still hold; the ADR loses its power to enable informed change | Context states facts, forces, and constraints neutrally; the argument belongs in Rationale |
+| **Straw-man options** — alternatives listed only to be knocked down | The decision looks considered but is not; when circumstances change, no genuine fallback exists in the record | Each option gets its honest best case; the chosen option must win against real competition |
+| **The consequences-free decision** — only positive consequences listed | Every architectural decision buys something by giving something up; hiding the cost guarantees surprise later | Negative consequences and accepted trade-offs are mandatory; an ADR with no downsides is incomplete |
+| **ADR as documentation dump** — recording tutorials, diagrams, and how-to content in an ADR | The decision drowns; nobody can find what was actually decided | One decision per ADR; reference designs and diagrams live in their own artifacts, linked |
+| **Editing an Accepted ADR in place** — updating the decision text as things change | The historical record is destroyed; "why did we believe X in June?" becomes unanswerable | Accepted ADRs are immutable except for status-line updates; changes require a superseding ADR |
+| **The mega-ADR** — one record covering event publication, API versioning, and tenancy | The parts have different lifecycles; superseding one aspect falsely invalidates the rest | Split into one ADR per independently reversible decision, cross-linked in Related ADRs |
 
 ---
 

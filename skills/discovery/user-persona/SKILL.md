@@ -6,9 +6,10 @@ description: >
   decorative), the difference between a persona and an ICP, and how to connect
   personas to JTBD analysis and user story writing. Used by the requirements-analyst
   agent during the Ideate phase before JTBD analysis begins.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, persona, user-research, jtbd, product-discovery]
 ---
 
@@ -18,7 +19,7 @@ tags: [ideate, persona, user-research, jtbd, product-discovery]
 
 A user persona is a composite archetype of a real type of user — not a demographic stereotype, and not a fictional character. A good persona answers: **what is this type of person trying to accomplish, what prevents them from doing it today, and what does success look like to them?**
 
-Personas serve one purpose in this process: to make requirements concrete. "The system must scan files" is ambiguous. "Yuki, the Compliance Officer, must be able to see a gap report across her entire estate within 30 minutes of connecting a source, so she can brief her CISO before the quarterly board meeting" is actionable.
+Personas serve one purpose in this process: to make requirements concrete. "The system must scan files" is ambiguous. "Maya Chen, the Compliance Officer, must be able to see a gap report across her entire estate within 30 minutes of connecting a source, so she can brief her CISO before the quarterly board meeting" is actionable.
 
 ---
 
@@ -39,7 +40,7 @@ For B2B products, always model at minimum: the primary user, the buyer/economic 
 A persona that lacks these attributes cannot be used to write requirements or job stories:
 
 ### Identity Anchors
-- **Name and role title** — grounded archetype (e.g. "Yuki Tanaka, Compliance Officer")
+- **Name and role title** — grounded archetype (e.g. "Maya Chen, Compliance Officer")
 - **Company profile** — size, industry, regulatory exposure (consistent with ICP)
 - **Technical literacy** — how comfortable is this person with technology? Self-serves or needs guidance?
 - **Domain expertise** — deep or shallow knowledge of the domain (compliance, data governance, etc.)?
@@ -91,6 +92,24 @@ For the first product (Data Estate Mapping & Compliance Intelligence), minimum t
 
 ---
 
+## Worked Example (Primary Persona Excerpt)
+
+**Maya Chen, Compliance Officer — PRIMARY**
+
+- **Company:** 180-employee healthtech SMB; SOC 2 Type II required by its two largest customers; data spread across Google Drive and AWS S3
+- **Technical literacy:** 3/5 — fluent in SaaS admin consoles; will not run CLI tools or read API docs
+- **Primary goal:** walk into the quarterly audit-prep meeting knowing exactly what sensitive data exists and which SOC 2 controls are at risk
+- **Success metric:** a clean SOC 2 report with zero surprise findings — that is what gets her recognised
+- **Current approach:** a spreadsheet updated by interviewing team leads twice a year — outdated the day it is finished
+- **Primary frustration:** cannot answer "where does customer PII actually live?" with evidence — only with folklore
+- **Trigger:** a customer's security questionnaire, or an approaching SOC 2 Type II audit window
+- **Expected time to first value:** one working session (under an hour), or she reverts to the spreadsheet
+- **Adoption barrier:** anything that requires her to file an engineering ticket to see her own data
+
+Every line above is load-bearing: the trigger seeds JTBD situations, the current approach explains the switching motivation, the time-to-first-value becomes a usability NFR, and the adoption barrier constrains onboarding design. A persona attribute that could not be used this way is decoration — cut it.
+
+---
+
 ## Step-by-Step Production
 
 1. Review the ICP from the GTM strategy — the persona must live within that ICP company profile.
@@ -118,7 +137,7 @@ For the first product (Data Estate Mapping & Compliance Intelligence), minimum t
 
 ```markdown
 ---
-artifact: user-personas
+name: user-personas
 product: [product name]
 version: 1.0.0
 phase: ideate

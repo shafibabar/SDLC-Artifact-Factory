@@ -8,9 +8,10 @@ description: >
   backend-engineer, frontend-engineer, data-architect, and platform-engineer
   work from. Used by the enterprise-architect agent after the System Context
   Diagram is approved.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, c4, container-diagram, service-decomposition, microservices]
 ---
 
@@ -176,11 +177,25 @@ Service boundaries follow Bounded Context boundaries from the domain model, subj
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Shared database** — two services drawn against one PostgreSQL | Schema changes in one service silently break the other; the database becomes an unmanaged Shared Kernel | One database per service; cross-service data flows through APIs or Domain Events |
+| **Distributed monolith** — every request fans out through chains of synchronous calls | No container can deploy, fail, or scale independently; availability multiplies down the chain | Prefer Domain Events for cross-context flows; keep synchronous chains at most one hop past the gateway |
+| **Nano-service sprawl** — one container per Aggregate or per function | Operational cost (deployment, observability, versioning) grows per container with no matching decoupling benefit | Containers follow Bounded Contexts; split further only when a Deciding Service Boundaries constraint demands it |
+| **Broker as shared database** — services consuming another context's internal topics | Topic schemas become invisible contracts; the producer can never evolve them safely | Cross-context topics carry Published Language schemas only; internal topics are private to their context |
+| **The invisible infrastructure** — omitting the broker, databases, or workers "for clarity" | Engineers provision from this diagram; an omitted container is an unplanned one | Every deployable and every datastore appears — clarity comes from layout, not omission |
+| **Business logic in the gateway** — the BFF grows validation, orchestration, or domain rules | The gateway becomes an unowned service coupled to every Bounded Context at once | Gateway does routing, auth, rate limiting only; domain behaviour lives in the owning service |
+| **Aspirational technology labels** — labelling containers with technology never agreed | The diagram silently overrides `sdlc-config.json`; implementation and design diverge on day one | Labels come from the agreed stack; deviations require an ADR before they appear on the diagram |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: container-diagram
+name: container-diagram
 product: [product name]
 version: 1.0.0
 phase: design

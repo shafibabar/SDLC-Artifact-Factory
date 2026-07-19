@@ -6,9 +6,10 @@ description: >
   cascading from company to product level, OKR health checks, and the most common
   failure modes. Used by the product-strategist agent after roadmap direction is
   established, to define the measurable outcomes the Strategy phase commits to.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, okr, metrics, product-metrics, north-star, outcome-driven]
 ---
 
@@ -118,6 +119,24 @@ For a solo product (Shafi as sole operator), the product OKRs and company OKRs a
 
 ---
 
+## Worked Example
+
+One Objective for the first product (Data Estate Mapping and Compliance Intelligence), Q3 2026:
+
+**Objective 1 — Prove that an SMB can go from zero to a trustworthy compliance picture in a single session.**
+
+*Roadmap link: Now — "Frictionless Onboarding"*
+
+| Key Result | Metric | Baseline | Target | Owner | Confidence |
+|---|---|---|---|---|---|
+| KR1.1 | % of trial users who discover their first compliance gap within 30 minutes of connecting a storage source | n/a (pre-launch) | 80% | Shafi | 70% |
+| KR1.2 | Median time from Google Drive connection to full sensitivity classification (estates ≤ 100k files) | n/a | ≤ 30 min | Shafi | 60% |
+| KR1.3 | % of design-partner deployments completed without any support contact | n/a | 3 of 3 | Shafi | 70% |
+
+**Why this passes:** the Objective is qualitative and time-bound; if all three KRs land, "zero to trustworthy compliance picture in one session" is genuinely accomplished; every KR is measurable from product telemetry with no self-assessment; and none can be gamed without actually delivering the onboarding outcome (shipping an onboarding wizard that users abandon fails KR1.1 regardless of effort spent).
+
+---
+
 ## OKR Health Check
 
 For each Objective, answer all five questions. Fail on any one = revise.
@@ -143,11 +162,26 @@ For each Objective, answer all five questions. Fail on any one = revise.
 
 ---
 
+## Quality Criteria
+
+| Criterion | Pass | Fail |
+|---|---|---|
+| Objective count | ≤ 3 per cycle | 4 or more Objectives |
+| KR count | 3–5 per Objective | 1–2 KRs (under-specified) or 6+ (unfocused) |
+| Objective form | Qualitative, time-bound, no numbers | Contains a metric, or is a task list |
+| KR form | Every KR has metric, baseline, target, owner, and confidence | Any of the five fields missing |
+| Outcome orientation | Every KR measures a change for users or the business | Any KR that is a task, launch, or feature count |
+| Ambition | Targets set at ~70% confidence | Targets at 100% confidence (sandbagged) or below 30% (fantasy) |
+| North Star Metric | Named, and consistent with the Key Results | Absent, or contradicted by the KRs |
+| Health check | All 5 questions answered for every Objective | Health check skipped or partially applied |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: okr-set
+name: okr-set
 product: [product name]
 cycle: [Q3 2026 / H2 2026 / Annual 2026]
 version: 1.0.0

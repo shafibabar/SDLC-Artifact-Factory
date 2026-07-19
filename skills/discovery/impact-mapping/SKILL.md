@@ -7,9 +7,10 @@ description: >
   and identifies which actors and impacts to focus on first. Used by the
   requirements-analyst agent during the Ideate phase to scope and prioritise
   requirements before epic definition.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, impact-mapping, discovery, prioritisation, goal-alignment]
 ---
 
@@ -59,8 +60,8 @@ List every relevant actor. Explicitly include actors who could block the goal �
 For each actor, ask: **what behaviour must change (or remain the same) for this actor to help us achieve the goal?**
 
 Impacts are behaviour changes, not activities or features:
-- "Yuki (Compliance Officer) connects all storage sources within the first session" — behaviour change
-- "Yuki uses the compliance report feature" — this is a feature, not a behaviour
+- "Maya Chen (Compliance Officer) connects all storage sources within the first session" — behaviour change
+- "Maya uses the compliance report feature" — this is a feature, not a behaviour
 - "IT Lead deploys the product without raising a support ticket" — behaviour change
 
 For blocking actors: "IT Security approves the deployment request without blocking it" — the impact is removing a blocker behaviour.
@@ -72,7 +73,7 @@ For blocking actors: "IT Security approves the deployment request without blocki
 For each impact, ask: **what can we build (or do) to cause this behaviour change?**
 
 Deliverables are features, content, processes, or configuration options that enable the behaviour change:
-- Impact: "Yuki connects all storage sources within the first session"
+- Impact: "Maya connects all storage sources within the first session"
 - Deliverable: "Guided onboarding wizard that connects a storage source in < 5 minutes"
 - Deliverable: "Pre-built connector for Google Drive with OAuth 2.0 single-click authorization"
 - Deliverable: "In-app progress indicator showing setup completion percentage"
@@ -144,11 +145,25 @@ Deliverables left on the map but not selected for MVP become the backlog for sub
 
 ---
 
+## Anti-Patterns
+
+**Backwards mapping:** starting from an existing feature list and drawing goal → actor → impact branches to justify it. The tell: every WHAT on the map was already on the backlog. The map exists to challenge deliverables, not launder them.
+
+**Deliverable as goal:** "GOAL: ship the compliance dashboard." Shipping is under your control; goals must be outcomes that actors' behaviour produces. If achieving the "goal" requires no one outside the team to change behaviour, it is a deliverable.
+
+**Actor soup:** "the customer", "IT", "the market" as actors. An actor must be specific enough to have observable behaviour — Maya Chen the Compliance Officer can connect a storage source; "the customer" cannot do anything observable.
+
+**Feature usage as impact:** "Maya uses the report feature" restates a deliverable as an impact. The impact is the behaviour change the feature enables ("Maya briefs the CISO from live data instead of a stale spreadsheet").
+
+**The complete-map fallacy:** treating every branch on the map as committed scope. The map is a menu of options traced to the goal; the MVP cut selects the cheapest path through it. A map delivered without a cut has skipped its entire purpose as a prioritisation tool.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: impact-map
+name: impact-map
 product: [product name]
 version: 1.0.0
 phase: ideate

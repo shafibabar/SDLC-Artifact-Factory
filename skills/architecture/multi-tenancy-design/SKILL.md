@@ -8,9 +8,10 @@ description: >
   and API levels, and how tenant context is propagated across service boundaries.
   Physical multi-tenancy is the default model for this plugin's first product.
   Used by the enterprise-architect agent during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, multi-tenancy, isolation, security, compliance]
 ---
 
@@ -169,6 +170,18 @@ The Control Plane never has access to tenant data. It only manages metadata: whi
 
 ---
 
+## Fleet Operations
+
+Infrastructure-per-tenant turns one deployment into a fleet. The design must state how the fleet is operated, or the isolation model collapses under its own weight:
+
+- **Single source of desired state.** Every tenant deployment is rendered from the same Helm Chart and OpenTofu Module versions, differing only in a per-tenant values file. Hand-edited tenant environments are configuration drift — detect drift with GitOps reconciliation and treat it as an incident, not a customisation channel.
+- **Version skew is bounded.** Upgrades roll out in waves: one designated canary tenant (an internal or consenting tenant) → small wave → fleet. The tenant registry records each tenant's deployed version; the maximum supported skew (e.g. N and N−1) is declared, because event schemas and API contracts must stay compatible across the skew window.
+- **Per-tenant rollback.** A failed upgrade rolls back one tenant without touching the rest of the fleet — this is a benefit of the model; preserve it by keeping migrations backward-compatible within the skew window.
+- **Cost attribution is built in.** Each tenant namespace/account is tagged for cost reporting from day one; physical isolation makes per-tenant cost visible — use it to price and to spot anomalies.
+- **Tenant deprovisioning is designed up front.** Offboarding = destroy the tenant's infrastructure, verify backups are expired or handed over per contract, and produce a destruction attestation. A model that can only create tenants fails its first churn event and its first GDPR erasure request.
+
+---
+
 ## Tenant-Aware API Design
 
 For physical multi-tenancy with dedicated deployments, the tenant context is resolved at the routing layer, not the application layer:
@@ -193,6 +206,21 @@ The JWT still carries tenant context for audit purposes. Services validate that 
 | Control/data plane separated | Control plane cannot access tenant data | Control plane has read access to tenant databases |
 | Encryption per tenant | Separate encryption keys per tenant documented | Shared encryption keys |
 | Tenant ID in events and logs | All events and audit logs carry `tenant_id` | Events or logs with no tenant attribution |
+| Fleet operations defined | Upgrade waves, drift detection, and deprovisioning are designed | Per-tenant deployments with no fleet upgrade or offboarding strategy |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Isolation theatre** — physical deployments but a shared "reporting" database aggregating tenant data | The strongest isolation is only as strong as the weakest side channel; one shared store voids the model | Cross-tenant analytics happen on anonymised, contractually-permitted metadata in the Control Plane, never raw tenant data |
+| **Control Plane with tenant-data reach** — operator tooling that can query tenant databases "for support" | A single compromised operator credential exposes every tenant; contradicts the compliance story sold to customers | Support access is per-tenant, time-boxed, customer-approved, and fully audited (break-glass procedure) |
+| **`tenant_id` filtering as the isolation model** — logical filtering presented as multi-tenancy for sensitive data | One missing `WHERE` clause is a cross-tenant breach; app-level discipline is not an isolation boundary | For sensitive-data products, isolation is enforced by infrastructure (Model 3), with `tenant_id` kept for audit only |
+| **Snowflake tenants** — per-tenant manual tweaks accumulating in production | Every tenant becomes a unique deployment nobody can upgrade confidently; the fleet fragments | All variation lives in the per-tenant values file, rendered from shared chart/module versions; drift is reconciled away |
+| **Big-bang fleet upgrades** — deploying a new version to all tenants simultaneously | A bad release becomes an every-customer incident; the blast-radius benefit of isolation is thrown away | Canary tenant, then waves; per-tenant rollback; bounded version skew |
+| **Shared broker "just for efficiency"** — one Redpanda cluster with tenant-prefixed topics for a physical-isolation product | Broker-level bugs, misconfigured ACLs, or a compromised consumer cross the tenant boundary | Broker isolation matches the declared model: dedicated namespace or cluster per tenant |
+| **Provisioning as a runbook** — tenant creation documented as manual steps | Manual steps drift, get skipped, and cannot be audited; onboarding time grows with the fleet | Provisioning and deprovisioning are OpenTofu Modules invoked by the Control Plane, idempotent and versioned |
 
 ---
 
@@ -200,7 +228,7 @@ The JWT still carries tenant context for audit purposes. Services validate that 
 
 ```markdown
 ---
-artifact: multi-tenancy-design
+name: multi-tenancy-design
 product: [product name]
 tenancy-model: [physical | schema | shared]
 version: 1.0.0

@@ -7,9 +7,10 @@ description: >
   confidence levels, dependency notation, and how to communicate uncertainty
   honestly. Used by the product-strategist agent after OKRs and GTM strategy
   are defined.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, roadmap, product-discovery, okr, sequencing]
 ---
 
@@ -44,9 +45,9 @@ Three time horizons with decreasing specificity:
 
 | Horizon | Meaning | Specificity |
 |---|---|---|
-| **Now** | Currently in active development or next quarter | Outcome-level, with defined success criteria |
-| **Next** | Planned for the following 2–3 quarters | Outcome-level, confidence > 70% |
-| **Later** | Directionally committed but timing uncertain | Theme-level, confidence 30–70% |
+| **Now** | Currently in active development or next quarter | Outcome-level, with defined success criteria, confidence > 80% (High) |
+| **Next** | Planned for the following 2–3 quarters | Outcome-level, confidence 50–80% (Medium) |
+| **Later** | Directionally committed but timing uncertain | Theme-level, confidence below 50% (Low) |
 
 ### Format 2 — Quarterly Theme Roadmap (recommended for post-launch products)
 
@@ -128,11 +129,22 @@ Always include a roadmap preamble that states: "This roadmap reflects our curren
 
 ---
 
+## Anti-Patterns
+
+- **Release plan in disguise** — a roadmap whose items are features with dates. Dates belong to release planning; a roadmap sequences outcomes by confidence and dependency.
+- **Everything is Now** — an overloaded Now column signals no prioritisation happened. Now holds only what the team is actively pursuing this quarter.
+- **Later as landfill** — parking every stakeholder request in Later to avoid saying no. If it will never be pursued, it belongs in "Explicitly Not On This Roadmap" with a reason.
+- **Uniform confidence** — every item marked High confidence, including Later themes. Confidence must decay with horizon; if it doesn't, the levels are decoration.
+- **Silent re-planning** — updating the roadmap without recording what changed and why. Each revision notes what moved, what was dropped, and the learning that caused it.
+- **Orphan items** — entries that trace to no OKR and no vision element. If nothing strategic explains an item's presence, it is someone's pet feature.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: strategic-roadmap
+name: strategic-roadmap
 product: [product name]
 version: 1.0.0
 phase: strategy

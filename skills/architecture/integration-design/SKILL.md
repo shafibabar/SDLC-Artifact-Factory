@@ -8,9 +8,10 @@ description: >
   isolates the domain model from external service models. Used by the enterprise-
   architect agent when designing how services communicate, after the Context Map
   is complete.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: enterprise-architect
+created: 2026-06-25
 tags: [design, architecture, integration, circuit-breaker, retry, consumer-driven-contracts, acl]
 ---
 
@@ -57,6 +58,8 @@ Service A  ──HTTP GET──▶  Service B API
 2. **Retry with Backoff** — transient failures (503, 504) are retried with exponential backoff and jitter.
 3. **Circuit Breaker** — after N consecutive failures, the circuit opens. Calls fail fast (no waiting for timeout) until the circuit resets.
 4. **Bulkhead** — HTTP clients to different services use separate connection pools. One slow downstream doesn't exhaust the connection pool for all others.
+5. **Retry only what is safe to repeat** — GETs are always retryable; mutating calls are retried only when they carry an `Idempotency-Key`. Retrying a non-idempotent POST turns one timeout into a duplicate side effect.
+6. **Deadline propagation** — the incoming request's deadline flows down through `context.Context`. Each caller's timeout must exceed its downstream's full retry envelope (all attempts plus backoff), or the caller gives up while the downstream is still working — and then retries on top of it.
 
 ### Retry and Backoff
 
@@ -204,7 +207,7 @@ The enterprise-architect maintains an Integration Inventory for each product —
 | Criterion | Pass | Fail |
 |---|---|---|
 | Style declared | Every integration states sync or async and the justification | Integrations with no documented style |
-| Resilience designed | Every sync call has timeout + retry + circuit breaker | HTTP calls with no timeout or retry |
+| Resilience designed | Every sync call has timeout + Retry and Backoff + Circuit Breaker | HTTP calls with no timeout or retry |
 | ACL for external systems | Every external system integration uses ACL | External API types in domain layer |
 | Consumer-Driven Contracts | Every integration has a defined contract test plan | Verbal-only integration agreements |
 | DLQ defined | Every Redpanda consumer has a DLQ topic | Events silently dropped on consumer failure |
@@ -212,11 +215,26 @@ The enterprise-architect maintains an Integration Inventory for each product —
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Sync by default** — HTTP calls for cross-context flows because "it's easier to reason about" | Availability multiplies down the call chain; every downstream incident becomes a platform incident | Asynchronous Domain Events are the default across Bounded Contexts; sync is the justified exception |
+| **Retry without jitter or budget** — aggressive synchronized retries against a struggling service | The retry storm finishes off the recovering downstream (thundering herd) | Exponential backoff with jitter, capped attempts, and Circuit Breaker in front |
+| **Retrying non-idempotent calls** — re-sending a mutating request after a timeout | A timeout is an *unknown* outcome; the retry duplicates the side effect | Mutating calls carry an `Idempotency-Key`, or are not retried automatically |
+| **One shared Circuit Breaker (or none)** — a global breaker across all downstreams | One failing dependency opens the circuit for healthy ones; or without a breaker, threads pile up on timeouts | One Circuit Breaker and one connection pool (Bulkhead) per downstream service |
+| **Synchronous call inside an event consumer's critical path** — consumer blocks on a third-party API per event | Broker lag balloons behind the slowest external dependency; redeliveries amplify the load | Do external calls behind their own resilience stack, and consider splitting into a separate step with its own topic |
+| **Request/reply over the broker** — publishing an "event" and waiting for a response event | Recreates temporal coupling with worse latency and no backpressure semantics | If a response is needed in-flow, use HTTP/gRPC with resilience patterns; events are fire-and-forget facts |
+| **Contract by observation** — consumers coupling to whatever the provider currently returns | The provider cannot change anything safely; every deploy is a gamble | Consumer-Driven Contract tests in the provider's CI, gating deployment |
+| **ACL bypass "just this once"** — calling the vendor SDK directly from a handler | The vendor model leaks into the domain; the exception becomes the norm within weeks | All external calls go through the ACL's `client.go`/`translator.go`; the domain sees only ports |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: integration-design
+name: integration-design
 product: [product name]
 version: 1.0.0
 phase: design
@@ -231,7 +249,7 @@ owner: enterprise-architect
 |---|---|---|---|---|---|
 
 ## Synchronous Integration Details
-[Per-integration: timeout, retry config, circuit breaker config]
+[Per-integration: timeout, retry config, Circuit Breaker config]
 
 ## Asynchronous Integration Details
 [Per-topic: producer, consumer groups, retry policy, DLQ]

@@ -6,9 +6,10 @@ description: >
   and how to use the canvas to identify business model risks before committing to
   architecture or roadmap. Includes a Lean Canvas variant for early-stage products.
   Used by the product-strategist agent during the Strategy phase.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, business-model-canvas, lean-canvas, revenue, product-discovery]
 ---
 
@@ -192,11 +193,60 @@ If any answer is no, the block containing the gap must be revised.
 
 ---
 
+## Worked Example (Condensed)
+
+Canvas excerpts for the first product (Data Estate Mapping and Compliance Intelligence):
+
+| Block | Entry |
+|---|---|
+| Customer Segments | Primary: SMBs of 50–500 employees with SOC 2 obligations and data spread across Google Drive and AWS S3. Users: compliance officers (the Maya Chen archetype). Buyers: CTO / VP Engineering — distinct needs, both must be served. |
+| Value Propositions | "Know exactly what sensitive data you hold, where it lives, and which SOC 2 controls it puts at risk — within 30 minutes, without a single file leaving your infrastructure." (Pain relieved: audit blindness. Gain: evidence on demand.) |
+| Channels | Sales: content/SEO plus compliance-community presence. Delivery: private deployment into the customer's own Kubernetes cluster — the delivery channel is itself part of the differentiation. |
+| Customer Relationships | Self-service onboarding + light human support; co-creation with 3–5 design partners during closed beta. |
+| Revenue Streams | Flat annual subscription per tenant, tiered by connected storage source count. Value anchor: compliance-officer hours of audit-prep saved per quarter. |
+| Key Resources | Entity extraction pipeline, SOC 2 control-mapping rule engine, relationship graph design — the intellectual moat. |
+| Key Activities | Building and hardening the scanning/classification pipeline; maintaining connector coverage; compliance rule curation. |
+| Key Partnerships | Cloud providers (deployment substrate); open-source model providers for extraction; no reseller motion at this stage. |
+| Cost Structure | Value-driven. Top items: engineering time, per-customer deployment support, CI/CD and test infrastructure. Zero paid third-party APIs (frugality constraint). |
+
+**Coherence check result:** every Revenue Stream traces to the Value Proposition; the private-deployment delivery Channel is the item competitors' SaaS architectures cannot copy without rebuilding (check 7 passes).
+
+---
+
+## Quality Criteria
+
+| Criterion | Pass | Fail |
+|---|---|---|
+| Block completeness | Every one of the nine blocks has at least one substantive entry | Any block empty or marked "TBD" |
+| Segment specificity | Segments defined by size band, vertical, and regulatory exposure | "All SMBs" (or equivalent) as a single segment |
+| Value proposition form | States pain relieved + gain created, differentiated from competitors | Product features listed in the value proposition block |
+| Buyer/user split | Users and buyers distinguished wherever they differ | A single undifferentiated "customer" |
+| Revenue traceability | Every revenue stream traces to a value proposition a segment will pay for | Revenue streams with no value justification |
+| Cost realism | CAC and cost-to-serve appear alongside build/run costs | Only infrastructure and engineering costs listed |
+| Coherence | All 7 coherence questions answer yes (or the gap block is revised) | Canvas finalised with failing coherence answers |
+| Defensibility | At least one canvas item competitors cannot easily replicate | Nothing a competitor could not copy within a quarter |
+
+---
+
+## Anti-Patterns
+
+**Nine unconnected lists:** each block filled in isolation and the coherence check skipped. The canvas's value is the fit between blocks, not the blocks themselves — a beautiful canvas with incoherent flows is a decorated risk register.
+
+**Feature-first value propositions:** copying the feature list into the Value Propositions block. If the entry does not name a customer pain or gain, it is not a value proposition.
+
+**Aspirational partnerships:** listing partners you hope to sign as Key Partnerships. Only relationships that exist, or are realistically closable within the planning horizon, belong on the canvas.
+
+**Frozen canvas:** completing the canvas once and never revisiting it. Re-validate at every launch stage transition (closed beta → soft launch → GA) — the blocks that survive contact with paying customers are rarely the blocks you drew.
+
+**Full BMC before validation:** using the complete BMC while the problem and solution are still hypotheses. It projects false certainty into blocks (Partnerships, Relationships) that cannot yet be known. Use the Lean Canvas until Stage 2, as specified above.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: business-model-canvas
+name: business-model-canvas
 product: [product name]
 version: 1.0.0
 phase: strategy

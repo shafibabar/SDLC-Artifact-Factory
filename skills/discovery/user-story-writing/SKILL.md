@@ -6,9 +6,10 @@ description: >
   testable acceptance criteria, story splitting techniques, and common anti-patterns.
   User stories are the atomic unit of the backlog and the input to the acceptance-criteria
   skill. Used by the requirements-analyst agent during the Ideate phase.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, user-stories, backlog, invest, agile, product-discovery]
 ---
 
@@ -90,6 +91,30 @@ When a story fails an INVEST criterion, the required action is:
 
 ---
 
+## Worked Example
+
+From EPIC-002 ("Connect any supported storage source in under 5 minutes"):
+
+**US-001: Connect Google Drive via OAuth**
+
+> As Maya Chen, the Compliance Officer,
+> I want to connect our company Google Drive by authorising it in a guided flow,
+> so that the estate scan can begin without me raising an IT ticket.
+
+**INVEST check:**
+- **Independent** — no other story must land first
+- **Negotiable** — OAuth is a constraint inherited from the security NFRs, but the flow design is entirely open
+- **Valuable** — removes Maya's stated adoption barrier ("anything requiring an engineering ticket")
+- **Estimable** — bounded to one provider, one flow
+- **Small** — single provider, happy path only; expired-token re-authentication is deliberately split out as US-003
+- **Testable** — success is observable: a connected storage source appears with status "scanning"
+
+**Source:** Job Story JS-001 · **Parent Epic:** EPIC-002 · **Priority:** Must
+
+Note the "so that": it names what changes for Maya (no IT ticket, scan starts now) — not a restatement of the want, and not a product benefit ("so that the product has more data").
+
+---
+
 ## Story Splitting Strategies
 
 When a story fails the Small criterion, use these splitting strategies:
@@ -138,7 +163,7 @@ Every story at the bottom must be traceable back up to the business goal. If the
 
 ```markdown
 ---
-artifact: user-story-backlog
+name: user-story-backlog
 product: [product name]
 version: 1.0.0
 phase: ideate

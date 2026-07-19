@@ -7,9 +7,10 @@ description: >
   the compliance evidence pipeline, and how compliance design connects to the
   NFR specification's compliance requirements and the Quality phase's compliance
   test suite. Used by the security-architect agent during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: security-architect
+created: 2026-06-25
 tags: [design, security, compliance, soc2, gdpr, iso27001, compliance-as-code]
 ---
 
@@ -195,6 +196,19 @@ At audit time, the compliance team presents the evidence store contents — auto
 | Evidence pipeline | Compliance evidence collected and stored automatically | Evidence collected manually before each audit |
 | Coverage matrix | All in-scope controls appear in the matrix | Controls not in the matrix |
 | Tamper-evident evidence | Evidence store uses append-only storage with object lock | Evidence stored in mutable storage |
+| Continuous verification | Compliance checks run on every pipeline execution | Checks run once, shortly before the audit window |
+
+---
+
+## Anti-Patterns
+
+- **Checkbox compliance.** Declaring a control "met" because a policy document exists, with no system behaviour that enforces it. Every control must decompose into behaviours a test can exercise.
+- **Screenshot evidence.** Collecting evidence by hand (console screenshots, exported spreadsheets) days before the audit. Screenshots are snapshot-based, unverifiable, and trivially staged. Evidence must be pipeline-generated and signed.
+- **Audit-week testing.** Running the compliance suite only when an audit approaches. SOC 2 Type II assesses operating effectiveness over the whole period — evidence must exist continuously, which means the suite runs on every pipeline execution.
+- **Mutable evidence store.** Storing evidence where it can be edited or deleted. Without object lock, the evidence proves nothing — an auditor must be able to trust that it was not altered after collection.
+- **Conflating compliance with security.** A passing compliance suite means the controls in scope are verified — not that the system is secure. Threat modeling and security testing remain separate obligations; compliance is the floor, not the ceiling.
+- **Orphan controls.** In-scope controls that never appear in the coverage matrix, discovered missing during the audit. The matrix is the completeness check: every in-scope control gets a row, even if its status is "Not yet designed".
+- **Testing the mock.** Compliance tests that assert against stubbed infrastructure (an in-memory database "encrypted at rest") prove nothing. Infrastructure controls must be checked against the real IaC plan or the running environment.
 
 ---
 
@@ -202,7 +216,7 @@ At audit time, the compliance team presents the evidence store contents — auto
 
 ```markdown
 ---
-artifact: compliance-design
+name: compliance-design
 product: [product name]
 frameworks: [SOC 2, GDPR, ISO 27001]
 version: 1.0.0

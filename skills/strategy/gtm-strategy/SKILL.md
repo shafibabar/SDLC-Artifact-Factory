@@ -6,9 +6,10 @@ description: >
   pricing model, launch sequencing, and GTM success metrics. Grounds marketing and
   sales decisions in the competitive analysis and vision. Used by the product-strategist
   agent after competitive analysis is complete.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, gtm, positioning, pricing, channels, launch, product-discovery]
 ---
 
@@ -68,6 +69,22 @@ Unlike [named alternative],
 ```
 
 The positioning statement is internal. It informs messaging but is not customer-facing verbatim.
+
+**Worked example (Data Estate Mapping and Compliance Intelligence):**
+
+```
+For SMBs of 50–500 employees preparing for or maintaining SOC 2 compliance,
+who cannot afford enterprise data-governance suites and cannot accept file content
+leaving their infrastructure,
+[Product] is the data estate intelligence platform
+that surfaces every sensitive data asset and SOC 2 control gap within 30 minutes
+of connecting a storage source.
+Unlike BigID or Varonis,
+[Product] deploys entirely inside the customer's own infrastructure at SMB pricing —
+no data egress, no sales-led proof of concept.
+```
+
+Every claim in this statement must be defensible from the competitive analysis capability matrix. If the named alternative can in fact match the differentiator, the positioning collapses on the first competitive sales call.
 
 ---
 
@@ -162,11 +179,40 @@ Define exit criteria for each stage. Stage 1 → 2 requires: ICP confirmed, core
 
 ---
 
+## Quality Criteria
+
+| Criterion | Pass | Fail |
+|---|---|---|
+| Component completeness | All seven components present | Any component missing or marked "TBD" without a stated resolution path |
+| ICP disqualifiers | At least two disqualifiers named | ICP defined only by who fits, never by who does not |
+| Positioning honesty | Named alternative + a differentiator that alternative genuinely cannot match | "Unlike other tools…" with no named alternative, or a differentiator the alternative can copy |
+| Proof points | Every proof point verifiable today or by launch | Aspirational or unmeasurable claims presented as proof points |
+| Channel focus | One primary channel (70%+ of early acquisition) plus at most 2 supporting | Four or more channels pursued "in parallel" |
+| Pricing anchor | Pricing model anchored to quantified customer value | Pricing derived from cost or from a competitor's list price alone |
+| Stage exit criteria | Every launch stage has explicit, measurable exit criteria | Stages with dates or durations but no exit conditions |
+| Metric targets | Every GTM metric has a target, or an explicit note of where the target will be set | Metrics listed with no targets and no plan to set them |
+
+---
+
+## Anti-Patterns
+
+**The everything-channel GTM:** launching on five channels simultaneously because "we don't know which will work." Each channel needs enough sustained investment to produce a signal; spreading a solo operator across five produces noise on all of them. Pick one primary, measure, then expand.
+
+**ICP/persona conflation:** describing an individual ("a compliance officer who…") in the ICP. The ICP is the company profile; the people inside it are personas. Conflating them hides the buyer/user split that B2B deals hinge on.
+
+**Cost-plus pricing:** setting price from infrastructure cost plus margin. For a product that saves 40 hours of audit prep per quarter, the value anchor supports a price an order of magnitude above cost — cost-plus pricing donates that margin to the customer permanently.
+
+**Big-bang launch:** skipping Stages 1 and 2 and going straight to GA. Without design-partner validation, GA scales an unvalidated ICP, unvalidated messaging, and unvalidated pricing simultaneously — and public launch attention is not refundable.
+
+**Positioning by adjective:** "the best", "the easiest", "next-generation" — claims with no named alternative and no measurable dimension. If the positioning statement cannot name what it is unlike, it is not a position.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: gtm-strategy
+name: gtm-strategy
 product: [product name]
 version: 1.0.0
 phase: strategy

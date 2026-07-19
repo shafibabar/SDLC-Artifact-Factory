@@ -7,9 +7,10 @@ description: >
   constrain architecture decisions in the Design phase and become the
   acceptance criteria for Quality phase testing. Used by the requirements-analyst
   agent during the Ideate phase, immediately after functional requirements.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, nfr, performance, scalability, security, compliance, architecture-input]
 ---
 
@@ -172,11 +173,27 @@ These NFR types impose the strongest architecture constraints and must be explic
 
 ---
 
+## Anti-Patterns
+
+**Wish NFRs:** "the system should be fast / secure / reliable." These are moods, not requirements. Every one must be converted to metric + target + verification, or moved to open questions until it can be.
+
+**Copy-paste SLOs:** adopting "99.99% uptime" because that is what serious products claim. Each additional nine multiplies architecture and operations cost; for a single-tenant private deployment used during business hours, 99.5% is a defensible, honest target. Every nine must be justified by a business driver, not by habit.
+
+**Targets without load context:** "P95 < 200ms" is unfalsifiable until the conditions are stated — at what concurrency, against what data volume, on what reference hardware? A performance NFR without its load profile will be "met" in every demo and missed in every real estate.
+
+**Compliance hand-waving:** "the system must be SOC 2 compliant." SOC 2 is a report on controls, not a property a system has. Name the control (CC6.1, CC7.2, A1.2), state the obligation it imposes on *this* system, and state the automated check that verifies it.
+
+**Specified-then-orphaned NFRs:** NFRs written in the Ideate phase that never become tests. If an NFR ID does not appear in the Quality phase test plan, it was never a requirement — it was documentation theatre. The NFR ID is the traceability key; carry it through.
+
+**Averages as targets:** "average response time under 200ms" hides the tail where users actually suffer — a system can meet a 200ms average while its P99 is 8 seconds. Specify percentiles (P95/P99), never means.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: nfr-specification
+name: nfr-specification
 product: [product name]
 version: 1.0.0
 phase: ideate

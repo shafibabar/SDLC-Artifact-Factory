@@ -8,9 +8,10 @@ description: >
   consuming secrets at runtime without ever storing them. Used by the
   security-architect agent during Design and the security-engineer agent during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: security-architect
+created: 2026-06-25
 tags: [design, security, secrets-management, vault, kubernetes, rotation, go]
 ---
 
@@ -130,10 +131,24 @@ func loadDatabaseURL() (string, error) {
 ```
 
 **Rules for Go secret consumption:**
-- Never assign a secret to a package-level variable (visible in memory dumps)
-- Never log a secret, even at debug level
+- Never assign a secret to a package-level variable — it lives for the process lifetime and defeats rotation: the Vault Agent refreshes the file, but the stale copy in the variable is what the code keeps using
+- Never log a secret, even at debug level — and never log the connection URL, which embeds the password
 - Secrets should be read from files (Vault Agent output), not environment variables
-- Wrap secrets in a type that implements `fmt.Stringer` returning `[REDACTED]` to prevent accidental logging
+- Wrap secrets in a redaction type so every formatting and logging path is covered:
+
+```go
+type Secret string
+
+func (Secret) String() string       { return "[REDACTED]" } // %s, %v
+func (Secret) GoString() string     { return "[REDACTED]" } // %#v
+func (s Secret) LogValue() slog.Value { return slog.StringValue("[REDACTED]") } // slog
+func (Secret) MarshalJSON() ([]byte, error) { return []byte(`"[REDACTED]"`), nil }
+
+// Reveal is the single, greppable escape hatch for the moment of use
+func (s Secret) Reveal() string { return string(s) }
+```
+
+`fmt.Stringer` alone is not enough — `%#v`, `slog` structured fields, and JSON marshalling each bypass `String()` unless covered explicitly.
 
 ---
 
@@ -179,10 +194,23 @@ If a secret is detected in a commit:
 |---|---|---|
 | No secrets in source | Secret scanning CI job passes; no secrets in git history | Any secret found in source code or git history |
 | Runtime injection only | All secrets injected via Vault Agent or ESO at pod startup | Secrets in environment variables or ConfigMaps |
-| Least privilege Vault policies | Each service has its own policy; cannot read other services' secrets | Shared Vault policies; wildcard path access |
+| Least-privilege Vault policies | Each service's policy follows the Principle of Least Privilege; cannot read other services' secrets | Shared Vault policies; wildcard path access |
 | Rotation documented | Every secret type has a rotation period and mechanism | Secrets with no rotation policy |
 | Zero-downtime rotation | Rotation mechanism validated in non-production | Rotation not tested; unknown downtime impact |
 | Secret redaction in logs | All logging of structs containing secrets redacts the secret field | Secret values appearing in application logs |
+
+---
+
+## Anti-Patterns
+
+- **"Temporary" secrets in code.** A hardcoded test password committed "just to unblock CI" is a real credential in git history forever. There is no temporary tier — the pre-commit scan blocks all of them.
+- **Secrets in environment variables.** Env vars leak through `/proc/<pid>/environ`, crash dumps, child processes, debug endpoints, and `kubectl describe pod`. File-mounted injection exists precisely to avoid this surface.
+- **Rotating by redeploying.** Treating "rotate the database password" as "schedule a maintenance window" means rotation never happens. If rotation is not zero-downtime, the rotation period silently becomes never.
+- **One Vault policy to rule them all.** A shared policy with `secret/data/*` read access turns a single compromised pod into a compromise of every service's secrets. One service, one Kubernetes ServiceAccount, one Vault role, one policy.
+- **Same secrets in CI and production.** A CI credential leak (fork PRs, log masking failures) must never be a production incident. CI uses distinct, low-privilege credentials against non-production systems.
+- **Deleting the leaked commit and moving on.** Removing a secret from HEAD does not remove it from history, forks, or clones. A committed secret is a compromised secret: rotate first, then clean history with `git filter-repo`.
+- **Logging the connection string.** `log.Printf("connecting to %s", dbURL)` at startup ships the password to the log aggregator. Log the host and database name, never the URL.
+- **Long-lived static credentials where dynamic ones exist.** Using a static database password from KV v2 when the database secrets engine can issue per-service, auto-expiring credentials. Static is the fallback, not the default.
 
 ---
 
@@ -190,7 +218,7 @@ If a secret is detected in a commit:
 
 ```markdown
 ---
-artifact: secrets-management-design
+name: secrets-management-design
 product: [product name]
 version: 1.0.0
 phase: design

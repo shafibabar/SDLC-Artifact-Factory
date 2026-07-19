@@ -7,9 +7,10 @@ description: >
   mitigations. Threat modelling is the first security artifact produced for any
   product and the input to all subsequent security design decisions. Used by the
   security-architect agent at the start of security work in the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: security-architect
+created: 2026-06-25
 tags: [design, security, threat-modeling, stride, attack-trees, risk]
 ---
 
@@ -86,7 +87,7 @@ For each trust boundary in the system (identified from the System Context and Co
 | **R** | A user denies classifying a file as Restricted | Medium | High | High | All classification actions written to append-only audit log with user identity and timestamp |
 | **I** | A bug in the handler returns another tenant's asset | Low | Critical | High | Physical tenant isolation — separate deployment; request never routes to another tenant's service |
 | **D** | Attacker sends 10,000 PATCH requests to exhaust the service | Medium | Medium | Medium | Rate limiting at API Gateway; per-user rate limits on write endpoints |
-| **E** | A read-only user sends a PATCH request and it succeeds | Low | High | Medium | ABAC policy check on every write endpoint; enforced at handler middleware |
+| **E** | A read-only user sends a PATCH request and it succeeds | Low | High | Medium | ABAC policy check on every write operation; enforced in the Application layer command handler |
 
 ---
 
@@ -136,6 +137,19 @@ Each leaf node is a specific attack. Each leaf node needs a specific mitigation 
 | Attack Trees for critical threats | Every Critical or High×High threat has an Attack Tree | Critical threats documented as a single line with no decomposition |
 | Mitigations testable | Every mitigation references a test that will verify it (security test, pen test, compliance check) | Mitigations with no verification plan |
 | Residual risk acknowledged | Accepted risks are explicitly documented as accepted, with justification | Risks silently dropped from the register |
+| Threat model versioned | Register updated when architecture changes (new integration, new trust boundary) | One-time exercise never revisited |
+
+---
+
+## Anti-Patterns
+
+- **Threat modeling the finished system.** Running STRIDE after implementation converts every finding from a design change into a rework ticket. The threat model precedes architecture decisions — it is an input to Zero Trust design, not a review of it.
+- **Attacker-centric brainstorming without structure.** "What would a hacker do?" sessions produce whatever the room happens to imagine. STRIDE's value is exhaustiveness: six categories applied to every data flow at every trust boundary — no flow skipped because it "seems safe".
+- **Only the external boundary.** Modeling the internet-facing API while treating everything inside the cluster as trusted. Assume Breach means internal trust boundaries (service-to-service, service-to-database, tenant-to-tenant) get the same STRIDE treatment.
+- **Risk scores as decoration.** Assigning Likelihood × Impact and then mitigating in discovery order anyway. The scores exist to sequence work: Critical paths get Attack Trees and mitigations first, Low×Low may be accepted.
+- **Mitigation by restatement.** "Threat: cross-tenant leak. Mitigation: prevent cross-tenant access." A mitigation names a specific mechanism and the test that verifies it, or it is not a mitigation.
+- **A register that only ever says "Mitigated".** If nothing is Accepted or Open, the model is describing aspiration, not reality. Honest registers carry open items with owners and review dates.
+- **Frozen threat model.** A new storage integration, a new external API, or a change in tenancy model adds trust boundaries. A threat model dated before the current Container Diagram is stale evidence.
 
 ---
 
@@ -143,7 +157,7 @@ Each leaf node is a specific attack. Each leaf node needs a specific mitigation 
 
 ```markdown
 ---
-artifact: threat-model
+name: threat-model
 product: [product name]
 version: 1.0.0
 phase: design

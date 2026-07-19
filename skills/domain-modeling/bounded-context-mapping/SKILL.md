@@ -8,9 +8,10 @@ description: >
   the right relationship pattern, and what each pattern implies for service
   design and team ownership. Used by the domain-modeler agent after Event
   Storming, before service decomposition.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, ddd, bounded-context, context-map, service-design, architecture]
 ---
 
@@ -37,8 +38,8 @@ Every Bounded Context must be defined with:
 | **Name** | A name from the Ubiquitous Language — not a technical name ("UserService") but a domain name ("Identity & Access") |
 | **Responsibility** | What this context is responsible for — one sentence |
 | **Boundary justification** | Why the boundary is here — language change, team ownership, or distinct deployment need |
-| **Owned aggregates** | The Aggregates that live inside this context |
-| **Owned domain events** | The Domain Events emitted by Aggregates in this context |
+| **Owned Aggregates** | The Aggregates that live inside this context |
+| **Owned Domain Events** | The Domain Events emitted by Aggregates in this context |
 | **Incoming dependencies** | Which other contexts this context consumes data or events from |
 | **Outgoing dependencies** | Which other contexts depend on this context |
 | **Team / ownership** | Who owns this context (important for relationship pattern selection) |
@@ -116,6 +117,16 @@ A shared language (event schema, data model) is published and used by multiple c
 
 ---
 
+### Remaining Literature Patterns
+
+Three further patterns exist in the DDD literature and may appear on a Context Map, though they apply rarely in a greenfield system:
+
+- **Partnership** — two contexts (and teams) succeed or fail together; interfaces evolve jointly with mutual planning. Use only when neither side can be upstream of the other.
+- **Separate Ways** — two contexts deliberately do not integrate at all; duplication is cheaper than coupling. A legitimate, explicit choice — record it on the map so the absence of a connection is known to be intentional.
+- **Big Ball of Mud** — a region with no coherent model (typically legacy). Draw a boundary around it on the map and protect everything else from it with an ACL; do not try to name relationships *within* it.
+
+---
+
 ## Context Map Diagram
 
 The Context Map is expressed as a diagram showing all Bounded Contexts and the relationship pattern between each connected pair.
@@ -173,11 +184,25 @@ Direction of the arrow = direction of dependency. Upstream is on the left or top
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Context per Aggregate** — every Aggregate is declared its own "context" | Boundaries stop following language; integration overhead explodes | A Bounded Context holds a whole consistent model — usually several Aggregates sharing one Ubiquitous Language |
+| **Shared database across contexts** | The schema becomes an unnamed, unmanaged Shared Kernel; every migration is a cross-context breaking change | Each context owns its persistence; integrate through Domain Events or an OHS |
+| **Technical layers as contexts** ("API context", "Database context") | Layers share one language — there is no linguistic boundary between them | Draw boundaries where the language changes, not where the technology changes |
+| **Shared Kernel by default** — sharing model code because it is convenient | Every change requires two-team coordination; the kernel grows until both contexts are coupled everywhere | Default to ACL or OHS/PL; Shared Kernel only for a small, explicitly agreed subset |
+| **Bidirectional Customer/Supplier** — each context claims the other as its supplier | Upstream/downstream is undefined; nobody owns the contract | Re-draw the boundary, or acknowledge a Partnership and plan changes jointly |
+| **Conformist to a poor vendor model** | Vendor concepts (e.g. Google Drive `File` resources) leak into and distort the domain model | Use an ACL — Conformist is only acceptable when the upstream model is genuinely good enough to adopt |
+| **Unnamed relationships** — lines on the map with no pattern | The costs and obligations of the dependency are undecided, so they are discovered in production | Every connection carries exactly one named pattern and an implementation note |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: context-map
+name: context-map
 product: [product name]
 version: 1.0.0
 phase: design

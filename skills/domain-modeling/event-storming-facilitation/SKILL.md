@@ -8,9 +8,10 @@ description: >
   bounded-context-mapping, and aggregate-design skills. Event Storming is
   mandatory at the Design phase for every domain and subdomain. Used by the
   domain-modeler agent when /sdlc-design or /sdlc-event-storm is invoked.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: domain-modeler
+created: 2026-06-25
 tags: [design, event-storming, ddd, bounded-context, domain-events, mandatory]
 ---
 
@@ -164,6 +165,32 @@ An Event Storming session produces these outputs, which feed subsequent skills:
 
 ---
 
+## Worked Example
+
+Process Level flow for classification in the data-estate product, read left to right:
+
+```
+[Read Model: Unclassified Assets Queue]
+        → (Actor: Compliance Officer)
+        → [Command: ClassifyDataAsset]
+        → {Aggregate: DataAsset}
+        → <Domain Event: DataAssetClassified>
+        → «Policy: Whenever DataAssetClassified with SensitivityLevel = Restricted,
+                    then RequestAccessReview»
+        → [Command: RequestAccessReview]
+        → {Aggregate: AccessReview}
+        → <Domain Event: AccessReviewRequested>
+        → (External System: Google Drive — sharing settings checked via ACL)
+```
+
+What this fragment demonstrates:
+- Every `<Domain Event>` traces back to a `[Command]`, issued by either an `(Actor)` or a «Policy» — no orphan events.
+- The «Policy» card captures automation discovered in a domain story ("whenever something is Restricted, someone must review access") — it is domain language, not a technical trigger.
+- The `(External System)` card marks where the model's authority ends; the boundary it implies feeds `bounded-context-mapping` (an ACL toward Google Drive).
+- A hotspot raised during this walk: *"Can the engine reclassify an asset a human has manually overridden?"* — recorded red, not debated; resolved later as an `AccessReview` invariant question.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -178,11 +205,26 @@ An Event Storming session produces these outputs, which feed subsequent skills:
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
+|---|---|---|
+| **Design-first storming** — jumping straight to Aggregates and services | Boundaries get drawn from architectural preference, not domain evidence; the session ratifies what someone already decided | Complete Big Picture first; let Aggregates emerge from Command/Event clustering |
+| **Technical events on the wall** — "DatabaseRowInserted", "KafkaMessagePublished" | These describe the implementation, not the domain; they crowd out the business narrative | Enforce Pass 2: every event must be meaningful to a domain expert |
+| **Resolving hotspots by authority** — the loudest or most senior voice settles disagreements mid-session | The disagreement is real domain knowledge; suppressing it hides a risk instead of recording it | Red card, move on; resolve after the session via the Hotspot Resolution table |
+| **CRUD lane sorting** — organising cards by entity ("all File events here, all User events there") | Recreates a data model, destroying the temporal narrative that reveals process and causality | Keep the timeline temporal; group into subdomains only in Pass 5 |
+| **Happy-path timeline** — no failure, dispute, or timeout events | The domain's hardest rules live in exceptions; a happy-path model produces naive Aggregates | Explicitly prompt for "what goes wrong" events in Pass 1 and the narrative walk |
+| **Facilitator writes all the cards** | Participants disengage; the model reflects the facilitator's understanding, not the room's | Everyone writes; the facilitator sequences, questions, and enforces language |
+| **Storming without a domain expert** — engineers modelling from assumption | Every card is a guess; hotspots cannot be distinguished from facts | Require at least one person with first-hand domain knowledge; otherwise run discovery interviews first |
+| **Wall archaeology** — the session ends and the cards are never transcribed | Outputs decay within days; downstream skills re-derive everything | Transcribe into the Output Format the same day; every output row names the skill it feeds |
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: event-storming-session
+name: event-storming-session
 product: [product name]
 domain: [domain or subdomain name]
 level: [big-picture | process | design | all]

@@ -6,9 +6,10 @@ description: >
   what makes an epic well-scoped (vs too large or too small), the epic hypothesis
   structure, and how epics decompose into user stories. Used by the
   requirements-analyst agent during the Ideate phase, after impact mapping.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, epic, backlog, decomposition, product-discovery]
 ---
 
@@ -46,7 +47,7 @@ A well-scoped epic has all five properties:
 | Epic takes longer than a quarter | Too large | Split into multiple epics by outcome or user segment |
 | Epic contains a single user story | Too small | Promote the story to a standalone requirement; no epic needed |
 | Epic's "done" state cannot be described | Poorly scoped | Rewrite starting from the outcome, not the features |
-| Epic spans multiple bounded contexts | Architectural concern | Flag for domain-modeler and enterprise-architect; may indicate a missing bounded context |
+| Epic spans multiple Bounded Contexts | Architectural concern | Flag for domain-modeler and enterprise-architect; may indicate a missing Bounded Context |
 
 ---
 
@@ -110,6 +111,43 @@ Never decompose by technical layer (frontend story + backend story + database st
 
 ---
 
+## Worked Example
+
+```
+EPIC-002: Connect any supported storage source in under 5 minutes
+
+As a result of this epic, the Compliance Officer (Maya Chen) will be able to connect
+Google Drive and AWS S3 to the platform without IT assistance.
+
+Hypothesis: If we make source connection a guided, sub-5-minute flow, we believe
+            trial users will connect all their storage sources in the first session,
+            which will contribute to KR1.1 (80% of trial users discover their first
+            compliance gap within 30 minutes).
+
+Business Goal Link: KR1.1
+Impact Map Link:    "Guided onboarding wizard", "Pre-built Google Drive OAuth connector"
+Personas affected:  Compliance Officer (primary), IT/DevOps Lead (secondary)
+Bounded Context:    Source Ingestion
+
+Acceptance Criteria (epic level):
+- [ ] A Google Drive can be connected via OAuth without leaving the product UI
+- [ ] An S3 bucket can be connected with scoped, read-only credentials
+- [ ] A failed connection explains the cause and the fix in plain language
+
+Decomposition (user stories — titles only):
+- US-001: Connect Google Drive via OAuth
+- US-002: Connect AWS S3 with read-only credentials
+- US-003: See connection health and re-authenticate an expired source
+
+Priority: Must
+Estimated size: L
+Phase: Implement
+```
+
+Note what the hypothesis buys: if trial users connect sources in the first session but still fail to discover a gap within 30 minutes, the epic *succeeded* and the hypothesis *failed* — the bottleneck is elsewhere. Without the hypothesis, that distinction is invisible and the team just "builds more onboarding."
+
+---
+
 ## Epic Readiness Checklist
 
 Before epics are handed to `user-story-writing`, each epic must pass:
@@ -120,7 +158,7 @@ Before epics are handed to `user-story-writing`, each epic must pass:
 - [ ] OKR KR or business goal is linked
 - [ ] Impact map deliverable is linked
 - [ ] At least 3 user story titles are listed (decomposition started)
-- [ ] Bounded context is identified
+- [ ] Bounded Context is identified
 - [ ] MoSCoW priority is assigned
 
 ---
@@ -133,7 +171,21 @@ Before epics are handed to `user-story-writing`, each epic must pass:
 | Traceability | Linked to impact map and OKR KR | Epic with no business goal linkage |
 | Hypothesis | Stated as "if we build X, we believe Y will happen" | No hypothesis — just a description |
 | Decomposability | At least 3 user story titles | Monolithic epic with no decomposition |
-| Bounded context | Named bounded context or explicit flag to domain-modeler | Cross-cutting epic without architectural flag |
+| Bounded Context | Named Bounded Context or explicit flag to domain-modeler | Cross-cutting epic without architectural flag |
+
+---
+
+## Anti-Patterns
+
+**The component epic:** "API layer", "Database migration", "Authentication service". Named after a system component, delivers no user-visible outcome on its own, and cannot be hypothesis-tested. Components are built *inside* outcome epics, never as epics themselves.
+
+**The everything epic:** an epic whose "done" state is indistinguishable from the whole product ("Compliance intelligence works end to end"). If it cannot fail without the product failing, it carries no information — split by outcome or user segment until each epic could independently succeed or fail.
+
+**The hypothesis-free epic:** a description of work with no falsifiable belief attached. When it ships, no one can say whether it worked — see the worked example above for what the hypothesis makes visible.
+
+**The orphan epic:** no link to an impact map deliverable or OKR Key Result. Either the trace exists and was not recorded (record it) or it does not exist (the epic is unjustified scope).
+
+**Premature story detail:** writing full story-level acceptance criteria at epic definition time. Epic-level criteria are 3–5 high-level conditions; detailed Given/When/Then criteria are written per story after decomposition, when discovery has actually happened. Detail written too early hardens guesses into commitments.
 
 ---
 
@@ -141,7 +193,7 @@ Before epics are handed to `user-story-writing`, each epic must pass:
 
 ```markdown
 ---
-artifact: epic-list
+name: epic-list
 product: [product name]
 version: 1.0.0
 phase: ideate

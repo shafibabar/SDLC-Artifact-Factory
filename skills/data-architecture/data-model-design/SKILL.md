@@ -8,9 +8,10 @@ description: >
   extraction output, Elasticsearch for search), indexing strategy, and how the
   physical model enforces multi-tenancy. Translates the domain-modeler's conceptual
   model into deployable schemas. Produced by the data-architect during the Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: data-architect
+created: 2026-06-25
 tags: [design, data-architecture, postgresql, pgx, apache-age, graph, polyglot, schema]
 ---
 
@@ -63,10 +64,23 @@ CREATE TABLE extracted_entities (
     data_asset_id  UUID NOT NULL REFERENCES data_assets(id) ON DELETE CASCADE,
     tenant_id      UUID NOT NULL,
     entity_type    TEXT NOT NULL,                  -- PERSON, EMAIL, SSN, ACCOUNT_NUMBER, ...
-    confidence     NUMERIC(4,3) NOT NULL,
+    confidence     NUMERIC(4,3) NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
     location       JSONB NOT NULL,                 -- Value Object: page/offset, queried as a whole
     created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- The child FK column is always indexed: it serves ON DELETE CASCADE and intra-Aggregate loads
+CREATE INDEX idx_extracted_entities_asset ON extracted_entities (data_asset_id);
+```
+
+**Tenant-mismatch hardening (optional but cheap):** a plain single-column FK cannot stop a child row from pointing at a parent in *another* tenant if application code passes the wrong id. Making the FK composite makes that state unrepresentable:
+
+```sql
+ALTER TABLE data_assets ADD CONSTRAINT data_assets_id_tenant_uq UNIQUE (id, tenant_id);
+
+-- extracted_entities then declares (in place of the single-column FK):
+--   FOREIGN KEY (data_asset_id, tenant_id)
+--     REFERENCES data_assets (id, tenant_id) ON DELETE CASCADE
 ```
 
 **Note:** `extracted_entities` stores entity *type and location metadata only* — never the raw extracted value if it is sensitive PII. This is a privacy constraint from the security `privacy-design` skill: file contents are never persisted.
@@ -80,9 +94,15 @@ Every Aggregate Root table carries a `version` column. Writes use a compare-and-
 ```sql
 UPDATE data_assets
    SET sensitivity_level = $1, version = version + 1, updated_at = now()
- WHERE id = $2 AND tenant_id = $3 AND version = $4;
--- 0 rows affected → concurrent modification → the command handler retries or fails
+ WHERE id = $2 AND tenant_id = $3 AND version = $4
+   AND deleted_at IS NULL;
+-- 0 rows affected → concurrent modification (or soft-deleted row) → retry or fail
 ```
+
+Two details that make the compare-and-swap trustworthy:
+
+- **`tenant_id` stays in the `WHERE` even though `id` is globally unique.** The tenant filter is applied uniformly to every tenant-scoped statement — it is the application-layer backstop, not an optimisation.
+- **`AND deleted_at IS NULL` prevents resurrection.** Without it, a command racing a soft delete can happily mutate a "deleted" Aggregate. Zero rows affected is a single signal the command handler must treat as a conflict, whichever cause.
 
 ---
 
@@ -167,6 +187,19 @@ Every index must justify its existence: it speeds a known query in a Read Model 
 | Graph is a projection | Graph rebuildable from events; relational store is system of record | Graph holding authoritative state not in PostgreSQL |
 | Polyglot justified | Each non-PostgreSQL store has an ADR and is a projection only | A second store used as an Aggregate system of record |
 | No raw sensitive content stored | Extracted entity tables store metadata/type, not raw PII values | File contents or raw PII persisted |
+| Constraints encode invariants | Enum-like values and ranges guarded by CHECK constraints | Invariants enforced only in application code |
+
+---
+
+## Anti-Patterns
+
+- **Foreign keys across Aggregate boundaries.** An FK from `extracted_entities` to a `DataSource` table couples two consistency units at the database layer and blocks the one-database-per-service rule. Cross-Aggregate references are plain UUID columns; the domain enforces integrity.
+- **The generic entity table.** An EAV (`entity`, `attribute`, `value`) schema "so we never need migrations again". It trades every CHECK constraint, index, and type guarantee for a schema nobody can query or validate. Migrations are the cost of a real model — pay it.
+- **`jsonb` as schema escape hatch.** Reaching into a `jsonb` column with `->>` in hot queries or indexing its internals. If a value's parts are queried, constrained, or joined on, they are columns. `jsonb` is for composite Value Objects consumed whole (like `location`).
+- **A projection promoted to system of record.** The AGE graph, Elasticsearch index, or MongoDB collection quietly becoming the only place some fact lives. Every non-PostgreSQL store must be rebuildable from PostgreSQL plus the event log — if a rebuild would lose data, the invariant is already broken.
+- **The decorative version column.** A `version` column that exists but is not in the `WHERE` clause of updates. Optimistic concurrency lives in the compare-and-swap, not the column; without the predicate it is a row counter.
+- **Shared schema across Bounded Contexts.** Two services joining each other's tables "because they're in the same PostgreSQL anyway". That is the shared-database monolith with extra steps; contexts integrate through events and APIs, never through each other's tables.
+- **Speculative indexing.** Adding indexes for queries nobody has written. Each index taxes every write and vacuums; an index that cannot name the Read Model or Command it serves is removed.
 
 ---
 
@@ -174,7 +207,7 @@ Every index must justify its existence: it speeds a known query in a Read Model 
 
 ```markdown
 ---
-artifact: data-model-design
+name: data-model-design
 product: [product name]
 version: 1.0.0
 phase: design

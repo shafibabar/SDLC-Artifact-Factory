@@ -8,9 +8,10 @@ description: >
   are encoded on Redpanda topics, registered, versioned, and validated so producers
   and consumers never break each other. Produced by the data-architect during the
   Design phase.
-version: 1.0.0
+version: 1.1.0
 phase: design
 owner: data-architect
+created: 2026-06-25
 tags: [design, data-architecture, event-schema, schema-registry, redpanda, compatibility, avro]
 ---
 
@@ -68,12 +69,14 @@ The compatibility mode defines what evolution is allowed. Choose per subject bas
 
 | Mode | Allows | Use when |
 |---|---|---|
-| **BACKWARD** | Delete fields, add optional fields | Consumers upgrade *before* producers (most common) — new consumer reads old events |
+| **BACKWARD** | Delete fields, add optional fields *(Avro semantics — see the JSON Schema caveat below)* | Consumers upgrade *before* producers (most common) — new consumer reads old events |
 | **FORWARD** | Add fields, delete optional fields | Producers upgrade *before* consumers |
 | **FULL** | Add/delete optional fields only | Strict bidirectional safety needed |
 | **NONE** | Anything | Never for a published event — only for a topic with a single owner and no external consumers |
 
 **Default: `BACKWARD`.** Combined with the additive-change rule below, it keeps consumers safe through producer deployments.
+
+**The JSON Schema caveat:** the "BACKWARD allows deleting fields" folklore comes from Avro, where a reader schema silently ignores unknown fields during resolution. It does not transfer to this project's defaults. With JSON Schema payloads that set `additionalProperties: false`, deleting a field is **not** backward compatible: events already on the topic still carry the field, and the new, closed schema *rejects* them as invalid. Under JSON Schema + closed payloads + `BACKWARD`, the only safe in-place change is **adding an optional field** (old events simply lack it and still validate). Treat every removal, rename, or type change as breaking and version it — and expect the registry's JSON Schema compatibility checker to enforce exactly this, not Avro's rules.
 
 ---
 
@@ -139,6 +142,8 @@ Every event schema has two parts: the standard envelope (fixed across all events
 
 **`additionalProperties: false`** on the payload is deliberate: it forces every new field to be a conscious, registered schema change rather than an accidental untracked addition.
 
+**Payload minimalism is a retention constraint, not a style preference.** The event log is immutable and replicated — a payload cannot be edited or row-deleted later. Payloads therefore carry identifiers, levels, and metadata (`sensitivityLevel`, `classifiedBy`, aggregate IDs), never raw sensitive content: a raw SSN in a `DataAssetClassified` payload could only ever be erased by crypto-shredding the whole topic's data (see `data-retention-policy`). Schema review explicitly checks new payload fields against the classification scheme — any field that would embed a Restricted raw value is rejected in favour of a reference.
+
 ---
 
 ## CI Enforcement
@@ -169,6 +174,20 @@ A pull request that introduces an incompatible schema fails the build. There is 
 | Breaking changes versioned | Breaking changes create a new version with parallel publication | Breaking change made in place on an existing subject |
 | `additionalProperties` closed | Payloads set `additionalProperties: false` | Open payloads allowing untracked fields |
 | CI-enforced | Schema compatibility checked in the pipeline | Compatibility relying on reviewer vigilance |
+| Payloads carry references | IDs, levels, metadata only | Raw sensitive values embedded in immutable events |
+| Format semantics respected | Evolution rules reasoned in JSON Schema terms (closed payloads) | Avro deletion folklore applied to JSON Schema subjects |
+
+---
+
+## Anti-Patterns
+
+- **`NONE` on a published subject.** Disabling compatibility "temporarily" to get a change through. The registry is the only mechanical guarantee producers and consumers share; with `NONE`, the next deploy can strand every consumer with undecodable events.
+- **Fixing a registered schema in place.** Editing version 3 because it "had a typo". Registered versions are immutable history — events encoded against them exist on topics. A wrong schema is superseded by a new version, never rewritten.
+- **The open payload.** Omitting `additionalProperties: false` so producers can slip fields in without registering them. Every untracked field is an undocumented contract some consumer will start depending on — and its later removal is an unversioned breaking change nobody gated.
+- **Avro reasoning on JSON Schema subjects.** Deleting a field because "BACKWARD allows deletion". Under closed JSON Schema payloads it does not — old events on the topic fail validation against the new schema. Evolution decisions are reasoned in the semantics of the registered format.
+- **The fat event.** Serializing the entire Aggregate into every event "so consumers have everything". Consumers couple to the whole write model, every internal field change becomes a wire-contract negotiation, and payloads accrete sensitive attributes. An event carries what changed and the IDs to fetch the rest.
+- **Registry bypass.** A producer serializing whatever its current Go struct happens to be, with the registered schema updated "when we get to it". The registry only protects consumers if the registered schema *is* the wire truth — codegen or validation ties the struct to the registered version in CI.
+- **Raw PII in payloads.** Embedding extracted sensitive values in events for convenience. Immutable, replicated, multi-consumer topics are the single worst place for data that may need erasure (see `data-retention-policy`).
 
 ---
 
@@ -176,7 +195,7 @@ A pull request that introduces an incompatible schema fails the build. There is 
 
 ```markdown
 ---
-artifact: event-schema-design
+name: event-schema-design
 product: [product name]
 version: 1.0.0
 phase: design

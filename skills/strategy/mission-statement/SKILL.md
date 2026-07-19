@@ -6,9 +6,10 @@ description: >
   between vision and mission, required components, quality criteria, and how the
   mission constrains scope decisions. Used by the product-strategist agent
   immediately after the vision statement is authored.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, mission, product-discovery, scope]
 ---
 
@@ -115,7 +116,7 @@ The connecting phrase "so that" is important — it forces the mission to state 
 
 ```markdown
 ---
-artifact: mission-statement
+name: mission-statement
 product: [product name]
 version: 1.0.0
 phase: strategy

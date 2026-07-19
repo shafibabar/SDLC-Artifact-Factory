@@ -6,9 +6,10 @@ description: >
   stakeholders. Covers the Power/Interest Grid, stakeholder register format,
   communication strategy per quadrant, and RACI for key decisions. Used by the
   product-strategist agent during the Strategy phase before GTM planning begins.
-version: 1.0.0
+version: 1.1.0
 phase: strategy
 owner: product-strategist
+created: 2026-06-24
 tags: [strategy, stakeholders, communication, product-discovery]
 ---
 
@@ -98,6 +99,23 @@ Apply RACI to: product direction changes, major architecture decisions, release 
 
 ---
 
+## Worked Example (Grid Placement)
+
+For the first product (Data Estate Mapping and Compliance Intelligence — a private-deployment compliance platform sold into SMBs), a typical customer-side placement:
+
+| Stakeholder | Category | Power | Interest | Quadrant |
+|---|---|---|---|---|
+| Maya Chen — Compliance Officer | Primary user | 2 | 3 | Keep Informed — cultivate into champion |
+| CTO / VP Engineering | Buyer | 3 | 2 | Keep Satisfied |
+| IT / DevOps Lead | Influencer + implementer | 2 | 3 | Keep Informed |
+| CISO / IT Security | Blocker | 3 | 1 | Keep Satisfied — highest-risk relationship |
+| External SOC 2 auditor | Beneficiary | 2 | 1 | Monitor |
+| Shafi (product owner) | Internal | 3 | 3 | Manage Closely |
+
+The CISO placement is the decisive one: high power, low current interest — exactly the profile that silently kills deployments. The mitigation belongs in the Blocker Risk Register: a security architecture brief showing zero data egress and mTLS-by-default, delivered *before* the deployment request is raised, not after it is blocked. Note also that the primary user (Maya) starts with less power than either the buyer or the blocker — a product that only satisfies her wins the evaluation and still loses the deal.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -110,11 +128,25 @@ Apply RACI to: product direction changes, major architecture decisions, release 
 
 ---
 
+## Anti-Patterns
+
+**Users-only map:** listing only the people who touch the product. The stakeholders who kill products — blockers, budget holders, security reviewers — mostly never log in.
+
+**Grid without actions:** drawing the Power/Interest Grid and stopping. The grid is a routing device for engagement effort; a grid with no per-quadrant engagement plan is decoration.
+
+**Static register:** scoring power and interest once. Both shift at every milestone — a CISO's interest jumps from 1 to 3 the day a deployment request lands on their desk. Re-score at each phase gate.
+
+**Blocker denial:** a register with no blockers. Blockers always exist; a map without one means they have not been found yet, which is strictly worse than having them named with a mitigation.
+
+**Shared accountability:** a RACI row with two "A"s. Accountability that is shared is accountability that is absent — every decision has exactly one Accountable person.
+
+---
+
 ## Output Format
 
 ```markdown
 ---
-artifact: stakeholder-map
+name: stakeholder-map
 product: [product name]
 version: 1.0.0
 phase: strategy

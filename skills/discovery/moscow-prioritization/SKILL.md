@@ -7,9 +7,10 @@ description: >
   disputed priorities, and how MoSCoW connects to the MVP release slice in the
   story map. Used by the requirements-analyst agent during the Ideate phase after
   the story map and epic list are complete.
-version: 1.0.0
+version: 1.1.0
 phase: ideate
 owner: requirements-analyst
+created: 2026-06-24
 tags: [ideate, moscow, prioritisation, mvp, backlog-management]
 ---
 
@@ -132,6 +133,23 @@ The **Must Have** stories are the top row of the story map's MVP slice. The MVP 
 
 ---
 
+## Worked Example
+
+Constraint: MVP window of 8 weeks. Sample decisions from the first product's backlog (Data Estate Mapping and Compliance Intelligence):
+
+| Story | Category | Reasoning |
+|---|---|---|
+| US-001 Connect Google Drive via OAuth | Must | Without a connected source there is no product; the primary persona cannot start her core job — passes Must test 3 |
+| US-005 Trigger initial scan and classify files by sensitivity level | Must | The release goal is "first compliance gap within 30 minutes"; fails without classification — passes Must test 1 |
+| US-009 View compliance gap report | Must | The gap report *is* the first-value moment the release exists to deliver — passes Must test 1 |
+| US-010 Export gap report as PDF | Should | Maya can present from the app in the meantime; absence degrades the audit-prep job but does not block it |
+| US-006 Monitor scan progress in real time | Could | A static "scan running" state suffices; live progress is a comfort feature whose absence would barely be noticed |
+| US-003 Connect SharePoint | Won't (this release) | Design-partner evidence shows Google Drive + S3 covers the ICP; acknowledged and targeted for Release 3 |
+
+**Capacity check:** the three Musts estimate at ~4.5 weeks of the 8-week window — 56%, inside the 60% rule. If US-010 were promoted to Must (as the primary persona's negative feedback might argue), the check must be re-run before accepting the promotion.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -148,7 +166,7 @@ The **Must Have** stories are the top row of the story map's MVP slice. The MVP 
 
 ```markdown
 ---
-artifact: moscow-prioritisation
+name: moscow-prioritisation
 product: [product name]
 delivery-window: [e.g. MVP — 8 weeks]
 version: 1.0.0
