@@ -10,6 +10,7 @@ Format: [Semantic Version] — Date — Description
 
 ### Added
 - 2026-07-20 — `platform/` skills (12), `observability/` stack skills (3 — completes the 7-skill domain), and `platform-engineer` agent (Chunk 15)
+- 2026-07-20 — `data-analytics/` skills (7) and `data-engineer` agent (Chunk 16) — completes the 13-agent roster defined in `.claude-plugin/plugin.json`
 
 ### Changed
 - Content improvement campaign across all skills, agents, and repo metadata: unified component frontmatter schemas, restored always-on rule wiring in the five newest agents, fixed dead references, terminology drift, stale metadata, and code currency issues. Delivered as five batch PRs (PR #29–#33).
