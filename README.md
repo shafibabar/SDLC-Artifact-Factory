@@ -79,7 +79,7 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | Foundation delivered — 132 skills across 15 domains and all 13 planned agents built; commands, hooks, tools, and schemas in progress |
+| **Maturity** | Foundation complete — all 15 skill domains (136 skills) and all 13 planned agents built; commands, hooks, tools, and schemas in progress |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
@@ -1149,14 +1149,13 @@ Any component that supports multiple tenants must enforce:
 
 ### Delivered So Far
 
-- **Skills:** 132 across 15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (2).
+- **Skills:** 136 across 15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6). All 15 skill domains are complete.
 - **Agents:** 13 of 13 — product-strategist, requirements-analyst (Ideate + Customer Validation), domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer, data-engineer.
 
 ### Planned Components
 
 | Area | Planned Additions |
 |---|---|
-| Skills | remaining governance (4) |
 | Agents | `ai-ml-architect` (deferred until a product requires ML) |
 | Commands | Phase-driver commands for all 8 phases plus navigation and cross-cutting commands (Chunk 19) |
 | Hooks | Phase-gate and governance hooks — `pre-phase-advance`, `tdd-gate`, `methodology-compliance-check`, `terminology-drift-detector` (Chunk 20) |

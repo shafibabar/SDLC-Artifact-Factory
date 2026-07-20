@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-20",
-    "updated_by": "Chunk 17 — validation skills (5) complete; requirements-analyst extended with Customer Validation phase ownership"
+    "updated_by": "Chunk 18 — remaining governance skills (4) complete; governance domain fully built"
   },
 
   "project": {
@@ -231,7 +231,7 @@
       "path": "skills/governance/",
       "owner": "factory internals — hooks and commands",
       "planned_skills": ["artifact-manifest", "methodology-review", "risk-register", "value-stream-map", "sdlc-config-management", "glossary-management"],
-      "status": "partial — glossary-management and methodology-review complete (Chunk 4); remaining four pending Chunk 18"
+      "status": "complete"
     }
   ],
 
@@ -516,7 +516,7 @@
     {
       "chunk": 18,
       "title": "governance/ skills (factory internals)",
-      "status": "pending",
+      "status": "complete",
       "deliverables": ["Remaining 4 SKILL.md files in skills/governance/"]
     },
     {
