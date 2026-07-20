@@ -28,9 +28,7 @@
     "SDLC_MANIFEST_SCHEMA": "schemas/sdlc-manifest.schema.json"
   },
 
-  "hooks": {
-    "config": "hooks/"
-  },
+  "_hooks_note": "Hooks are not configured here. They live in hooks/hooks.json and are auto-discovered by Claude Code when this plugin is installed/enabled.",
 
   "output_style": "structured — every agent response includes: artifact produced, methodology applied, phase position, what comes next"
 }

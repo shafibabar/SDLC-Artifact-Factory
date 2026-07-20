@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-20",
-    "updated_by": "Chunk 18 — remaining governance skills (4) complete; governance domain fully built"
+    "updated_by": "Chunk 19 — 15 real commands + agents flattened to agents/<name>.md, both live-verified via claude --plugin-dir (D012, D013). Skills domain-nesting confirmed broken too (Q001) — dedicated follow-up PR next."
   },
 
   "project": {
@@ -93,16 +93,16 @@
 
   "plugin_architecture": {
     "pattern": "workflow-first",
-    "description": "Commands drive phases. Phases activate agents. Agents draw on skills for expertise and tools for atomic actions. Hooks enforce governance automatically. Artifacts are outputs of the workflow, not the inputs.",
-    "component_hierarchy": "Command → Agent → Skill | Agent → Tool | Hook → Tool",
+    "description": "Commands drive phases. Phases activate agents. Agents draw on skills for expertise and scripts (via Bash) for atomic actions. Hooks enforce governance automatically, calling scripts or consulting skills directly. Artifacts are outputs of the workflow, not the inputs.",
+    "component_hierarchy": "Command → Agent → Skill | Agent → Script (via Bash) | Hook → Script or → Agent/Skill",
     "axioms": {
       "Skills": "Expertise — domain knowledge, standards, patterns. No reasoning.",
       "Agents": "Reasoning — decisions, analysis, design, code generation. Use skills for knowledge.",
       "Commands": "Workflows — user-facing phase drivers and cross-cutting operations.",
       "Hooks": "Governance — event-driven, lightweight, fast, idempotent. No business logic.",
-      "Tools": "Atomic actions — deterministic, stateless, single-purpose.",
+      "Scripts": "Atomic actions — deterministic, stateless, single-purpose. Not a Claude Code discovery mechanism; 'Tools' means MCP-exposed tools specifically.",
       "MCP": "External system integration — deferred.",
-      "LSP": "Code intelligence — pending Chunk 3."
+      "LSP": "Code intelligence — pending."
     }
   },
 
@@ -244,7 +244,7 @@
   },
 
   "hooks": {
-    "_note": "All hooks are fast (<2s), idempotent, and deterministic. Business logic belongs in agents and skills, not hooks.",
+    "_note": "Declared as real Claude Code hooks in hooks/hooks.json (PreToolUse, PostToolUse, Stop, SubagentStop, etc.), not settings.json. Self-imposed target: fast, idempotent, deterministic where the handler is a script; methodology/terminology checks use a prompt- or agent-type handler consulting the relevant skill. Business logic belongs in agents and skills, not hooks.",
     "planned": [
       "pre-phase-advance — validates all required artifacts exist before phase advances",
       "post-artifact-created — updates sdlc-context.json when an artifact is created",
@@ -259,14 +259,15 @@
     "status": "planned"
   },
 
-  "tools": {
+  "scripts": {
+    "_note": "Plain shell scripts under scripts/, invoked directly by hooks.json's command-type handlers or by command prompts via Bash. Not a Claude Code discovery mechanism — 'Tools' in real Claude Code vocabulary means MCP-exposed tools specifically, which this is not.",
     "planned": [
-      "validate-sdlc-artifact — validates artifact structure and required fields",
-      "validate-openapi-contract — validates OpenAPI specifications",
-      "validate-event-schema — validates domain event schemas",
-      "check-methodology-compliance — checks DDD/TDD/BDD/SOLID presence in an artifact",
-      "generate-artifact-id — generates unique artifact identifiers",
-      "cross-reference-checker — verifies all referenced components exist"
+      "validate-sdlc-artifact.sh — validates artifact structure and required fields",
+      "validate-openapi-contract.sh — validates OpenAPI specifications",
+      "validate-event-schema.sh — validates domain event schemas",
+      "check-methodology-compliance.sh — checks DDD/TDD/BDD/SOLID presence in an artifact",
+      "generate-artifact-id.sh — generates unique artifact identifiers",
+      "cross-reference-checker.sh — verifies all referenced components exist"
     ],
     "status": "planned"
   },
@@ -313,7 +314,7 @@
       "title": "strategy/ skills + product-strategist agent",
       "status": "complete",
       "date_completed": "2026-06-24",
-      "deliverables": ["8 SKILL.md files in skills/strategy/", "agents/product-strategist/AGENT.md"]
+      "deliverables": ["8 SKILL.md files in skills/strategy/", "agents/product-strategist.md"]
     },
     {
       "chunk": 6,
@@ -332,7 +333,7 @@
         "skills/discovery/example-mapping/SKILL.md",
         "skills/discovery/story-mapping/SKILL.md",
         "skills/discovery/moscow-prioritization/SKILL.md",
-        "agents/requirements-analyst/AGENT.md"
+        "agents/requirements-analyst.md"
       ]
     },
     {
@@ -350,7 +351,7 @@
         "skills/domain-modeling/read-model-design/SKILL.md",
         "skills/domain-modeling/domain-storytelling/SKILL.md",
         "skills/domain-modeling/context-map-patterns/SKILL.md",
-        "agents/domain-modeler/AGENT.md"
+        "agents/domain-modeler.md"
       ]
     },
     {
@@ -368,7 +369,7 @@
         "skills/architecture/multi-tenancy-design/SKILL.md",
         "skills/architecture/cqrs-pattern/SKILL.md",
         "skills/architecture/event-driven-patterns/SKILL.md",
-        "agents/enterprise-architect/AGENT.md"
+        "agents/enterprise-architect.md"
       ]
     },
     {
@@ -386,8 +387,8 @@
         "skills/security/compliance-design/SKILL.md",
         "skills/security/security-implementation/SKILL.md",
         "skills/security/compliance-verification/SKILL.md",
-        "agents/security-architect/AGENT.md",
-        "agents/security-engineer/AGENT.md"
+        "agents/security-architect.md",
+        "agents/security-engineer.md"
       ]
     },
     {
@@ -400,7 +401,7 @@
         "skills/ux/information-architecture/SKILL.md",
         "skills/ux/ui-component-spec/SKILL.md",
         "skills/ux/user-journey-mapping/SKILL.md",
-        "agents/ux-architect/AGENT.md"
+        "agents/ux-architect.md"
       ]
     },
     {
@@ -416,7 +417,7 @@
         "skills/data-architecture/data-classification/SKILL.md",
         "skills/data-architecture/data-lineage-design/SKILL.md",
         "skills/data-architecture/data-retention-policy/SKILL.md",
-        "agents/data-architect/AGENT.md"
+        "agents/data-architect.md"
       ]
     },
     {
@@ -446,7 +447,7 @@
         "skills/observability/distributed-tracing-design/SKILL.md",
         "skills/observability/structured-logging-design/SKILL.md",
         "skills/observability/health-check-design/SKILL.md",
-        "agents/backend-engineer/AGENT.md"
+        "agents/backend-engineer.md"
       ]
     },
     {
@@ -470,7 +471,7 @@
         "skills/frontend-engineering/react-component-testing/SKILL.md",
         "skills/frontend-engineering/react-e2e-testing/SKILL.md",
         "skills/frontend-engineering/react-dockerfile/SKILL.md",
-        "agents/frontend-engineer/AGENT.md"
+        "agents/frontend-engineer.md"
       ]
     },
     {
@@ -492,26 +493,26 @@
         "skills/test-engineering/go-performance-test/SKILL.md",
         "skills/test-engineering/go-load-test/SKILL.md",
         "skills/test-engineering/go-chaos-test/SKILL.md",
-        "agents/test-strategist/AGENT.md"
+        "agents/test-strategist.md"
       ]
     },
     {
       "chunk": 15,
       "title": "platform/ + observability (stack) skills + platform-engineer agent",
       "status": "complete",
-      "deliverables": ["12 SKILL.md files in skills/platform/", "3 SKILL.md files added to skills/observability/ (stack — completes the 7-skill domain)", "agents/platform-engineer/AGENT.md"]
+      "deliverables": ["12 SKILL.md files in skills/platform/", "3 SKILL.md files added to skills/observability/ (stack — completes the 7-skill domain)", "agents/platform-engineer.md"]
     },
     {
       "chunk": 16,
       "title": "data-analytics/ skills + data-engineer agent",
       "status": "complete",
-      "deliverables": ["7 SKILL.md files in skills/data-analytics/", "agents/data-engineer/AGENT.md"]
+      "deliverables": ["7 SKILL.md files in skills/data-analytics/", "agents/data-engineer.md"]
     },
     {
       "chunk": 17,
       "title": "validation/ skills (owned by requirements-analyst)",
       "status": "complete",
-      "deliverables": ["5 SKILL.md files in skills/validation/", "agents/requirements-analyst/AGENT.md extended with Customer Validation phase ownership"]
+      "deliverables": ["5 SKILL.md files in skills/validation/", "agents/requirements-analyst.md extended with Customer Validation phase ownership"]
     },
     {
       "chunk": 18,
@@ -521,15 +522,15 @@
     },
     {
       "chunk": 19,
-      "title": "All commands (phase drivers + cross-cutting)",
-      "status": "pending",
-      "deliverables": ["15 COMMAND.md files in commands/"]
+      "title": "All commands (phase drivers + cross-cutting) — real slash commands + meta-doc corrections",
+      "status": "complete",
+      "deliverables": ["15 real commands in commands/*.md, verified via claude --plugin-dir + live invocation", "CLAUDE.md/README.md/plugin.json/settings.json corrected to real Claude Code mechanics", "tools/ renamed to scripts/ throughout", "agents/<role>/AGENT.md restructured to flat agents/<role>.md (D013) — a second, larger instance of the same discovery issue (skills/) deferred, see open_questions Q001"]
     },
     {
       "chunk": 20,
-      "title": "All hooks (phase gates + governance)",
+      "title": "All hooks (phase gates + governance) + backing scripts",
       "status": "pending",
-      "deliverables": ["9 HOOK.md files in hooks/"]
+      "deliverables": ["hooks/hooks.json with 9 hook bindings", "scripts/*.sh backing the command-type hooks"]
     },
     {
       "chunk": 21,
@@ -621,17 +622,39 @@
       "decision": "Content improvement campaign before Chunk 15: full per-file pass over all skills, agents, and repo metadata, delivered as five batch PRs.",
       "rationale": "A stronger model became available; three parallel audits found generational drift in agents, frontmatter schism, stale metadata, dead references, and terminology drift. Fixing before building Chunk 15 prevents propagating the drift into new components.",
       "alternatives_rejected": ["Targeted fixes only — audit sampled ~20% of skills, so unsampled files would get no fresh scrutiny", "Single campaign PR — a ~120-file diff is not PM-reviewable in one sitting"]
+    },
+    {
+      "id": "D012",
+      "date": "2026-07-20",
+      "decision": "Chunk 19 rebuilt commands/hooks conceptual spec (COMMAND.md/HOOK.md, invented lifecycle events, 'Tools' component) into real, verified Claude Code mechanics: commands/*.md slash commands, hooks/hooks.json, scripts/*.sh. Verified by loading this repo as a session plugin (`claude --plugin-dir`) and inspecting `claude plugin details` output plus one live command invocation, not just by reading the files for coherence.",
+      "rationale": "The original commands/hooks/tools design (Chunks 1-3) predated any real Claude Code mechanics research and used fictional structure. Real testing caught concrete errors (invalid plugin.json fields, a YAML-breaking argument-hint) that static review would have missed.",
+      "alternatives_rejected": ["Continue conceptual spec documents — the plugin would remain unrunnable indefinitely"]
+    },
+    {
+      "id": "D013",
+      "date": "2026-07-20",
+      "decision": "Agents restructured from agents/<role>/AGENT.md (nested) to agents/<role>.md (flat) — folded into Chunk 19's PR. Confirmed empirically: a nested AGENT.md is not discovered by Claude Code's real agent-discovery mechanism; a flat <name>.md is.",
+      "rationale": "Discovered while live-testing Chunk 19's commands via `claude plugin details` — Agents (0) despite 13 real agent files existing. Isolated the root cause with a controlled test copy before changing anything. Mechanical fix (file relocation only, no content change), low risk, same root-cause class as the commands/hooks fix already underway.",
+      "alternatives_rejected": ["Defer to a separate PR — rejected only for this specific fix since it was small, mechanical, and directly related; the same testing methodology surfaced a second, much larger issue (see open_questions) which WAS deferred"]
     }
   ],
 
-  "open_questions": [],
+  "open_questions": [
+    {
+      "id": "Q001",
+      "date": "2026-07-20",
+      "question": "All 135+ skill files under skills/<domain>/<name>/SKILL.md (two-level nesting, domain-grouped) are confirmed NOT discovered by real Claude Code — verified empirically via `claude --plugin-dir` + `claude plugin details` on both the real repo and isolated test copies. Real discovery requires flat skills/<name>/SKILL.md (one level). No manifest-level path override was found to work around this. Needs a dedicated follow-up PR: flatten every skill's path (mechanical file move, no content change) and update every doc describing the domain-grouped structure (CLAUDE.md, README, every agent's skill-path references).",
+      "status": "open — scoped, not yet scheduled",
+      "raised_during": "Chunk 19 live testing (commands/hooks), same session that fixed the equivalent agents/<role>/AGENT.md → agents/<role>.md issue (D013)"
+    }
+  ],
 
   "anti_patterns": [
     "Skill that reasons or decides — reasoning belongs in an Agent",
     "Agent that stores large domain knowledge — knowledge belongs in Skills",
     "Command that contains methodology or domain expertise — belongs in Skills",
     "Hook that runs a workflow — hooks validate only, they do not orchestrate",
-    "Tool that makes business decisions — decisions belong in Agents",
+    "Script that makes business decisions — decisions belong in Agents",
     "MCP that implements business workflows — MCPs expose atomic capabilities only",
     "Agent with overlapping responsibilities — every agent has single, non-overlapping ownership"
   ]

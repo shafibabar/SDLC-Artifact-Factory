@@ -98,12 +98,12 @@ A risk is never silently removed from the register. Like ADRs, closed and accept
 
 ## Where Risks Come From
 
-A risk register entry is nearly always the product of an agent's own Escalation Rules — the point at which an agent's AGENT.md tells it to surface a concern rather than proceed silently. The distinction from a one-time escalation (see above) is what happens next:
+A risk register entry is nearly always the product of an agent's own Escalation Rules — the point at which an agent's own file tells it to surface a concern rather than proceed silently. The distinction from a one-time escalation (see above) is what happens next:
 
 1. The agent identifies a concern during its normal work (a design review, a code review, a compliance check).
 2. It applies the test in "When to Log a Risk vs. Escalate Directly."
 3. If it is a standing exposure, the agent appends an entry to `artifacts/[product]/governance/risk-register.md` directly — logging a risk does not require a separate escalation to Shafi, though Shafi reviews the register at every phase gate.
-4. If it is a one-time decision, the agent escalates to Shafi in conversation as usual, per its own AGENT.md Escalation Rules.
+4. If it is a one-time decision, the agent escalates to Shafi in conversation as usual, per its own Escalation Rules.
 
 This means the risk register is populated continuously by whichever agent is active in a given phase, not authored wholesale by one owner. `security-architect` is likely to log compliance and security risks during Design; `data-engineer` and `data-architect` are likely to log data-quality risks during Data; `platform-engineer` is likely to log operational risks during Deploy. Any agent may append at any phase — the register has no single producing agent, consistent with this skill domain having no owning persona-agent.
 

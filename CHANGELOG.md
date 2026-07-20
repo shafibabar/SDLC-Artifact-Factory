@@ -13,9 +13,15 @@ Format: [Semantic Version] — Date — Description
 - 2026-07-20 — `data-analytics/` skills (7) and `data-engineer` agent (Chunk 16) — completes the 13-agent roster defined in `.claude-plugin/plugin.json`
 - 2026-07-20 — `validation/` skills (5) (Chunk 17); `requirements-analyst` extended with Customer Validation phase ownership (UAT, beta programs, feedback triage, acceptance sign-off) — the SDLC's final phase, run post-Deploy
 - 2026-07-20 — remaining `governance/` skills (4): `artifact-manifest`, `risk-register`, `value-stream-map`, `sdlc-config-management` (Chunk 18) — completes the governance domain (6 skills) and all 15 skill domains
+- 2026-07-20 — all 15 real slash commands (`commands/*.md`) — phase drivers, navigation, cross-cutting (Chunk 19). Live-verified via `claude --plugin-dir` + one real command invocation, not just read for coherence.
 
 ### Changed
 - Content improvement campaign across all skills, agents, and repo metadata: unified component frontmatter schemas, restored always-on rule wiring in the five newest agents, fixed dead references, terminology drift, stale metadata, and code currency issues. Delivered as five batch PRs (PR #29–#33).
+- CLAUDE.md, README.md, `.claude-plugin/plugin.json`, `settings.json` corrected from an untested conceptual spec (fictional lifecycle events, invalid manifest fields, "Tools" as a component type) to real, verified Claude Code mechanics (Chunk 19).
+- `agents/<role>/AGENT.md` restructured to flat `agents/<role>.md` — the nested form is not discovered by Claude Code's real agent-discovery mechanism (confirmed empirically; folded into Chunk 19).
+
+### Known Issues
+- `skills/<domain>/<name>/SKILL.md` (domain-grouped, two levels) is confirmed **not discovered** by real Claude Code — the same class of bug as the agents fix above, but affecting all 135+ skill files. Scoped for a dedicated follow-up PR, not yet scheduled.
 
 ## [0.1.0] — 2026-06-24 → 2026-06-26
 

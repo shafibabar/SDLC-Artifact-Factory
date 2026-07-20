@@ -77,7 +77,7 @@ Changing `sdlc-config.json` mid-project is a decision, not a file edit:
 
 ## Agent Obligation: Check Config Before Defaulting
 
-Every agent in this plugin already follows the rule, stated in its own AGENT.md, to read `sdlc-context.json` first before producing an artifact (for example: *"First, read `sdlc-context.json` — confirm the current phase..."*, as stated in `agents/backend-engineer/AGENT.md`, `agents/platform-engineer/AGENT.md`, and equivalently across every agent). This skill extends that same rule to cover `sdlc-config.json`:
+Every agent in this plugin already follows the rule, stated in its own agent file, to read `sdlc-context.json` first before producing an artifact (for example: *"First, read `sdlc-context.json` — confirm the current phase..."*, as stated in `agents/backend-engineer.md`, `agents/platform-engineer.md`, and equivalently across every agent). This skill extends that same rule to cover `sdlc-config.json`:
 
 **Before applying any CLAUDE.md default, an agent must check whether `sdlc-config.json` overrides it for this product.** Concretely: `backend-engineer` does not assume `net/http` + chi without checking `sdlc-config.json → tech_stack_overrides.api_framework` first; `platform-engineer` does not assume Option A deployment without checking `sdlc-config.json → deployment_model` first. The check costs one file read and prevents an entire artifact from being built against the wrong configuration.
 
