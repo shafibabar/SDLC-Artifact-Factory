@@ -125,7 +125,7 @@ An artifact with no `traces_to` value is an orphan — see Anti-Patterns.
 
 Once the `post-artifact-created` hook is built, its job is exactly this: whenever an agent writes an artifact file, the hook appends (or updates) the corresponding entry in `artifacts/[product]/_manifest.json`, assigns the ID via `generate-artifact-id` if one was not already assigned, and stamps `created`/`updated`. This is analogous to how `sdlc-context.json`'s own `_meta.last_updated` and `_meta.updated_by` fields are maintained by hand today and will be governed the same way once the hook exists.
 
-The manifest schema referenced here will be formalized as `schemas/sdlc-manifest.schema.json` once built (see `settings.json → env.SDLC_MANIFEST_SCHEMA`). Until then, this skill is the standard; the schema file will encode it machine-readably for validation.
+The manifest schema is formalized machine-readably as `schemas/sdlc-manifest.schema.json` (see `settings.json → env.SDLC_MANIFEST_SCHEMA`) — it validates the per-product manifest INSTANCE (the JSON shape above); the master artifact-type catalog stays a prose table in this skill, since it is described as extended by new skills over time and `type` is deliberately not a closed enum in the schema.
 
 ## Quality Criteria
 
@@ -191,4 +191,4 @@ This skill's output is a machine-readable JSON file consumed by hooks and comman
 }
 ```
 
-The master artifact-type catalog above is authored and maintained directly in this SKILL.md — it does not have its own JSON representation until `schemas/sdlc-manifest.schema.json` formalizes both the type catalog and the per-product instance shape as a validatable schema.
+The master artifact-type catalog above is authored and maintained directly in this SKILL.md and does not have its own JSON representation — `schemas/sdlc-manifest.schema.json` formalizes only the per-product instance shape. The catalog stays a prose table because it is explicitly extended over time as new skills are added; a closed JSON enum would need updating on every new artifact-producing skill, which the schema deliberately avoids by leaving `type` as a free-form pattern rather than an enum.

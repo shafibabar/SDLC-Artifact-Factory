@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shafibabar/SDLC-Artifact-Factory/schemas/sdlc-config.schema.json",
+  "title": "SDLC Config",
+  "description": "Formalizes skills/sdlc-config-management/SKILL.md's Output Format. Per-product configuration file, populated by /sdlc-start, recording only fields that differ from CLAUDE.md's Tech Stack Defaults. Absence of a field means the CLAUDE.md default applies (the override-only principle) — this schema therefore makes every content field optional except the identity fields (product, product_slug) and _meta.",
+  "type": "object",
+  "required": ["_meta", "product", "product_slug"],
+  "additionalProperties": false,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "required": ["purpose", "how_to_use", "last_updated", "updated_by"],
+      "additionalProperties": false,
+      "properties": {
+        "purpose": { "type": "string", "minLength": 1 },
+        "how_to_use": { "type": "string", "minLength": 1 },
+        "last_updated": { "type": "string", "format": "date" },
+        "updated_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A decision ID (e.g. D012) or the event that produced the most recent change — per the Versioning and Change Management section, every config change traces to a decision."
+        }
+      }
+    },
+    "product": { "type": "string", "minLength": 1 },
+    "product_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "Set once at /sdlc-start. Used as the prefix in every artifact ID for this product (see artifact-manifest's ID scheme)."
+    },
+    "tech_stack_overrides": {
+      "type": "object",
+      "description": "Override-only: a field appears here ONLY if it differs from CLAUDE.md's Tech Stack Defaults table. A product using every default unchanged has an empty (or absent) tech_stack_overrides. Keys are not a closed set — they track whatever rows CLAUDE.md's Tech Stack Defaults table defines, which may grow over time.",
+      "properties": {
+        "optional_database": {
+          "type": "object",
+          "description": "The one Tech Stack Defaults row CLAUDE.md exposes as an explicit choice rather than a fixed default.",
+          "required": ["included", "value", "rationale"],
+          "additionalProperties": false,
+          "properties": {
+            "included": { "type": "boolean" },
+            "value": { "type": "string", "minLength": 1 },
+            "rationale": { "type": "string", "minLength": 1 }
+          }
+        }
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Any other Tech Stack Defaults row this product overrides (e.g. graph_database, api_framework) — a single string naming the override value."
+      }
+    },
+    "compliance_frameworks": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Which compliance frameworks and control families this product must satisfy. Specific enough to act on — 'SOC 2 - CC6, CC7, A1', never just 'SOC 2' (see Anti-Patterns: Vague deployment/compliance fields)."
+    },
+    "deployment_model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The specific deployment option this product/instance uses — named specifically (e.g. 'Option B — managed private cloud, dedicated tenant'), never vaguely (e.g. 'private')."
+    },
+    "methodology_parameters": {
+      "type": "object",
+      "description": "Product-specific values for the narrow set of factory-wide tuning parameters individual skills define (e.g. mutation_test_cadence, unit_test_coverage_minimum). Never used to weaken one of the five non-negotiable methodologies themselves — only to tune a calibration point within one.",
+      "additionalProperties": {
+        "description": "A parameter value — string or number depending on the parameter (e.g. a cadence is a string, a coverage threshold is a number)."
+      }
+    }
+  }
+}

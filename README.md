@@ -79,7 +79,7 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | All content built and live-verified working (136 skills, 13 agents, 15 commands, 7 hooks); schemas remain |
+| **Maturity** | Complete and live-verified (136 skills, 13 agents, 15 commands, 7 hooks, 2 schemas) — every build_checklist item done except the deferred ai-ml-architect agent |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
@@ -192,7 +192,7 @@ sdlc-artifact-factory/
 ├── hooks/                    # Real hook bindings, one file for all of them
 │   └── hooks.json
 ├── scripts/                  # Shell scripts backing hooks.json and commands
-├── schemas/                  # sdlc-config / sdlc-manifest      (empty — Chunk 21)
+├── schemas/                  # sdlc-config.schema.json + sdlc-manifest.schema.json — Draft 2020-12, tested
 ├── mcp/                      # MCP server definitions           (deferred)
 ├── lsp/                      # LSP integrations                 (deferred)
 ├── monitors/, output-styles/, themes/, bin/   # placeholders
@@ -1108,6 +1108,7 @@ Any component that supports multiple tenants must enforce:
 - **Agents:** 13 of 13 — product-strategist, requirements-analyst (Ideate + Customer Validation), domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer, data-engineer. Flat `agents/<name>.md`, verified discoverable.
 - **Commands:** 15 of 15 — all phase-driver, navigation, and cross-cutting commands, verified discoverable and one verified by live invocation.
 - **Hooks:** 7 real hooks in `hooks/hooks.json` (9 originally planned, 3 consolidated into 1 once bound to a real event — see CHANGELOG), backed by 6 scripts under `scripts/`. Every hook and every script individually triggered and its outcome verified, not just read — 3 real bugs found and fixed in the process.
+- **Schemas:** `schemas/sdlc-config.schema.json` and `schemas/sdlc-manifest.schema.json` (Draft 2020-12), formalizing the two governance skills' already-documented shapes exactly. Tested against the real `jsonschema` library: both skills' own worked examples validate cleanly, and 15 deliberately invalid instances (across both schemas) are correctly rejected.
 
 ### Planned Components
 
@@ -1115,7 +1116,6 @@ Any component that supports multiple tenants must enforce:
 |---|---|
 | Agents | `ai-ml-architect` (deferred until a product requires ML) |
 | Scripts | 4 standalone utility scripts (`validate-openapi-contract.sh`, `validate-event-schema.sh`, `generate-artifact-id.sh`, `cross-reference-checker.sh`) — deferred until a command or agent actually needs them |
-| Schemas | `sdlc-config`, `sdlc-manifest` (Chunk 21) |
 | MCP Servers | Source control, project management, knowledge management, cloud platforms, data platforms, communication (deferred — defined per product) |
 
 ### Planned Automation
@@ -1257,7 +1257,8 @@ A testing approach where the consumer of an API defines the contract it expects,
 | Plugin Manifest | `.claude-plugin/plugin.json` |
 | Canonical Glossary | `skills/glossary-management/references/ubiquitous-language.md` |
 | Methodology Review Criteria | `skills/methodology-review/` |
-| Hook Registry | `hooks/` *(pending — Chunk 20)* |
+| Hook Registry | `hooks/hooks.json` |
+| Schemas | `schemas/sdlc-config.schema.json`, `schemas/sdlc-manifest.schema.json` |
 | MCP Configuration | `.mcp.json` *(deferred)* |
 | LSP Configuration | `.lsp.json` *(deferred)* |
 

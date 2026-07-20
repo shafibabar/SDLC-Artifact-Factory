@@ -48,7 +48,8 @@ agents/<name>.md                  One flat file per agent — auto-discovered, v
 commands/<name>.md                One real slash command per file — auto-discovered, verified
 hooks/hooks.json                  All hook bindings in one file — auto-discovered
 scripts/                          Shell scripts backing command-type hooks and command prompts
-schemas/                          Empty until Chunk 21
+schemas/sdlc-config.schema.json   Formalizes sdlc-config-management's shape — Draft 2020-12, tested
+schemas/sdlc-manifest.schema.json Formalizes artifact-manifest's per-product instance shape — tested
 mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
 ```
 
