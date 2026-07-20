@@ -2,8 +2,8 @@
   "_meta": {
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
-    "last_updated": "2026-07-19",
-    "updated_by": "Content improvement campaign PR 1 — standards, governance, repo metadata (decisions D009–D011)"
+    "last_updated": "2026-07-20",
+    "updated_by": "Content improvement campaign complete (D011) — 5 PRs: standards/governance metadata, all 11 agents, 57 design skills, 34 engineering skills, 12 test skills + repo-wide verification. Next: Chunk 15."
   },
 
   "project": {

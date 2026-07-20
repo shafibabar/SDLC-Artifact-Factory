@@ -7,9 +7,10 @@ description: >
   optimistic concurrency, the outbox and idempotent consumer round-trips,
   test-trace correlation, and keeping the suite parallel-safe and CI-portable.
   Sits above unit in the pyramid; applied by the backend-engineer. Used during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: test-strategist
+created: 2026-06-25
 tags: [implement, go, integration-test, testcontainers, postgres, redpanda, hermetic]
 ---
 
@@ -33,7 +34,7 @@ func startPostgres(t *testing.T) *pgxpool.Pool {
     ctx := context.Background()
     pg, err := postgres.Run(ctx, "postgres:16-alpine",
         postgres.WithDatabase("test"), postgres.WithUsername("test"), postgres.WithPassword("test"),
-        testcontainers.WithWaitStrategy(wait.ForListeningPort("5432/tcp")),
+        postgres.BasicWaitStrategies(),   // log + port; a port-only wait races initdb's restart
     )
     require.NoError(t, err)
     t.Cleanup(func() { _ = pg.Terminate(ctx) })          // container dies with the test
@@ -132,6 +133,7 @@ ctx = withTestID(ctx, t.Name())   // propagates into spans/logs for failure corr
 
 ```go
 func TestMain(m *testing.M) {
+    flag.Parse()                        // required before testing.Short() — it panics unparsed
     if testing.Short() { os.Exit(0) }   // skip container tests in -short mode
     os.Exit(m.Run())
 }
@@ -150,6 +152,17 @@ func TestMain(m *testing.M) {
 | Hermetic | Per-test tenant seed + cleanup; shuffle-green | Tests sharing/leaking data |
 | Trace-correlated | Test id propagated into telemetry | Failures with no trace to follow |
 | CI-portable & tagged | Docker-only; `-short` skips them | Depends on an external shared DB |
+
+---
+
+## Anti-Patterns
+
+- **Mocking the database in an "integration" test** — the whole point is the real SQL, real constraints, real transaction semantics; with a mock it is a mislabeled unit test.
+- **Port-only wait strategy for PostgreSQL** — the port opens during initdb, then postgres restarts; use `postgres.BasicWaitStrategies()` or a log wait with occurrence 2.
+- **Hand-creating schema in test setup** — bypasses the migrations, so a broken migration ships green; always apply the real migration chain.
+- **One container per test** — container startup dominates runtime; share a container per package via `TestMain` and isolate with per-test tenants instead.
+- **`time.Sleep` to "wait for" the outbox relay or consumer** — poll with a deadline (`awaitEvent`-style) so the test is fast when the system is fast and fails with a message when it is not.
+- **Asserting against ambient data** — reading rows the test did not seed couples it to sibling tests and destroys shuffle-safety.
 
 ---
 

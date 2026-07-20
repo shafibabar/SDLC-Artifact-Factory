@@ -7,9 +7,10 @@ description: >
   frugally (periodically, on critical packages, not every PR), interpreting
   survived mutants, and acting on the results. Mutation testing is the antidote to
   high-coverage-but-weak tests. Used by the test-strategist during Quality.
-version: 1.0.0
+version: 1.1.0
 phase: quality
 owner: test-strategist
+created: 2026-06-25
 tags: [quality, go, mutation-testing, test-quality, mutation-score, gremlins]
 ---
 
@@ -66,12 +67,11 @@ Coverage is necessary but not sufficient — it's gameable with assertion-free t
 gremlins unleash ./internal/domain/...    # mutate the domain package, run tests per mutant
 ```
 
-```toml
+```yaml
 # .gremlins.yaml — keep runs scoped and bounded
 unleash:
   tags: ""
-  threshold:
-    efficacy: 80     # fail if mutation score (killed/total) < 80% on targeted packages
+  threshold-efficacy: 80   # fail if mutation score (killed/total) < 80% on targeted packages
 ```
 
 ---
@@ -111,6 +111,17 @@ Survived mutants in the **domain layer** are the highest priority — that's whe
 | Threshold gated | Efficacy threshold enforced on the scheduled run | Score computed but never acted on |
 | Survivors actioned | Real survivors → new boundary tests | Survived mutants ignored |
 | Equivalents handled | Known equivalents annotated/excluded | Equivalent-mutant noise re-triaged forever |
+
+---
+
+## Anti-Patterns
+
+- **Mutation on every PR** — each mutant costs a full test run; the inner loop dies for a signal that changes slowly. Periodic and pre-release is the policy.
+- **Chasing 100% mutation score** — the last mutants are usually equivalents or in trivial code; the score is a *trend* on critical packages, not a purity contest.
+- **Mutating generated or transport code** — codegen output and glue have no logic worth mutating; the noise buries the domain-layer survivors that matter.
+- **Treating survivors as a metric, not a work item** — a survived mutant is a specific missing assertion; a report nobody converts into tests is theater.
+- **Padding coverage to "prepare" for mutation testing** — assertion-free tests raise coverage and kill nothing; Mutation Testing exists precisely to expose them.
+- **Re-triaging known equivalent mutants every run** — annotate or exclude them once, or the report's signal-to-noise decays until it is ignored.
 
 ---
 

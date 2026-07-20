@@ -8,9 +8,10 @@ description: >
   (ephemeral stack via Testcontainers/compose), and keeping e2e few and high-value
   at the top of the pyramid. The shift-right validation of whole-system behaviour.
   Used by the test-strategist during Quality.
-version: 1.0.0
+version: 1.1.0
 phase: quality
 owner: test-strategist
+created: 2026-06-25
 tags: [quality, e2e, user-journey, playwright, trace-correlation, flakiness, shift-right]
 ---
 
@@ -101,7 +102,20 @@ func awaitGapReportReflects(t *testing.T, s *stack, tok string, id uuid.UUID, d 
 }
 ```
 
-This respects the system's **eventual consistency** (the event pipeline is async by design — `data-pipeline-design`) instead of fighting it with fixed sleeps.
+This respects the system's **Eventual Consistency** (the event pipeline is async by design — `data-pipeline-design`) instead of fighting it with fixed sleeps.
+
+---
+
+## Flaky-Test Quarantine
+
+A flaky e2e test is worse than no test: it trains you to re-run red builds, which hides real failures. The policy is mechanical, not judgemental:
+
+1. **Detect** — a test that fails then passes on retry with no code change is flaky by definition; CI records it (test name, failure output, trace id).
+2. **Quarantine, don't delete** — move it to a quarantined set (build tag `//go:build quarantine` or a skip list) that still runs in CI but cannot fail the build. The journey's coverage gap is now explicit.
+3. **Time-box** — a quarantined test carries an issue and a deadline (e.g. two weeks). Fix the root cause via its failure trace, or decide the journey belongs at a lower layer and delete it deliberately.
+4. **Never retry-to-green as policy** — automatic retries are a diagnostic aid (retry once, report both outcomes), not a pass criterion.
+
+The quarantine list's steady state is **empty**; a growing list is a suite telling you its waits, seeding, or environment are wrong.
 
 ---
 
@@ -139,6 +153,18 @@ Default to an **ephemeral stack** for the journey suite (hermetic, portable, par
 | Eventual-consistency aware | Polls for the projected state | Asserting immediately after an async action |
 | Trace-correlated | Test id → one trace across the stack | Failures with no trace to follow |
 | Portable env | Ephemeral stack in CI; small staging smoke | Depends on a hand-maintained shared env |
+| Flakiness governed | Quarantine with issue + deadline; list trends to empty | Retry-until-green; flaky tests ignored |
+
+---
+
+## Anti-Patterns
+
+- **E2E as the default layer** — writing a journey test for what a unit or integration test proves inverts the Test Pyramid into an ice-cream cone: slow, flaky, expensive.
+- **`time.Sleep` as synchronization** — the canonical flake generator; every wait must be a condition with a deadline.
+- **Asserting immediately after an async action** — the projection lags the Domain Event by design; a test that ignores Eventual Consistency fails intermittently and teaches nothing.
+- **Shared long-lived test environment as the only target** — ambient data drift makes every failure ambiguous; the ephemeral stack is the source of truth, staging gets only the smoke suite.
+- **Retry-until-green** — masks real intermittent production bugs (races, ordering) that e2e exists to catch.
+- **UI e2e for backend-only behaviour** — driving a browser to test an API path pays the flakiest tax for no extra confidence; use API-level e2e.
 
 ---
 

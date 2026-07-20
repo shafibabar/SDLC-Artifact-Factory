@@ -7,9 +7,10 @@ description: >
   string matchers, keeping mocks honest with interface compliance, and preferring
   fakes over mocks for state-based testing. Supports go-unit-test and
   go-integration-test. Used by the test-strategist during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: test-strategist
+created: 2026-06-25
 tags: [implement, go, mocks, fakes, stubs, test-doubles, mockgen, moq]
 ---
 
@@ -115,6 +116,17 @@ The frontend uses the same philosophy with a different tool: **MSW** mocks the n
 | Right boundary | Mock your small ports, not pgx/kgo | Mocking third-party concretes in unit tests |
 | Not over-mocked | Prefer fakes; mock only what the test is about | Everything mocked; tests pass on broken systems |
 | Refactor-safe | Doubles regenerate/compile-check on interface change | Doubles drifting from the real interface |
+
+---
+
+## Anti-Patterns
+
+- **Interaction-verifying everything** — asserting call counts and argument order on every dependency welds the test to the implementation; a pure refactor turns the suite red. Verify state unless the interaction *is* the contract.
+- **Mocking types you don't own** — a mocked `*pgxpool.Pool` encodes your guess about pgx's behaviour; when the guess is wrong the test passes and production fails. Wrap it in a port; integration-test the real thing.
+- **Hand-rolled mocks with string-based dispatch** — `calls["Save"]++` style recorders are refactor-blind and typo-prone; generation from the interface is free and type-safe.
+- **Editing generated mock files** — regeneration erases the edit; behaviour belongs in the test's configured funcs, customization belongs in a hand-written fake.
+- **A "god fake" with test-specific branching** — a fake that inspects inputs to decide which test it's serving is hidden coupling; keep fakes generic, configure per-test via the double's funcs/fields.
+- **Doubles without compile-time compliance** — a fake that no longer satisfies the port compiles fine until the one test that needs the missing method; `var _ Iface = (*fake)(nil)` catches it at build.
 
 ---
 

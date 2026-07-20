@@ -7,9 +7,10 @@ description: >
   binding steps to Go step definitions (godog) and to frontend e2e, and keeping
   feature files as living documentation a PM can read. BDD is a mandatory
   methodology. Used by the test-strategist during Implement and Quality.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: test-strategist
+created: 2026-06-25
 tags: [implement, quality, bdd, gherkin, feature-file, godog, executable-spec, given-when-then]
 ---
 
@@ -17,7 +18,7 @@ tags: [implement, quality, bdd, gherkin, feature-file, godog, executable-spec, g
 
 ## Purpose
 
-A feature file written in Gherkin is two things at once: a specification a Product Manager can read and approve, and an automated test that proves the system meets it. This is the heart of Behavior-Driven Development — the acceptance criteria *are* the test, in the business's language. There is no translation gap between "what we agreed" and "what we verified" because they are the same artifact.
+A feature file written in Gherkin is two things at once: a specification a Product Manager can read and approve, and an automated test that proves the system meets it. This is the heart of Behavior-Driven Development — Specification by Example — the acceptance criteria *are* the test, in the business's language. There is no translation gap between "what we agreed" and "what we verified" because they are the same artifact.
 
 BDD is a non-negotiable methodology in this plugin (CLAUDE.md). Every acceptance criterion from the Ideate phase becomes a scenario here; the absence of feature files for acceptance criteria is a defect.
 
@@ -153,6 +154,17 @@ Feature files live in the repo (`features/`), are reviewed in PRs, and run in CI
 | Outlines for variation | Scenario Outline + Examples for data sets | Copy-pasted near-identical scenarios |
 | Hermetic | Fresh state per scenario (Background + Before) | Scenarios depending on prior scenario state |
 | Executable & current | Bound to step defs; runs in CI | Feature files that don't execute |
+
+---
+
+## Anti-Patterns
+
+- **Imperative scripts in Gherkin** — "she sends a PATCH with header X" is a test script, not a specification; the HTTP mechanics belong in the step definition.
+- **Multiple `When` steps in one Scenario** — two actions means two behaviours; split the Scenario so a failure names one behaviour.
+- **Scenarios chained on prior Scenario state** — every Scenario must be runnable alone and in any order; shared setup goes in `Background` or a `Before` hook.
+- **`Then` steps with no observable assertion** — "Then the system processes the request" verifies nothing; assert an outcome a user or downstream consumer can observe (state, response, Domain Event).
+- **Feature files written after the code** — they become descriptions of what was built, not specifications of what was agreed; BDD writes the Scenario first.
+- **Synonym drift in steps** — "file," "label," "tag" instead of "data asset," "sensitivity level," "classification" silently forks the Ubiquitous Language.
 
 ---
 

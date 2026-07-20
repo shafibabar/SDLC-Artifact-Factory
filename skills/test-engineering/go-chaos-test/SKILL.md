@@ -8,9 +8,10 @@ description: >
   Uses toxiproxy and application-level fault injection rather than a chaos platform.
   Covers the hypothesis-driven experiment method and steady-state validation. The
   shift-right proof that the system survives the real world. Used by the test-strategist during Quality.
-version: 1.0.0
+version: 1.1.0
 phase: quality
 owner: test-strategist
+created: 2026-06-25
 tags: [quality, chaos, resilience, toxiproxy, circuit-breaker, retry, dlq, fault-injection]
 ---
 
@@ -131,6 +132,18 @@ Full chaos platforms (Chaos Mesh, Litmus, Gremlin) orchestrate cluster-wide fail
 | Tenant isolation tested | Fault in one tenant doesn't reach another | Cross-tenant impact unverified |
 | Steady state measured | Uses existing RED/USE telemetry | No measurable health signal |
 | Frugal tooling | toxiproxy + app-level injection | A chaos platform for a solo system |
+
+---
+
+## Anti-Patterns
+
+- **Random breakage without a hypothesis** — pulling cables to "see what happens" produces anecdotes; only a stated steady state and expected pattern behaviour produce a pass/fail verdict.
+- **Asserting failure but not recovery** — half an experiment; the system must return to steady state once the fault clears, or the Circuit Breaker's half-open path and the outbox's catch-up were never proven.
+- **Fixed sleeps around fault windows** — recovery is eventually consistent; poll for steady state with a deadline, exactly as in `go-e2e-test`.
+- **Chaos experiments that duplicate happy-path e2e** — the fault is the point; an experiment whose toxic never engages the pattern under test proves nothing.
+- **Leaving toxics behind** — a leaked toxic poisons every later test in the run; every `AddToxic` pairs with a `t.Cleanup` removal.
+- **Skipping the poison-message case** — retry-and-backoff without a proven Dead Letter Queue route means one bad event can stall a partition forever.
+- **Unbounded blast radius** — running experiments against shared environments (or production) converts a test into an incident.
 
 ---
 

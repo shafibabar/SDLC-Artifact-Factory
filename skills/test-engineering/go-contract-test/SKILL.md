@@ -8,9 +8,10 @@ description: >
   consumer expectations, event-schema compatibility checks, and where heavier CDC
   tooling is justified. Enforces the architecture's Consumer-Driven Contracts.
   Used by the test-strategist during Implement and Quality.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: test-strategist
+created: 2026-06-25
 tags: [implement, quality, contract-test, consumer-driven, openapi, schema, pact]
 ---
 
@@ -18,7 +19,7 @@ tags: [implement, quality, contract-test, consumer-driven, openapi, schema, pact
 
 ## Purpose
 
-When two services talk, each makes assumptions about the other's shape — and a silent change on one side breaks the other in production. Contract tests catch that break at **build time**: they verify that a provider still satisfies what its consumers expect, and that consumers only depend on what the provider actually offers. This is the enforcement mechanism for the **Consumer-Driven Contracts** pattern the enterprise-architect mandates on every Customer/Supplier relationship (`integration-design`, `context-map-patterns`).
+When two services talk, each makes assumptions about the other's shape — and a silent change on one side breaks the other in production. Contract tests catch that break at **build time**: they verify that a provider still satisfies what its consumers expect, and that consumers only depend on what the provider actually offers. This is the enforcement mechanism for the **Consumer-Driven Contract** pattern the enterprise-architect mandates on every Customer/Supplier relationship (`integration-design`, `context-map-patterns`).
 
 The frugal stance: we already have **one shared OpenAPI contract** that both sides generate from, so most contract testing is schema verification — no Pact broker required.
 
@@ -96,6 +97,8 @@ provider CI runs: real provider ⊨ every consumer expectation + OpenAPI conform
 
 Because we're solo and the services share one repo/contract, this loop is a CI job, not cross-team broker choreography — frugal by design.
 
+One versioning subtlety once services deploy independently: green against the consumer expectations **at HEAD** does not prove safety against the consumer version **actually running in production**. Pin each consumer's expectation files to the deployed version (a tag or commit recorded at deploy time) and verify the provider against both HEAD and deployed expectations. This is the frugal, file-based answer to Pact's "can-i-deploy" question.
+
 ---
 
 ## When Heavier CDC Tooling Is Justified
@@ -116,6 +119,17 @@ Pact (with a broker) earns its keep when contracts cross **team or repository bo
 | Event compatibility | Emitted events validated + BACKWARD-compat checked | Event shape changes unverified |
 | Build-time catch | Contract breaks fail CI before deploy | Breaks discovered in production |
 | Frugal tooling | Schema validation by default; Pact only when multi-party | A Pact broker stood up for a solo, single-repo system |
+
+---
+
+## Anti-Patterns
+
+- **Testing the generated stubs instead of the running provider** — codegen conformance is free; the contract test must exercise real handlers and middleware, where drift actually happens.
+- **Provider-driven "contracts"** — a provider asserting its own output shape verifies nothing a consumer relies on; the consumer's declared subset is the contract.
+- **Consumers asserting the full response shape** — a consumer that pins every field breaks on additive changes it never cared about; declare only the fields it reads.
+- **Skipping event contracts** — the Redpanda topics are boundaries exactly like HTTP; an unverified Domain Event schema change is a production break waiting for a redeploy.
+- **Verifying only HEAD-to-HEAD** — independent deploys mean the deployed consumer version is the one that breaks; pin and verify deployed expectations too.
+- **Standing up a Pact broker pre-emptively** — infrastructure without a multi-party problem; adopt it per-boundary, with an ADR, when the problem is real.
 
 ---
 

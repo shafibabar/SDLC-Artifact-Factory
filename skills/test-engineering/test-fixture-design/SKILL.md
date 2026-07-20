@@ -7,9 +7,10 @@ description: >
   parallel-safe data isolation (unique tenants/ids per test), and keeping fixtures
   DRY without coupling tests. Hermetic fixtures are what make integration and e2e
   tests reliable. Used by the test-strategist during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: test-strategist
+created: 2026-06-25
 tags: [implement, go, fixtures, test-data, hermetic, builder, seeding, cleanup]
 ---
 
@@ -114,16 +115,24 @@ This lets integration tests run in parallel against one shared database without 
 When asserting on a large, stable output (a generated report, a serialized event, an API response body), compare against a **golden file** rather than a giant inline literal. An `-update` flag regenerates them on intentional change.
 
 ```go
+var update = flag.Bool("update", false, "rewrite golden files")
+
 func assertGolden(t *testing.T, name string, got []byte) {
     t.Helper()
     path := filepath.Join("testdata", name+".golden")
-    if *update { os.WriteFile(path, got, 0o644); return } // go test -update on intended changes
-    want, _ := os.ReadFile(path)
+    if *update {
+        require.NoError(t, os.WriteFile(path, got, 0o644))  // go test -update on intended changes
+        return
+    }
+    want, err := os.ReadFile(path)
+    require.NoError(t, err, "missing golden file — run: go test -update")
     require.Equal(t, string(want), string(got))
 }
 ```
 
 Golden files live in `testdata/` (ignored by the Go toolchain) and are reviewed in PRs — a diff in a golden file is a visible, reviewable behaviour change.
+
+Two disciplines keep golden files honest: **normalize before comparing** — strip or fix nondeterministic fields (timestamps, generated ids) before writing/asserting, or the files churn on every run; and **never run `-update` to silence a failure you don't understand** — regenerating a golden file *is* approving a behaviour change, so the diff must be read like a code review.
 
 ---
 
@@ -144,6 +153,18 @@ Fixtures are shared (builders, helpers) but tests stay independent: a shared *bu
 | Cleanup guaranteed | `t.Cleanup` fires on success and failure | Leaked data; teardown skipped on failure |
 | Parallel-safe | Per-test tenant/tx isolation | Parallel tests colliding on shared rows |
 | Golden for big output | `testdata/*.golden` + `-update` | Massive inline expected blobs |
+
+---
+
+## Anti-Patterns
+
+- **Shared seed data all tests rely on** — "the test database has tenant 1 with 5 assets" couples every test to ambient state; one test mutates it and three others fail mysteriously.
+- **A mutable fixture object passed between tests** — share builders (construction), never live instances (state).
+- **`time.Now()` or unseeded randomness in assertions** — flaky by construction; fix the clock and the ids.
+- **Teardown via `defer` inside a helper** — fires when the helper returns, while the test still needs the resource; `t.Cleanup` scopes teardown to the test.
+- **Cleanup only on the happy path** — teardown guarded by "if the test passed" leaks residue exactly when you are debugging; `t.Cleanup` runs regardless.
+- **Golden files updated reflexively** — `-update` as a "make CI green" button converts a behaviour gate into a rubber stamp.
+- **Fixture builders that mirror every production field** — a Test Fixture states what the test cares about; a 20-argument builder call is an inline literal wearing a costume.
 
 ---
 
