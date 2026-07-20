@@ -4,8 +4,9 @@
 #          ^[a-z0-9]+(-[a-z0-9]+)*$ (CLAUDE.md's Naming Conventions).
 # Contract: JSON on stdin (PreToolUse schema). Exit 0 to allow, JSON with
 #           hookSpecificOutput.permissionDecision:"deny" + reason to block.
-# Scope: skills/<domain>/<name>/SKILL.md, agents/<name>.md, commands/<name>.md,
-#        scripts/<name>.sh — the component-name segment of the path.
+# Scope: skills/<name>/SKILL.md (flat — no domain nesting, fixed after live
+#        testing confirmed domain-nested skills are not discoverable),
+#        agents/<name>.md, commands/<name>.md, scripts/<name>.sh.
 set -euo pipefail
 
 INPUT="$(cat)"
@@ -42,7 +43,7 @@ PATTERN = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 # A restrictive extraction regex would silently let bad names fall through
 # as "not in scope" instead of being rejected (caught by live testing).
 name = None
-m = re.search(r"/skills/[^/]+/([^/]+)/SKILL\.md$", file_path)
+m = re.search(r"/skills/([^/]+)/SKILL\.md$", file_path)
 if m:
     name = m.group(1)
 else:

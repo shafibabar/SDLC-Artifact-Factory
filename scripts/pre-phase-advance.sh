@@ -11,7 +11,7 @@
 # Limitation: agents with more than one phase (requirements-analyst;
 # security-engineer/test-strategist) are gated on their FIRST listed phase
 # only. Re-entry for a later phase is not distinguished. See
-# skills/governance/pre-phase-advance references, if extended later.
+# skills/pre-phase-advance references, if extended later.
 set -euo pipefail
 
 INPUT="$(cat)"

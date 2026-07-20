@@ -52,7 +52,7 @@
           },
           {
             "type": "agent",
-            "prompt": "A product artifact was just written. Read the file at the path given in this hook's tool_input.file_path (from the JSON you were invoked with). If the path does not contain '/artifacts/', respond with exactly PASS and stop. Otherwise: read skills/governance/methodology-review/SKILL.md for the review criteria, determine which of DDD, Event Storming, TDD, BDD, and SOLID apply to this artifact's type and phase (per each methodology's 'Applies to' section), and check the artifact against every applicable check. If every applicable check passes, respond with exactly PASS. If any check fails, respond with FAIL followed by a one-line reason per defect, citing the specific check violated. Do not modify the artifact. Do not invoke any other agent.",
+            "prompt": "A product artifact was just written. Read the file at the path given in this hook's tool_input.file_path (from the JSON you were invoked with). If the path does not contain '/artifacts/', respond with exactly PASS and stop. Otherwise: read skills/methodology-review/SKILL.md for the review criteria, determine which of DDD, Event Storming, TDD, BDD, and SOLID apply to this artifact's type and phase (per each methodology's 'Applies to' section), and check the artifact against every applicable check. If every applicable check passes, respond with exactly PASS. If any check fails, respond with FAIL followed by a one-line reason per defect, citing the specific check violated. Do not modify the artifact. Do not invoke any other agent.",
             "timeout": 90
           }
         ]

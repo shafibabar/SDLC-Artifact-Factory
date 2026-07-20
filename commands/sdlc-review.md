@@ -9,8 +9,8 @@ Run a methodology review — this is the same check `pre-phase-advance` will run
 
 1. The target is `$ARGUMENTS` — either a specific artifact path or a phase name (review every artifact in that phase). If empty, ask the user which.
 2. Invoke a general-purpose subagent via the Agent tool, instructing it to:
-   - Read `skills/governance/methodology-review/SKILL.md` and `skills/governance/glossary-management/SKILL.md` for the review criteria
+   - Read `skills/methodology-review/SKILL.md` and `skills/glossary-management/SKILL.md` for the review criteria
    - Read the target artifact(s)
    - Apply every applicable methodology check (DDD, Event Storming, TDD, BDD, SOLID — per each check's "Applies to" scope) and the Ubiquitous Language check
-   - Produce a report following `skills/governance/methodology-review/references/review-report-template.md`
+   - Produce a report following `skills/methodology-review/references/review-report-template.md`
 3. Present the report to the user. If `result: fail`, name which agent owns the remediation and do not mark the artifact as passing regardless of how minor the defects look.

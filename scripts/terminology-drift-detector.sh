@@ -2,7 +2,7 @@
 # terminology-drift-detector.sh — PostToolUse hook, matcher: Write
 # Purpose: warn (never block) when a written artifact uses a drifted form of
 #          a canonical glossary term, per the Drift Quick Reference table in
-#          skills/governance/glossary-management/SKILL.md.
+#          skills/glossary-management/SKILL.md.
 # Contract: JSON on stdin (PostToolUse schema). Exit 0 = clean. Exit 1 =
 #           non-blocking warning (message on stderr) — work is never stopped
 #           for terminology; it's reported for a human/agent to fix.

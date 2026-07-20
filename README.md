@@ -79,7 +79,7 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | All content built (136 skills, 13 agents, 15 commands, 7 hooks); agents, commands, and hooks are live-verified working, skills are pending a discoverability fix (see Known Issues in CHANGELOG); schemas remain |
+| **Maturity** | All content built and live-verified working (136 skills, 13 agents, 15 commands, 7 hooks); schemas remain |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
@@ -181,11 +181,10 @@ sdlc-artifact-factory/
 ├── CLAUDE.md                 # Always-on standards — read every session
 ├── sdlc-context.json         # Factory memory: build checklist, decisions, open questions
 ├── settings.json             # Default settings applied when plugin is enabled
-├── skills/                   # Skills — domain expertise, grouped by domain
-│   └── <domain>/
-│       └── <skill-name>/
-│           ├── SKILL.md
-│           └── references/   # Optional supporting templates
+├── skills/                   # Skills — flat, one directory per skill (domain is a tag, not a path)
+│   └── <skill-name>/
+│       ├── SKILL.md
+│       └── references/       # Optional supporting templates
 ├── agents/                   # Subagent definitions — flat, one file per agent
 │   └── <agent-name>.md
 ├── commands/                 # Real slash commands, one file each
@@ -202,7 +201,7 @@ sdlc-artifact-factory/
 └── CHANGELOG.md
 ```
 
-Skills carry exactly one definition file per component (`SKILL.md`) and are pure prose, consumed by Claude — no build step, no runtime. **Skills are currently NOT auto-discovered by Claude Code** — real discovery requires the flat `skills/<name>/SKILL.md` (one level, no domain grouping); this repo's domain-grouped `skills/<domain>/<name>/SKILL.md` is a confirmed gap, fixed in a dedicated follow-up PR. Agents, commands, hooks, and scripts are real, verified, auto-discovered Claude Code mechanics: `agents/<name>.md`, `commands/*.md`, and `hooks/hooks.json` are found by Claude Code without any manifest wiring — `.claude-plugin/plugin.json`'s `components` map is human documentation only.
+Skills carry exactly one definition file per component (`SKILL.md`) and are pure prose, consumed by Claude — no build step, no runtime. Skills, agents, commands, hooks, and scripts are all real, verified, auto-discovered Claude Code mechanics: `skills/<name>/SKILL.md` (flat — skills were originally domain-nested and confirmed undiscoverable in that shape; domain survives only as a `tags`/`phase` frontmatter concept and in `sdlc-context.json`'s `skill_domains`, not as a directory), `agents/<name>.md`, `commands/*.md`, and `hooks/hooks.json` are all found by Claude Code without any manifest wiring — `.claude-plugin/plugin.json`'s `components` map is human documentation only.
 
 ### Directory Reference
 
@@ -286,7 +285,7 @@ All component names must conform to the following pattern:
 
 ### Folder Conventions
 
-- **Skills**: one folder per skill (`skills/<domain>/<name>/`); folder name matches the `name` field in frontmatter exactly; supporting files live inside it
+- **Skills**: one folder per skill, flat (`skills/<name>/`) — no domain subdirectory, that structure is not discoverable by Claude Code (confirmed empirically); folder name matches the `name` field in frontmatter exactly; supporting files live inside it
 - **Agents**: flat — `agents/<name>.md`, no folder, no subdirectory. This is a real Claude Code discovery requirement, not a style choice.
 - **Commands**: flat — `commands/<name>.md`, no folder
 - **Hooks**: no per-hook file at all — one entry in `hooks/hooks.json`
@@ -948,7 +947,7 @@ The following principles govern every artifact and component produced by or for 
 ### Creating New Artifacts
 
 1. Determine the correct component type using the [Decision Tree](#decision-tree)
-2. Skills: create `skills/<domain>/<name>/SKILL.md`. Agents: create `agents/<name>.md` directly — no subdirectory. Commands: create `commands/<name>.md` directly — no subdirectory. Hooks: add an entry to `hooks/hooks.json`. Scripts: add `scripts/<name>.sh`.
+2. Skills: create `skills/<name>/SKILL.md` — flat, no domain subdirectory. Agents: create `agents/<name>.md` directly — no subdirectory. Commands: create `commands/<name>.md` directly — no subdirectory. Hooks: add an entry to `hooks/hooks.json`. Scripts: add `scripts/<name>.sh`.
 3. Complete all required frontmatter fields for that component type (see [Frontmatter — Required Fields by Component Type](#frontmatter--required-fields-by-component-type))
 4. Follow the body structure for that component type
 5. Keep skill/agent files under 500 lines; move detail to `references/`
@@ -1105,7 +1104,7 @@ Any component that supports multiple tenants must enforce:
 
 ### Delivered So Far
 
-- **Skills:** 136 across 15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6). All 15 skill domains are complete in content — **but not yet auto-discoverable by Claude Code**; see the note in Repository Structure and CHANGELOG's Known Issues.
+- **Skills:** 136, flat under `skills/<name>/SKILL.md` — verified discoverable. Domain grouping (15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6)) survives as a logical tag in `sdlc-context.json`'s `skill_domains`, not as a directory.
 - **Agents:** 13 of 13 — product-strategist, requirements-analyst (Ideate + Customer Validation), domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer, data-engineer. Flat `agents/<name>.md`, verified discoverable.
 - **Commands:** 15 of 15 — all phase-driver, navigation, and cross-cutting commands, verified discoverable and one verified by live invocation.
 - **Hooks:** 7 real hooks in `hooks/hooks.json` (9 originally planned, 3 consolidated into 1 once bound to a real event — see CHANGELOG), backed by 6 scripts under `scripts/`. Every hook and every script individually triggered and its outcome verified, not just read — 3 real bugs found and fixed in the process.
@@ -1115,7 +1114,6 @@ Any component that supports multiple tenants must enforce:
 | Area | Planned Additions |
 |---|---|
 | Agents | `ai-ml-architect` (deferred until a product requires ML) |
-| Skills | Fix: flatten `skills/<domain>/<name>/SKILL.md` to `skills/<name>/SKILL.md` so they're actually discoverable (dedicated follow-up PR) |
 | Scripts | 4 standalone utility scripts (`validate-openapi-contract.sh`, `validate-event-schema.sh`, `generate-artifact-id.sh`, `cross-reference-checker.sh`) — deferred until a command or agent actually needs them |
 | Schemas | `sdlc-config`, `sdlc-manifest` (Chunk 21) |
 | MCP Servers | Source control, project management, knowledge management, cloud platforms, data platforms, communication (deferred — defined per product) |
@@ -1257,8 +1255,8 @@ A testing approach where the consumer of an API defines the contract it expects,
 | Always-On Standards | `CLAUDE.md` |
 | Factory Memory / Session State | `sdlc-context.json` |
 | Plugin Manifest | `.claude-plugin/plugin.json` |
-| Canonical Glossary | `skills/governance/glossary-management/references/ubiquitous-language.md` |
-| Methodology Review Criteria | `skills/governance/methodology-review/` |
+| Canonical Glossary | `skills/glossary-management/references/ubiquitous-language.md` |
+| Methodology Review Criteria | `skills/methodology-review/` |
 | Hook Registry | `hooks/` *(pending — Chunk 20)* |
 | MCP Configuration | `.mcp.json` *(deferred)* |
 | LSP Configuration | `.lsp.json` *(deferred)* |
