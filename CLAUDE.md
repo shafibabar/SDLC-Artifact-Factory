@@ -34,7 +34,7 @@ Each phase has defined inputs, outputs, and applicable methodologies. Phase gate
 
 ## Working in This Repository
 
-This repository **is the plugin itself** — component definitions in Markdown plus JSON configuration, plus (from Chunk 19 onward) real, executable commands, hooks, and scripts. Skills and agents have no build step or test suite (they are prose consumed by Claude). Commands, hooks, and scripts are real Claude Code mechanics and are tested by actually invoking them, not just read for coherence. The `go`/`npm` permissions in `settings.json` are for code the plugin *generates* for a product, not for this repo. Auto-discovery is real and was verified by loading this repo as a session plugin (`claude --plugin-dir`) and inspecting its component inventory (`claude plugin details`): `commands/*.md`, `agents/<name>.md` (flat, one file per agent — no subdirectory), and `hooks/hooks.json` are found by Claude Code without any manifest wiring. Every hook and every backing script in `scripts/` was individually triggered with a real (or synthetic) input and its outcome verified — not just read for coherence; this caught 3 real bugs (see `sdlc-context.json` decision D015) that a read-only review missed. **`skills/<domain>/<name>/SKILL.md` is NOT currently discovered** — real discovery requires the flat `skills/<name>/SKILL.md` (one level, no domain grouping); this is a known, confirmed gap affecting all skills, fixed in a dedicated follow-up PR, not this one. `.claude-plugin/plugin.json`'s `components` map is documentation for humans, not something Claude Code reads.
+This repository **is the plugin itself** — component definitions in Markdown plus JSON configuration, plus (from Chunk 19 onward) real, executable commands, hooks, and scripts. Skills and agents have no build step or test suite (they are prose consumed by Claude). Commands, hooks, and scripts are real Claude Code mechanics and are tested by actually invoking them, not just read for coherence. The `go`/`npm` permissions in `settings.json` are for code the plugin *generates* for a product, not for this repo. Auto-discovery is real and was verified by loading this repo as a session plugin (`claude --plugin-dir`) and inspecting its component inventory (`claude plugin details`): `commands/*.md`, `agents/<name>.md` (flat, one file per agent — no subdirectory), `skills/<name>/SKILL.md` (flat, no domain nesting), and `hooks/hooks.json` are found by Claude Code without any manifest wiring. Every hook and every backing script in `scripts/` was individually triggered with a real (or synthetic) input and its outcome verified — not just read for coherence; this caught 3 real bugs (see `sdlc-context.json` decision D015) that a read-only review missed. Skills were originally domain-nested (`skills/<domain>/<name>/SKILL.md`) and were confirmed **not discoverable** in that shape — fixed by flattening (decision D016). Domain grouping survives only as a logical tag, not a filesystem path — see `sdlc-context.json`'s `skill_domains`. `.claude-plugin/plugin.json`'s `components` map is documentation for humans, not something Claude Code reads.
 
 **Layout:**
 
@@ -43,7 +43,7 @@ This repository **is the plugin itself** — component definitions in Markdown p
 sdlc-context.json                 Factory memory — build checklist, decisions, open questions
 CLAUDE.md                         This file — always-on standards
 settings.json                     Permissions and env vars for this repo's own Claude Code session
-skills/<domain>/<name>/SKILL.md   One skill per directory, grouped by domain — NOT YET DISCOVERABLE, see note above
+skills/<name>/SKILL.md            One skill per directory, flat — domain is a tag (sdlc-context.json), not a path
 agents/<name>.md                  One flat file per agent — auto-discovered, verified
 commands/<name>.md                One real slash command per file — auto-discovered, verified
 hooks/hooks.json                  All hook bindings in one file — auto-discovered
@@ -141,7 +141,7 @@ These terms must be used consistently across every artifact. Never substitute sy
 **Security terms:**
 `Zero Trust Architecture` · `Principle of Least Privilege` · `Attribute-Based Access Control` · `Non-Repudiation` · `Encryption at Rest` · `Encryption in Transit` · `Secrets Management`
 
-Full glossary: `skills/governance/glossary-management/` (built in Chunk 4).
+Full glossary: `skills/glossary-management/` (built in Chunk 4).
 
 ---
 
@@ -170,7 +170,7 @@ These defaults apply to all generated code and configuration unless overridden i
 Every artifact produced by this plugin must:
 
 1. Have a frontmatter block with `name`, `version`, `phase`, `owner`, and `created` fields.
-2. Use only terms from the canonical glossary (`skills/governance/glossary-management/`).
+2. Use only terms from the canonical glossary (`skills/glossary-management/`).
 3. Be traceable — reference the requirement, event, or decision that caused it to exist.
 4. Apply all non-negotiable methodologies applicable to its type.
 5. Be reviewable by Shafi without IDE tooling — plain Markdown, clear structure.
@@ -183,7 +183,7 @@ The plugin's own components carry these canonical schemas — no other shapes ar
 
 | Component | File location | Required frontmatter fields, in order |
 |---|---|---|
-| Skill | `skills/<domain>/<name>/SKILL.md` (not yet discoverable — see note above) | `name, description, version, phase, owner, created, tags` |
+| Skill | `skills/<name>/SKILL.md` (flat, verified discoverable) | `name, description, version, phase, owner, created, tags` |
 | Agent | `agents/<name>.md` (flat, verified discoverable) | `name, description, role, version, phase, owner, created, inputs, outputs, skills, tools, tags` |
 
 Every agent's `skills:` list includes `glossary-management` and `methodology-review` in addition to its domain skills. Agents that run shell commands (build, test, scan) declare `tools: [Bash]`.

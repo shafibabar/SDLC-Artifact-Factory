@@ -20,9 +20,7 @@ Format: [Semantic Version] — Date — Description
 - Content improvement campaign across all skills, agents, and repo metadata: unified component frontmatter schemas, restored always-on rule wiring in the five newest agents, fixed dead references, terminology drift, stale metadata, and code currency issues. Delivered as five batch PRs (PR #29–#33).
 - CLAUDE.md, README.md, `.claude-plugin/plugin.json`, `settings.json` corrected from an untested conceptual spec (fictional lifecycle events, invalid manifest fields, "Tools" as a component type) to real, verified Claude Code mechanics (Chunk 19).
 - `agents/<role>/AGENT.md` restructured to flat `agents/<role>.md` — the nested form is not discovered by Claude Code's real agent-discovery mechanism (confirmed empirically; folded into Chunk 19).
-
-### Known Issues
-- `skills/<domain>/<name>/SKILL.md` (domain-grouped, two levels) is confirmed **not discovered** by real Claude Code — the same class of bug as the agents fix above, but affecting all 135+ skill files. Scoped for a dedicated follow-up PR, not yet scheduled.
+- All 136 skills restructured from `skills/<domain>/<name>/SKILL.md` (domain-grouped, confirmed not discovered by Claude Code) to flat `skills/<name>/SKILL.md` (verified discoverable) — the same class of bug as the agents fix above, closing `sdlc-context.json`'s open question Q001. Domain grouping survives only as a logical tag in `sdlc-context.json`'s `skill_domains`, not as a filesystem path. Zero name collisions across the 15 former domains, so no skill was renamed. ~17 literal cross-references to the 4 governance skills (`glossary-management`, `methodology-review`, `artifact-manifest`, `sdlc-config-management`) updated to their new flat paths; `naming-convention-enforcer.sh`'s path regex updated to match.
 
 ## [0.1.0] — 2026-06-24 → 2026-06-26
 

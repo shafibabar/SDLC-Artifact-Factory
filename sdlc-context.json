@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-20",
-    "updated_by": "Chunk 20 — hooks/hooks.json (7 real hooks, 9 planned consolidated per D014) + 6 backing scripts, all individually and live-tested; 3 real script bugs found and fixed (D015). Skills domain-nesting fix (Q001) still next."
+    "updated_by": "Skills flattened from domain-nested to flat skills/<name>/SKILL.md, resolving Q001 (D016). All 136 skills now live-verified discoverable, matching agents (D013), commands, and hooks (D012/D014). Only schemas (Chunk 21) remain in the original build plan."
   },
 
   "project": {
@@ -123,59 +123,60 @@
     { "name": "ai-ml-architect",       "skill_domains": ["ml (TBD)"],               "status": "deferred — added when a product requires ML" }
   ],
 
+  "_skill_domains_note": "As of D016, skills/ is flat (skills/<name>/SKILL.md) — real Claude Code discovery does not support domain nesting. Each entry's 'path' field below is a LOGICAL grouping only (the skills that conceptually belong to this domain), not a real filesystem path. Domain identity lives in each skill's own frontmatter (tags, phase) and in this array — nowhere on disk.",
   "skill_domains": [
     {
       "domain": "strategy",
-      "path": "skills/strategy/",
+      "path": "skills/strategy/ (logical grouping only — see _skill_domains_note)",
       "owner": "product-strategist",
       "planned_skills": ["vision-statement", "mission-statement", "gtm-strategy", "roadmap-authoring", "okr-authoring", "stakeholder-mapping", "competitive-analysis", "business-model-canvas"],
       "status": "complete"
     },
     {
       "domain": "discovery",
-      "path": "skills/discovery/",
+      "path": "skills/discovery/ (logical grouping only — see _skill_domains_note)",
       "owner": "requirements-analyst",
       "planned_skills": ["requirements-analysis", "nfr-specification", "user-story-writing", "epic-definition", "acceptance-criteria", "impact-mapping", "jtbd-analysis", "example-mapping", "user-persona", "story-mapping", "moscow-prioritization"],
       "status": "complete"
     },
     {
       "domain": "domain-modeling",
-      "path": "skills/domain-modeling/",
+      "path": "skills/domain-modeling/ (logical grouping only — see _skill_domains_note)",
       "owner": "domain-modeler",
       "planned_skills": ["ubiquitous-language", "bounded-context-mapping", "domain-event-catalog", "aggregate-design", "command-catalog", "read-model-design", "event-storming-facilitation", "domain-storytelling", "context-map-patterns"],
       "status": "complete"
     },
     {
       "domain": "architecture",
-      "path": "skills/architecture/",
+      "path": "skills/architecture/ (logical grouping only — see _skill_domains_note)",
       "owner": "enterprise-architect",
       "planned_skills": ["system-context-diagram", "container-diagram", "component-diagram", "adr-authoring", "api-contract-design", "integration-design", "multi-tenancy-design", "cqrs-pattern", "event-driven-patterns"],
       "status": "complete"
     },
     {
       "domain": "security",
-      "path": "skills/security/",
+      "path": "skills/security/ (logical grouping only — see _skill_domains_note)",
       "owner": "security-architect (design) + security-engineer (implementation)",
       "planned_skills": ["threat-modeling", "security-architecture", "access-control-model", "secrets-management", "privacy-design", "compliance-design", "zero-trust-design", "security-implementation", "compliance-verification"],
       "status": "complete"
     },
     {
       "domain": "ux",
-      "path": "skills/ux/",
+      "path": "skills/ux/ (logical grouping only — see _skill_domains_note)",
       "owner": "ux-architect",
       "planned_skills": ["ux-flow-design", "information-architecture", "ui-component-spec", "user-journey-mapping"],
       "status": "complete"
     },
     {
       "domain": "data-architecture",
-      "path": "skills/data-architecture/",
+      "path": "skills/data-architecture/ (logical grouping only — see _skill_domains_note)",
       "owner": "data-architect",
       "planned_skills": ["data-model-design", "data-pipeline-design", "data-lineage-design", "data-classification", "data-retention-policy", "canonical-data-model", "event-schema-design"],
       "status": "complete"
     },
     {
       "domain": "backend-engineering",
-      "path": "skills/backend-engineering/",
+      "path": "skills/backend-engineering/ (logical grouping only — see _skill_domains_note)",
       "owner": "backend-engineer",
       "planned_skills": ["go-project-structure", "go-service-skeleton", "go-chi-handler", "go-domain-model", "go-repository-pattern", "go-event-publisher", "go-event-consumer", "go-service-layer", "go-middleware", "go-migration", "go-dockerfile", "go-makefile", "go-openapi-codegen", "go-concurrency-patterns", "go-error-handling", "go-performance-optimization"],
       "_skills_note": "16 skills. go-concurrency-patterns, go-error-handling, go-performance-optimization added in Chunk 12 from Shafi's Go Backend & Observability Engineer behavioral blueprint (mechanical sympathy, leak-free concurrency, errors-as-values, profiling).",
@@ -183,7 +184,7 @@
     },
     {
       "domain": "frontend-engineering",
-      "path": "skills/frontend-engineering/",
+      "path": "skills/frontend-engineering/ (logical grouping only — see _skill_domains_note)",
       "owner": "frontend-engineer",
       "planned_skills": ["react-project-structure", "react-component-design", "typescript-types", "react-state-management", "react-api-client", "react-routing", "react-graph-visualization", "react-dashboard-components", "react-accessibility", "react-dockerfile", "react-component-testing", "react-e2e-testing", "react-performance-optimization", "react-observability"],
       "_skills_note": "14 skills. react-performance-optimization and react-observability added in Chunk 13 from Shafi's React+TypeScript Frontend Engineer behavioral blueprint (critical rendering path, RUM/Core Web Vitals, OTel Web with W3C traceparent propagation, error boundaries).",
@@ -191,7 +192,7 @@
     },
     {
       "domain": "test-engineering",
-      "path": "skills/test-engineering/",
+      "path": "skills/test-engineering/ (logical grouping only — see _skill_domains_note)",
       "owner": "test-strategist",
       "planned_skills": ["test-pyramid", "bdd-feature-file", "go-unit-test", "mock-generation", "test-fixture-design", "go-integration-test", "go-contract-test", "go-mutation-test", "go-e2e-test", "go-performance-test", "go-load-test", "go-chaos-test"],
       "_scope_note": "12 skills (was 13 planned). Chunk 14 dropped go-security-test and go-compliance-test (owned by security-engineer via security-implementation + compliance-verification — avoiding overlap) and added test-pyramid (the shift-left/shift-right strategy spine). Organized around Shafi's shift-left (prevent bugs) / shift-right (validate resilience) objective; frugal tooling per Shafi's filtered SDET blueprint.",
@@ -199,7 +200,7 @@
     },
     {
       "domain": "observability",
-      "path": "skills/observability/",
+      "path": "skills/observability/ (logical grouping only — see _skill_domains_note)",
       "owner": "backend-engineer (instrumentation) + platform-engineer (stack)",
       "planned_skills": ["opentelemetry-instrumentation", "prometheus-metrics-design", "structured-logging-design", "distributed-tracing-design", "health-check-design", "slo-definition", "alerting-rules-design"],
       "_split_note": "Domain co-owned. Instrumentation skills (opentelemetry-instrumentation, distributed-tracing-design, structured-logging-design, health-check-design) built in Chunk 12 by backend-engineer. Stack skills (prometheus-metrics-design, slo-definition, alerting-rules-design) built in Chunk 15 by platform-engineer.",
@@ -207,28 +208,28 @@
     },
     {
       "domain": "platform",
-      "path": "skills/platform/",
+      "path": "skills/platform/ (logical grouping only — see _skill_domains_note)",
       "owner": "platform-engineer",
       "planned_skills": ["ci-pipeline", "cd-pipeline", "dockerfile-patterns", "helm-chart", "opentofu-module", "kubernetes-manifest", "environment-config", "feature-flag-design", "blue-green-deployment", "canary-deployment", "disaster-recovery-plan", "runbook-authoring"],
       "status": "complete"
     },
     {
       "domain": "data-analytics",
-      "path": "skills/data-analytics/",
+      "path": "skills/data-analytics/ (logical grouping only — see _skill_domains_note)",
       "owner": "data-engineer",
       "planned_skills": ["analytics-requirements", "dashboard-specification", "reporting-spec", "data-storytelling", "data-quality-rules", "data-pipeline-implementation", "metrics-instrumentation-plan"],
       "status": "complete"
     },
     {
       "domain": "validation",
-      "path": "skills/validation/",
+      "path": "skills/validation/ (logical grouping only — see _skill_domains_note)",
       "owner": "requirements-analyst",
       "planned_skills": ["uat-plan", "uat-scenario", "beta-program-design", "feedback-template", "acceptance-sign-off"],
       "status": "complete"
     },
     {
       "domain": "governance",
-      "path": "skills/governance/",
+      "path": "skills/governance/ (logical grouping only — see _skill_domains_note)",
       "owner": "factory internals — hooks and commands",
       "planned_skills": ["artifact-manifest", "methodology-review", "risk-register", "value-stream-map", "sdlc-config-management", "glossary-management"],
       "status": "complete"
@@ -309,8 +310,8 @@
       "status": "complete",
       "date_completed": "2026-06-24",
       "deliverables": [
-        "skills/governance/glossary-management/ (SKILL.md + full ubiquitous language glossary)",
-        "skills/governance/methodology-review/ (SKILL.md)"
+        "skills/glossary-management/ (SKILL.md + full ubiquitous language glossary)",
+        "skills/methodology-review/ (SKILL.md)"
       ]
     },
     {
@@ -326,17 +327,17 @@
       "status": "complete",
       "date_completed": "2026-06-24",
       "deliverables": [
-        "skills/discovery/requirements-analysis/SKILL.md",
-        "skills/discovery/nfr-specification/SKILL.md",
-        "skills/discovery/user-persona/SKILL.md",
-        "skills/discovery/jtbd-analysis/SKILL.md",
-        "skills/discovery/impact-mapping/SKILL.md",
-        "skills/discovery/epic-definition/SKILL.md",
-        "skills/discovery/user-story-writing/SKILL.md",
-        "skills/discovery/acceptance-criteria/SKILL.md",
-        "skills/discovery/example-mapping/SKILL.md",
-        "skills/discovery/story-mapping/SKILL.md",
-        "skills/discovery/moscow-prioritization/SKILL.md",
+        "skills/requirements-analysis/SKILL.md",
+        "skills/nfr-specification/SKILL.md",
+        "skills/user-persona/SKILL.md",
+        "skills/jtbd-analysis/SKILL.md",
+        "skills/impact-mapping/SKILL.md",
+        "skills/epic-definition/SKILL.md",
+        "skills/user-story-writing/SKILL.md",
+        "skills/acceptance-criteria/SKILL.md",
+        "skills/example-mapping/SKILL.md",
+        "skills/story-mapping/SKILL.md",
+        "skills/moscow-prioritization/SKILL.md",
         "agents/requirements-analyst.md"
       ]
     },
@@ -346,15 +347,15 @@
       "status": "complete",
       "date_completed": "2026-06-25",
       "deliverables": [
-        "skills/domain-modeling/ubiquitous-language/SKILL.md",
-        "skills/domain-modeling/event-storming-facilitation/SKILL.md",
-        "skills/domain-modeling/bounded-context-mapping/SKILL.md",
-        "skills/domain-modeling/domain-event-catalog/SKILL.md",
-        "skills/domain-modeling/aggregate-design/SKILL.md",
-        "skills/domain-modeling/command-catalog/SKILL.md",
-        "skills/domain-modeling/read-model-design/SKILL.md",
-        "skills/domain-modeling/domain-storytelling/SKILL.md",
-        "skills/domain-modeling/context-map-patterns/SKILL.md",
+        "skills/ubiquitous-language/SKILL.md",
+        "skills/event-storming-facilitation/SKILL.md",
+        "skills/bounded-context-mapping/SKILL.md",
+        "skills/domain-event-catalog/SKILL.md",
+        "skills/aggregate-design/SKILL.md",
+        "skills/command-catalog/SKILL.md",
+        "skills/read-model-design/SKILL.md",
+        "skills/domain-storytelling/SKILL.md",
+        "skills/context-map-patterns/SKILL.md",
         "agents/domain-modeler.md"
       ]
     },
@@ -364,15 +365,15 @@
       "status": "complete",
       "date_completed": "2026-06-25",
       "deliverables": [
-        "skills/architecture/system-context-diagram/SKILL.md",
-        "skills/architecture/container-diagram/SKILL.md",
-        "skills/architecture/component-diagram/SKILL.md",
-        "skills/architecture/adr-authoring/SKILL.md",
-        "skills/architecture/api-contract-design/SKILL.md",
-        "skills/architecture/integration-design/SKILL.md",
-        "skills/architecture/multi-tenancy-design/SKILL.md",
-        "skills/architecture/cqrs-pattern/SKILL.md",
-        "skills/architecture/event-driven-patterns/SKILL.md",
+        "skills/system-context-diagram/SKILL.md",
+        "skills/container-diagram/SKILL.md",
+        "skills/component-diagram/SKILL.md",
+        "skills/adr-authoring/SKILL.md",
+        "skills/api-contract-design/SKILL.md",
+        "skills/integration-design/SKILL.md",
+        "skills/multi-tenancy-design/SKILL.md",
+        "skills/cqrs-pattern/SKILL.md",
+        "skills/event-driven-patterns/SKILL.md",
         "agents/enterprise-architect.md"
       ]
     },
@@ -382,15 +383,15 @@
       "status": "complete",
       "date_completed": "2026-06-25",
       "deliverables": [
-        "skills/security/threat-modeling/SKILL.md",
-        "skills/security/zero-trust-design/SKILL.md",
-        "skills/security/access-control-model/SKILL.md",
-        "skills/security/secrets-management/SKILL.md",
-        "skills/security/security-architecture/SKILL.md",
-        "skills/security/privacy-design/SKILL.md",
-        "skills/security/compliance-design/SKILL.md",
-        "skills/security/security-implementation/SKILL.md",
-        "skills/security/compliance-verification/SKILL.md",
+        "skills/threat-modeling/SKILL.md",
+        "skills/zero-trust-design/SKILL.md",
+        "skills/access-control-model/SKILL.md",
+        "skills/secrets-management/SKILL.md",
+        "skills/security-architecture/SKILL.md",
+        "skills/privacy-design/SKILL.md",
+        "skills/compliance-design/SKILL.md",
+        "skills/security-implementation/SKILL.md",
+        "skills/compliance-verification/SKILL.md",
         "agents/security-architect.md",
         "agents/security-engineer.md"
       ]
@@ -401,10 +402,10 @@
       "status": "complete",
       "date_completed": "2026-06-25",
       "deliverables": [
-        "skills/ux/ux-flow-design/SKILL.md",
-        "skills/ux/information-architecture/SKILL.md",
-        "skills/ux/ui-component-spec/SKILL.md",
-        "skills/ux/user-journey-mapping/SKILL.md",
+        "skills/ux-flow-design/SKILL.md",
+        "skills/information-architecture/SKILL.md",
+        "skills/ui-component-spec/SKILL.md",
+        "skills/user-journey-mapping/SKILL.md",
         "agents/ux-architect.md"
       ]
     },
@@ -414,13 +415,13 @@
       "status": "complete",
       "date_completed": "2026-06-25",
       "deliverables": [
-        "skills/data-architecture/data-model-design/SKILL.md",
-        "skills/data-architecture/canonical-data-model/SKILL.md",
-        "skills/data-architecture/event-schema-design/SKILL.md",
-        "skills/data-architecture/data-pipeline-design/SKILL.md",
-        "skills/data-architecture/data-classification/SKILL.md",
-        "skills/data-architecture/data-lineage-design/SKILL.md",
-        "skills/data-architecture/data-retention-policy/SKILL.md",
+        "skills/data-model-design/SKILL.md",
+        "skills/canonical-data-model/SKILL.md",
+        "skills/event-schema-design/SKILL.md",
+        "skills/data-pipeline-design/SKILL.md",
+        "skills/data-classification/SKILL.md",
+        "skills/data-lineage-design/SKILL.md",
+        "skills/data-retention-policy/SKILL.md",
         "agents/data-architect.md"
       ]
     },
@@ -431,26 +432,26 @@
       "date_completed": "2026-06-25",
       "scope_note": "Expanded from 13 to 16 backend-engineering skills per Shafi's Go Backend & Observability Engineer behavioral blueprint; observability instrumentation (4 skills) included per the branch scope. Built in two approved passes (backend skills, then observability instrumentation).",
       "deliverables": [
-        "skills/backend-engineering/go-project-structure/SKILL.md",
-        "skills/backend-engineering/go-service-skeleton/SKILL.md",
-        "skills/backend-engineering/go-domain-model/SKILL.md",
-        "skills/backend-engineering/go-repository-pattern/SKILL.md",
-        "skills/backend-engineering/go-service-layer/SKILL.md",
-        "skills/backend-engineering/go-chi-handler/SKILL.md",
-        "skills/backend-engineering/go-middleware/SKILL.md",
-        "skills/backend-engineering/go-event-publisher/SKILL.md",
-        "skills/backend-engineering/go-event-consumer/SKILL.md",
-        "skills/backend-engineering/go-concurrency-patterns/SKILL.md",
-        "skills/backend-engineering/go-error-handling/SKILL.md",
-        "skills/backend-engineering/go-performance-optimization/SKILL.md",
-        "skills/backend-engineering/go-migration/SKILL.md",
-        "skills/backend-engineering/go-openapi-codegen/SKILL.md",
-        "skills/backend-engineering/go-dockerfile/SKILL.md",
-        "skills/backend-engineering/go-makefile/SKILL.md",
-        "skills/observability/opentelemetry-instrumentation/SKILL.md",
-        "skills/observability/distributed-tracing-design/SKILL.md",
-        "skills/observability/structured-logging-design/SKILL.md",
-        "skills/observability/health-check-design/SKILL.md",
+        "skills/go-project-structure/SKILL.md",
+        "skills/go-service-skeleton/SKILL.md",
+        "skills/go-domain-model/SKILL.md",
+        "skills/go-repository-pattern/SKILL.md",
+        "skills/go-service-layer/SKILL.md",
+        "skills/go-chi-handler/SKILL.md",
+        "skills/go-middleware/SKILL.md",
+        "skills/go-event-publisher/SKILL.md",
+        "skills/go-event-consumer/SKILL.md",
+        "skills/go-concurrency-patterns/SKILL.md",
+        "skills/go-error-handling/SKILL.md",
+        "skills/go-performance-optimization/SKILL.md",
+        "skills/go-migration/SKILL.md",
+        "skills/go-openapi-codegen/SKILL.md",
+        "skills/go-dockerfile/SKILL.md",
+        "skills/go-makefile/SKILL.md",
+        "skills/opentelemetry-instrumentation/SKILL.md",
+        "skills/distributed-tracing-design/SKILL.md",
+        "skills/structured-logging-design/SKILL.md",
+        "skills/health-check-design/SKILL.md",
         "agents/backend-engineer.md"
       ]
     },
@@ -461,20 +462,20 @@
       "date_completed": "2026-06-25",
       "scope_note": "Expanded from 12 to 14 frontend-engineering skills per Shafi's React+TypeScript Frontend Engineer behavioral blueprint (added react-performance-optimization and react-observability). Built in two approved passes (foundations/architecture/perf, then specialized UI/observability/testing/container). All React + TypeScript per decision D006.",
       "deliverables": [
-        "skills/frontend-engineering/react-project-structure/SKILL.md",
-        "skills/frontend-engineering/typescript-types/SKILL.md",
-        "skills/frontend-engineering/react-component-design/SKILL.md",
-        "skills/frontend-engineering/react-state-management/SKILL.md",
-        "skills/frontend-engineering/react-api-client/SKILL.md",
-        "skills/frontend-engineering/react-routing/SKILL.md",
-        "skills/frontend-engineering/react-performance-optimization/SKILL.md",
-        "skills/frontend-engineering/react-graph-visualization/SKILL.md",
-        "skills/frontend-engineering/react-dashboard-components/SKILL.md",
-        "skills/frontend-engineering/react-accessibility/SKILL.md",
-        "skills/frontend-engineering/react-observability/SKILL.md",
-        "skills/frontend-engineering/react-component-testing/SKILL.md",
-        "skills/frontend-engineering/react-e2e-testing/SKILL.md",
-        "skills/frontend-engineering/react-dockerfile/SKILL.md",
+        "skills/react-project-structure/SKILL.md",
+        "skills/typescript-types/SKILL.md",
+        "skills/react-component-design/SKILL.md",
+        "skills/react-state-management/SKILL.md",
+        "skills/react-api-client/SKILL.md",
+        "skills/react-routing/SKILL.md",
+        "skills/react-performance-optimization/SKILL.md",
+        "skills/react-graph-visualization/SKILL.md",
+        "skills/react-dashboard-components/SKILL.md",
+        "skills/react-accessibility/SKILL.md",
+        "skills/react-observability/SKILL.md",
+        "skills/react-component-testing/SKILL.md",
+        "skills/react-e2e-testing/SKILL.md",
+        "skills/react-dockerfile/SKILL.md",
         "agents/frontend-engineer.md"
       ]
     },
@@ -485,18 +486,18 @@
       "date_completed": "2026-06-25",
       "scope_note": "Reshaped from 13 to 12 skills per Shafi's filtered SDET blueprint: dropped go-security-test + go-compliance-test (security-engineer owns these, Chunk 9), added test-pyramid (shift-left/shift-right strategy spine). Frugal tooling (schema-based contracts not Pact broker; toxiproxy not chaos platform; mutation periodic not per-PR). Built in two approved passes (shift-left, then shift-right). Boundary: test-strategist owns the discipline + cross-cutting/system tests; backend/frontend engineers apply unit/integration/component skills test-first.",
       "deliverables": [
-        "skills/test-engineering/test-pyramid/SKILL.md",
-        "skills/test-engineering/bdd-feature-file/SKILL.md",
-        "skills/test-engineering/go-unit-test/SKILL.md",
-        "skills/test-engineering/mock-generation/SKILL.md",
-        "skills/test-engineering/test-fixture-design/SKILL.md",
-        "skills/test-engineering/go-integration-test/SKILL.md",
-        "skills/test-engineering/go-contract-test/SKILL.md",
-        "skills/test-engineering/go-mutation-test/SKILL.md",
-        "skills/test-engineering/go-e2e-test/SKILL.md",
-        "skills/test-engineering/go-performance-test/SKILL.md",
-        "skills/test-engineering/go-load-test/SKILL.md",
-        "skills/test-engineering/go-chaos-test/SKILL.md",
+        "skills/test-pyramid/SKILL.md",
+        "skills/bdd-feature-file/SKILL.md",
+        "skills/go-unit-test/SKILL.md",
+        "skills/mock-generation/SKILL.md",
+        "skills/test-fixture-design/SKILL.md",
+        "skills/go-integration-test/SKILL.md",
+        "skills/go-contract-test/SKILL.md",
+        "skills/go-mutation-test/SKILL.md",
+        "skills/go-e2e-test/SKILL.md",
+        "skills/go-performance-test/SKILL.md",
+        "skills/go-load-test/SKILL.md",
+        "skills/go-chaos-test/SKILL.md",
         "agents/test-strategist.md"
       ]
     },
@@ -522,7 +523,7 @@
       "chunk": 18,
       "title": "governance/ skills (factory internals)",
       "status": "complete",
-      "deliverables": ["Remaining 4 SKILL.md files in skills/governance/"]
+      "deliverables": ["Remaining 4 SKILL.md files, then flattened out of skills/governance/ into skills/ directly (D016)"]
     },
     {
       "chunk": 19,
@@ -654,6 +655,13 @@
       "decision": "All 6 hook-backing scripts hardened after live testing surfaced 3 real bugs: naming-convention-enforcer's extraction regex silently let invalid names through instead of catching them (restrictive character class used for extraction, not just validation); post-artifact-created resolved the manifest path from cwd instead of the written file's own path, missing writes outside cwd; none of the 6 scripts protected their outermost JSON parse, so malformed stdin crashed with a Python traceback instead of failing open.",
       "rationale": "Each bug was found by actually invoking the hook with a real or synthetic trigger and checking the outcome, not by reading the script. The naming-convention bug in particular would have silently shipped a non-functional governance check — a live end-to-end test (create a badly-named file, confirm it's rejected) caught what a code read did not.",
       "alternatives_rejected": ["Ship without live-testing each script individually — rejected per the standing practice this session established in Chunk 19 (D012)"]
+    },
+    {
+      "id": "D016",
+      "date": "2026-07-20",
+      "decision": "All 136 skills restructured from skills/<domain>/<name>/SKILL.md to flat skills/<name>/SKILL.md, resolving Q001. Zero name collisions across the former 15 domains (verified before moving — no renames needed). Domain grouping preserved only as a logical tag in this file's skill_domains array (each entry's path field now explicitly notes it is not a real filesystem path) and in each skill's own phase/tags frontmatter — not as a directory structure.",
+      "rationale": "The domain-nested structure was confirmed empirically (Chunk 19 testing) to be undiscoverable by Claude Code — the exact same class of bug as the agents/<role>/AGENT.md issue (D013), just affecting ~10x more files. Fixed as its own dedicated PR per explicit direction, after Chunks 19 and 20 shipped, rather than blocking those on this larger, purely mechanical fix.",
+      "alternatives_rejected": ["Keep domain subdirectories and find a manifest-level override — researched during Q001's investigation, no working override found", "Rename colliding skills to preserve some domain info in the name — unnecessary, zero collisions existed"]
     }
   ],
 
@@ -662,7 +670,7 @@
       "id": "Q001",
       "date": "2026-07-20",
       "question": "All 135+ skill files under skills/<domain>/<name>/SKILL.md (two-level nesting, domain-grouped) are confirmed NOT discovered by real Claude Code — verified empirically via `claude --plugin-dir` + `claude plugin details` on both the real repo and isolated test copies. Real discovery requires flat skills/<name>/SKILL.md (one level). No manifest-level path override was found to work around this. Needs a dedicated follow-up PR: flatten every skill's path (mechanical file move, no content change) and update every doc describing the domain-grouped structure (CLAUDE.md, README, every agent's skill-path references).",
-      "status": "open — scoped, not yet scheduled",
+      "status": "resolved — see decision D016",
       "raised_during": "Chunk 19 live testing (commands/hooks), same session that fixed the equivalent agents/<role>/AGENT.md → agents/<role>.md issue (D013)"
     }
   ],

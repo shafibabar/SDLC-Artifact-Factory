@@ -16,7 +16,7 @@ The problem statement is `$ARGUMENTS`. If empty, ask the user for it directly �
 
 ## 3. Confirm or override the tech stack
 
-Read `CLAUDE.md`'s Tech Stack Defaults table and `sdlc-context.json`'s `tech_stack.confirmed` block. Summarize the defaults to the user in plain language and ask: accept all defaults, or override specific ones? Any override is recorded per the `sdlc-config-management` skill (`skills/governance/sdlc-config-management/`) — never silently apply a default the user has overridden, and never repeat an unchanged default into the override record.
+Read `CLAUDE.md`'s Tech Stack Defaults table and `sdlc-context.json`'s `tech_stack.confirmed` block. Summarize the defaults to the user in plain language and ask: accept all defaults, or override specific ones? Any override is recorded per the `sdlc-config-management` skill (`skills/sdlc-config-management/`) — never silently apply a default the user has overridden, and never repeat an unchanged default into the override record.
 
 ## 4. Record the product and hand off to Strategy
 

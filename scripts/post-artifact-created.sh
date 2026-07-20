@@ -2,7 +2,7 @@
 # post-artifact-created.sh — PostToolUse hook, matcher: Write
 # Purpose: after a product artifact is written, record it in that product's
 #          artifacts/<product>/_manifest.json (creating the manifest if it
-#          doesn't exist yet), per skills/governance/artifact-manifest.
+#          doesn't exist yet), per skills/artifact-manifest.
 # Contract: JSON on stdin (PostToolUse schema). This hook only records — it
 #           never blocks (always exits 0).
 set -euo pipefail

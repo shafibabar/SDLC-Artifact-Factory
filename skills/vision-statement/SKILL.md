@@ -138,7 +138,7 @@ Applying Format 1 to the first product (Data Estate Mapping and Compliance Intel
 
 ## Canonical Terms to Use
 
-From `skills/governance/glossary-management/references/ubiquitous-language.md`:
+From `skills/glossary-management/references/ubiquitous-language.md`:
 - **North Star Metric** — the vision must imply a measurable north star
 - **Jobs To Be Done (JTBD)** — the unmet need is the job the user is trying to do
 - **Outcome-Driven Development** — the benefit is an outcome, not a feature

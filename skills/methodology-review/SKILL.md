@@ -38,7 +38,7 @@ Design phase artifacts, Implement phase code, any artifact that names or describ
 
 | Check | Pass | Defect |
 |---|---|---|
-| Ubiquitous Language | All domain terms match the canonical glossary in `skills/governance/glossary-management/` | Any term deviates from the canonical definition without a declared Bounded Context override |
+| Ubiquitous Language | All domain terms match the canonical glossary in `skills/glossary-management/` | Any term deviates from the canonical definition without a declared Bounded Context override |
 | Bounded Context boundaries | Every service and data model is assigned to exactly one Bounded Context | A service or model spans multiple Bounded Contexts without an Anti-Corruption Layer |
 | Aggregate design | Aggregates enforce invariants internally and expose state changes as Domain Events | Business logic leaks outside aggregate boundaries; direct state mutation without events |
 | Domain Events | State changes are expressed as immutable, past-tense Domain Events | State changes are expressed as CRUD operations with no corresponding event |
@@ -48,7 +48,7 @@ Design phase artifacts, Implement phase code, any artifact that names or describ
 
 ### Review procedure
 1. Identify every domain concept named in the artifact.
-2. Check each against `skills/governance/glossary-management/references/ubiquitous-language.md`.
+2. Check each against `skills/glossary-management/references/ubiquitous-language.md`.
 3. Identify every service or component boundary — confirm each maps to a named Bounded Context.
 4. Check that state changes produce Domain Events.
 5. Confirm the Context Map covers all inter-context relationships referenced.
