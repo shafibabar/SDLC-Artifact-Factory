@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-20",
-    "updated_by": "Content improvement campaign complete (D011) — 5 PRs: standards/governance metadata, all 11 agents, 57 design skills, 34 engineering skills, 12 test skills + repo-wide verification. Next: Chunk 15."
+    "updated_by": "Chunk 15 — platform skills (12), observability stack skills (3), platform-engineer agent complete"
   },
 
   "project": {
@@ -119,7 +119,7 @@
     { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "complete" },
     { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "complete" },
     { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "complete" },
-    { "name": "platform-engineer",     "skill_domains": ["platform", "observability (stack)"], "status": "planned" },
+    { "name": "platform-engineer",     "skill_domains": ["platform", "observability (stack)"], "status": "complete" },
     { "name": "ai-ml-architect",       "skill_domains": ["ml (TBD)"],               "status": "deferred — added when a product requires ML" }
   ],
 
@@ -202,15 +202,15 @@
       "path": "skills/observability/",
       "owner": "backend-engineer (instrumentation) + platform-engineer (stack)",
       "planned_skills": ["opentelemetry-instrumentation", "prometheus-metrics-design", "structured-logging-design", "distributed-tracing-design", "health-check-design", "slo-definition", "alerting-rules-design"],
-      "_split_note": "Domain co-owned. Instrumentation skills (opentelemetry-instrumentation, distributed-tracing-design, structured-logging-design, health-check-design) built in Chunk 12 by backend-engineer. Stack skills (prometheus-metrics-design, slo-definition, alerting-rules-design) pending in Chunk 15 with platform-engineer.",
-      "status": "partial — instrumentation complete (Chunk 12); stack pending (Chunk 15)"
+      "_split_note": "Domain co-owned. Instrumentation skills (opentelemetry-instrumentation, distributed-tracing-design, structured-logging-design, health-check-design) built in Chunk 12 by backend-engineer. Stack skills (prometheus-metrics-design, slo-definition, alerting-rules-design) built in Chunk 15 by platform-engineer.",
+      "status": "complete — instrumentation (Chunk 12) + stack (Chunk 15)"
     },
     {
       "domain": "platform",
       "path": "skills/platform/",
       "owner": "platform-engineer",
       "planned_skills": ["ci-pipeline", "cd-pipeline", "dockerfile-patterns", "helm-chart", "opentofu-module", "kubernetes-manifest", "environment-config", "feature-flag-design", "blue-green-deployment", "canary-deployment", "disaster-recovery-plan", "runbook-authoring"],
-      "status": "planned"
+      "status": "complete"
     },
     {
       "domain": "data-analytics",
@@ -498,8 +498,8 @@
     {
       "chunk": 15,
       "title": "platform/ + observability (stack) skills + platform-engineer agent",
-      "status": "pending",
-      "deliverables": ["12 SKILL.md files in skills/platform/", "7 SKILL.md files in skills/observability/", "agents/platform-engineer/AGENT.md"]
+      "status": "complete",
+      "deliverables": ["12 SKILL.md files in skills/platform/", "3 SKILL.md files added to skills/observability/ (stack — completes the 7-skill domain)", "agents/platform-engineer/AGENT.md"]
     },
     {
       "chunk": 16,

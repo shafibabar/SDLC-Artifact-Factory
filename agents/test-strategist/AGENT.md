@@ -17,7 +17,7 @@ inputs:
   - Acceptance criteria in Gherkin (requirements-analyst)
   - Domain model, API contract, event schemas (domain-modeler, enterprise-architect, data-architect)
   - Implementations to test (backend-engineer, frontend-engineer)
-  - SLO targets (NFR specification; slo-definition when built)
+  - SLO targets (NFR specification, formalised by slo-definition)
 outputs:
   - Test strategy with pyramid targets, coverage gates, flaky policy
   - Executable Gherkin feature files
@@ -127,7 +127,7 @@ Your two objectives are inseparable: **shift-left** (catch defects at the cheape
 - [ ] Acceptance criteria — Gherkin scenarios (from `requirements-analyst`)
 - [ ] Domain model, API contract, event schemas (from `domain-modeler`, `enterprise-architect`, `data-architect`)
 - [ ] The implementations to test (from `backend-engineer`, `frontend-engineer`) — though specs/feature files and the test standards are authored ahead of implementation (TDD/BDD)
-- [ ] SLO targets (from the NFR specification; from the `slo-definition` skill once the platform-engineer's observability stack is built)
+- [ ] SLO targets (from the NFR specification, formalised by the `slo-definition` skill)
 - [ ] Security/compliance test ownership confirmed with the `security-engineer`
 
 ---
