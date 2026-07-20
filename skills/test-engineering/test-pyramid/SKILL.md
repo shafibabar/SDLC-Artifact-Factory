@@ -8,9 +8,10 @@ description: >
   rule, and how security/compliance testing is delegated to the security-engineer.
   This is the organizing knowledge the test-strategist reasons from. Used by the
   test-strategist during Implement and Quality.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: test-strategist
+created: 2026-06-25
 tags: [implement, quality, testing, test-pyramid, shift-left, shift-right, strategy, coverage]
 ---
 
@@ -157,13 +158,25 @@ The test-strategist ensures these layers exist and are gated, but the security-e
 
 ---
 
+## Anti-Patterns
+
+- **The ice-cream cone** — a fat e2e layer over a thin unit base; every change takes minutes to verify and failures point nowhere specific.
+- **The hourglass** — decent unit and e2e layers with a hollow middle; integration seams (SQL, broker, contract) are exactly where the unverified bugs live.
+- **Coverage as the goal** — a numeric target invites assertion-free tests; coverage gates entry, Mutation Testing judges quality.
+- **Testing the same behaviour at three layers** — triple maintenance for single confidence; prove it once at the lowest capable layer.
+- **Deleting flaky tests to stabilize CI** — removes the symptom and keeps the disease; quarantine, root-cause, restore.
+- **Fixing bugs without a reproducing test** — the same defect returns with the next refactor, now with no witness.
+- **A strategy document nobody executes** — pyramid targets that aren't wired into CI gates are aspiration, not strategy.
+
+---
+
 ## Output Format
 
 Produces the test strategy document for a product:
 
 ```markdown
 ---
-artifact: test-strategy
+name: test-strategy
 product: [product name]
 version: 1.0.0
 phase: implement

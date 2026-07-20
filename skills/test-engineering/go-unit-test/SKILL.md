@@ -7,9 +7,10 @@ description: >
   safety with t.Parallel, and decoupling tests from implementation details so they
   survive refactors. This is the base of the pyramid; authored by the test-strategist
   and applied by the backend-engineer test-first. Used during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: test-strategist
+created: 2026-06-25
 tags: [implement, go, unit-test, table-driven, tdd, fuzzing, boundary, assertions]
 ---
 
@@ -54,7 +55,6 @@ func TestSensitivityLevel_IsHigherThan(t *testing.T) {
         {"unclassified is lowest", domain.SensitivityUnclassified, domain.SensitivityPublic, false},
     }
     for _, tt := range tests {
-        tt := tt
         t.Run(tt.name, func(t *testing.T) {
             t.Parallel()
             if got := tt.a.IsHigherThan(tt.b); got != tt.want {
@@ -66,6 +66,8 @@ func TestSensitivityLevel_IsHigherThan(t *testing.T) {
 ```
 
 Each case is a subtest (`t.Run`) so failures name the exact case, and cases run in parallel.
+
+Since Go 1.22, `for` loop variables are per-iteration — the old `tt := tt` re-declaration inside the loop is dead weight and must not appear in new code. Run a single case with `go test -run 'TestSensitivityLevel_IsHigherThan/equal_is_not_higher'` (spaces in subtest names become underscores).
 
 ---
 
@@ -97,7 +99,7 @@ The test is written **before** the production code, and drives its design:
 2. **Green** — write the *minimal* production code to pass. No more than the test demands.
 3. **Refactor** — improve names, structure, and efficiency with the test green as the safety net.
 
-The `tdd-gate` hook (Chunk 20) verifies the test file is not newer than the implementation file — TDD is enforced, not trusted.
+The `tdd-gate` hook verifies the test file is not newer than the implementation file — TDD is enforced, not trusted.
 
 ---
 
@@ -141,7 +143,9 @@ Fuzz tests run briefly in CI and longer on a schedule; a discovered crasher is a
 
 ## Parallel Safety
 
-Unit tests run in parallel (`t.Parallel()`) to keep the suite fast. This requires **no shared mutable state** between tests — each test owns its data and doubles. Shared state causes order-dependence and flakiness (see `test-fixture-design`). The race detector (`go test -race`, always on — see `go-makefile`) catches accidental sharing.
+Unit tests run in parallel (`t.Parallel()`) to keep the suite fast. This requires **no shared mutable state** between tests — each test owns its data and doubles. Shared state causes order-dependence and flakiness (see `test-fixture-design`). The race detector (`go test -race`, always on — see `go-makefile`) catches accidental sharing; `go test -shuffle=on` randomizes top-level test order and exposes order-dependence directly.
+
+One structural pitfall: when a parent test spawns parallel subtests, the parent function *returns* before those subtests run — they are parked until the parent yields. Any `defer` in the parent therefore fires **before** the parallel subtests execute, tearing down state they still need. Register shared teardown with `t.Cleanup` instead, which runs only after all subtests complete.
 
 ---
 
@@ -174,6 +178,17 @@ A well-decoupled test stays green through any refactor that preserves behaviour,
 | Fuzzed where apt | Parsers/validators have fuzz tests | Untrusted-input code unfuzzed |
 | Parallel-safe | `t.Parallel()`; no shared state; race-clean | Order-dependent, shared-state tests |
 | Behaviour-coupled | Asserts public behaviour | Asserts private state / call counts |
+
+---
+
+## Anti-Patterns
+
+- **`tt := tt` loop-variable capture** — unnecessary since Go 1.22 (per-iteration loop variables); its presence signals a stale idiom being cargo-culted forward.
+- **`defer` for teardown shared with parallel subtests** — fires before the subtests run; use `t.Cleanup`.
+- **`time.Sleep` in a unit test** — a unit test controls its clock by injection; sleeping means the test is nondeterministic or is secretly an integration test.
+- **Asserting error message strings** — assert with `errors.Is`/`errors.As` against sentinel errors or types; message text is not a contract.
+- **One giant test function** — a failure in case 3 hides cases 4–20; table-driven subtests report every case independently.
+- **Test names that describe mechanics, not behaviour** — `TestClassify2` says nothing; `"equal is not higher"` reads as a specification.
 
 ---
 

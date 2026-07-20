@@ -8,9 +8,10 @@ description: >
   comparison, profiling a regression, and gating per-operation performance against
   agreed budgets. The shift-right guard that performance does not silently rot.
   Used by the test-strategist during Quality.
-version: 1.0.0
+version: 1.1.0
 phase: quality
 owner: test-strategist
+created: 2026-06-25
 tags: [quality, go, performance, benchmark, benchstat, regression, baseline]
 ---
 
@@ -60,7 +61,7 @@ Rules: setup outside the loop + `ResetTimer`; no allocation in the harness that 
 
 ## Baselines and benchstat
 
-A single benchmark run is noise; performance is compared **statistically** across multiple runs with `benchstat`, which reports the delta and whether it's significant.
+A single benchmark run is noise; performance is compared **statistically** across multiple runs with `benchstat`, which reports the delta and whether it's significant. Read the `p=` value, not just the percentage: a "+8%" with `p=0.451` is noise, a "+8%" with `p=0.000` is a regression. benchstat marks statistically indistinguishable results with `~` — a `~` is never a regression, whatever the raw delta says.
 
 ```bash
 # Baseline (committed) vs the PR — multiple counts for statistical validity
@@ -84,8 +85,8 @@ A performance gate runs the benchmarks against the baseline and **fails on a sig
 
 ```
 perf-gate:
-  go test -bench=. -benchmem -count=10 ./internal/... > new.txt
-  benchstat -delta-test=utest baseline.txt new.txt
+  go test -run=^$ -bench=. -benchmem -count=10 ./internal/... > new.txt
+  benchstat baseline.txt new.txt
   fail if any tracked benchmark regresses > threshold with significance (p < 0.05)
 ```
 
@@ -131,6 +132,18 @@ Relate findings back to `go-performance-optimization` for the actual fix; this s
 | Right operations | Hot-path/SLO operations tracked | Gating trivial code; missing hot paths |
 | Allocs tracked | allocs/op baselined alongside time | Only wall-time tracked |
 | Clear boundary | Gating here; optimisation in the backend skill | Re-deriving optimisation guidance here |
+
+---
+
+## Anti-Patterns
+
+- **Gating on a single run** — run-to-run variance on any machine exceeds most real regressions; only a benchstat comparison over `-count=10`-style samples is evidence.
+- **Treating every delta as a regression** — a delta without significance (`~`, high `p`) is noise; gating on it teaches people to ignore the gate.
+- **Benchmarking work the compiler can delete** — if the result is unused, the optimizer may remove the call and you benchmark an empty loop; keep the result (assign to a package-level sink) or check the error as the sample does.
+- **Setup inside the timed loop** — fixture construction dominates the measurement; setup before `b.ResetTimer()`.
+- **Silently updating the baseline** — a baseline change is a performance decision; it rides in the same PR as the change that caused it, visibly reviewed.
+- **Gating on shared noisy runners without headroom** — a 2% threshold on a busy CI VM is a flake factory; widen the threshold or use a quiet dedicated job.
+- **Tracking time but not allocations** — allocs/op regressions surface as GC pressure later; they are the leading indicator.
 
 ---
 
