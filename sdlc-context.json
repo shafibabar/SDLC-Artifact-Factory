@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-20",
-    "updated_by": "Chunk 16 — data-analytics skills (7), data-engineer agent complete"
+    "updated_by": "Chunk 17 — validation skills (5) complete; requirements-analyst extended with Customer Validation phase ownership"
   },
 
   "project": {
@@ -224,7 +224,7 @@
       "path": "skills/validation/",
       "owner": "requirements-analyst",
       "planned_skills": ["uat-plan", "uat-scenario", "beta-program-design", "feedback-template", "acceptance-sign-off"],
-      "status": "planned"
+      "status": "complete"
     },
     {
       "domain": "governance",
@@ -510,8 +510,8 @@
     {
       "chunk": 17,
       "title": "validation/ skills (owned by requirements-analyst)",
-      "status": "pending",
-      "deliverables": ["5 SKILL.md files in skills/validation/"]
+      "status": "complete",
+      "deliverables": ["5 SKILL.md files in skills/validation/", "agents/requirements-analyst/AGENT.md extended with Customer Validation phase ownership"]
     },
     {
       "chunk": 18,
