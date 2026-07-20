@@ -79,7 +79,7 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | Foundation delivered — 105 skills across 12 domains and 11 agents built; commands, hooks, tools, and schemas in progress |
+| **Maturity** | Foundation delivered — 120 skills across 13 domains and 12 agents built; commands, hooks, tools, and schemas in progress |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
@@ -606,10 +606,10 @@ ubiquitous-language
 product-strategist      requirements-analyst    domain-modeler
 enterprise-architect    ux-architect            data-architect
 security-architect      security-engineer       backend-engineer
-frontend-engineer       test-strategist
+frontend-engineer       test-strategist         platform-engineer
 ```
 
-Planned: `platform-engineer`, `data-engineer` (Chunks 15–16), `ai-ml-architect` (deferred).
+Planned: `data-engineer` (Chunk 16), `ai-ml-architect` (deferred).
 
 **Agent subdirectory structure:**
 
@@ -1148,15 +1148,15 @@ Any component that supports multiple tenants must enforce:
 
 ### Delivered So Far
 
-- **Skills:** 105 across 12 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability instrumentation (4), frontend-engineering (14), test-engineering (12), governance (2).
-- **Agents:** 11 of 13 — product-strategist, requirements-analyst, domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist.
+- **Skills:** 120 across 13 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), governance (2).
+- **Agents:** 12 of 13 — product-strategist, requirements-analyst, domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer.
 
 ### Planned Components
 
 | Area | Planned Additions |
 |---|---|
-| Skills | platform (12), data-analytics (7), validation (5), observability stack (3), remaining governance (4) |
-| Agents | `platform-engineer` (Chunk 15), `data-engineer` (Chunk 16), `ai-ml-architect` (deferred until a product requires ML) |
+| Skills | data-analytics (7), validation (5), remaining governance (4) |
+| Agents | `data-engineer` (Chunk 16), `ai-ml-architect` (deferred until a product requires ML) |
 | Commands | Phase-driver commands for all 8 phases plus navigation and cross-cutting commands (Chunk 19) |
 | Hooks | Phase-gate and governance hooks — `pre-phase-advance`, `tdd-gate`, `methodology-compliance-check`, `terminology-drift-detector` (Chunk 20) |
 | Schemas | `sdlc-config`, `sdlc-manifest` (Chunk 21) |

@@ -21,7 +21,7 @@ tags: [quality, load-test, k6, slo, throughput, latency, saturation, shift-right
 
 Unit and integration tests prove correctness; they say nothing about behaviour under a thousand concurrent users. Load testing answers the operational questions: How many requests per second can it serve? What's the p99 latency at peak? When does it start shedding errors? Does it stay within its SLOs? Where does it saturate first? These only emerge under real, sustained traffic — load testing is the **shift-right** validation that the system holds up in production-like conditions.
 
-This validates the Service Level Objectives the NFR specification sets and the `slo-definition` skill formalises (once the platform-engineer’s observability stack is built), using the RED/USE telemetry the services already emit (`opentelemetry-instrumentation`).
+This validates the Service Level Objectives the NFR specification sets and the `slo-definition` skill formalises, using the RED/USE telemetry the services already emit (`opentelemetry-instrumentation`).
 
 ---
 
