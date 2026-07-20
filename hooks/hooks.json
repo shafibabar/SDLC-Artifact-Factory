@@ -1,0 +1,62 @@
+{
+  "_meta": {
+    "purpose": "Real Claude Code hook bindings for the SDLC Artifact Factory. See CLAUDE.md's Command and Hook Mechanics section for the schema. See sdlc-context.json decision D014 for how the originally-planned 9 hooks became 7 real ones once bound to real events.",
+    "last_updated": "2026-07-20"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/pre-phase-advance.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-artifact-structure.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/naming-convention-enforcer.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/tdd-gate.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/post-artifact-created.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/terminology-drift-detector.sh",
+            "timeout": 10
+          },
+          {
+            "type": "agent",
+            "prompt": "A product artifact was just written. Read the file at the path given in this hook's tool_input.file_path (from the JSON you were invoked with). If the path does not contain '/artifacts/', respond with exactly PASS and stop. Otherwise: read skills/governance/methodology-review/SKILL.md for the review criteria, determine which of DDD, Event Storming, TDD, BDD, and SOLID apply to this artifact's type and phase (per each methodology's 'Applies to' section), and check the artifact against every applicable check. If every applicable check passes, respond with exactly PASS. If any check fails, respond with FAIL followed by a one-line reason per defect, citing the specific check violated. Do not modify the artifact. Do not invoke any other agent.",
+            "timeout": 90
+          }
+        ]
+      }
+    ]
+  }
+}

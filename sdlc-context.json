@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-20",
-    "updated_by": "Chunk 19 — 15 real commands + agents flattened to agents/<name>.md, both live-verified via claude --plugin-dir (D012, D013). Skills domain-nesting confirmed broken too (Q001) — dedicated follow-up PR next."
+    "updated_by": "Chunk 20 — hooks/hooks.json (7 real hooks, 9 planned consolidated per D014) + 6 backing scripts, all individually and live-tested; 3 real script bugs found and fixed (D015). Skills domain-nesting fix (Q001) still next."
   },
 
   "project": {
@@ -244,32 +244,36 @@
   },
 
   "hooks": {
-    "_note": "Declared as real Claude Code hooks in hooks/hooks.json (PreToolUse, PostToolUse, Stop, SubagentStop, etc.), not settings.json. Self-imposed target: fast, idempotent, deterministic where the handler is a script; methodology/terminology checks use a prompt- or agent-type handler consulting the relevant skill. Business logic belongs in agents and skills, not hooks.",
-    "planned": [
-      "pre-phase-advance — validates all required artifacts exist before phase advances",
-      "post-artifact-created — updates sdlc-context.json when an artifact is created",
-      "validate-artifact-structure — validates frontmatter and required sections before save",
-      "terminology-drift-detector — checks canonical glossary terms are used",
-      "methodology-compliance-check — verifies DDD/TDD/BDD/SOLID presence where required",
-      "pre-code-generation — ensures architecture artifacts exist before code is written",
-      "pre-implement — ensures Design phase is complete before Implement phase starts",
-      "tdd-gate — ensures test files exist before implementation code (TDD enforcement)",
-      "naming-convention-enforcer — validates component names follow conventions"
+    "_note": "Real Claude Code hooks in hooks/hooks.json (PreToolUse, PostToolUse), not settings.json. Live-verified: loaded via claude --plugin-dir and triggered with real tool calls, not just read for coherence. 9 originally planned hooks became 7 real ones — see decision D014 for why.",
+    "built": [
+      "pre-phase-advance — PreToolUse/Agent, command handler (scripts/pre-phase-advance.sh). Consolidates the original pre-phase-advance + pre-code-generation + pre-implement (D014).",
+      "validate-artifact-structure — PreToolUse/Write, command handler (scripts/validate-artifact-structure.sh)",
+      "naming-convention-enforcer — PreToolUse/Write, command handler (scripts/naming-convention-enforcer.sh)",
+      "tdd-gate — PreToolUse/Write, command handler (scripts/tdd-gate.sh)",
+      "post-artifact-created — PostToolUse/Write, command handler (scripts/post-artifact-created.sh)",
+      "terminology-drift-detector — PostToolUse/Write, command handler (scripts/terminology-drift-detector.sh), warning-only",
+      "methodology-compliance-check — PostToolUse/Write, agent-type handler (inline prompt in hooks.json), consults methodology-review"
     ],
-    "status": "planned"
+    "status": "complete"
   },
 
   "scripts": {
     "_note": "Plain shell scripts under scripts/, invoked directly by hooks.json's command-type handlers or by command prompts via Bash. Not a Claude Code discovery mechanism — 'Tools' in real Claude Code vocabulary means MCP-exposed tools specifically, which this is not.",
-    "planned": [
-      "validate-sdlc-artifact.sh — validates artifact structure and required fields",
-      "validate-openapi-contract.sh — validates OpenAPI specifications",
-      "validate-event-schema.sh — validates domain event schemas",
-      "check-methodology-compliance.sh — checks DDD/TDD/BDD/SOLID presence in an artifact",
-      "generate-artifact-id.sh — generates unique artifact identifiers",
-      "cross-reference-checker.sh — verifies all referenced components exist"
+    "built": [
+      "pre-phase-advance.sh",
+      "validate-artifact-structure.sh",
+      "naming-convention-enforcer.sh",
+      "tdd-gate.sh",
+      "post-artifact-created.sh",
+      "terminology-drift-detector.sh"
     ],
-    "status": "planned"
+    "planned": [
+      "validate-openapi-contract.sh — validates OpenAPI specifications (build when enterprise-architect/a command needs it)",
+      "validate-event-schema.sh — validates domain event schemas (build when needed)",
+      "generate-artifact-id.sh — generates unique artifact identifiers (build when needed)",
+      "cross-reference-checker.sh — verifies all referenced components exist (build when needed)"
+    ],
+    "status": "partial — 6 hook-backing scripts built and live-tested; 4 standalone utility scripts deferred until a command/agent actually needs them"
   },
 
   "build_checklist": [
@@ -529,8 +533,8 @@
     {
       "chunk": 20,
       "title": "All hooks (phase gates + governance) + backing scripts",
-      "status": "pending",
-      "deliverables": ["hooks/hooks.json with 9 hook bindings", "scripts/*.sh backing the command-type hooks"]
+      "status": "complete",
+      "deliverables": ["hooks/hooks.json with 7 real hook bindings (9 originally planned consolidated to 7, D014)", "6 backing scripts, individually and live-tested — 2 real bugs found and fixed during testing (D014)"]
     },
     {
       "chunk": 21,
@@ -636,6 +640,20 @@
       "decision": "Agents restructured from agents/<role>/AGENT.md (nested) to agents/<role>.md (flat) — folded into Chunk 19's PR. Confirmed empirically: a nested AGENT.md is not discovered by Claude Code's real agent-discovery mechanism; a flat <name>.md is.",
       "rationale": "Discovered while live-testing Chunk 19's commands via `claude plugin details` — Agents (0) despite 13 real agent files existing. Isolated the root cause with a controlled test copy before changing anything. Mechanical fix (file relocation only, no content change), low risk, same root-cause class as the commands/hooks fix already underway.",
       "alternatives_rejected": ["Defer to a separate PR — rejected only for this specific fix since it was small, mechanical, and directly related; the same testing methodology surfaced a second, much larger issue (see open_questions) which WAS deferred"]
+    },
+    {
+      "id": "D014",
+      "date": "2026-07-20",
+      "decision": "Chunk 20's 9 originally-planned hooks consolidated to 7 real hooks.json entries: pre-phase-advance, pre-code-generation, and pre-implement collapsed into one pre-phase-advance hook (PreToolUse/Agent, gates any agent invocation on its phase's prerequisite artifacts) once bound to a real event — they were the identical check under three names. methodology-compliance-check implemented as an agent-type handler (not a script) since judging methodology compliance is inherently interpretive; the other 6 are command-type handlers backed by real scripts/*.sh.",
+      "rationale": "Real Claude Code PreToolUse fires per tool call (e.g. every Agent dispatch), not per abstract 'phase' or 'code generation' event — there is no way to bind 3 separately-named hooks to 3 different real triggers when they'd all fire on the same event and check the same thing. Confirmed the tool name for subagent dispatch is 'Agent' with tool_input.subagent_type identifying which agent, by triggering a real dispatch and inspecting the hook's stdin JSON.",
+      "alternatives_rejected": ["Keep 9 separate hooks.json entries that run identical logic 3x on every Agent call — wasteful and dishonest about what they actually do", "Make methodology-compliance-check a command-type script — rejected, methodology judgment is not reliably reducible to regex/deterministic checks (see the terminology-drift-detector script's own documented limitation on this)"]
+    },
+    {
+      "id": "D015",
+      "date": "2026-07-20",
+      "decision": "All 6 hook-backing scripts hardened after live testing surfaced 3 real bugs: naming-convention-enforcer's extraction regex silently let invalid names through instead of catching them (restrictive character class used for extraction, not just validation); post-artifact-created resolved the manifest path from cwd instead of the written file's own path, missing writes outside cwd; none of the 6 scripts protected their outermost JSON parse, so malformed stdin crashed with a Python traceback instead of failing open.",
+      "rationale": "Each bug was found by actually invoking the hook with a real or synthetic trigger and checking the outcome, not by reading the script. The naming-convention bug in particular would have silently shipped a non-functional governance check — a live end-to-end test (create a badly-named file, confirm it's rejected) caught what a code read did not.",
+      "alternatives_rejected": ["Ship without live-testing each script individually — rejected per the standing practice this session established in Chunk 19 (D012)"]
     }
   ],
 
