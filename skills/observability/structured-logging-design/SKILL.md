@@ -7,9 +7,10 @@ description: >
   allocation on the hot path, and the strict no-secrets/no-PII rule. Logs are the
   third observability signal and must correlate with traces and metrics. Used by
   the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, observability, logging, slog, json, trace-correlation, structured]
 ---
 
@@ -65,6 +66,16 @@ func (h *traceHandler) Handle(ctx context.Context, r slog.Record) error {
     }
     return h.Handler.Handle(ctx, r)
 }
+
+// WithAttrs/WithGroup MUST re-wrap. The embedded handler's versions return the INNER
+// handler, so a logger derived via slog.With(...) would silently stop injecting trace ids
+// — the classic slog-wrapper bug.
+func (h *traceHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+    return &traceHandler{Handler: h.Handler.WithAttrs(attrs)}
+}
+func (h *traceHandler) WithGroup(name string) slog.Handler {
+    return &traceHandler{Handler: h.Handler.WithGroup(name)}
+}
 ```
 
 Because correlation comes from context, **always use the context-aware logging methods** so the active span is in scope:
@@ -88,7 +99,7 @@ slog.InfoContext(ctx, "data asset classified",
 | Level | Use for | Example |
 |---|---|---|
 | `Error` | A failure needing attention; always paired with the error and trace id | outbox publish failed after retries |
-| `Warn` | Recoverable anomaly worth noticing | transient retry succeeded; DLQ depth rising |
+| `Warn` | Recoverable anomaly worth noticing | transient retry succeeded; Dead Letter Queue (DLQ) depth rising |
 | `Info` | Significant business/lifecycle events | service started; asset classified; consumer drained |
 | `Debug` | Detailed developer diagnostics; off in production | per-record processing detail |
 
@@ -150,6 +161,18 @@ A single logged JWT or SSN is a reportable incident — redaction is designed in
 | Low allocation | Typed attrs; guarded debug; bound common fields | `slog.Any` everywhere; building disabled debug strings |
 | No secrets/PII | Redacted via LogValuer; ids not values | Secrets/PII/file content in logs |
 | Logged once | Each event logged at one meaningful layer | Same error re-logged at every wrap |
+
+---
+
+## Anti-Patterns
+
+- **`fmt.Printf` / `log.Printf` narration** — free text with interpolated values is unsearchable, unindexable, and uncorrelatable. If it matters enough to print, it matters enough to structure.
+- **A handler wrapper without `WithAttrs`/`WithGroup`** — the derived logger from `slog.With(...)` silently bypasses the wrapper, and trace correlation vanishes exactly on the pre-bound loggers that log the most.
+- **`slog.Info` where a context exists** — dropping `ctx` discards the very trace ids the pipeline pivots on. `InfoContext`/`ErrorContext` wherever a context is in scope.
+- **Log-line PII "just for debugging"** — the email logged in a debug line ships to the same indexed, retained store as everything else. Redaction is a type (`LogValuer`), not a code-review hope.
+- **Logging in the hot inner loop** — one line per record in a 10k-record batch is 10k allocations and an I/O storm; log the batch summary (count, duration, failures) at the boundary.
+- **Same failure logged at every layer** — repo logs it, handler logs it, middleware logs it: three entries, one incident, and triage now dedups by hand. Log where handled, wrap elsewhere.
+- **Levels as emphasis** — `Error` for "this is important to me" (a normal cache miss) trains responders to ignore `Error`. Levels encode required action, not enthusiasm.
 
 ---
 

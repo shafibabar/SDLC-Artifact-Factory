@@ -8,9 +8,10 @@ description: >
   performance at thousands of nodes, accessibility fallbacks, and keeping the heavy
   graph bundle code-split. Visualizes the data-architect's graph model. Used by the
   frontend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, graph, sigma, webgl, visualization, apache-age]
 ---
 
@@ -98,7 +99,7 @@ Implement the interactions from the `ui-component-spec`:
 | Interaction | Behaviour |
 |---|---|
 | Zoom / pan | Camera controls; smooth at the target frame rate |
-| Select node | Highlight node + its edges; open a detail panel (the `DataAsset` detail read model) |
+| Select node | Highlight node + its edges; open a detail panel (the `DataAsset` detail Read Model) |
 | Expand | Fetch + merge the node's neighbourhood |
 | Filter | By node type or sensitivity; dim/hide non-matching (e.g., show only `Restricted` assets) |
 | Search | Locate and centre a node by name |
@@ -147,6 +148,18 @@ The graph is a visual enhancement; the underlying data is always reachable witho
 | Code-split | Graph bundle lazy-loaded | Graph library in the initial bundle |
 | Cleanup | Sigma instance + worker + listeners released | Retained WebGL context / worker leak |
 | Accessible fallback | Equivalent list/tree representation | Inaccessible canvas with no alternative |
+
+---
+
+## Anti-Patterns
+
+- **SVG/DOM nodes at scale** — a `<circle>` per DataAsset works in the demo and dies at the first real estate. Renderer choice is made for the worst case, not the fixture.
+- **"Load the whole graph, then filter"** — fetching millions of vertices to show forty is unbounded in payload, memory, and GPU. The bound is applied server-side (neighbourhood queries), not client-side.
+- **Layout on the main thread** — ForceAtlas2 iterations freezing input for seconds is the classic Long Task. If a frame budget can't hold it, it belongs in the worker.
+- **Recreating the Sigma instance per render** — instantiating the renderer in the component body (instead of an effect with cleanup) leaks WebGL contexts until the browser starts refusing new ones.
+- **Graph state in React state** — mirroring every node/edge into `useState` re-renders React for changes only the WebGL layer cares about. The `graphology` instance is the model; React holds selection/filter state only.
+- **The graph library in the initial bundle** — users who never open the graph pay its full weight on first load. Lazy route + `lazy()` import, verified in the bundle-size CI check.
+- **Canvas-only accessibility** — an `aria-label` on an opaque canvas is a caption on a locked door. The list/tree fallback is the accessible product, not a nice-to-have.
 
 ---
 

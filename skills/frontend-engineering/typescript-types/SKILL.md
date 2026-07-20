@@ -7,9 +7,10 @@ description: >
   immutability, exhaustiveness checking with never, and the unknown-over-any rule
   with narrow type guards for untrusted runtime data. Sound types make whole
   classes of UI bugs unrepresentable. Used by the frontend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, typescript, types, discriminated-union, immutability, exhaustiveness]
 ---
 
@@ -146,6 +147,43 @@ type Permission = `${Resource}:${Action}`;   // "data-assets:classify" etc. — 
 
 This mirrors the backend's `[resource-type]:[action]` permission convention from the security `access-control-model` — the same vocabulary, now compile-checked in the UI.
 
+One edge to know: template literal unions **multiply** (`Resource × Action` above is 9 members) — keep the operand unions small, or the compiler slows and error messages become unreadable. If a pattern is open-ended (`asset-${string}`), you get pattern-checking but lose exhaustiveness — choose deliberately.
+
+### `satisfies` — check without widening
+
+`satisfies` verifies a value against a type **without** losing its inferred literal types — the fix for the classic "annotate and lose precision / don't annotate and lose checking" dilemma:
+
+```ts
+const badgeColor = {
+  Public: "gray",
+  Internal: "blue",
+  Confidential: "amber",
+  Restricted: "red",
+} satisfies Record<SensitivityLevel, string>;
+// Completeness is checked (a 5th SensitivityLevel fails to compile here too),
+// yet badgeColor.Restricted is still the literal "red" — not widened to string.
+```
+
+Use it for config maps, route tables, and theme tokens — anywhere a value must conform to a contract but callers want the precise literals.
+
+---
+
+## Branded Types — IDs That Cannot Be Mixed
+
+Every ID is a `string` at runtime, so nothing stops `fetchAsset(assetId, tenantId)` with the arguments swapped — in a physically multi-tenant product, that bug class is a data leak. A **brand** makes structurally identical types nominally distinct:
+
+```ts
+type AssetId  = string & { readonly __brand: "AssetId" };
+type TenantId = string & { readonly __brand: "TenantId" };
+
+const asAssetId = (v: string): AssetId => v as AssetId;   // the ONE sanctioned cast, at the boundary
+
+declare function fetchAsset(tenant: TenantId, id: AssetId): Promise<DataAsset>;
+// fetchAsset(assetId, tenantId);  // ❌ compile error — swapped arguments cannot type-check
+```
+
+The brand is erased at compile time — zero runtime cost. Cast into the brand only at trust boundaries (the API client, a validated route param); everywhere else the branded type flows through.
+
 ---
 
 ## Typing Component Props
@@ -167,6 +205,21 @@ This mirrors the backend's `[resource-type]:[action]` permission convention from
 | Immutability typed | `readonly` props/fields; ReadonlyArray | Mutable props/state mutated in place |
 | Derived types | `Pick`/`Omit`/`ReturnType` derive from one source | Duplicated, drift-prone shape declarations |
 | Narrow string types | Unions / template-literal types | Bare `string` where values are known |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Instead |
+|---|---|
+| `any` (or `as unknown as T` laundering) | `unknown` + a type guard; fix the model, don't silence it |
+| Boolean flags for state (`isLoading`, `hasError`, `hasData`) | One discriminated union — impossible combinations unrepresentable |
+| `default:` branch that silently handles "everything else" | `assertNever` so new variants break the build |
+| Casting API responses (`data as DataAsset[]`) | Generated client types + runtime validation at the boundary |
+| Re-declaring a shape that exists elsewhere | `Pick`/`Omit`/`ReturnType` — one source, derived views |
+| `React.FC<Props>` | Explicitly typed props: `function Badge(props: BadgeProps)` |
+| Annotating a config object and losing its literals | `satisfies` — contract checked, inference kept |
+| Optional-everything interfaces (`field?:` sprawl) to dodge errors | Model which fields exist together; separate draft vs validated types |
 
 ---
 

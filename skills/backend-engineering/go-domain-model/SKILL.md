@@ -7,9 +7,10 @@ description: >
   value-vs-pointer decision driven by escape analysis. The domain layer is pure:
   no framework, no I/O, fully unit-testable. Implements the domain-modeler's and
   data-architect's model in code. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, ddd, aggregate, value-object, domain-event, invariants, escape-analysis]
 ---
 
@@ -199,6 +200,17 @@ The domain package imports **only** stdlib, `github.com/google/uuid`, and `time`
 | Construct ≠ reconstitute | Separate `New…` and `Reconstitute`; only `New…` emits events | Loading from DB re-fires creation events |
 | Value Objects immutable | Value types, by-value, behaviour attached | Mutable VOs or pointer-to-VO |
 | Purity | Domain imports only stdlib + uuid + time; time injected | Domain importing frameworks or calling `time.Now()` |
+
+---
+
+## Anti-Patterns
+
+- **Anemic domain model** — an Aggregate that is a bag of exported fields with getters/setters, while the "rules" live in a service. The invariants become unenforceable; any caller can construct an illegal state.
+- **Aggregate as ORM struct** — `db:` / `json:` tags on domain types couple the model to storage and transport. Mapping lives in the repository and handler layers.
+- **Events built outside the Aggregate** — a service constructing `DataAssetClassified` itself can drift from the state change that supposedly caused it. The method that mutates records the event, atomically with the mutation.
+- **Re-validating (or re-emitting events) on reconstitution** — loading an asset must never fire `DataAssetRegistered` again or reject data that was valid under the rules in force when it was stored.
+- **`time.Now()` / `uuid.New()` inside domain methods** — hidden nondeterminism makes invariant tests flaky and time-dependent rules untestable. Inject `now` (and IDs where identity matters).
+- **Pointer-to-Value-Object** — `*SensitivityLevel` invites nil checks and aliasing for a type whose whole point is cheap immutable copies.
 
 ---
 

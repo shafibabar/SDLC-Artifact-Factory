@@ -7,9 +7,10 @@ description: >
   no secrets in layers, and image hardening for the Zero Trust workload layer.
   Implements the security-architecture workload controls. Used by the
   backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, docker, multi-stage, distroless, non-root, security, container]
 ---
 
@@ -32,6 +33,7 @@ Two stages: a builder with the Go toolchain, and a final image with only the bin
 
 # ---- Build stage ----
 FROM golang:1.23-bookworm AS build
+ARG VERSION=dev
 WORKDIR /src
 
 # Cache deps separately from source so dependency layers reuse across builds.
@@ -82,7 +84,8 @@ Every layer of an image is extractable. Therefore:
 - Build-time secrets that are genuinely needed (e.g., a private module token) use BuildKit secret mounts, which never persist in a layer:
 
 ```dockerfile
-RUN --mount=type=secret,id=goprivate \
+# .netrc with the module token is mounted for this one RUN only — it never lands in a layer.
+RUN --mount=type=secret,id=netrc,target=/root/.netrc \
     GOPRIVATE=git.example.com go mod download
 ```
 
@@ -118,6 +121,17 @@ This aligns with the security `secrets-management` non-negotiables (no secrets i
 | No secrets in layers | No copied secrets; BuildKit secret mounts only | Secrets in layers or build-time env vars |
 | Cache-friendly layers | deps layer before source | Single `COPY . .` busting the dep cache every build |
 | Pinned & signed | Base pinned by digest; image Cosign-signed; Trivy-clean | Floating `latest` base; unsigned; unscanned |
+
+---
+
+## Anti-Patterns
+
+- **Single-stage image** — shipping the Go toolchain, source tree, and git history to production multiplies the attack surface and the image size by an order of magnitude.
+- **`FROM golang:latest`** — an unpinned base means yesterday's green build and today's broken one built "the same" Dockerfile. Pin by tag, prefer digest.
+- **Deleting a secret in a later layer** — `COPY key.pem` + `RUN rm key.pem` still leaves the key extractable from the earlier layer. Layers are append-only.
+- **`apk add` / `apt-get install` debugging tools in the final stage** — a shell and curl in production is a gift to an attacker who lands in the container. Debug with ephemeral containers at the platform layer instead.
+- **Baking configuration or environment into the image** — one image per environment breaks provenance. Build once, sign once, promote the same digest; configuration comes from the platform.
+- **`COPY . .` before `go mod download`** — every source edit busts the dependency cache and re-downloads all modules in CI.
 
 ---
 

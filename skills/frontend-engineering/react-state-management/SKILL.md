@@ -8,9 +8,10 @@ description: >
   invalidation, and avoiding re-render storms. Wrong state architecture is the
   root of most React performance and correctness bugs. Used by the frontend-engineer
   during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, state, tanstack-query, zustand, server-state, caching]
 ---
 
@@ -62,6 +63,11 @@ export function useClassifyDataAsset() {
 
 Query keys are structured and consistent (`["data-assets", filter]`) so invalidation is precise. The `signal` is forwarded to the client so an in-flight request is **cancelled** when the component unmounts or the query key changes — no wasted work, no setting state on an unmounted component.
 
+Two refinements worth knowing:
+
+- **Paginated/filterable lists**: `placeholderData: keepPreviousData` (the v5 idiom) keeps the previous page's rows on screen while the next page loads — no flash to a skeleton on every filter change.
+- **Detail views**: `useSuspenseQuery` guarantees `data` is defined and moves pending/error handling out to the nearest `<Suspense>` / error boundary — the component body reads as the success case only. Use it where a Suspense boundary already exists (e.g., a routed detail page); plain `useQuery` with `isPending` elsewhere.
+
 ### Optimistic updates
 
 For instant-feeling mutations, update the cache before the server responds and roll back on error:
@@ -71,8 +77,8 @@ useMutation({
   mutationFn: classifyFn,
   onMutate: async ({ id, level }) => {
     await qc.cancelQueries({ queryKey: ["data-assets"] });
-    const prev = qc.getQueryData(["data-assets"]);
-    qc.setQueryData(["data-assets"], (old) => applyClassification(old, id, level)); // optimistic
+    const prev = qc.getQueryData<DataAsset[]>(["data-assets"]);
+    qc.setQueryData<DataAsset[]>(["data-assets"], (old) => applyClassification(old, id, level)); // optimistic
     return { prev };
   },
   onError: (_e, _v, ctx) => qc.setQueryData(["data-assets"], ctx?.prev), // rollback
@@ -114,7 +120,11 @@ The trigger for Zustand/Jotai is specifically **excessive re-rendering from Cont
 // A Zustand store for cross-cutting UI state (selection that spans features)
 const useSelectionStore = create<SelectionState>((set) => ({
   selectedIds: new Set<string>(),
-  toggle: (id) => set((s) => { const n = new Set(s.selectedIds); n.has(id) ? n.delete(id) : n.add(id); return { selectedIds: n }; }),
+  toggle: (id) => set((s) => {
+    const next = new Set(s.selectedIds);
+    if (!next.delete(id)) next.add(id);   // delete returns false if absent → add
+    return { selectedIds: next };
+  }),
 }));
 
 // component subscribes to ONLY what it needs → no re-render on unrelated changes
@@ -127,19 +137,7 @@ Zustand is the default (tiny, hook-based, no boilerplate, no provider). Jotai (a
 
 ## URL as State
 
-Filters, sort, pagination, and the selected record belong in the **URL**, not a store — so views are shareable, bookmarkable, and survive refresh (see `react-routing`). The IA's URL structure (Chunk 10) defines these query params. Read them from the router and feed them into query keys.
-
----
-
-## Anti-Patterns
-
-| Anti-pattern | Instead |
-|---|---|
-| Server data copied into Zustand/Redux and hand-synced | Let TanStack Query own server data |
-| One giant global store for everything | Co-locate; store only true cross-cutting client state |
-| Context for high-frequency values | Zustand with slice selectors |
-| `useEffect` to "sync" derived data | Derive during render; or use a query |
-| Filters in component state | Filters in the URL |
+Filters, sort, pagination, and the selected record belong in the **URL**, not a store — so views are shareable, bookmarkable, and survive refresh (see `react-routing`). The IA's URL structure defines these query params. Read them from the router and feed them into query keys.
 
 ---
 
@@ -153,6 +151,18 @@ Filters, sort, pagination, and the selected record belong in the **URL**, not a 
 | Precise invalidation | Structured query keys; targeted invalidation | Blanket cache clears / manual refetch sprawl |
 | Cancellation | `signal` forwarded; in-flight requests cancel | Requests racing on stale state |
 | URL state | Filters/sort/pagination in the URL | Shareable view state trapped in component state |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Instead |
+|---|---|
+| Server data copied into Zustand/Redux and hand-synced | Let TanStack Query own server data |
+| One giant global store for everything | Co-locate; store only true cross-cutting client state |
+| Context for high-frequency values | Zustand with slice selectors |
+| `useEffect` to "sync" derived data | Derive during render; or use a query |
+| Filters in component state | Filters in the URL |
 
 ---
 

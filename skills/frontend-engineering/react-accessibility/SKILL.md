@@ -8,9 +8,10 @@ description: >
   manual a11y testing (axe, role/label queries). Implements the accessibility
   requirements from each ui-component-spec. Used by the frontend-engineer during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, accessibility, wcag, aria, keyboard, axe]
 ---
 
@@ -18,7 +19,7 @@ tags: [implement, frontend, react, accessibility, wcag, aria, keyboard, axe]
 
 ## Purpose
 
-Accessibility is a requirement, not a polish step. Every `ui-component-spec` (Chunk 10) carries WCAG 2.1 AA requirements; this skill implements and verifies them. The target is concrete: a keyboard-only user and a screen-reader user can complete every flow the product supports. Accessibility also makes the UI more robust for everyone and is part of the product's compliance posture.
+Accessibility is a requirement, not a polish step. Every `ui-component-spec` carries WCAG 2.1 AA requirements; this skill implements and verifies them. The target is concrete: a keyboard-only user and a screen-reader user can complete every flow the product supports. Accessibility also makes the UI more robust for everyone and is part of the product's compliance posture.
 
 The blueprint's testing rule drives the approach: tests query by **role and label** (`getByRole`, `getByLabelText`), so building accessibly and testing accessibly are the same activity.
 
@@ -159,6 +160,19 @@ Automated tools are necessary but not sufficient — role/label-based tests and 
 | Not colour-alone | Meaning via text/icon + colour; contrast met | Colour-only status; failing contrast |
 | Accessible names | All controls/images named; live regions announce | Icon buttons unnamed; silent dynamic updates |
 | Tested | axe clean + role/label queries + manual passes | No a11y tests; query by test-id only |
+
+---
+
+## Anti-Patterns
+
+- **ARIA as a paint job** — `role="button"` on a `div` without `tabindex`, key handlers, and focus styling. The role announces a contract the element doesn't honour; use `<button>`.
+- **Positive `tabindex`** — `tabindex="1"`+ creates a shadow tab order that fights the DOM. Only `0` (join the order) and `-1` (programmatic focus target) are legitimate.
+- **`outline: none` with no replacement** — keyboard users lose their position. Restyle focus (`:focus-visible`), never remove it.
+- **Placeholder as the only label** — placeholders vanish on input and fail contrast; they are hints, not labels.
+- **Live region mounted with its message** — an `aria-live` region must exist in the DOM *before* content changes, or the announcement is lost. Render it empty and fill it; don't conditionally mount `<p aria-live="polite">Asset classified</p>`.
+- **`aria-hidden` on focusable content** — hides an element from AT while keyboard users can still land on it: a silent focus stop.
+- **Colour-only sensitivity badges** — a red chip with no text tells a colour-blind auditor nothing. `Restricted` is always the word plus the colour.
+- **Querying by test-id** — sidesteps the accessibility tree, so tests pass while screen readers fail. Role/label queries keep tests honest.
 
 ---
 

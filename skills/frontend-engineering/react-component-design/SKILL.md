@@ -5,11 +5,12 @@ description: >
   single-responsibility components, composition over prop-drilling (children,
   slots, compound components, render props), custom hooks to extract logic,
   presentational/container separation, the Atomic Design taxonomy, and controlled
-  vs uncontrolled patterns. Implements ui-component-spec from Chunk 10 in
+  vs uncontrolled patterns. Implements the ux-architect’s ui-component-spec in
   React + TypeScript. Used by the frontend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, components, composition, custom-hooks, atomic-design]
 ---
 
@@ -17,7 +18,7 @@ tags: [implement, frontend, react, components, composition, custom-hooks, atomic
 
 ## Purpose
 
-A component is a single, well-named visual responsibility. Good component design keeps each one small, composable, and testable by behaviour — so the UI grows by combining pieces rather than by inflating God-components with ever more props. This skill turns the ux-architect's `ui-component-spec` (Chunk 10) into React + TypeScript components that match the specified props, states, and interactions exactly.
+A component is a single, well-named visual responsibility. Good component design keeps each one small, composable, and testable by behaviour — so the UI grows by combining pieces rather than by inflating God-components with ever more props. This skill turns the ux-architect's `ui-component-spec` into React + TypeScript components that match the specified props, states, and interactions exactly.
 
 The component spec is the contract; this skill implements it. If a spec is ambiguous, raise it to the ux-architect — the spec is updated, not guessed (see the handoff in the ux-architect AGENT).
 
@@ -28,7 +29,7 @@ The component spec is the contract; this skill implements it. If a spec is ambig
 Each `ui-component-spec` defines props, state variants, interactions, and accessibility. The implementation realises all of them — every state, not just the happy one.
 
 ```tsx
-// from ui-component-spec: DataAssetTable (Organism) → DataAssetListView read model
+// from ui-component-spec: DataAssetTable (Organism) → DataAssetListView Read Model
 interface DataAssetTableProps {
   readonly assets: ReadonlyArray<DataAsset>;
   readonly isLoading: boolean;
@@ -117,7 +118,8 @@ A component should read like a description of the UI. Move non-trivial logic (da
 function useClassifyDataAsset(assetId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (level: SensitivityLevel) => api.classifyDataAsset(assetId, level),
+    mutationFn: ({ level, idempotencyKey }: { level: SensitivityLevel; idempotencyKey: string }) =>
+      api.classifyDataAsset(assetId, level, idempotencyKey),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["data-assets"] }),
   });
 }
@@ -125,7 +127,9 @@ function useClassifyDataAsset(assetId: string) {
 // the component just declares intent:
 function ClassificationModal({ assetId, onClose }: ClassificationModalProps) {
   const classify = useClassifyDataAsset(assetId);
-  // …render; call classify.mutate(level)
+  // …render; on submit: classify.mutate({ level, idempotencyKey: crypto.randomUUID() })
+  // The key lives in the mutation variables — generated once per user intent, so a
+  // TanStack Query retry re-runs mutationFn with the SAME variables and the same key.
 }
 ```
 
@@ -160,6 +164,18 @@ Keep the split clean: a presentational component never calls the network; a cont
 | Logic in hooks | Non-trivial logic extracted to `useX` | Fetching/effects tangled in markup |
 | Presentational/container split | Presentational components network-free | Atoms calling the API |
 | Context not abused | Context for low-frequency values only | Context as a state manager (re-render storms) |
+
+---
+
+## Anti-Patterns
+
+- **The God-component** — one component owning fetch, transform, filter state, modal state, and three render modes behind boolean props. Split by responsibility; compose.
+- **Boolean-prop proliferation** — `<Table compact bordered selectable withActions>` multiplies variants combinatorially. Prefer slots/compound components, or a single typed `variant` union.
+- **Prop-drilling past two layers** — a prop that a component only forwards is a composition failure; pass rendered children instead of raw data.
+- **`React.FC`** — obscures the props type, historically implied `children`, and adds nothing over a plain typed function. Type the props interface; write a plain function.
+- **Logic in markup** — `useEffect` chains and fetch orchestration inline in the component body. Extract to a named `useX` hook; the component reads as UI.
+- **Conditional hooks** — calling a hook inside `if`/`map`/early-return breaks the Rules of Hooks. All hooks at top level, unconditionally; branch *after*.
+- **Guessing at ambiguous specs** — inventing a state the `ui-component-spec` doesn't define. The spec is updated first, then implemented.
 
 ---
 

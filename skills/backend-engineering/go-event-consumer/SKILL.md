@@ -8,9 +8,10 @@ description: >
   trace-context extraction, and graceful drain on shutdown. Implements a stage of
   the data-architect's data-pipeline-design. Used by the backend-engineer during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, consumer, redpanda, kafka, idempotent, worker-pool, dlq]
 ---
 
@@ -18,7 +19,7 @@ tags: [implement, go, consumer, redpanda, kafka, idempotent, worker-pool, dlq]
 
 ## Purpose
 
-A consumer reacts to Domain Events from Redpanda — it is one stage in the choreographed pipeline (see `data-pipeline-design`). Because delivery is at-least-once, the consumer **must be idempotent**: processing the same event twice has the same effect as processing it once. It must also process in parallel for throughput, commit offsets only after success, route poison messages to a Dead Letter Queue, and drain cleanly on shutdown.
+A consumer reacts to Domain Events from Redpanda — it is one stage in the choreographed pipeline (see `data-pipeline-design`). Because delivery is at-least-once, the consumer **must be idempotent**: processing the same event twice has the same effect as processing it once. It must also process in parallel for throughput, commit offsets only after success, route poison messages to a Dead Letter Queue (DLQ), and drain cleanly on shutdown.
 
 This is where the blueprint's concurrency engineering meets the pipeline: bounded worker pools, deterministic goroutine lifetimes, and context-driven cancellation, all in service of correctness under redelivery.
 
@@ -68,7 +69,6 @@ func (c *Consumer) process(ctx context.Context, fetches kgo.Fetches) {
 
     fetches.EachPartition(func(p kgo.FetchTopicPartition) {
         for _, rec := range p.Records {
-            rec := rec // capture
             g.Go(func() error {
                 c.handleRecord(gctx, rec) // never returns an error that cancels siblings; see below
                 return nil
@@ -151,7 +151,7 @@ func (c *Consumer) withRetry(ctx context.Context, fn func() error) error {
         if err == nil || !isTransient(err) || attempt >= c.maxAttempts {
             return err
         }
-        sleep := backoff + time.Duration(rand.Int63n(int64(backoff))) // jitter
+        sleep := backoff + rand.N(backoff) // jitter (math/rand/v2: rand.N works on Duration directly)
         select {
         case <-ctx.Done():
             return ctx.Err()
@@ -172,13 +172,41 @@ On shutdown, stop fetching, let in-flight records finish, commit final offsets, 
 
 ```go
 func (c *Consumer) drain(ctx context.Context) error {
+    // The parent ctx is already cancelled at this point — use a fresh, bounded context for the final commit.
     dctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
     defer cancel()
-    c.client.CommitUncommittedOffsets(dctx)
+    if err := c.client.CommitUncommittedOffsets(dctx); err != nil {
+        slog.ErrorContext(dctx, "final offset commit failed", "err", err) // re-delivery on restart; idempotency covers it
+    }
     c.client.Close()
     return nil
 }
 ```
+
+---
+
+## Rebalance Handling
+
+When the consumer group rebalances (a pod scales, deploys, or dies), partitions are revoked and reassigned. Two rules keep redelivery to a minimum and correctness absolute:
+
+- **Commit before revocation.** Register an on-revoked callback so offsets for finished work are committed before the partition moves to another instance:
+
+```go
+kgo.NewClient(
+    kgo.ConsumerGroup(c.group),
+    kgo.Balancers(kgo.CooperativeStickyBalancer()), // incremental rebalance — untouched partitions keep flowing
+    kgo.OnPartitionsRevoked(func(ctx context.Context, cl *kgo.Client, _ map[string][]int32) {
+        if err := cl.CommitUncommittedOffsets(ctx); err != nil {
+            slog.ErrorContext(ctx, "commit on revoke failed", "err", err)
+        }
+    }),
+    kgo.BlockRebalanceOnPoll(), // no rebalance while a polled batch is still being processed
+)
+```
+
+- **Rebalance is not an error path.** A rebalance mid-batch means some records get redelivered to the new owner — the idempotent-consumer dedup makes that a no-op, which is exactly why idempotency is non-negotiable rather than nice-to-have.
+
+Keep per-batch processing time well under the group's session/rebalance timeouts, or the broker will evict the consumer and thrash the group.
 
 ---
 
@@ -204,6 +232,17 @@ func (c *Consumer) drain(ctx context.Context) error {
 | Poison handling | Undecodable/exhausted → DLQ | Infinite retry on a poison message; or silent drop |
 | Trace continuity | Trace extracted from headers | New disconnected trace per consume |
 | Graceful drain | In-flight finished, offsets committed, deadline-bounded | Hard stop dropping in-flight work |
+
+---
+
+## Anti-Patterns
+
+- **Auto-commit** — offsets committed on a timer regardless of whether processing succeeded. A crash between commit and completion silently loses events.
+- **Dedup in memory** — a `map[uuid.UUID]bool` of seen events resets on restart and is invisible to other instances. Dedup must be durable and transactional with the work.
+- **Dedup in a separate transaction** — marking the event processed, then doing the work (or vice versa) reintroduces the dual-write race the pattern exists to close.
+- **Retrying poison messages forever** — an undecodable or permanently-failing record blocks its partition head. Bounded retries, then DLQ.
+- **Failing the batch on one bad record** — returning the error into the errgroup cancels healthy siblings and turns one poison message into a stalled consumer.
+- **Starting a new root span per record** — dropping the incoming trace context breaks the producer-to-consumer trace; extract from headers first.
 
 ---
 

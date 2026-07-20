@@ -7,9 +7,10 @@ description: >
   writer, the standard error envelope, context propagation, and keeping handlers
   thin (decode → call handler → encode). Implements the enterprise-architect's
   api-contract-design. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, chi, net-http, handler, dto, validation, error-mapping]
 ---
 
@@ -82,10 +83,17 @@ func (a *API) ClassifyDataAsset(w http.ResponseWriter, r *http.Request) {
     }
 
     // 3. Call the application layer — pass the request context (carries tenant, span, deadline)
+    // Never uuid.MustParse request data — a panic on untrusted input is a DoS vector.
+    // validate() already shape-checked this field, but the parse here still returns an error.
+    classifiedBy, err := uuid.Parse(req.ClassifiedBy)
+    if err != nil {
+        writeError(w, r, http.StatusBadRequest, "INVALID_BODY", "classifiedBy must be a UUID")
+        return
+    }
     cmd := commands.ClassifyDataAsset{
         DataAssetID:    id,
         Sensitivity:    domain.SensitivityLevel(req.SensitivityLevel),
-        ClassifiedBy:   uuid.MustParse(req.ClassifiedBy),
+        ClassifiedBy:   classifiedBy,
         IdempotencyKey: r.Header.Get("Idempotency-Key"),
     }
     if err := a.classify.Handle(r.Context(), cmd); err != nil {
@@ -197,6 +205,17 @@ The `traceId` lets a user quote it to support, who can pull the exact trace — 
 | Context propagation | `r.Context()` passed inward | `context.Background()` in handlers |
 | Opaque 500s | Internal errors logged with trace id, generic body | Internal error details returned to the client |
 | Body limits | `MaxBytesReader` + `DisallowUnknownFields` | Unbounded bodies / silent extra fields |
+
+---
+
+## Anti-Patterns
+
+- **`uuid.MustParse` (or any `Must*`) on request-derived data** — a panic on untrusted input turns a bad request into a crash-inducing DoS vector. Parse with the error-returning form and map the failure to 400.
+- **Fat handlers** — business rules, SQL, or event publishing inline. The handler is an adapter; the Aggregate and application layer own behaviour.
+- **Per-handler status logic** — `w.WriteHeader(409)` scattered through handlers instead of the single `writeDomainError` mapping point.
+- **Swallowing the decode error detail** — returning a bare 400 with no field information forces clients to guess; return every structural error at once.
+- **`context.Background()` inside a handler** — severs the trace, the tenant, and the deadline. Always `r.Context()`.
+- **Echoing internal errors in 500 bodies** — stack traces and driver errors leak schema and infrastructure details; log them, return the opaque envelope.
 
 ---
 

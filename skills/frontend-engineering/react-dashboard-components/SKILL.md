@@ -8,9 +8,10 @@ description: >
   export (CSV/PDF). Implements the ux-architect's dashboard specs over the
   data-architect's aggregate read models. Used by the frontend-engineer during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, dashboard, charts, recharts, reporting, data-table]
 ---
 
@@ -18,7 +19,7 @@ tags: [implement, frontend, react, dashboard, charts, recharts, reporting, data-
 
 ## Purpose
 
-Dashboards turn the estate's aggregate data into decisions: where are the compliance gaps, what's the sensitivity distribution, which sources carry the most risk. A good dashboard answers a question at a glance and lets the user drill into detail. This skill builds the dashboard and reporting UI — KPI cards, charts, and data tables — over the aggregate read models the data-architect defined.
+Dashboards turn the estate's aggregate data into decisions: where are the compliance gaps, what's the sensitivity distribution, which sources carry the most risk. A good dashboard answers a question at a glance and lets the user drill into detail. This skill builds the dashboard and reporting UI — KPI cards, charts, and data tables — over the aggregate Read Models the data-architect defined.
 
 This implements the ux-architect's dashboard component specs (`ui-component-spec`) and serves the compliance officer's journey (the audit-preparation journey from `user-journey-mapping`).
 
@@ -26,19 +27,19 @@ This implements the ux-architect's dashboard component specs (`ui-component-spec
 
 ## Source: Aggregate Read Models
 
-Dashboards read **aggregate read models** (`read-model-design` / `data-model-design`), never raw aggregates — the backend pre-computes the summaries, so the dashboard fetches one optimised payload, not thousands of rows.
+Dashboards read **aggregate Read Models** (`read-model-design` / `data-model-design`), never raw Aggregates — the backend pre-computes the summaries, so the dashboard fetches one optimised payload, not thousands of rows.
 
 ```ts
 function useEstateOverview(tenantId: string) {
   return useQuery({
     queryKey: ["estate-overview", tenantId],
-    queryFn: ({ signal }) => api.getEstateOverview(signal), // an Aggregate read model
+    queryFn: ({ signal }) => api.getEstateOverview(tenantId, signal), // an aggregate Read Model
     staleTime: 60_000,
   });
 }
 ```
 
-Each dashboard widget maps to an aggregate read model: `EstateOverview`, `ComplianceGapReport`, `SensitivityDistribution`.
+Each dashboard widget maps to an aggregate Read Model: `EstateOverview`, `ComplianceGapReport`, `SensitivityDistribution`.
 
 ---
 
@@ -151,13 +152,26 @@ Charts are not just pixels (see `react-accessibility`):
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Aggregate read models | Widgets read pre-computed summaries | Dashboards aggregating raw rows client-side |
+| Aggregate Read Models | Widgets read pre-computed summaries | Dashboards aggregating raw rows client-side |
 | Right chart for the question | Chart type matches the data question | Pie charts for many slices; chart junk |
 | Gap report prioritised | Severity-sorted, drillable to lineage | Unordered gap list with no evidence trail |
 | Every state handled | Loading/empty/error/partial per widget | Spinners-only or blank panels |
 | Widget independence | Per-widget query + error boundary | One failed widget blanks the dashboard |
 | URL-backed tables | Sort/filter/pagination in the URL; virtualized | View state trapped in component state |
 | Accessible charts | Text alternative; not colour-only; contrast | Inaccessible canvas/colour-only charts |
+
+---
+
+## Anti-Patterns
+
+- **Client-side aggregation** — fetching thousands of DataAsset rows to compute a count the backend's Read Model already holds. The dashboard reads summaries; the Write Model side computes them.
+- **The wall of pies** — pie charts for five-plus slices, or any chart chosen for looks over the question. Distribution → bar; trend → line; composition → stacked bar.
+- **Alphabetical category order** — sorting frameworks A–Z when severity or magnitude is the story buries the headline. Order by the value the user must act on.
+- **One query to rule the dashboard** — a single mega-endpoint means one slow widget stalls everything and one failure blanks the page. Widgets query and fail independently.
+- **Trend arrows without a baseline** — "▲ 12" against nothing is decoration, not information. No comparison period, no trend.
+- **Spinner-only loading** — unsized spinners cause layout shift when content lands (CLS). Skeletons sized to the final content.
+- **Colour-only severity in the gap report** — red/amber/green chips without text fail both accessibility and audit credibility; the SensitivityLevel word always accompanies the colour.
+- **Un-shareable views** — filter/sort state in `useState` means a compliance officer can't send an auditor the exact filtered report. View state lives in the URL.
 
 ---
 

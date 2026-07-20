@@ -8,9 +8,10 @@ description: >
   and how the endpoints map to Kubernetes probes. Health checks are what let the
   platform route traffic only to healthy instances. Used by the backend-engineer
   during Implement; probes are wired by the platform-engineer.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, observability, health-check, liveness, readiness, kubernetes, probes]
 ---
 
@@ -85,11 +86,11 @@ func (rd *Readiness) Handler(w http.ResponseWriter, r *http.Request) {
             results[name] = "up"
         }
     }
-    code := http.StatusOK
+    code, st := http.StatusOK, "ready"
     if !healthy {
-        code = http.StatusServiceUnavailable
+        code, st = http.StatusServiceUnavailable, "not_ready"
     }
-    writeJSON(w, code, status{Status: ternary(healthy, "ready", "not_ready"), Checks: results})
+    writeJSON(w, code, status{Status: st, Checks: results})
 }
 ```
 
@@ -155,6 +156,18 @@ Health routes are mounted **outside** the authenticated middleware group (see `g
 | Critical deps only | Only must-have dependencies fail readiness | Non-critical dep downing the whole instance |
 | Startup protected | Slow start covered by a startup probe | Slow start restart-looping on liveness |
 | Probes unauthenticated | Health routes outside the auth group | Probes requiring a token |
+
+---
+
+## Anti-Patterns
+
+- **Liveness checking dependencies** — the classic self-inflicted outage: the database blips, every replica's liveness fails simultaneously, and the orchestrator restart-storms a fleet that was fine.
+- **One endpoint for both probes** — a single `/health` wired to both liveness and readiness forces one of them to have the wrong semantics; the probes ask different questions and get different answers.
+- **Deep queries in readiness** — running `SELECT count(*) FROM data_assets` as a "health check" turns the probe into load. A `Ping` proves reachability; that is all readiness needs.
+- **Unbounded checks** — a dependency check without a timeout lets one slow dependency hang the probe until the orchestrator's own timeout declares the instance dead for the wrong reason.
+- **Closing the listener before going not-ready** — the load balancer keeps routing to a closed socket for one probe period; connection-refused errors on every deploy are the signature.
+- **Non-critical dependencies failing readiness** — the analytics sidecar being down should degrade a feature flag, not remove the instance from rotation.
+- **Caching "ready" forever** — readiness computed once at startup can never reflect a dependency that failed later; checks run per probe, cheaply.
 
 ---
 

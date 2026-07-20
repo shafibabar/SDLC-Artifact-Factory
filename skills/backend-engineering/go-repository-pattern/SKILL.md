@@ -8,9 +8,10 @@ description: >
   change, mandatory tenant scoping, parameterised queries, and context
   propagation. Implements the data-architect's schemas. Used by the
   backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, pgx, repository, postgres, outbox, optimistic-concurrency, tenant]
 ---
 
@@ -171,6 +172,18 @@ A missing tenant must never silently become a cross-tenant query. This is the ap
 | Error translation | pgx errors wrapped/translated to domain sentinels | pgx types leaking to the application layer |
 | Tx always closed | Deferred rollback safe after commit; no leaked tx | A path that can leave a transaction open |
 | Context propagation | `ctx` passed to every pgx call | Background context or dropped ctx |
+
+---
+
+## Anti-Patterns
+
+- **Publish-after-commit** — publishing the Domain Event to the broker after (outside) the transaction reintroduces the dual-write problem the Transactional Outbox closes: a crash between commit and publish loses the event forever.
+- **Last-write-wins saves** — an `UPDATE … WHERE id = $1` with no `version` predicate silently overwrites a concurrent classification. The compare-and-swap is the Aggregate's one-writer guarantee.
+- **Tenant filter "optimised away"** — "the id is a UUID, it can't collide across tenants" is how cross-tenant reads ship. `tenant_id` is in every `WHERE` clause, no exceptions, even with physical isolation underneath.
+- **Repositories returning rows or DTOs** — handing `pgx.Rows` or a storage struct to the application layer leaks the schema and makes reconstitution someone else's problem. Domain types out, always.
+- **Business decisions in the repository** — `if a.Sensitivity() == Restricted { … }` in a save method is domain logic in the wrong layer; the repository persists what the Aggregate already decided.
+- **Fetch-then-update in two transactions** — loading the version in one tx and CAS-ing in another widens the race window the version field exists to close. Load, mutate, save within one request flow; CAS catches the rest.
+- **Dynamic SQL assembly** — `fmt.Sprintf` with column or filter fragments, even "safe" ones, normalises the habit that ends in injection. `$N` placeholders and static query strings only.
 
 ---
 
