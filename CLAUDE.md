@@ -1,6 +1,6 @@
 # SDLC Artifact Factory — Always-On Standards
 
-This file is read on every session. It encodes the non-negotiable rules every agent, skill, command, hook, and tool in this plugin must follow.
+This file is read on every session. It encodes the non-negotiable rules every agent, skill, command, hook, and script in this plugin must follow.
 
 ---
 
@@ -34,18 +34,21 @@ Each phase has defined inputs, outputs, and applicable methodologies. Phase gate
 
 ## Working in This Repository
 
-This repository **is the plugin itself** — component definitions in Markdown plus JSON configuration. There is currently no application code, no build step, and no test suite to run. Validation is structural (frontmatter, naming, glossary terms) until governance hooks land (Chunk 20). The `go`/`npm` permissions in `settings.json` are for code the plugin *generates*, not for this repo.
+This repository **is the plugin itself** — component definitions in Markdown plus JSON configuration, plus (from Chunk 19 onward) real, executable commands, hooks, and scripts. Skills and agents have no build step or test suite (they are prose consumed by Claude). Commands, hooks, and scripts are real Claude Code mechanics and are tested by actually invoking them, not just read for coherence. The `go`/`npm` permissions in `settings.json` are for code the plugin *generates* for a product, not for this repo. Auto-discovery is real and was verified by loading this repo as a session plugin (`claude --plugin-dir`) and inspecting its component inventory (`claude plugin details`): `commands/*.md`, `agents/<name>.md` (flat, one file per agent — no subdirectory), and `hooks/hooks.json` are found by Claude Code without any manifest wiring. **`skills/<domain>/<name>/SKILL.md` is NOT currently discovered** — real discovery requires the flat `skills/<name>/SKILL.md` (one level, no domain grouping); this is a known, confirmed gap affecting all skills, fixed in a dedicated follow-up PR, not this one. `.claude-plugin/plugin.json`'s `components` map is documentation for humans, not something Claude Code reads.
 
 **Layout:**
 
 ```
-.claude-plugin/plugin.json        Plugin manifest — component paths, agent roster, phases, tech defaults
+.claude-plugin/plugin.json        Plugin manifest — name/version/metadata only (see note above)
 sdlc-context.json                 Factory memory — build checklist, decisions, open questions
 CLAUDE.md                         This file — always-on standards
-settings.json                     Permissions, env vars, hook config
-skills/<domain>/<name>/SKILL.md   One skill per directory, grouped by domain
-agents/<role>/AGENT.md            One agent per directory
-commands/ hooks/ tools/ schemas/  Empty until Chunks 19–21
+settings.json                     Permissions and env vars for this repo's own Claude Code session
+skills/<domain>/<name>/SKILL.md   One skill per directory, grouped by domain — NOT YET DISCOVERABLE, see note above
+agents/<name>.md                  One flat file per agent — auto-discovered, verified
+commands/<name>.md                One real slash command per file — auto-discovered, verified
+hooks/hooks.json                  All hook bindings in one file — auto-discovered
+scripts/                          Shell scripts backing command-type hooks and command prompts
+schemas/                          Empty until Chunk 21
 mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
 ```
 
@@ -79,8 +82,8 @@ One rule governs which component type to create:
 Skills     = Expertise    — knowledge, standards, patterns. No reasoning, no decisions.
 Agents     = Reasoning    — design, analysis, code generation, test writing. Use skills for knowledge.
 Commands   = Workflows    — user-facing phase drivers. Orchestrate agents. No domain expertise.
-Hooks      = Governance   — event-driven, <2s, idempotent. Validate only. No business logic.
-Tools      = Actions      — atomic, deterministic, stateless. Single purpose.
+Hooks      = Governance   — event-driven, self-imposed <2s target, idempotent. Validate only. No business logic.
+Scripts    = Actions      — atomic, deterministic, stateless. Single purpose. Invoked by hooks/commands, not a discovered component type.
 MCP        = Integrations — external systems. Deferred.
 LSP        = Code intel   — language-aware analysis. Pending.
 ```
@@ -88,8 +91,8 @@ LSP        = Code intel   — language-aware analysis. Pending.
 **Component hierarchy:**
 ```
 Command → Agent → Skill
-Agent → Tool
-Hook → Tool
+Agent → Script (via Bash)
+Hook → Script (command-type handlers) or → Agent/Skill (prompt/agent-type handlers)
 ```
 
 **The anti-patterns that must never appear:**
@@ -97,7 +100,7 @@ Hook → Tool
 - Agent that stores large domain knowledge → move knowledge to a Skill
 - Command that contains methodology → belongs in a Skill
 - Hook that runs a workflow → hooks validate only
-- Tool that makes business decisions → decisions belong in Agents
+- Script that makes business decisions → decisions belong in Agents
 
 **Two boundary clarifications:**
 - Decision *criteria* — selection tables, "use when / do not use when" guides, defaults — are knowledge and belong in Skills. *Applying* those criteria to a specific system is reasoning and belongs in Agents. A pattern-selection table in a skill is not a violation.
@@ -115,7 +118,7 @@ All component names must match: `^[a-z0-9]+(-[a-z0-9]+)*$`
 | Agents | `<role-noun>` | `backend-engineer`, `domain-modeler` |
 | Commands | `/sdlc-<verb-or-noun>` | `/sdlc-start`, `/sdlc-implement`, `/sdlc-adr` |
 | Hooks | `<validate/check/enforce/tdd>-<noun>` | `pre-phase-advance`, `tdd-gate` |
-| Tools | `<action>-<noun>` | `validate-openapi-contract`, `generate-artifact-id` |
+| Scripts | `<action>-<noun>.sh` | `validate-artifact-structure.sh`, `generate-artifact-id.sh` |
 
 ---
 
@@ -178,12 +181,20 @@ This applies to artifacts the plugin *emits* (vision statements, ADRs, feature f
 
 The plugin's own components carry these canonical schemas — no other shapes are permitted:
 
-| Component | Required frontmatter fields, in order |
-|---|---|
-| SKILL.md | `name, description, version, phase, owner, created, tags` |
-| AGENT.md | `name, description, role, version, phase, owner, created, inputs, outputs, skills, tools, tags` |
+| Component | File location | Required frontmatter fields, in order |
+|---|---|---|
+| Skill | `skills/<domain>/<name>/SKILL.md` (not yet discoverable — see note above) | `name, description, version, phase, owner, created, tags` |
+| Agent | `agents/<name>.md` (flat, verified discoverable) | `name, description, role, version, phase, owner, created, inputs, outputs, skills, tools, tags` |
 
 Every agent's `skills:` list includes `glossary-management` and `methodology-review` in addition to its domain skills. Agents that run shell commands (build, test, scan) declare `tools: [Bash]`.
+
+### Command and Hook Mechanics
+
+Commands and hooks are real Claude Code mechanics, not documentation. Their shape is fixed by the platform, not by this plugin's conventions:
+
+- **Commands** are single files at `commands/<name>.md`. Frontmatter is `description` (required), `argument-hint`, `allowed-tools`, `model`, `disable-model-invocation` — never the Skill/Agent schema above. The body is a prompt: it instructs Claude to read `sdlc-context.json`, gather the artifacts a downstream agent needs, and invoke that agent via the Agent tool. `$ARGUMENTS` (everything after the command name) or `$0`/`$1`... (positional, split on `argument-hint`) substitute user input into the prompt. A command cannot programmatically invoke an agent — it can only instruct Claude to do so; the instruction must be concrete enough that Claude reliably does it.
+- **Hooks** are entries in the single file `hooks/hooks.json`, matching the same schema as the `hooks` key in `settings.json`. Real events: `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `SessionStart`, `SessionEnd`, `PreCompact`, `Notification`, `PermissionRequest`, `PermissionDenied`. A hook entry has a `matcher` (tool name or regex) and one or more handlers of type `command` (a script under `scripts/`, JSON on stdin, exit 0/2/other = success/block/non-blocking-error), `prompt` (single-turn LLM judgment — the right choice for a hook that consults `methodology-review`'s or `glossary-management`'s criteria), or `agent` (a full subagent with tool access). There is no `HOOK.md` file, no per-hook frontmatter, and no `before-file-create`/`after-agent`-style events — those never existed in Claude Code.
+- **Scripts** (`scripts/*.sh`) are plain shell scripts with no discovery mechanism and no frontmatter. A hook's `command` handler or a command's prompt body (via the Bash tool) is the only way a script runs. "Tools" in real Claude Code vocabulary means MCP-server-exposed tools specifically — never use that word for these scripts.
 
 ---
 
@@ -193,7 +204,7 @@ Every agent in this plugin must:
 
 - **Produce real outputs** — not design notes. `backend-engineer` produces runnable Go code. `test-strategist` produces executable test files. `frontend-engineer` produces runnable React+TypeScript code.
 - **Own its domain completely** — produce all design artifacts, implementation artifacts, and documentation for its domain. Do not narrow scope to code-only or design-only.
-- **Declare what it owns and does not own** in its AGENT.md.
+- **Declare what it owns and does not own** in its agent file (`agents/<name>.md`).
 - **Never overlap** with another agent's domain.
 - **Always check** `sdlc-context.json` to understand current phase and what artifacts already exist before producing new ones.
 

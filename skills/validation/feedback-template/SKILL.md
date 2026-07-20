@@ -185,7 +185,7 @@ A single report is a data point. A pattern is multiple independent reports conve
 
 **Leading the witness.** Asking a participant to confirm what the team already believes ("that worked well, right?") manufactures agreement instead of surfacing real experience — see the guidance table above.
 
-**Requirements-analyst fixing bugs itself.** Routing exists so each item reaches its owning agent; the requirements-analyst capturing a bug and then attempting the fix crosses the ownership boundary declared in every agent's AGENT.md.
+**Requirements-analyst fixing bugs itself.** Routing exists so each item reaches its owning agent; the requirements-analyst capturing a bug and then attempting the fix crosses the ownership boundary declared in every agent's agent file.
 
 **Treating one report as a pattern.** A single participant's Medium-severity complaint escalated as if three people said it inflates the sign-off record and can force unnecessary scope changes.
 

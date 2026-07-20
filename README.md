@@ -26,7 +26,7 @@
   - [Hooks](#hooks)
   - [MCP Servers](#mcp-servers)
   - [LSP Integrations](#lsp-integrations)
-  - [Tools](#tools)
+  - [Scripts](#scripts)
   - [Component Selection Guide](#component-selection-guide)
 - [Architectural Principles](#architectural-principles)
 - [Contributor Guide](#contributor-guide)
@@ -79,11 +79,11 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | Foundation complete — all 15 skill domains (136 skills) and all 13 planned agents built; commands, hooks, tools, and schemas in progress |
+| **Maturity** | All content built (136 skills, 13 agents, 15 commands); agents and commands are live-verified working, skills are pending a discoverability fix (see Known Issues in CHANGELOG); hooks and schemas in progress |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
-| **Primary Deliverables** | Skills, Agents, Commands, Hooks, MCP Servers, LSP Integrations, Tools |
+| **Primary Deliverables** | Skills, Agents, Commands, Hooks, MCP Servers, LSP Integrations, Scripts |
 | **Methodology Enforcement** | Blocking — absence of applicable methodology in an artifact is a defect |
 | **Budget Posture** | Frugal — process over tooling, iterative delivery |
 
@@ -126,7 +126,7 @@ A reusable, distributable plugin that any team can install into Claude Code and 
 - **Process over tooling.** Prefer disciplined, frugal, iterative delivery over expensive or complex toolchain choices.
 - **Ubiquitous language must not drift.** Terminology defined in the canonical glossary must remain identical across every agent, skill, hook, command, MCP, and LSP.
 - **Thin vertical slices over broad coverage.** Earn breadth iteratively. A working end-to-end slice is more valuable than broad, shallow coverage.
-- **Every component has one responsibility.** Skills hold knowledge. Agents reason. Commands orchestrate. Hooks automate. Tools act. MCPs integrate. LSPs understand code.
+- **Every component has one responsibility.** Skills hold knowledge. Agents reason. Commands orchestrate. Hooks automate. Scripts act. MCPs integrate. LSPs understand code.
 
 ### Success Criteria
 
@@ -147,7 +147,7 @@ A reusable, distributable plugin that any team can install into Claude Code and 
 
 ### Governance
 - Methodology enforcement is automated where possible, blocking where required
-- Every component type (Skill, Agent, Command, Hook, Tool, MCP, LSP) has a validated schema
+- Every component type (Skill, Agent, Command, Hook, Script, MCP, LSP) has a validated schema
 - Ubiquitous language is codified and enforced via the canonical glossary
 
 ### Automation
@@ -186,36 +186,36 @@ sdlc-artifact-factory/
 │       └── <skill-name>/
 │           ├── SKILL.md
 │           └── references/   # Optional supporting templates
-├── agents/                   # Subagent definitions
-│   └── <agent-name>/
-│       └── AGENT.md
-├── commands/                 # Slash command definitions        (empty — Chunk 19)
-├── hooks/                    # Event-driven governance          (empty — Chunk 20)
-├── tools/                    # Atomic executable tools          (empty — Chunk 20)
+├── agents/                   # Subagent definitions — flat, one file per agent
+│   └── <agent-name>.md
+├── commands/                 # Real slash commands, one file each
+│   └── <name>.md
+├── hooks/                    # Real hook bindings, one file for all of them
+│   └── hooks.json
+├── scripts/                  # Shell scripts backing hooks.json and commands
 ├── schemas/                  # sdlc-config / sdlc-manifest      (empty — Chunk 21)
 ├── mcp/                      # MCP server definitions           (deferred)
 ├── lsp/                      # LSP integrations                 (deferred)
-├── monitors/, output-styles/, themes/, bin/, scripts/   # placeholders
+├── monitors/, output-styles/, themes/, bin/   # placeholders
 ├── README.md
 ├── LICENSE
 └── CHANGELOG.md
 ```
 
-Populated component directories carry exactly one definition file per component (`SKILL.md`, `AGENT.md`); directories marked empty hold `.gitkeep` placeholders until their build chunk lands.
+Skills carry exactly one definition file per component (`SKILL.md`) and are pure prose, consumed by Claude — no build step, no runtime. **Skills are currently NOT auto-discovered by Claude Code** — real discovery requires the flat `skills/<name>/SKILL.md` (one level, no domain grouping); this repo's domain-grouped `skills/<domain>/<name>/SKILL.md` is a confirmed gap, fixed in a dedicated follow-up PR. Agents, commands, hooks, and scripts are real, verified, auto-discovered Claude Code mechanics: `agents/<name>.md`, `commands/*.md`, and `hooks/hooks.json` are found by Claude Code without any manifest wiring — `.claude-plugin/plugin.json`'s `components` map is human documentation only.
 
 ### Directory Reference
 
 | Directory | Purpose | Ownership | Expected Contents |
 |---|---|---|---|
 | `.claude-plugin/` | Plugin manifest only | Plugin maintainer | `plugin.json` |
-| `skills/` | Reusable domain knowledge | Domain leads | `SKILL.md` per skill, supporting assets |
-| `agents/` | Reasoning specialists | Architecture lead | `AGENT.md` per agent, prompts, examples |
-| `commands/` | User-facing workflows | Product/engineering | `COMMAND.md` per command, templates |
-| `hooks/` | Lifecycle event handlers | Platform/governance | `HOOK.md` per hook, validation scripts |
-| `mcp/` | External system integrations | Platform engineering | `MCP.md`, server, tools, schemas |
-| `lsp/` | Code intelligence integrations | Engineering | `LSP.md`, config, diagnostic rules |
-| `tools/` | Atomic executable actions | Engineering | `TOOL.md`, implementation, schemas |
-| `scripts/` | Shared utility scripts | Engineering | Shell, Python, JS utilities |
+| `skills/` | Reusable domain knowledge | Domain leads | `SKILL.md` per skill, supporting assets — **not yet auto-discovered; see the note above the tree** |
+| `agents/` | Reasoning specialists | Architecture lead | One flat `<name>.md` per agent — auto-discovered, verified |
+| `commands/` | User-facing slash commands | Product/engineering | One real `<name>.md` per command — auto-discovered, verified |
+| `hooks/` | Event-driven governance | Platform/governance | One `hooks.json` binding all hooks to real events — auto-discovered |
+| `mcp/` | External system integrations | Platform engineering | `.mcp.json` at repo root (deferred); this directory holds supporting assets |
+| `lsp/` | Code intelligence integrations | Engineering | `.lsp.json` at repo root (deferred); this directory holds supporting assets |
+| `scripts/` | Shell scripts invoked by hooks/commands | Engineering | `<action>-<noun>.sh`, referenced directly — no discovery mechanism, not "Tools" (that term means MCP-exposed tools in real Claude Code) |
 | `bin/` | PATH executables | Platform engineering | Executables for Bash tool |
 
 ---
@@ -282,14 +282,15 @@ All component names must conform to the following pattern:
 | Hooks | validate/check/enforce/tdd + noun | `pre-phase-advance`, `tdd-gate`, `terminology-drift-detector` |
 | MCP Servers | system-mcp | `github-mcp`, `jira-mcp`, `postgres-mcp` |
 | LSP Integrations | language-lsp | `go-lsp`, `typescript-lsp`, `terraform-lsp` |
-| Tools | action-noun | `validate-openapi-contract`, `generate-artifact-id` |
+| Scripts | `<action>-<noun>.sh` | `validate-artifact-structure.sh`, `generate-artifact-id.sh` |
 
 ### Folder Conventions
 
-- One folder per component
-- Folder name must match the `name` field in frontmatter exactly
-- Supporting files live inside the component folder (not at repo root)
-- File references use relative paths from the component root, one level deep
+- **Skills**: one folder per skill (`skills/<domain>/<name>/`); folder name matches the `name` field in frontmatter exactly; supporting files live inside it
+- **Agents**: flat — `agents/<name>.md`, no folder, no subdirectory. This is a real Claude Code discovery requirement, not a style choice.
+- **Commands**: flat — `commands/<name>.md`, no folder
+- **Hooks**: no per-hook file at all — one entry in `hooks/hooks.json`
+- File references (in skills) use relative paths from the component root, one level deep
 
 ### Frontmatter — Required Fields by Component Type
 
@@ -328,36 +329,44 @@ Canonical schema (all fields required, in this order — see CLAUDE.md, Componen
 
 #### Command Frontmatter
 
-| Field | Required | Constraints |
-|---|---|---|
-| `name` | Yes | Lowercase, hyphenated |
-| `description` | Yes | Max 1024 chars |
-| `version` | Yes | Semantic version |
-| `category` | Yes | Command category |
-| `inputs` | Yes | Expected inputs |
-| `outputs` | Yes | Generated outputs |
-| `agents` | No | Agents invoked |
-| `skills` | No | Skills invoked |
-| `tools` | No | Approved tools |
-| `mcp-servers` | No | MCP dependencies |
-| `tags` | No | Search keywords |
-| `owner` | No | Team ownership |
-
-#### Hook Frontmatter
+Commands are single files (`commands/<name>.md`), invoked as `/<name>`. Frontmatter is the real Claude Code slash-command schema — not the Skill/Agent shape above:
 
 | Field | Required | Constraints |
 |---|---|---|
-| `name` | Yes | Lowercase, hyphenated |
-| `description` | Yes | Max 1024 chars |
-| `version` | Yes | Semantic version |
-| `event` | Yes | Lifecycle event |
-| `trigger` | Yes | Trigger condition |
-| `action` | Yes | Action performed |
-| `severity` | No | `info`, `warning`, `error`, `critical` |
-| `blocking` | No | `true` / `false` |
-| `tools` | No | Approved tools |
-| `owner` | No | Maintainer |
-| `tags` | No | Search keywords |
+| `description` | Yes | Shown in `/help`; Claude also uses it to decide whether to invoke the command automatically |
+| `argument-hint` | No | Describes positional arguments, e.g. `[problem-statement]` |
+| `allowed-tools` | No | Restricts which tools the command may use, e.g. `Read, Grep, Agent` |
+| `model` | No | Overrides the default model for this command's turn |
+| `disable-model-invocation` | No | `true` = only runs when a user explicitly types `/<name>`, never auto-invoked |
+
+The body is a prompt, not a workflow spec: it instructs Claude what to read (`sdlc-context.json`, upstream artifacts) and which agent to invoke via the Agent tool, with `$ARGUMENTS` or `$0`/`$1`... substituting user input. A command cannot programmatically call an agent — only instruct Claude to do so.
+
+#### Hook Configuration
+
+Hooks are not per-file, frontmatter'd documents — there is no `HOOK.md`. All hooks for the plugin are entries in one file, `hooks/hooks.json`, using the same schema as the `hooks` key in `settings.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Write", "hooks": [
+        { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-artifact-structure.sh", "timeout": 10 }
+      ]}
+    ]
+  }
+}
+```
+
+Real event names: `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `SessionStart`, `SessionEnd`, `PreCompact`, `Notification`, `PermissionRequest`, `PermissionDenied`. A `matcher` selects the tool name (exact string or regex). Each hook has one or more handlers:
+
+| Handler type | What it does |
+|---|---|
+| `command` | Runs a script (JSON on stdin); exit 0/2/other = success/block/non-blocking error |
+| `prompt` | A single-turn LLM judgment call — the right choice for checks that require interpretation (e.g. consulting `methodology-review`'s criteria) |
+| `agent` | A full subagent with tool access, for checks that need to read multiple files |
+| `http` / `mcp_tool` | Calls an external endpoint or an MCP-server tool |
+
+There is no `before-file-create`/`after-agent`-style lifecycle — those events do not exist in Claude Code.
 
 #### MCP Server Frontmatter
 
@@ -388,20 +397,9 @@ Canonical schema (all fields required, in this order — see CLAUDE.md, Componen
 | `owner` | No | Maintainer |
 | `tags` | No | Search keywords |
 
-#### Tool Frontmatter
+#### Scripts
 
-| Field | Required | Constraints |
-|---|---|---|
-| `name` | Yes | Lowercase, hyphenated |
-| `description` | Yes | Max 1024 chars |
-| `version` | Yes | Semantic version |
-| `category` | Yes | Tool classification |
-| `input-schema` | Yes | Request schema |
-| `output-schema` | Yes | Response schema |
-| `permissions` | No | Required permissions |
-| `timeout` | No | Execution timeout |
-| `owner` | No | Maintainer |
-| `tags` | No | Search keywords |
+Scripts (`scripts/*.sh`) have no frontmatter and no discovery mechanism — they are plain shell scripts run only when a hook's `command` handler or a command's prompt body (via the Bash tool) invokes them directly. Convention: a header comment stating name, purpose, and expected stdin/exit-code contract, since that documents the same information frontmatter would.
 
 ### Versioning Conventions
 
@@ -425,24 +423,27 @@ All components use **semantic versioning**: `MAJOR.MINOR.PATCH`
 | Component | Recommended Max |
 |---|---|
 | `SKILL.md` | 500 lines |
-| `AGENT.md` | 500 lines |
-| `COMMAND.md` | 500 lines |
-| `HOOK.md` | 500 lines |
+| `agents/<name>.md` | 500 lines |
+| `commands/<name>.md` | 100 lines — a prompt, not a spec document |
+| `hooks/hooks.json` | No line limit; keep one entry per hook, matchers narrow |
 | `MCP.md` | 500 lines |
 | `LSP.md` | 500 lines |
-| `TOOL.md` | 500 lines |
+| `scripts/*.sh` | 150 lines — a script doing more than that should be split |
 
-When content exceeds these limits, move reference material to the `references/` subdirectory and link from the main file.
+When a skill's or agent's content exceeds its limit, move reference material to the `references/` subdirectory and link from the main file.
 
 ### Progressive Disclosure
 
-Every component file should be structured to load progressively:
+This is real for Skills and, loosely, Commands — not for Hooks or Scripts, which aren't "loaded into context" at all:
 
-| Level | Scope | Approximate Size | When Loaded |
-|---|---|---|---|
-| 1 — Metadata | Name + description | ~100 tokens | At startup, for all components |
-| 2 — Instructions | Full body | < 5000 tokens (skills/agents), < 3000 tokens (commands/hooks) | When component is activated |
-| 3 — Resources | Supporting files (`references/`, `examples/`, `scripts/`) | As needed | Only when required by the task |
+| Component | What's always visible | What loads on demand |
+|---|---|---|
+| Skill | `description` (helps Claude decide when to consult it) | Full `SKILL.md` body, when the skill is used |
+| Command | `description` (shown in `/help`) | The prompt body, only when the command is invoked |
+| Hook | Nothing — hooks are registered triggers, not context | The handler runs (script/prompt/agent) only when its event and matcher fire |
+| Script | Nothing | Runs only when a hook or command invokes it directly |
+
+Move detail beyond a skill's/agent's practical size into `references/` and link from the main file, rather than everything inline.
 
 ### Body Structure by Component
 
@@ -450,15 +451,15 @@ Every component file should be structured to load progressively:
 
 **Agents** — Purpose, Responsibilities, Non-Responsibilities, Inputs, Outputs, Decision Process, Workflow, Escalation Rules, Examples, Edge Cases.
 
-**Commands** — Purpose, Invocation, Inputs, Outputs, Workflow, Agent Selection, Skill Selection, Validation Rules, Examples, Failure Handling.
+**Commands** — A prompt, not a spec document: what to read (`sdlc-context.json`, upstream artifacts), what to check before proceeding, which agent to invoke via the Agent tool and with what context, what to report back. `$ARGUMENTS`/`$0`/`$1` substitute user input.
 
-**Hooks** — Purpose, Trigger Conditions, Event Context, Validation Rules, Execution Logic, Failure Handling, Examples, Performance Considerations.
+**Hooks** — Not prose at all: a `hooks.json` entry (event, matcher, handler type, handler payload). The "purpose," "trigger condition," and "failure handling" a HOOK.md would have described are instead: the event+matcher (trigger), the handler itself (logic), and the exit code / `permissionDecision` (failure handling).
 
 **MCP Servers** — Purpose, Supported Systems, Authentication, Authorization, Available Tools, Request/Response Schemas, Error Handling, Rate Limits, Security Considerations, Examples.
 
 **LSP Integrations** — Purpose, Supported Languages, Capabilities, Configuration, Workspace Requirements, Diagnostics, Limitations, Performance Considerations, Examples.
 
-**Tools** — Purpose, Inputs, Outputs, Execution Logic, Error Conditions, Limitations, Examples.
+**Scripts** — A header comment (name, purpose, stdin/exit-code contract), then the implementation. No formal section structure beyond that.
 
 ---
 
@@ -475,7 +476,7 @@ Every component file should be structured to load progressively:
 | Hooks | Platform/governance lead |
 | MCP servers | Platform engineering |
 | LSP integrations | Engineering |
-| Tools | Engineering |
+| Scripts | Engineering |
 | Glossary / Ubiquitous Language | Architecture lead |
 
 ### Methodology Enforcement
@@ -529,7 +530,7 @@ Skills     = Expertise        (knowledge, guidance, standards)
 Agents     = Reasoning        (decisions, analysis, recommendations)
 Commands   = Workflows        (user-facing orchestration)
 Hooks      = Lifecycle        (event-driven automation, governance)
-Tools      = Actions          (atomic, deterministic execution)
+Scripts    = Actions          (atomic, deterministic execution — not "Tools"; that word means MCP-exposed tools)
 MCP        = Integrations     (external system access)
 LSP        = Code Intelligence (language-aware analysis)
 ```
@@ -539,15 +540,15 @@ LSP        = Code Intelligence (language-aware analysis)
 ```
 User
   ↓
-Command
+Command (a prompt instructing Claude what to do)
   ↓
 Agent ──── Skill
   ↓
-Tool
+Script (via Bash)
   ↓
 MCP / LSP
 
-Hook ──── Tool
+Hook ──── Script (command handler) or ──── Agent / Skill (prompt/agent handler)
 ```
 
 ---
@@ -612,119 +613,93 @@ data-engineer
 
 Planned: `ai-ml-architect` (deferred until a product requires ML).
 
-**Agent subdirectory structure:**
+**Agent file structure — flat, one file per agent, no subdirectory** (this is real Claude Code discovery, verified by loading the plugin and inspecting its component inventory — a nested `agents/<name>/AGENT.md` is not discovered):
 
 ```
 agents/
-└── enterprise-architect/
-    └── AGENT.md
+└── enterprise-architect.md
 ```
 
 ---
 
 ### Commands
 
-**Definition:** User-facing, orchestration-layer workflows. Commands are the entry points users invoke. They coordinate agents, skills, tools, and MCP servers to produce a defined outcome.
+**Definition:** User-facing, orchestration-layer workflows — a real Claude Code slash command, one file per command, invoked directly by the user. The command's prompt body instructs Claude to read context, gather what a downstream agent needs, and invoke that agent via the Agent tool. Commands do not orchestrate programmatically — they can only instruct Claude to, so the prompt must be concrete and unambiguous.
 
 **When to create a Command:**
-- You need a repeatable, user-invokable workflow
-- You are orchestrating multiple agents toward a predictable output
-- You need a slash-command entry point (`/create-prd`, `/review-api`, etc.)
+- You need a repeatable, user-invokable entry point into a phase or a cross-cutting operation
+- You are directing Claude to invoke one or more agents in a specific sequence
+- You need input the user provides at invocation time (`argument-hint`, `$ARGUMENTS`)
 
 **Key constraints:**
-- Commands do not contain domain knowledge — that belongs in Skills
-- Commands do not duplicate agent behavior
-- Commands must define stable, predictable output structures
-- Commands must validate their inputs and dependencies before executing
+- Commands do not contain domain knowledge — that belongs in Skills, which the invoked agent consults
+- Commands do not duplicate agent behavior — they direct Claude to the agent, they don't re-implement its reasoning
+- The prompt states what to read before proceeding, what to invoke, and what to report back
+- No frontmatter field named `category`, `inputs`, `outputs`, `agents`, `skills`, `tools`, or `mcp-servers` exists for commands — see Command Frontmatter above for the real schema
 
-**Invocation patterns:**
-
-```text
-/create-prd
-/create-prd --template=enterprise
-/review-api
-/generate-test-plan
-/analyze-architecture
-/audit-compliance
-/validate-contract
-```
-
-**Recommended naming prefixes:**
+**This plugin's commands** (`/sdlc-<verb-or-noun>`, matching the Naming Conventions table):
 
 ```text
-create-*    review-*    analyze-*
-validate-*  generate-*  audit-*
-migrate-*
+/sdlc-start        /sdlc-strategy     /sdlc-ideate
+/sdlc-design       /sdlc-implement    /sdlc-data
+/sdlc-quality      /sdlc-deploy       /sdlc-validate
+/sdlc-status       /sdlc-next
+/sdlc-event-storm  /sdlc-adr          /sdlc-review       /sdlc-artifact
 ```
 
-**Command subdirectory structure:**
+**File structure — one file per command, no subdirectory:**
 
 ```
 commands/
-└── create-prd/
-    ├── COMMAND.md
-    ├── templates/
-    ├── prompts/
-    ├── examples/
-    ├── references/
-    └── tests/
+├── sdlc-start.md
+├── sdlc-strategy.md
+└── ...
 ```
 
 ---
 
 ### Hooks
 
-**Definition:** Lightweight, event-driven automation points that execute before, during, or after Claude Code lifecycle events. Hooks enforce governance, validate artifacts, and automate repetitive checks.
+**Definition:** Event-driven automation bound to real Claude Code tool-use and session events. Hooks enforce governance, validate artifacts, and automate repetitive checks. All of this plugin's hooks live as entries in one file, `hooks/hooks.json` — there is no per-hook file or directory.
 
 **When to create a Hook:**
-- You need to enforce a standard automatically at a lifecycle event
-- You need to validate an artifact before it is saved or committed
-- You need to block execution when a required condition is not met
+- You need to enforce a standard automatically when a specific tool runs (e.g. every `Write`)
+- You need to validate an artifact before or after it is saved
+- You need to block an action when a required condition is not met
 
 **Key constraints:**
-- Hooks must not contain business logic — that belongs in Skills, Agents, or Commands
-- Hooks must complete in under 2 seconds
-- Hooks must be idempotent and deterministic
-- Hooks must fail clearly with actionable messages
+- Hooks must not contain business logic — that belongs in Skills, Agents, or Commands. A judgment-based hook (methodology compliance, terminology drift) delegates to a `prompt`- or `agent`-type handler that consults the relevant skill; it does not reimplement the skill's criteria in a script.
+- `command`-type hooks (scripts) target a self-imposed <2s, idempotent, deterministic — this plugin's own discipline, not a platform limit (Claude Code's real default timeout is far longer)
+- Hooks must fail clearly: a `command` handler exits 2 with an actionable stderr message; a `prompt`/`agent` handler returns a `reason` explaining the block
 
-**Supported lifecycle events:**
+**Real event names** (the complete set — there is no `before-file-create`/`after-agent`; those never existed):
 
 ```text
-before-command     after-command
-before-agent       after-agent
-before-file-create after-file-create
-before-file-modify after-file-modify
-before-mcp-call    after-mcp-call
-before-commit      after-commit
+PreToolUse       PostToolUse
+UserPromptSubmit Stop            SubagentStop
+SessionStart     SessionEnd      PreCompact
+Notification     PermissionRequest  PermissionDenied
 ```
 
-**Outcome types:**
+**Handler types** — a hook entry can use any of these, chosen per hook:
 
-| Outcome | Effect |
-|---|---|
-| Pass | Execution continues |
-| Warning | Execution continues; issue logged |
-| Block | Execution stopped; failure reason returned |
-| Transform | Input or output modified; transformation documented |
+| Type | What runs | Best for |
+|---|---|---|
+| `command` | A script under `scripts/`, JSON on stdin | Deterministic checks: does a file exist, does a pattern match |
+| `prompt` | A single-turn LLM judgment | Interpretive checks: does this artifact apply DDD correctly |
+| `agent` | A full subagent with tool access | Checks needing to read multiple files to decide |
+| `http` / `mcp_tool` | An external endpoint or MCP tool | Out of scope for this plugin currently |
 
-**Performance guidelines:**
+**Decision contract:** `command` handlers signal via exit code (0 = pass, 2 = block with stderr as the reason, other = non-blocking error) or JSON on stdout (`hookSpecificOutput.permissionDecision: allow/deny/ask` for `PreToolUse`; top-level `decision: "block"` + `reason` for most other events). `prompt`/`agent` handlers return the same JSON shape.
 
-| Metric | Limit |
-|---|---|
-| Execution time | < 2 seconds |
-| Memory usage | < 100 MB |
-| Network calls | Avoid |
-
-**Hook subdirectory structure:**
+**File structure:**
 
 ```
 hooks/
-└── validate-prd-structure/
-    ├── HOOK.md
-    ├── scripts/
-    ├── rules/
-    ├── examples/
-    └── tests/
+└── hooks.json          # every hook binding, keyed by event
+scripts/
+├── validate-artifact-structure.sh   # backs the corresponding command-type hook
+└── ...
 ```
 
 ---
@@ -816,48 +791,30 @@ lsp/
 
 ---
 
-### Tools
+### Scripts
 
-**Definition:** The lowest-level executable building blocks. Tools are atomic, stateless, deterministic functions that perform a single action, accept structured inputs, and return structured outputs.
+**Definition:** Plain shell scripts, the lowest-level executable building blocks — atomic, stateless, deterministic, one action each. **Not** a first-class Claude Code component: "Tools" in real Claude Code vocabulary means MCP-server-exposed tools specifically. A script has no discovery mechanism; it runs only when a hook's `command` handler or a command's prompt body (via Bash) invokes it directly by path.
 
-**When to create a Tool:**
-- You need a single executable action reusable across agents, commands, and skills
-- You are validating, searching, transforming, or generating a structured artifact
-- The action is too small to be a command and too specific to be an MCP capability
+**When to create a Script:**
+- A `command`-type hook needs deterministic logic (does this file exist, does this pattern match)
+- The same small check is needed by more than one hook or command, so it's worth factoring out
 
 **Key constraints:**
-- One tool = one action
-- Tools must not maintain workflow state
-- Tools must not make business decisions
-- Tools must return consistent, structured error responses
+- One script = one action, invoked by exact path (use `${CLAUDE_PLUGIN_ROOT}/scripts/<name>.sh`, never a relative path)
+- Scripts must not maintain state between invocations
+- Scripts must not make business decisions — judgment-based checks are `prompt`/`agent`-type hooks instead, consulting a skill
+- A script reads JSON on stdin (when invoked as a hook handler) and signals via exit code: `0` pass, `2` block (with an actionable message on stderr), other = non-blocking error
 
-**Tool categories:**
+**This plugin's planned scripts:**
 
-| Category | Examples |
+| Script | Purpose |
 |---|---|
-| Validation | `validate-openapi`, `validate-prd`, `validate-contract` |
-| Search | `search-code`, `search-documents`, `search-issues` |
-| Analysis | `analyze-architecture`, `analyze-dependencies` |
-| Generation | `generate-schema`, `generate-test-cases` |
-| Transformation | `convert-markdown`, `transform-json`, `normalize-data` |
-| Utility | `calculate-metrics`, `format-output`, `compare-files` |
-
-**Tool types:**
-
-| Type | Examples |
-|---|---|
-| Local | File Read, File Write, Shell Execute, Directory Search |
-| MCP | `GitHub.create_pr`, `Jira.get_ticket` |
-| AI | Summarize, Classify, Extract Entities, Generate Tests |
-| System | Database Query, Cache Lookup, Queue Publish |
-
-**Standard error codes:**
-
-```text
-VALIDATION_ERROR    AUTHENTICATION_ERROR
-AUTHORIZATION_ERROR TIMEOUT_ERROR
-DEPENDENCY_ERROR    INTERNAL_ERROR
-```
+| `validate-artifact-structure.sh` | Frontmatter and required sections present before an artifact is saved |
+| `validate-openapi-contract.sh` | OpenAPI spec is well-formed |
+| `validate-event-schema.sh` | Domain Event schema is well-formed |
+| `check-methodology-compliance.sh` | Deterministic sub-checks only (e.g. does a test file exist) — interpretive checks are `prompt`-type hooks |
+| `generate-artifact-id.sh` | Produces the `<product-slug>-<type>-<sequence>` ID from `artifact-manifest` |
+| `cross-reference-checker.sh` | Every skill/agent a file references by backtick name exists on disk |
 
 ---
 
@@ -870,9 +827,9 @@ Use this matrix before creating any new component.
 ```text
 Is it knowledge or guidance?            → Skill
 Does it make decisions?                 → Agent
-Is it a user-facing workflow?           → Command
-Is it triggered by an event?            → Hook
-Is it a single executable action?       → Tool
+Is it a user-facing slash command?      → Command
+Is it triggered by a real Claude Code event (PreToolUse, Stop, ...)? → Hook
+Is it a deterministic action a hook or command invokes by path? → Script
 Does it connect to an external system?  → MCP
 Does it understand source code?         → LSP
 ```
@@ -881,16 +838,16 @@ Does it understand source code?         → LSP
 
 | If You Need To... | Create |
 |---|---|
-| Teach Claude how to write a PRD | Skill |
+| Teach Claude how to write a vision statement | Skill |
 | Teach Claude API design standards | Skill |
 | Review requirements and make decisions | Agent |
 | Analyze architecture trade-offs | Agent |
-| Generate a PRD from requirements | Command |
-| Create a roadmap from epics | Command |
-| Run validation before saving a file | Hook |
-| Enforce naming conventions | Hook |
-| Validate an OpenAPI contract | Tool |
-| Search a repository | Tool |
+| Give the user a `/sdlc-ideate` entry point that invokes requirements-analyst | Command |
+| Give the user a `/sdlc-adr` entry point | Command |
+| Validate frontmatter on every `Write` (PreToolUse) | Hook |
+| Enforce naming conventions before a save | Hook |
+| Check an OpenAPI file is well-formed, called from a hook | Script |
+| Generate a unique artifact ID, called from a hook | Script |
 | Access GitHub | MCP |
 | Access Jira | MCP |
 | Navigate Go code | LSP |
@@ -898,7 +855,7 @@ Does it understand source code?         → LSP
 
 #### Responsibility Matrix
 
-| Responsibility | Skill | Agent | Command | Hook | Tool | MCP | LSP |
+| Responsibility | Skill | Agent | Command | Hook | Script | MCP | LSP |
 |---|---|---|---|---|---|---|---|
 | Domain Knowledge | ✓ | | | | | | |
 | Decision Making | | ✓ | | | | | |
@@ -915,10 +872,10 @@ Does it understand source code?         → LSP
 | Skill that evaluates options and recommends one | Move reasoning to an Agent |
 | Agent containing 5000 lines of domain standards | Move knowledge to a Skill |
 | Command containing full methodology documentation | Move methodology to a Skill |
-| Tool that makes release strategy decisions | Move business decisions to an Agent |
+| Script that makes release strategy decisions | Move business decisions to an Agent |
 | MCP that implements a release workflow | Move to a Command; MCP provides only atomic operations |
-| Hook that runs a full architecture review | Move to an Agent/Command; Hook validates only |
-| LSP that validates sprint documentation | Move to a Hook or Tool |
+| Hook that runs a full architecture review | Move to an Agent (invoked via an `agent`-type hook handler, or a Command); a `command`-type hook only runs a deterministic script |
+| LSP that validates sprint documentation | Move to a Hook or Script |
 
 ---
 
@@ -991,12 +948,11 @@ The following principles govern every artifact and component produced by or for 
 ### Creating New Artifacts
 
 1. Determine the correct component type using the [Decision Tree](#decision-tree)
-2. Create the directory: `<component-type>/<component-name>/`
-3. Create the primary file: `SKILL.md` / `AGENT.md` / `COMMAND.md` / etc.
-4. Complete all required frontmatter fields for that component type
-5. Follow the body structure for that component type
-6. Keep the primary file under 500 lines; move detail to `references/`
-7. Validate frontmatter and naming before submitting
+2. Skills: create `skills/<domain>/<name>/SKILL.md`. Agents: create `agents/<name>.md` directly — no subdirectory. Commands: create `commands/<name>.md` directly — no subdirectory. Hooks: add an entry to `hooks/hooks.json`. Scripts: add `scripts/<name>.sh`.
+3. Complete all required frontmatter fields for that component type (see [Frontmatter — Required Fields by Component Type](#frontmatter--required-fields-by-component-type))
+4. Follow the body structure for that component type
+5. Keep skill/agent files under 500 lines; move detail to `references/`
+6. Validate frontmatter and naming before submitting; for commands/hooks/scripts, actually invoke them and confirm they work
 
 ### Updating Existing Artifacts
 
@@ -1149,15 +1105,16 @@ Any component that supports multiple tenants must enforce:
 
 ### Delivered So Far
 
-- **Skills:** 136 across 15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6). All 15 skill domains are complete.
-- **Agents:** 13 of 13 — product-strategist, requirements-analyst (Ideate + Customer Validation), domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer, data-engineer.
+- **Skills:** 136 across 15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6). All 15 skill domains are complete in content — **but not yet auto-discoverable by Claude Code**; see the note in Repository Structure and CHANGELOG's Known Issues.
+- **Agents:** 13 of 13 — product-strategist, requirements-analyst (Ideate + Customer Validation), domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer, data-engineer. Flat `agents/<name>.md`, verified discoverable.
+- **Commands:** 15 of 15 — all phase-driver, navigation, and cross-cutting commands, verified discoverable and one verified by live invocation.
 
 ### Planned Components
 
 | Area | Planned Additions |
 |---|---|
 | Agents | `ai-ml-architect` (deferred until a product requires ML) |
-| Commands | Phase-driver commands for all 8 phases plus navigation and cross-cutting commands (Chunk 19) |
+| Skills | Fix: flatten `skills/<domain>/<name>/SKILL.md` to `skills/<name>/SKILL.md` so they're actually discoverable (dedicated follow-up PR) |
 | Hooks | Phase-gate and governance hooks — `pre-phase-advance`, `tdd-gate`, `methodology-compliance-check`, `terminology-drift-detector` (Chunk 20) |
 | Schemas | `sdlc-config`, `sdlc-manifest` (Chunk 21) |
 | MCP Servers | Source control, project management, knowledge management, cloud platforms, data platforms, communication (deferred — defined per product) |

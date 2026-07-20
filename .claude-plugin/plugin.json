@@ -2,21 +2,21 @@
   "name": "sdlc-artifact-factory",
   "version": "0.1.0",
   "description": "A Claude Code plugin that drives any product through its full SDLC lifecycle — Strategy → Ideate → Design → Implement → Data → Quality → Deploy → Customer Validation — producing real, reviewable, methodology-compliant artifacts at every phase.",
-  "author": "Shafi Babar",
+  "author": { "name": "Shafi Babar" },
   "license": "MIT",
   "repository": "https://github.com/shafibabar/SDLC-Artifact-Factory",
 
+  "_components_note": "This map is documentation for humans — Claude Code auto-discovers skills/, agents/, commands/*.md, and hooks/hooks.json by convention and does not read this key.",
   "components": {
     "skills": "skills/",
     "agents": "agents/",
     "commands": "commands/",
-    "hooks": "hooks/",
-    "tools": "tools/",
+    "hooks": "hooks/hooks.json",
+    "scripts": "scripts/",
     "lsp": "lsp/",
     "mcp": ".mcp.json",
     "monitors": "monitors/",
-    "bin": "bin/",
-    "scripts": "scripts/"
+    "bin": "bin/"
   },
 
   "sdlc_phases": [
@@ -36,7 +36,8 @@
     "/sdlc-next"
   ],
 
-  "agents": [
+  "_agent_roster_note": "Human-readable roster only — not a manifest key Claude Code reads. agents/*/AGENT.md is auto-discovered.",
+  "agent_roster": [
     "product-strategist",
     "requirements-analyst",
     "domain-modeler",
@@ -69,7 +70,7 @@
     "observability": "OpenTelemetry + Prometheus + Tempo + Grafana"
   },
 
-  "settings": "settings.json",
+  "_settings_file_note": "This repo's own dev settings live in settings.json, auto-applied — not a manifest key Claude Code reads.",
   "standards": "CLAUDE.md",
   "context": "sdlc-context.json"
 }
