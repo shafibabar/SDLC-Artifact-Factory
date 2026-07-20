@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shafibabar/SDLC-Artifact-Factory/schemas/sdlc-manifest.schema.json",
+  "title": "SDLC Artifact Manifest",
+  "description": "Formalizes skills/artifact-manifest/SKILL.md's Output Format — the per-product manifest instance at artifacts/[product]/_manifest.json. This validates the PRODUCT MANIFEST (what was actually produced), not the master artifact-type catalog (the plugin-wide, product-agnostic list of what CAN be produced, which the skill maintains as a prose table and does not have a separate JSON representation — see artifact-manifest's 'Two Registries' section). Written and maintained by the post-artifact-created hook.",
+  "type": "object",
+  "required": ["_meta", "product", "product_slug", "artifacts"],
+  "additionalProperties": false,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "required": ["purpose", "how_to_use", "last_updated", "updated_by"],
+      "additionalProperties": false,
+      "properties": {
+        "purpose": { "type": "string", "minLength": 1 },
+        "how_to_use": { "type": "string", "minLength": 1 },
+        "last_updated": { "type": "string", "format": "date" },
+        "updated_by": { "type": "string", "minLength": 1 }
+      }
+    },
+    "product": { "type": "string", "minLength": 1 },
+    "product_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/artifactEntry" }
+    }
+  },
+  "$defs": {
+    "artifactEntry": {
+      "type": "object",
+      "required": ["id", "type", "path", "version", "status", "phase", "producing_agent", "traces_to", "created", "updated"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "Stable per the ID scheme in artifact-manifest: <product-slug>-<artifact-type>-<sequence>, e.g. dataestate-adr-001. Assigned once at creation, never changed — even across a rename, a path move, or a supersession. Pattern is intentionally the general slug shape rather than a rigid 3-segment regex, since a revision suffix (e.g. '-r2', per the skill's own worked example) is a legitimate extension of the base ID."
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "Matches a row in the master artifact-type catalog (skills/artifact-manifest/SKILL.md). Not a closed enum here — the catalog is described as extended by new skills over time, so this schema does not hardcode the ~21-row representative cross-section as an exhaustive list."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Current file (or directory, for source-tree artifacts) path, relative to repo root. Must resolve to a real file/dir per the Quality Criteria's 'Manifest matches filesystem' check — this schema validates shape only, not filesystem existence."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "description": "Semantic version, matching the artifact's own version frontmatter field."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "approved", "superseded"]
+        },
+        "superseded_by": {
+          "type": "string",
+          "description": "The ID of the artifact that replaced this one. Present only when status is superseded, but not schema-enforced as conditionally required — an agent may mark an entry superseded without a replacement yet existing (e.g. a deprecated artifact being retired outright)."
+        },
+        "phase": {
+          "type": "string",
+          "enum": ["strategy", "ideate", "design", "implement", "data", "quality", "deploy", "customer-validation", "cross-cutting"]
+        },
+        "producing_agent": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "The agent that produced this artifact, or 'any agent' for cross-cutting types like risk-register entries any agent may write."
+        },
+        "traces_to": {
+          "type": "object",
+          "description": "CLAUDE.md's Artifact Standards traceability requirement, made concrete. An artifact with no traces_to is an orphan (see artifact-manifest's Anti-Patterns).",
+          "required": ["kind", "ref"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["requirement", "decision", "domain-event"]
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Must resolve to an actual requirement/story ID, a decision ID in sdlc-context.json's decisions array, or a named Domain Event — never a vague placeholder like 'requirements' (see Anti-Patterns: Traceability theater)."
+            }
+          }
+        },
+        "created": { "type": "string", "format": "date" },
+        "updated": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}

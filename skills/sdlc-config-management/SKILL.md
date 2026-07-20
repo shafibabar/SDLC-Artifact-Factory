@@ -175,4 +175,4 @@ This skill's output is a machine-readable JSON file consumed by every agent and 
 }
 ```
 
-Stored at the product's root config path referenced by `settings.json → env` conventions; formalized as `schemas/sdlc-config.schema.json` once built (see `settings.json → env.SDLC_CONFIG_SCHEMA`). Until then, this skill is the standard the schema will encode machine-readably.
+Stored at the product's root config path referenced by `settings.json → env` conventions; formalized machine-readably as `schemas/sdlc-config.schema.json` (see `settings.json → env.SDLC_CONFIG_SCHEMA`). The schema enforces override-only shape (no restated defaults pass validation as new required fields — everything but `_meta`/`product`/`product_slug` is optional) and the field-level constraints described above. Note for any validator: JSON Schema's `format: date` is annotation-only unless the validator explicitly enables format assertion (e.g. `jsonschema`'s `FormatChecker`) — a schema-conformant validator that skips this silently accepts malformed dates.

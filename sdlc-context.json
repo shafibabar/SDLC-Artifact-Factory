@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-20",
-    "updated_by": "Skills flattened from domain-nested to flat skills/<name>/SKILL.md, resolving Q001 (D016). All 136 skills now live-verified discoverable, matching agents (D013), commands, and hooks (D012/D014). Only schemas (Chunk 21) remain in the original build plan."
+    "updated_by": "Chunk 21 — schemas/sdlc-config.schema.json and schemas/sdlc-manifest.schema.json complete (D017), validated against the real jsonschema library, not just written. Every item in the original build_checklist is now complete except Chunk 22 (ai-ml-architect, deferred until a product needs ML)."
   },
 
   "project": {
@@ -540,8 +540,8 @@
     {
       "chunk": 21,
       "title": "Schemas (sdlc-config, sdlc-manifest)",
-      "status": "pending",
-      "deliverables": ["schemas/sdlc-config.schema.json", "schemas/sdlc-manifest.schema.json"]
+      "status": "complete",
+      "deliverables": ["schemas/sdlc-config.schema.json — validated against skills/sdlc-config-management's worked example plus 6 negative test cases", "schemas/sdlc-manifest.schema.json — validated against skills/artifact-manifest's worked example plus 9 negative test cases, using the real jsonschema library, not just written and assumed correct"]
     },
     {
       "chunk": 22,
@@ -662,6 +662,13 @@
       "decision": "All 136 skills restructured from skills/<domain>/<name>/SKILL.md to flat skills/<name>/SKILL.md, resolving Q001. Zero name collisions across the former 15 domains (verified before moving — no renames needed). Domain grouping preserved only as a logical tag in this file's skill_domains array (each entry's path field now explicitly notes it is not a real filesystem path) and in each skill's own phase/tags frontmatter — not as a directory structure.",
       "rationale": "The domain-nested structure was confirmed empirically (Chunk 19 testing) to be undiscoverable by Claude Code — the exact same class of bug as the agents/<role>/AGENT.md issue (D013), just affecting ~10x more files. Fixed as its own dedicated PR per explicit direction, after Chunks 19 and 20 shipped, rather than blocking those on this larger, purely mechanical fix.",
       "alternatives_rejected": ["Keep domain subdirectories and find a manifest-level override — researched during Q001's investigation, no working override found", "Rename colliding skills to preserve some domain info in the name — unnecessary, zero collisions existed"]
+    },
+    {
+      "id": "D017",
+      "date": "2026-07-20",
+      "decision": "schemas/sdlc-config.schema.json and schemas/sdlc-manifest.schema.json (Draft 2020-12) formalize skills/sdlc-config-management and skills/artifact-manifest's already-documented Output Format shapes exactly, rather than inventing a new shape. sdlc-manifest.schema.json validates only the per-product manifest INSTANCE, not the master artifact-type catalog (which stays a prose table, extended over time — type is a free-form pattern, not a closed enum, to avoid needing a schema update on every new artifact-producing skill).",
+      "rationale": "Both governance skills already had complete, worked JSON examples in their Output Format sections from when they were written (Chunk 18) — the schema's job was to encode what was already specified, not design something new. Tested against the real jsonschema library (Draft202012Validator): both skills' exact worked examples validate cleanly, and a battery of deliberately invalid instances (missing required fields, bad enums, malformed dates/semver/slugs, unknown fields, empty traceability refs) are all correctly rejected — 15 negative cases total across both schemas.",
+      "alternatives_rejected": ["Also schema-ize the type catalog as a closed enum — rejected per the skill's own statement that the catalog is a representative cross-section extended over time; a closed enum would need updating on every new artifact-producing skill"]
     }
   ],
 
