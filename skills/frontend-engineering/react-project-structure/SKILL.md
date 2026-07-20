@@ -8,9 +8,10 @@ description: >
   and where shared UI, hooks, and the generated API client live. This is the
   skeleton every frontend is generated into. Used by the frontend-engineer during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, typescript, vite, project-structure, tree-shaking]
 ---
 
@@ -20,7 +21,7 @@ tags: [implement, frontend, react, typescript, vite, project-structure, tree-sha
 
 Every frontend in this plugin uses the same feature-based layout so any screen is navigable by anyone who has seen one. Code is organised by **feature** (the thing a user does), not by **type** (all components here, all hooks there) — because features are how the product grows and how work is split, and a feature-based layout keeps everything for one capability in one place.
 
-This skill produces the directory skeleton, the Vite + TypeScript + ESLint configuration, and the module-boundary rules. It implements the ux-architect's information architecture (Chunk 10) as a code structure.
+This skill produces the directory skeleton, the Vite + TypeScript + ESLint configuration, and the module-boundary rules. It implements the ux-architect's information architecture as a code structure.
 
 ---
 
@@ -56,7 +57,7 @@ estate-ui/
 ├── index.html
 ├── vite.config.ts
 ├── tsconfig.json
-├── .eslintrc.cjs
+├── eslint.config.js              # ESLint flat config (typescript-eslint + boundaries)
 ├── Dockerfile
 └── package.json
 ```
@@ -109,6 +110,7 @@ Vite is the default (fast dev server, native ES modules, excellent tree-shaking,
 
 ```ts
 // vite.config.ts
+/// <reference types="vitest/config" />   // types the `test` block below
 export default defineConfig({
   plugins: [react()],
   build: {
@@ -148,12 +150,26 @@ For the bundler to drop unused code, modules must be side-effect-free: importing
 
 ---
 
+## Anti-Patterns
+
+| Anti-pattern | Instead |
+|---|---|
+| Type-based top-level folders (`components/`, `hooks/`, `utils/` as dumping grounds) | Feature folders; type folders only *inside* a feature |
+| Importing `features/x/components/Internal` from another feature | Import the feature's `index.ts` public surface only |
+| A `shared/` module importing from `features/` | Dependencies point inward — promote or invert |
+| Hand-writing types that mirror server responses | Derive from the generated API client |
+| A barrel `index.ts` re-exporting the entire app | Barrels only at feature boundaries, exporting the deliberate public surface |
+| Loosening `tsconfig` to silence errors ("temporarily") | Fix the type; strictness is the point |
+| Editing `src/api/generated.ts` by hand | Regenerate from `openapi.yaml`; the file is build output |
+
+---
+
 ## Output Format
 
 Produces the project skeleton and configuration:
 
 ```
-vite.config.ts, tsconfig.json, .eslintrc.cjs, package.json
+vite.config.ts, tsconfig.json, eslint.config.js, package.json
 src/app/{App.tsx,providers.tsx,router.tsx}
 src/{features,shared,api,telemetry}/   (with index.ts public surfaces)
 src/main.tsx

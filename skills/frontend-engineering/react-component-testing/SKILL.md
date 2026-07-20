@@ -8,9 +8,10 @@ description: >
   asserting accessibility with jest-axe, and writing the test before the component
   (TDD). Realizes the UI acceptance criteria. Used by the frontend-engineer during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, testing, react-testing-library, msw, vitest, tdd]
 ---
 
@@ -169,6 +170,19 @@ Aim coverage at behaviour and branches (states, error paths), not a line-count n
 | Full state coverage | Every spec state + interaction tested | Happy-path-only tests |
 | a11y asserted | `jest-axe` + role queries | No accessibility assertions |
 | Test-first | Test precedes component (tdd-gate) | Tests written after, to fit the code |
+
+---
+
+## Anti-Patterns
+
+- **Mocking your own hooks/modules** — `vi.mock("./useDataAssets")` stubs out the very integration under test. Mock the network (MSW), run the real code.
+- **`getByTestId` as the default query** — bypasses the accessibility tree, so the test passes on UI a screen reader can't use. Role/label first; test-id is a documented last resort.
+- **`fireEvent` instead of `user-event`** — `fireEvent.click` dispatches one synthetic event; `userEvent.click` runs the real sequence (hover, focus, keydown, click) users actually produce.
+- **Asserting on markup** — snapshot-diffing the DOM or matching CSS classes couples tests to structure; every restyle becomes a test failure with no behaviour change.
+- **`waitFor` with an empty callback / arbitrary `setTimeout`** — sleeping until things "probably" settle makes tests slow and flaky. Await a concrete outcome: `await screen.findByText(…)`.
+- **Shared mutable fixtures** — one test mutating `sampleAssets` poisons the next. Build fixtures per test (factory functions), reset MSW handlers `afterEach`.
+- **Testing loading states by racing** — asserting the skeleton without controlling the response timing is a race. Use a delayed MSW handler (`await delay(…)`) to hold the pending state deterministically.
+- **Happy-path-only suites** — the spec's error/empty states are where user trust is won or lost; each is a required test, not an optional extra.
 
 ---
 

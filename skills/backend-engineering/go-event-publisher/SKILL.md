@@ -8,9 +8,10 @@ description: >
   publication, graceful shutdown, and partition keying by tenant. Implements the
   data-architect's event-schema-design over the outbox from go-repository-pattern.
   Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, outbox, redpanda, kafka, event-publishing, at-least-once, relay]
 ---
 
@@ -62,7 +63,7 @@ A failed drain is logged and retried on the next tick — transient broker outag
 
 ## Draining a Batch
 
-Rows are claimed with `FOR UPDATE SKIP LOCKED` so multiple relay replicas can run concurrently without publishing the same row twice. Ordering is preserved per aggregate by `occurred_at`.
+Rows are claimed with `FOR UPDATE SKIP LOCKED` so multiple relay replicas can run concurrently without publishing the same row twice. Ordering is preserved per aggregate by `occurred_at` within a batch — note that running **multiple** relay replicas trades strict cross-batch ordering for throughput (two replicas can publish adjacent batches for the same tenant concurrently). If strict per-tenant order matters more than relay throughput, run one replica; the design supports either.
 
 ```go
 func (r *OutboxRelay) drainOnce(ctx context.Context) error {
@@ -123,7 +124,7 @@ Each outbox row becomes a Redpanda record with the standard envelope (from `doma
 ```go
 func (r *OutboxRelay) toRecord(ctx context.Context, m outboxRow) *kgo.Record {
     env := Envelope{
-        EventID:     uuid.New(),
+        EventID:     m.id, // outbox row id — STABLE across re-publication, so consumer dedup recognises a replay
         EventType:   m.eventType,
         SchemaVersion: 1,
         OccurredAt:  m.occurredAt,
@@ -131,7 +132,11 @@ func (r *OutboxRelay) toRecord(ctx context.Context, m outboxRow) *kgo.Record {
         TenantID:    m.tenantID,
         Payload:     m.payload, // already-marshalled JSON from the repo
     }
-    value, _ := json.Marshal(env)
+    value, err := json.Marshal(env)
+    if err != nil {
+        // Envelope fields are all marshal-safe types; reaching here is a bug, not an event.
+        panic(fmt.Sprintf("marshal envelope for outbox row %s: %v", m.id, err))
+    }
 
     rec := &kgo.Record{
         Topic: topicFor(m.eventType),
@@ -150,9 +155,7 @@ func (r *OutboxRelay) toRecord(ctx context.Context, m outboxRow) *kgo.Record {
 
 ## Idempotent Publication
 
-The `eventId` in the envelope is the consumer's dedup key. Because the relay may re-publish on crash, the same outbox row always produces a record carrying the same logical identity from the consumer's perspective (the consumer dedups on the envelope `eventId`, which is stable per outbox row when regenerated deterministically — or the outbox row id is carried as the dedup key). Either way, redelivery is safe.
-
-> Implementation note: carry the **outbox row id** as the stable idempotency key in a header, so a re-published row is recognised as a duplicate even though the transport `eventId` may differ.
+The `eventId` in the envelope is the consumer's dedup key, so it must be **stable across re-publication**: the relay uses the outbox row id as the envelope `eventId` (see `toRecord` above). A crash after publish but before mark re-publishes the row with the *same* `eventId`, the consumer's `processed_events` insert conflicts, and the duplicate is a no-op. Generating a fresh `uuid.New()` per publish attempt would defeat dedup entirely — every replay would look like a new event.
 
 ---
 
@@ -177,6 +180,18 @@ The `eventId` in the envelope is the consumer's dedup key. Because the relay may
 | Trace continuity | Trace context injected into headers | Broken trace across the broker |
 | Graceful shutdown | Stops on ctx cancel without open tx | Relay killed mid-tx; leaked locks |
 | No business logic | Relay only ships outbox rows | Relay deciding what/whether to emit |
+| Stable dedup identity | Envelope `eventId` = outbox row id | Fresh `uuid.New()` per publish attempt |
+
+---
+
+## Anti-Patterns
+
+- **Publishing directly from the request handler** — the dual-write problem the Transactional Outbox exists to solve: a crash between DB commit and broker publish silently loses the Domain Event.
+- **Mark-then-publish** — updating `published_at` before the produce succeeds converts a crash into a *lost* event. At-least-once requires publish-then-mark, always.
+- **Fresh `eventId` per publish attempt** — makes every crash-replay look like a new event to consumers and defeats Idempotency downstream.
+- **Random or absent partition key** — scatters one tenant's events across partitions, destroying per-tenant ordering and tenant isolation in one stroke.
+- **Deleting outbox rows instead of marking them** — loses the audit trail and the ability to replay; sweep old *published* rows with a retention job instead.
+- **Business decisions in the relay** — filtering, transforming, or suppressing events at publish time. The repository decided what happened; the relay only ships it.
 
 ---
 

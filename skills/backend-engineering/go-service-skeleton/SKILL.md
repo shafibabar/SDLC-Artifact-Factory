@@ -8,9 +8,10 @@ description: >
   deterministic-lifecycle backbone the blueprint demands: no orphaned goroutines,
   no work accepted before dependencies are healthy. Used by the backend-engineer
   during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, main, lifecycle, graceful-shutdown, context, composition-root]
 ---
 
@@ -67,8 +68,13 @@ Dependencies start in order, and each startup failure aborts cleanly with wrappe
     dbURL, err := secrets.DatabaseURL()
     if err != nil { return fmt.Errorf("reading db credentials: %w", err) }
 
-    // 3. Database pool
-    pool, err := pgxpool.New(ctx, dbURL)
+    // 3. Database pool — sized deliberately, never left at defaults blindly
+    poolCfg, err := pgxpool.ParseConfig(dbURL)
+    if err != nil { return fmt.Errorf("parsing db config: %w", err) }
+    poolCfg.MaxConns = cfg.DBMaxConns             // this replica's share of Postgres max_connections
+    poolCfg.MaxConnLifetime = time.Hour           // recycle: credential rotation + connection rebalancing
+    poolCfg.MaxConnIdleTime = 5 * time.Minute
+    pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
     if err != nil { return fmt.Errorf("connecting postgres: %w", err) }
     defer pool.Close()
     if err := pool.Ping(ctx); err != nil { return fmt.Errorf("postgres ping: %w", err) }
@@ -79,6 +85,8 @@ Dependencies start in order, and each startup failure aborts cleanly with wrappe
     classify := commands.NewClassifyDataAssetHandler(repo, publisher, policy)
     router := httptransport.NewRouter(classify, /* queries, middleware ... */)
 ```
+
+**Pool sizing rule:** `MaxConns × replica count` must stay comfortably below Postgres `max_connections` (leave headroom for migrations, the relay, and operators). Too small shows up as request latency while goroutines queue for a connection (`pool.Stat().EmptyAcquireCount` climbing is the tell); too large just moves the queue into Postgres, which degrades *everyone*. Start near `4 × CPU cores of the database` divided across replicas, then tune from acquire-wait metrics — not from folklore.
 
 ---
 
@@ -132,6 +140,8 @@ When the process runs more than one long-lived component (HTTP server + event co
 - `srv.Shutdown` drains in-flight requests within a deadline before the process exits.
 - The shutdown timeout (25s) is set below Kubernetes' `terminationGracePeriodSeconds` (default 30s) so the process exits cleanly before `SIGKILL`.
 
+**Shutdown ordering is startup in reverse**, and the `defer` stack encodes it for free: `g.Wait()` returns only after every component (HTTP drain, consumer drain, relay) has stopped; then the deferred `pool.Close()` runs — no component is still using a connection — and finally the deferred telemetry shutdown flushes the last spans. Closing the pool while the consumer is mid-transaction, or flushing telemetry before components stop emitting, are the two ordering bugs this shape makes impossible.
+
 ---
 
 ## Readiness Gating
@@ -173,6 +183,18 @@ type Config struct {
 | Fail-fast startup | Dependency failures abort with wrapped error before serving | Serving traffic before dependencies are verified |
 | One exit point | `os.Exit` only in `main`; `run()` returns errors | `log.Fatal` scattered through wiring |
 | Readiness gated | Not-ready until healthy; not-ready on shutdown start | Ready reported before dependencies verified |
+| Pool sized deliberately | `MaxConns`/lifetimes set from capacity math | Default pool settings shipped unexamined |
+
+---
+
+## Anti-Patterns
+
+- **`log.Fatal` in helpers** — kills the process mid-wiring, skipping every `defer`: no HTTP drain, no pool close, no telemetry flush. Errors bubble to `run()`; `os.Exit` lives in `main` alone.
+- **Un-supervised `go func()` components** — a consumer started with a bare `go` outside the errgroup keeps running (or dies silently) while the rest of the process shuts down.
+- **Serving before dependencies are verified** — reporting ready, taking traffic, then discovering Postgres is unreachable turns a slow startup into an error storm.
+- **Shutdown timeout ≥ pod grace period** — a 30s drain against a 30s grace period means Kubernetes `SIGKILL`s mid-drain; the deadline must leave margin.
+- **Closing the pool before components stop** — `pool.Close()` placed anywhere other than after `g.Wait()` yanks connections out from under an in-flight transaction.
+- **Constructing dependencies inside layers** — a repository creating its own pool, or a handler building its own client, bypasses the composition root and makes lifecycle untrackable. All wiring happens in `main`.
 
 ---
 

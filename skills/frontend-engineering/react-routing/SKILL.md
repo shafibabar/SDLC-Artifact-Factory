@@ -6,10 +6,11 @@ description: >
   with lazy + Suspense, URL as the source of truth for filters/sort/pagination,
   typed route params, protected routes gated on auth/permissions, data loading
   patterns, and not-found/error route handling. Implements the IA's URL structure
-  from Chunk 10. Used by the frontend-engineer during Implement.
-version: 1.0.0
+  from the ux-architect. Used by the frontend-engineer during Implement.
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, routing, code-splitting, url-state, protected-routes]
 ---
 
@@ -17,7 +18,7 @@ tags: [implement, frontend, react, routing, code-splitting, url-state, protected
 
 ## Purpose
 
-Routing turns the ux-architect's information architecture into navigable URLs. The route tree mirrors the IA hierarchy (Chunk 10), and the URL structure follows the IA's defined patterns exactly — so a URL is meaningful, shareable, and bookmarkable. Routing is also the natural seam for code-splitting: each route loads only the code it needs.
+Routing turns the ux-architect's information architecture into navigable URLs. The route tree mirrors the IA hierarchy, and the URL structure follows the IA's defined patterns exactly — so a URL is meaningful, shareable, and bookmarkable. Routing is also the natural seam for code-splitting: each route loads only the code it needs.
 
 This skill implements the IA's URL structure; the default router is React Router (declarative, mature). The IA is the contract — routes are not invented here.
 
@@ -28,7 +29,7 @@ This skill implements the IA's URL structure; the default router is React Router
 The IA hierarchy maps one-to-one to the route tree, using the IA's URL patterns.
 
 ```tsx
-// src/app/router.tsx — mirrors the information-architecture from Chunk 10
+// src/app/router.tsx — mirrors the ux-architect’s information-architecture
 const router = createBrowserRouter([
   {
     path: "/",
@@ -60,14 +61,19 @@ URL segments use the Ubiquitous Language plural nouns from the IA (`data-assets`
 
 Each page is lazy-loaded so the initial bundle contains only the shell and the landing route — everything else loads on navigation. This is the highest-leverage code-splitting boundary (detail in `react-performance-optimization`).
 
-```tsx
-const DataAssetListPage = lazy(() => import("@/features/data-assets/DataAssetListPage"));
+With a data router, prefer the route object's own `lazy` property over `React.lazy` — the router loads the chunk during navigation (alongside data), so there's no per-page Suspense flash:
 
-// Wrap routed content in Suspense with a sensible fallback:
-<Suspense fallback={<PageSkeleton />}>
-  <Outlet />
-</Suspense>
+```tsx
+{
+  path: "data-assets",
+  lazy: async () => {
+    const { DataAssetListPage } = await import("@/features/data-assets/DataAssetListPage");
+    return { Component: DataAssetListPage };
+  },
+},
 ```
+
+`React.lazy` + `<Suspense fallback={<PageSkeleton />}>` remains the tool for splitting heavy **components within** a page (an on-demand panel, a chart bundle).
 
 Heavy, rarely-first-seen features — notably the **estate graph** (a large WebGL dependency, see `react-graph-visualization`) — are always their own chunk, so the graph library never bloats the initial load of users who go straight to a dashboard.
 
@@ -78,14 +84,21 @@ Heavy, rarely-first-seen features — notably the **estate graph** (a large WebG
 Filters, sort, pagination, and the active selection live in the URL (search params), not component state — so a filtered view is shareable and survives refresh (the decision recorded in `react-state-management`). The IA defines these query params (`?sensitivity=Confidential&sort=name`).
 
 ```tsx
+const SENSITIVITY_LEVELS = ["Public", "Internal", "Confidential", "Restricted"] as const;
+
+// Validated parse — a bad or stale URL value becomes a safe default, never a garbage query key.
+function parseSensitivity(v: string | null): SensitivityLevel | null {
+  return SENSITIVITY_LEVELS.find((l) => l === v) ?? null;
+}
+
 function DataAssetListPage() {
   const [params, setParams] = useSearchParams();
   const filter: AssetFilter = {
-    sensitivity: params.get("sensitivity") as SensitivityLevel | null,
+    sensitivity: parseSensitivity(params.get("sensitivity")),   // validated, not cast
     sort: params.get("sort") ?? "name",
-    page: Number(params.get("page") ?? "1"),
+    page: Math.max(1, Number(params.get("page")) || 1),         // NaN-proof
   };
-  const { data, isLoading, error } = useDataAssets(filter); // URL → query key → fetch
+  const { data, isPending, error } = useDataAssets(filter); // URL → query key → fetch
   // changing a filter updates the URL, which re-derives the query:
   const onFilter = (s: SensitivityLevel) => setParams((p) => { p.set("sensitivity", s); return p; });
   // …
@@ -93,6 +106,8 @@ function DataAssetListPage() {
 ```
 
 The URL flows into the TanStack Query key, so navigation and data stay in sync automatically.
+
+**Round-trip rule:** every param has a typed parse (unknown value → default) and a serialiser that writes only canonical values, so `parse(serialise(x)) === x`. Search params are as untrusted as route params — a user can type anything into the address bar.
 
 ---
 
@@ -130,6 +145,16 @@ This is a **UX** gate, not a security control — the backend's ABAC is the real
 
 ---
 
+## Focus and Scroll on Navigation
+
+An SPA route change reloads nothing, so the browser gives no cue that the page changed — a screen-reader user hears silence and keyboard focus is stranded on the old page's DOM. On navigation:
+
+- **Move focus** to the new page's `<h1 tabIndex={-1}>` (or announce the new title via a live region) so assistive tech knows where it is — see `react-accessibility`.
+- **Update `document.title`** to the new page's title (it's the first thing a screen reader announces).
+- **Restore scroll** with the data router's `<ScrollRestoration />` so back/forward behaves like real browser navigation instead of landing mid-page.
+
+---
+
 ## Not-Found and Error Handling
 
 - A catch-all `path: "*"` renders a friendly 404 (with navigation back into the IA).
@@ -148,6 +173,21 @@ This is a **UX** gate, not a security control — the backend's ABAC is the real
 | Typed params | Params parsed/validated; invalid → 404 | Unvalidated `as` casts on params |
 | Protected routes | Auth + permission gates with redirect/forbidden | Sensitive routes reachable unauthenticated |
 | Graceful 404/errors | Catch-all 404; per-subtree errorElement | Blank screen / full-app crash on bad route |
+| Navigation a11y | Focus moved + title updated on route change | Silent SPA navigation; focus stranded |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Instead |
+|---|---|
+| Inventing routes/URLs not in the IA | The IA is the contract — change the IA first |
+| `as SensitivityLevel` casts on params/search params | Validated parse with a safe default |
+| Duplicating URL state into component state ("hydrate on mount") | Read the URL directly; it *is* the state |
+| Auth gate in the frontend treated as security | It's UX only — the backend's ABAC enforces |
+| One app-level error boundary for all routes | `errorElement` per subtree; degrade the region |
+| `useEffect` + `navigate()` for redirects reachable in render | `<Navigate replace />` during render |
+| Deep-linking breaks (blank page on refresh of a nested route) | Test every route by direct URL entry, not just in-app clicks |
 
 ---
 

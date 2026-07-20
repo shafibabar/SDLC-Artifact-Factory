@@ -8,9 +8,10 @@ description: >
   headers, and keeping secrets out of the bundle. Produces the deployable frontend
   image. Used by the frontend-engineer during Implement; deployment is the
   platform-engineer's domain.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, docker, multi-stage, nginx, csp, static, security]
 ---
 
@@ -160,6 +161,19 @@ This is the frontend echo of the backend's secrets rule (`secrets-management`): 
 | CSP + headers | Strict CSP and security headers set | No CSP; XSS surface wide open |
 | No secrets | Only public config in the bundle/image | API keys/tokens in the build |
 | SPA fallback | `try_files … /index.html` | Deep-link refresh 404s |
+
+---
+
+## Anti-Patterns
+
+- **`npm run dev` in a container as "production"** — the Vite dev server ships the full toolchain, disables optimisations, and is not hardened. Production is built assets behind a static server, always.
+- **Single-stage image** — Node, node_modules, and source shipped alongside the output: hundreds of MB of attack surface serving three folders of static files.
+- **`VITE_API_URL` baked at build** — one environment per image; every config change is a rebuild. Build once, inject `window.__APP_CONFIG__` at container start.
+- **Caching `index.html`** — the one file that must always be fresh. A cached `index.html` references chunk hashes that no longer exist after a deploy: a white-screen for every returning user.
+- **Uncached hashed assets** — the inverse failure: refetching immutable `/assets/*.js` on every visit wastes the content-hash contract.
+- **`unsafe-inline` / `unsafe-eval` in the CSP** — added "to make it work," they neutralise CSP's XSS defence. Fix the inline script instead (Vite emits none by default).
+- **Public sourcemaps** — exposing the full readable source to every visitor. Build them, upload them privately for symbolication, never serve them.
+- **A "frontend secret"** — any credential in the bundle, the image, or `import.meta.env` is published to every browser. There is no such thing; remove it and redesign the flow.
 
 ---
 

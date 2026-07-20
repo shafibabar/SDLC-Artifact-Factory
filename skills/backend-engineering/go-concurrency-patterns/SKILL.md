@@ -8,9 +8,10 @@ description: >
   propagation and cancellation, worker pools, and fan-out/fan-in. The standard
   this plugin holds for any code that spawns goroutines. Used by the
   backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, concurrency, goroutine, channel, errgroup, worker-pool, context]
 ---
 
@@ -53,7 +54,6 @@ func fanOutProcess(ctx context.Context, items []Item, concurrency int, work func
     g, gctx := errgroup.WithContext(ctx)
     g.SetLimit(concurrency)              // bounded — never unbounded fan-out
     for _, it := range items {
-        it := it                          // capture loop var (pre-1.22 safety; explicit is clearer regardless)
         g.Go(func() error {
             return work(gctx, it)         // gctx cancellation stops all on first error
         })
@@ -111,7 +111,7 @@ A worker pool throttles concurrent work to a fixed number of workers draining a 
 ```go
 func runPool(ctx context.Context, workers int, jobs <-chan Job, handle func(context.Context, Job) error) error {
     g, gctx := errgroup.WithContext(ctx)
-    for i := 0; i < workers; i++ {
+    for range workers {
         g.Go(func() error {
             for {
                 select {
@@ -146,16 +146,16 @@ func fanIn[T any](ctx context.Context, sources ...<-chan T) <-chan T {
     var wg sync.WaitGroup
     wg.Add(len(sources))
     for _, src := range sources {
-        go func(c <-chan T) {
+        go func() {
             defer wg.Done()
-            for v := range c {
+            for v := range src {
                 select {
                 case out <- v:
                 case <-ctx.Done():
                     return
                 }
             }
-        }(src)
+        }()
     }
     go func() { wg.Wait(); close(out) }() // close exactly once, after all producers done
     return out
@@ -185,6 +185,18 @@ func fanIn[T any](ctx context.Context, sources ...<-chan T) <-chan T {
 | Channel discipline | Sender closes once; buffers are deliberate bounds | Receiver closes; arbitrary huge buffers |
 | Race-free | `go test -race` clean | Data races on shared state |
 | Errors propagate | Via errgroup/result channel | Swallowed or logged-and-dropped |
+
+---
+
+## Anti-Patterns
+
+- **Orphan goroutines** — `go func(){ … }()` with no owner, no exit signal, no error path. The canonical slow leak.
+- **Goroutine-per-item fan-out** — spawning one goroutine per element of an unbounded input (one per event, one per file). Always cap with `g.SetLimit` or a fixed worker count.
+- **`tt := tt` / `it := it` loop-variable copies** — dead weight on Go 1.22+, where loop variables are per-iteration. Their presence signals an unported pre-1.22 habit.
+- **Holding a mutex across I/O or a channel operation** — serialises the whole system on the slowest call and invites deadlock. Lock, touch memory, unlock.
+- **`time.Sleep` as synchronisation** — sleeping "long enough" in production code or tests races by construction. Synchronise on a channel, a `WaitGroup`, or a context.
+- **Closing a channel from the receiver** (or from multiple goroutines) — panics on the next send. The sender closes, exactly once.
+- **Huge "safety" buffers** — `make(chan T, 100000)` hides backpressure until memory runs out. A buffer is a measured bound, not a pressure-relief valve.
 
 ---
 

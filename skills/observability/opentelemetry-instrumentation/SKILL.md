@@ -8,9 +8,10 @@ description: >
   (counters, gauges, histograms with explicit buckets). This is the in-code
   instrumentation half of the observability domain. Used by the backend-engineer
   during Implement. Exports are operated by the platform-engineer.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, observability, opentelemetry, otel, metrics, red, use, instrumentation]
 ---
 
@@ -37,7 +38,7 @@ func Init(ctx context.Context, cfg Config) (shutdown func(context.Context) error
         resource.WithAttributes(
             semconv.ServiceName(cfg.ServiceName),
             semconv.ServiceVersion(cfg.Version),
-            semconv.DeploymentEnvironment(cfg.Env),
+            semconv.DeploymentEnvironmentName(cfg.Env), // deployment.environment.name in current semconv
         ),
     )
     if err != nil {
@@ -129,9 +130,9 @@ For every request-handling interface (HTTP endpoint, event consumer), emit the t
 
 ```go
 attrs := metric.WithAttributes(
-    attribute.String("http.route", route),        // low cardinality: route pattern, not raw path
-    attribute.String("http.method", r.Method),
-    attribute.Int("http.status_code", status),     // Errors derived from status class
+    semconv.HTTPRoute(route),                        // low cardinality: route pattern, not raw path
+    semconv.HTTPRequestMethodKey.String(r.Method),
+    semconv.HTTPResponseStatusCode(status),          // Errors derived from status class
 )
 m.ReqCount.Add(ctx, 1, attrs)
 m.ReqDuration.Record(ctx, elapsed.Seconds(), attrs)
@@ -175,6 +176,8 @@ Every metric attribute multiplies the time series. **Labels must be low-cardinal
 
 A single unbounded label (e.g., `asset_id`) can create millions of series and take down the metrics backend. This is the most common, most damaging instrumentation mistake.
 
+**Exemplars bridge the two worlds.** The SDK can attach the current trace id to histogram samples recorded inside a sampled span (exemplar support in the OTel Go SDK, surfaced in Prometheus/Grafana as dots on the latency heatmap). The p99 spike on `http.server.duration` then links directly to an example trace of a slow `ClassifyDataAsset` request — aggregate metrics answer *whether*, the linked trace answers *why* — without ever putting a high-cardinality label on the metric.
+
 ---
 
 ## Quality Criteria
@@ -188,6 +191,18 @@ A single unbounded label (e.g., `asset_id`) can create millions of series and ta
 | USE on resources | Pools/queues emit utilisation/saturation/errors | Saturation invisible until outage |
 | Low cardinality | Bounded labels only | UUID/user/path labels exploding series |
 | Propagation | W3C TraceContext + Baggage set | Broken context across services/broker |
+
+---
+
+## Anti-Patterns
+
+- **Unbounded metric labels** — a UUID, raw path, or email as an attribute mints a series per value. The metrics backend dies before the service does. High-cardinality detail goes on spans; exemplars provide the link.
+- **Instrument-type mismatch** — a Gauge for "events processed" loses increments between scrapes; a Counter for "in-flight requests" can never go down. The semantics of the measurement pick the instrument.
+- **Default buckets on latency histograms** — a service with a 20ms p99 measured in buckets built for seconds reports p99 ≈ the first bucket boundary, forever. Buckets bracket the SLO.
+- **Synchronous export on the request path** — a simple span processor or per-request flush turns collector latency into user latency. Batch, always.
+- **Creating instruments per request** — `meter.Int64Counter(...)` inside a handler re-registers on every call. Instruments are created once, at wiring time, and reused.
+- **Skipping the shutdown flush** — without calling the provider shutdown on exit, the last batch of spans — often the ones showing why the pod died — is dropped.
+- **Per-tenant metric labels** — `tenant_id` as a label is unbounded growth by onboarding. Use tenant *tier* if segmentation is needed; per-tenant detail lives in traces and logs.
 
 ---
 

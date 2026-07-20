@@ -8,9 +8,10 @@ description: >
   the application layer coordinates but never contains domain rules. Implements
   the enterprise-architect's CQRS design. Used by the backend-engineer during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, cqrs, application-layer, command-handler, query-handler, abac, errgroup]
 ---
 
@@ -88,6 +89,8 @@ func (h *ClassifyDataAssetHandler) Handle(ctx context.Context, cmd ClassifyDataA
 ```
 
 The five steps are always in this order: **idempotency → load → authorise → domain call → save**. Authorisation precedes mutation; persistence is last.
+
+Note the check-then-record shape leaves a small window where two concurrent retries both pass `Seen`. That is acceptable **only** because the repository's compare-and-swap on `version` is the backstop — the second save fails with `ErrConcurrentModification`. Where even that is too weak (e.g., non-versioned side effects), record the idempotency key inside the same transaction as the save, exactly as the consumer does with `processed_events` (see `go-event-consumer`).
 
 ---
 
@@ -180,6 +183,18 @@ Each goroutine writes to its own variable (no shared mutable state, no race); `g
 | One Aggregate per tx | Each command touches one Aggregate | Transactions spanning multiple Aggregates |
 | Idempotency | State-changing commands honour an idempotency key | Retries causing duplicate effects |
 | Framework-free | No HTTP/SQL/broker types in the application layer | `*http.Request` or pgx leaking in |
+
+---
+
+## Anti-Patterns
+
+- **The "service" that is really the domain** — sensitivity-downgrade rules, invariant checks, or state math written in the handler. The moment a rule lives here, the Aggregate can no longer guarantee it.
+- **Authorise-after-mutate** — calling `asset.Classify` and only then evaluating policy means a forbidden caller already changed in-memory state (and one missed early return away from persisting it).
+- **Queries through the write model** — loading Aggregates to answer a list screen drags invariant machinery and N+1 loads into a path that needed one `SELECT` from a Read Model.
+- **Transactions spanning Aggregates** — "just this once" atomically updating two Aggregates dissolves the consistency boundary; use Domain Events and eventual consistency instead.
+- **A god `Service` struct** — `DataAssetService` with twelve methods and eight dependencies. One use case, one handler, one file; dependencies stay honest.
+- **Returning `nil` on unauthenticated/unauthorised** — silently succeeding on a failed policy check is a security defect, not graceful degradation. `ErrUnauthenticated`/`ErrForbidden`, mapped at the edge.
+- **Shared mutable state across errgroup goroutines** — two goroutines appending to one slice or map in a fan-out query is a race; one destination variable per goroutine.
 
 ---
 

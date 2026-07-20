@@ -7,9 +7,10 @@ description: >
   principle (interfaces defined by the consumer, not the producer), composition
   over inheritance, and where generics belong. This is the skeleton every Go
   service is generated into. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, project-structure, clean-architecture, solid, interfaces, generics]
 ---
 
@@ -173,6 +174,18 @@ Do **not** use generics to build a `Repository[T any]` god-interface — that re
 | Small interfaces | Interfaces ≤ 3 methods, single-responsibility | Wide "manager"/"service" interfaces |
 | No junk packages | No `utils`/`common`/`helpers` | A grab-bag package with no clear owner |
 | Generics used correctly | Generics only for data-agnostic plumbing | Generic god-repository over the domain |
+
+---
+
+## Anti-Patterns
+
+- **Layer-skipping imports** — a handler reaching into `infrastructure/postgres` directly "just this once". The dependency rule has no exceptions; wiring happens only in the composition root.
+- **Producer-defined interfaces** — `postgres` declaring `DataAssetRepository` next to its implementation inverts ownership: the abstraction ends up shaped by the database, not by what the use case needs.
+- **`utils` / `common` / `helpers` packages** — a landfill that every package imports and no one owns. Each function has a real home; find it.
+- **Package-by-pattern** — `models/`, `interfaces/`, `impl/` directories scatter one concept across the tree. Package by layer and by domain concept, not by language construct.
+- **A fat `pkg/` of "shared" code between services** — sharing domain types across services couples Bounded Contexts at the source level; share contracts (OpenAPI, event schemas), not structs.
+- **Business logic in `main.go`** — the composition root wires and starts; the moment it decides anything, that decision is untestable without booting the process.
+- **`Repository[T any]`** — a generic god-repository is a wide, weak abstraction that forces every Aggregate through the same CRUD shape. One small port per Aggregate.
 
 ---
 

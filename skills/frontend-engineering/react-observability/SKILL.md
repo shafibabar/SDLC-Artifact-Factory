@@ -8,9 +8,10 @@ description: >
   that degrade gracefully, and structured client log sinks that enrich errors with
   route/state/trace id before shipping. The §3 of the frontend blueprint — UX
   quality made measurable. Used by the frontend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, observability, rum, web-vitals, opentelemetry, error-boundary]
 ---
 
@@ -36,13 +37,15 @@ Capture the three Google Core Web Vitals from real users and report them to the 
 
 ```ts
 // src/telemetry/web-vitals.ts
-import { onLCP, onINP, onCLS } from "web-vitals";
+import { onLCP, onINP, onCLS, type Metric } from "web-vitals";
 
 export function reportWebVitals(send: (m: Metric) => void) {
   onLCP(send); onINP(send); onCLS(send);   // reports each as it finalises, per real session
 }
 // send → batched POST to the RUM gateway, tagged with route, release, and connection type
 ```
+
+Delivery matters as much as measurement: LCP/INP/CLS often finalise as the page is being closed, and a plain `fetch` at that moment is dropped. Flush the batch on `visibilitychange` → `hidden` using `navigator.sendBeacon` (or `fetch` with `keepalive: true`) — otherwise the worst sessions, the ones that made users leave, are exactly the ones missing from the data.
 
 Report **per real session** (not lab averages), tagged with the route and the app release, so regressions are attributable to a deploy and a screen. These map directly to the optimisation work in `react-performance-optimization`.
 
@@ -169,6 +172,19 @@ Frontend telemetry is a prime accidental-PII leak. The rules from `privacy-desig
 | Granular boundaries | Per-route/widget/graph boundaries with clean fallback | One top-level boundary (or none); white screens |
 | Enriched log sinks | global error + rejection handlers; route/release/trace id attached | Errors lost; logs with no context |
 | Privacy-safe | No PII/secrets in any telemetry | Emails/tokens/content in spans or logs |
+
+---
+
+## Anti-Patterns
+
+- **Lab numbers as the truth** — a Lighthouse score on a developer laptop says little about a compliance officer on hotel Wi-Fi. RUM per real session is the measure; lab runs are for local iteration.
+- **`unload`-time fetch for telemetry** — the final (often worst) vitals never arrive. Flush on `visibilitychange` with `sendBeacon`/`keepalive`.
+- **One top-level error boundary** — turns a widget crash into a full-app white screen with a generic apology. Boundaries live at route/widget/graph seams.
+- **Error boundary as the only net** — boundaries catch render errors only; async errors and unhandled rejections sail past. The global `error`/`unhandledrejection` sinks are mandatory.
+- **Console.log as observability** — invisible in production, no structure, no correlation. Structured JSON to the log pipeline, with `traceId`.
+- **Severed traces** — API calls without `traceparent` mean the frontend's spans and the backend's spans describe the same request as two unrelated stories.
+- **PII in span attributes** — an email address or a document excerpt in a span attribute is a data leak into the telemetry store, which has weaker access controls than the product database. Ids and counts only.
+- **Untagged metrics** — a vital without route and release cannot be attributed to a screen or a deploy; it is a number, not a signal.
 
 ---
 

@@ -8,9 +8,10 @@ description: >
   component-level code-splitting, bundle budgets and tree-shaking, and memory-leak
   prevention (cleaning effects, listeners, timers). The critical-rendering-path
   mindset from the blueprint. Used by the frontend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, performance, memoization, virtualization, code-splitting, profiling]
 ---
 
@@ -121,11 +122,39 @@ Rules: every `addEventListener`/`setInterval`/`setTimeout`/subscription has a ma
 
 ---
 
+## Part 6 — Keeping Interactions Responsive (Concurrent Features)
+
+Some renders are inherently expensive even after memoization — re-filtering thousands of assets as the user types. React 18's concurrent features let urgent updates (the keystroke) interrupt non-urgent ones (the filtered list), so the input never janks:
+
+```tsx
+function AssetSearch({ assets }: { assets: ReadonlyArray<DataAsset> }) {
+  const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);          // lags behind during heavy renders
+  const filtered = useMemo(
+    () => assets.filter((a) => a.name.includes(deferredQuery)),
+    [assets, deferredQuery],
+  );
+  return (
+    <>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} /> {/* always instant */}
+      <AssetTable rows={filtered} />                       {/* renders at lower priority */}
+    </>
+  );
+}
+```
+
+- `useDeferredValue` — defer a **value** that drives an expensive render (filter/search results).
+- `startTransition` / `useTransition` — mark a **state update** as non-urgent (tab switch that renders a heavy panel); `isPending` drives a subtle busy indicator.
+
+These complement — not replace — virtualization and memoization: they change *scheduling*, not the amount of work. Profile first, as always.
+
+---
+
 ## Core Web Vitals Connection
 
 These techniques map directly to the user-experienced metrics tracked in `react-observability`:
 - Code-splitting + bundle budgets → **LCP** (faster first paint)
-- Re-render minimization + avoiding long tasks → **INP** (responsive interactions)
+- Re-render minimization + concurrent features + avoiding long tasks → **INP** (responsive interactions)
 - Reserved space for async content (skeletons sized to content) → **CLS** (no layout shift)
 
 Optimisation targets the metric, not a vanity number.
@@ -142,6 +171,20 @@ Optimisation targets the metric, not a vanity number.
 | Code-split | Routes + heavy components lazy-loaded; budget enforced | One giant initial bundle; no budget |
 | Leak-free | Every subscription/timer/fetch cleaned up | Orphaned listeners/timers; growing heap |
 | Vitals-oriented | Work tied to LCP/INP/CLS | Optimising numbers users don't feel |
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Instead |
+|---|---|
+| `useMemo`/`useCallback` on everything "for safety" | Memoize only what the profiler shows re-rendering wastefully |
+| Memoizing a child but passing a fresh object/array/function prop each render | Stabilise the props too, or the `memo` comparison never passes |
+| Rendering thousands of DOM rows because "it works on my machine" | Virtualize; test with production-scale data (10k assets) |
+| Fixing a slow render by lifting the work into an effect + state | Derive during render; defer with `useDeferredValue` if expensive |
+| Optimising without a before/after measurement | Profile, fix, **re-measure** — evidence or it didn't happen |
+| Shipping the graph/chart libraries in the initial bundle | Lazy-load heavy features behind their route or interaction |
+| `setInterval`/listener/subscription without cleanup | Every effect that subscribes returns a cleanup |
 
 ---
 

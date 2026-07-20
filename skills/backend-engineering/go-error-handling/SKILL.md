@@ -8,9 +8,10 @@ description: >
   panic/recover (panics only for unrecoverable states, recovered only at runtime
   boundaries). This is a cross-cutting standard every other backend skill follows.
   Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, errors, error-wrapping, errors-is, errors-as, panic, recover]
 ---
 
@@ -185,6 +186,18 @@ A `recover` anywhere other than a boundary is a smell — it usually means a pan
 | Aggregated validation | All field errors returned together | First-error-only validation |
 | Panic discipline | Panics only unrecoverable; recover only at boundaries | Panic as control flow; recover sprinkled around |
 | No sensitive data in errors | Errors carry ids/operations, not PII/secrets | PII or secrets in error strings |
+
+---
+
+## Anti-Patterns
+
+- **Log-and-continue** — `slog.Error(...)` followed by proceeding as if the call succeeded. An error is handled by returning, recovering, or a justified ignore — never by narration.
+- **Double reporting** — logging an error *and* returning it, so every layer logs the same failure and one incident produces five stack-shaped log entries. Log once, at the layer that handles it.
+- **`err == ErrNotFound`** — identity comparison breaks on the first wrap. `errors.Is` walks the chain; use it everywhere.
+- **`errors.New(err.Error())`** — flattening an error into a new string severs the chain and defeats `errors.Is`/`errors.As` downstream.
+- **Wrapping with no added context** — `fmt.Errorf("error: %w", err)` at every call site produces `error: error: error: connection reset`. Wrap where you can name the operation and its key identifier.
+- **Panic as control flow** — panicking on bad input or a down dependency, then recovering mid-stack to resume. Panics are for bugs; failures are values.
+- **Leaking infrastructure error types across boundaries** — a handler switching on `pgx.ErrNoRows` couples transport to the driver. Translate at the repository.
 
 ---
 

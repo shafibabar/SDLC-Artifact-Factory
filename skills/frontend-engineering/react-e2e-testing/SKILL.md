@@ -7,9 +7,10 @@ description: >
   against a real backend), authentication setup, accessibility scans in-flow, visual
   and cross-browser checks, and stability practices that avoid flakiness. Realizes
   the journey-level acceptance criteria. Used by the frontend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, e2e, playwright, user-journey, testing]
 ---
 
@@ -150,6 +151,19 @@ Flaky e2e tests are worse than none (they erode trust). Practices:
 | Fast auth | Reused storage state; test-only tokens | UI login per test; production creds |
 | a11y in-flow | axe scans at journey checkpoints | No in-flow accessibility checks |
 | Stable | Auto-waiting; isolated; no sleeps; no retry-to-green | `waitForTimeout`; order-dependent; flaky |
+
+---
+
+## Anti-Patterns
+
+- **The inverted pyramid** — hundreds of e2e tests re-checking what component tests already prove. Every permutation added to e2e slows the suite and multiplies flake surface; edge cases live below.
+- **`page.waitForTimeout(3000)`** — a sleep is a guess. It fails on slow CI and wastes time on fast machines. Await a visible outcome; Playwright's auto-waiting does the rest.
+- **CSS/XPath selector archaeology** — `.MuiButton-root:nth-child(3)` breaks on every restyle and says nothing about the user. Role/label locators survive refactors and verify accessibility.
+- **UI login in every test** — multiplies runtime and couples every journey to the auth UI. One authenticated `storageState`, reused; the login flow itself gets exactly one dedicated test.
+- **Order-dependent tests** — test B relying on data test A created serialises the suite and makes failures cascade. Each test seeds and cleans its own world.
+- **Retry-to-green** — configuring retries to bury flakiness. A test that passes on attempt two has a bug — in the test or the app — and it's hiding.
+- **Live third-party dependencies** — journeys hitting a real Google Drive or S3 fail on their weather, not yours. Mock external edges; reserve real integration for the contract-owned smoke suite.
+- **Asserting on network internals** — `waitForResponse` + JSON body assertions turn an e2e test into a worse contract test. Assert what the user sees; contracts are verified by Consumer-Driven Contract tests.
 
 ---
 

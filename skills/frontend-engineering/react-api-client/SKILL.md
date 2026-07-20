@@ -8,9 +8,10 @@ description: >
   and keeps the frontend and backend in lockstep on one source of truth. The
   client is consumed by the TanStack Query hooks. Used by the frontend-engineer
   during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: frontend-engineer
+created: 2026-06-25
 tags: [implement, frontend, react, openapi, typescript, fetch, jwt, tracing, api-client]
 ---
 
@@ -83,16 +84,18 @@ export const api = {
     return data;                                             // fully typed DataAsset[]
   },
 
-  classifyDataAsset: async (id: string, level: SensitivityLevel) => {
+  classifyDataAsset: async (id: string, level: SensitivityLevel, idempotencyKey: string) => {
     const { error } = await raw.PATCH("/v1/data-assets/{id}/classification", {
       params: { path: { id } },
       body: { sensitivityLevel: level },                     // shape checked against the contract
-      headers: { "Idempotency-Key": crypto.randomUUID() },   // backend honours this (go-service-layer)
+      headers: { "Idempotency-Key": idempotencyKey },        // backend honours this (go-service-layer)
     });
     if (error) throw toAppError(error);
   },
 };
 ```
+
+The `Idempotency-Key` is **passed in, not generated here**: the mutation hook generates it once per user intent (e.g. `useRef(crypto.randomUUID())` scoped to the mutation) so that a network retry of the same click reuses the same key. Generating a fresh UUID inside the client function would give every retry a new key — defeating the entire mechanism.
 
 ---
 
@@ -154,6 +157,19 @@ Every read forwards an `AbortSignal` from TanStack Query (`react-state-managemen
 | Trace propagated | `traceparent` on every request | Broken trace at the browser boundary |
 | Typed errors | Envelope → discriminated `AppError` | Parsing error strings; `any` errors |
 | Cancellation | `AbortSignal` forwarded on reads | Uncancellable requests racing |
+
+---
+
+## Anti-Patterns
+
+- **Hand-written request/response types** — the moment a shape is typed by hand it can drift from the contract silently. Every shape comes from `generated.ts`.
+- **Editing `generated.ts`** — regeneration erases the edit; the CI diff check exists precisely to catch this. Extend via wrapper functions, never the generated file.
+- **JWT in `localStorage`/`sessionStorage`** — readable by any injected script; the classic XSS exfiltration target. In-memory store + httpOnly refresh cookie only.
+- **Per-callsite `fetch`** — scattered calls each reinvent auth, tracing, and error mapping, and inevitably one forgets. All traffic goes through the one wrapper.
+- **Fresh `Idempotency-Key` per retry** — a new UUID on each attempt makes every retry look like a new request; the key must be stable across retries of one user intent.
+- **Parsing error message strings** — `if (message.includes("forbidden"))` breaks on the first copy change. Switch on the typed `code` union.
+- **Cancelling mutations** — aborting a PATCH after the server processed it leaves the UI believing the write didn't happen. Reads cancel; writes settle.
+- **Per-call 401 handling** — token refresh/redirect logic duplicated in handlers races itself (two 401s → two refreshes). One central interceptor, one in-flight refresh.
 
 ---
 

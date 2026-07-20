@@ -8,9 +8,10 @@ description: >
   the context-value key pattern, and keeping each middleware single-purpose.
   Composes security-implementation and observability instrumentation. Used by the
   backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, middleware, chi, recover, telemetry, jwt, rate-limit]
 ---
 
@@ -94,22 +95,26 @@ Starts the server span, records the three RED signals (Rate, Errors, Duration) p
 ```go
 func (m Middleware) Telemetry(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        route := chi.RouteContext(r.Context()).RoutePattern() // low-cardinality label
-        ctx, span := m.tracer.Start(r.Context(), r.Method+" "+route)
+        // chi resolves the route inside next.ServeHTTP — RoutePattern() is empty before it.
+        // Start the span with a provisional name; finalise name + attrs after routing.
+        ctx, span := m.tracer.Start(r.Context(), r.Method)
         defer span.End()
 
         rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
         start := time.Now()
         next.ServeHTTP(rec, r.WithContext(ctx))
 
+        route := chi.RouteContext(r.Context()).RoutePattern() // now populated; low-cardinality label
+        span.SetName(r.Method + " " + route)
+
         attrs := metric.WithAttributes(
-            attribute.String("http.route", route),
-            attribute.String("http.method", r.Method),
-            attribute.Int("http.status_code", rec.status),
+            semconv.HTTPRoute(route),                       // semconv constants, not hand-typed keys
+            semconv.HTTPRequestMethodKey.String(r.Method),
+            semconv.HTTPResponseStatusCode(rec.status),
         )
         m.reqCount.Add(ctx, 1, attrs)                                  // Rate (+ Errors via status)
         m.reqDuration.Record(ctx, time.Since(start).Seconds(), attrs)  // Duration (histogram)
-        span.SetAttributes(attribute.Int("http.status_code", rec.status))
+        span.SetAttributes(semconv.HTTPResponseStatusCode(rec.status))
     })
 }
 ```
@@ -132,8 +137,8 @@ func (m Middleware) Authenticate(next http.Handler) http.Handler {
         }
         ctx := context.WithValue(r.Context(), ctxKeyToken, sub)
         ctx = context.WithValue(ctx, ctxKeyTenant, sub.TenantID)
-        // bind identity to the log/span for the rest of the request
-        slog.SetDefault(slog.Default()) // logger derives attrs from ctx; see structured-logging-design
+        // Identity travels in ctx; the ctx-aware slog.Handler adds subject/tenant to every
+        // downstream log line automatically — see structured-logging-design.
         next.ServeHTTP(w, r.WithContext(ctx))
     })
 }
@@ -150,7 +155,7 @@ Per-user token-bucket using `golang.org/x/time/rate` (detail in `security-implem
 ```go
 func (m Middleware) RateLimit(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        sub, _ := domain.SubjectFromContext(r.Context())
+        sub, _ := domain.SubjectFromContext(r.Context()) // always present: RateLimit is mounted inside Authenticate
         if !m.limiter.Allow(sub.ID.String()) {
             w.Header().Set("Retry-After", "1")
             writeError(w, r, http.StatusTooManyRequests, "RATE_LIMIT_EXCEEDED", "too many requests")
@@ -182,6 +187,18 @@ func (m Middleware) RateLimit(next http.Handler) http.Handler {
 | Low cardinality | Route pattern as label | Raw path/UUID as a metric label |
 | Single purpose | Each middleware does one thing | A "kitchen-sink" middleware |
 | Probes unauthenticated | Health routes outside the auth group | Probes requiring a JWT |
+
+---
+
+## Anti-Patterns
+
+- **Kitchen-sink middleware** — one function doing auth, logging, and metrics. Impossible to test, reorder, or reuse; each concern gets its own `func(http.Handler) http.Handler`.
+- **String context keys** — `context.WithValue(ctx, "tenant", …)` collides silently across packages and lets any import read or overwrite the value. Unexported key types only.
+- **Reading `RoutePattern()` before `next.ServeHTTP`** — chi resolves the route inside the handler chain; the pattern is empty until routing completes. Capture it after, or every metric lands on an empty route.
+- **Raw URL path as a span name or metric label** — `/v1/data-assets/6f9a…/classification` mints a new series per UUID. Cardinality explosions take down the metrics backend, not the service.
+- **Rate limiting before authentication** — the limiter key falls back to IP, punishing everyone behind one NAT and leaving per-user abuse uncapped.
+- **A second `recover` inside handlers** — hides bugs from the boundary recoverer and its panic telemetry. One recoverer per chain.
+- **Mutating global state per request** (e.g., `slog.SetDefault` in a middleware) — process-wide side effects from request scope race by definition.
 
 ---
 

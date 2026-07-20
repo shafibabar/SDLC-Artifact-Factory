@@ -7,9 +7,10 @@ description: >
   generated-vs-handwritten boundary, validating requests against the spec,
   regeneration in CI, and keeping the contract (owned by the enterprise-architect)
   as the single source of truth. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, openapi, codegen, oapi-codegen, contract-first, chi]
 ---
 
@@ -132,6 +133,17 @@ The same spec generates **typed clients** for internal consumers and for Consume
 | Spec validation | Requests validated against the OpenAPI schema | Schema constraints re-implemented by hand or skipped |
 | CI freshness check | `go generate` + `git diff --exit-code` in CI | Generated code allowed to drift from the spec |
 | Single source of truth | One spec drives server + clients + contract tests | Divergent hand-written client/server shapes |
+
+---
+
+## Anti-Patterns
+
+- **Editing generated files** — the fix evaporates on the next `go generate`, and until then the committed code lies about what the spec produces. Change the spec or the config, then regenerate.
+- **Code-first "contract"** — writing handlers, then annotating or reverse-engineering a spec from them. The contract becomes a description of accidents rather than a designed interface.
+- **Bending the spec to fit the implementation** — the contract is the enterprise-architect's artifact; if it's wrong, it changes upstream with review, never by a quiet local edit to unblock a build.
+- **Restating spec constraints by hand** — re-implementing enum/format/required checks in Go duplicates the schema and guarantees drift; the spec validator middleware enforces them from the source.
+- **Bypassing the strict interface** — grabbing `http.ResponseWriter` inside a strict handler to write an ad-hoc response reintroduces the untyped-status bugs strict mode exists to eliminate.
+- **Generated code in `.gitignore`** — hiding generation from review breaks the CI freshness check and makes builds depend on the generator's presence. Commit the generated file.
 
 ---
 

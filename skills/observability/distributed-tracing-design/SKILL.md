@@ -7,9 +7,10 @@ description: >
   the Redpanda broker (so a trace follows an event through the pipeline), span
   events, and sampling strategy. Tracing is how a request is followed end-to-end
   across service and async boundaries. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, observability, tracing, opentelemetry, spans, context-propagation, sampling]
 ---
 
@@ -77,7 +78,7 @@ The detail that must **not** go on metrics (UUIDs, ids) belongs on spans — a t
 
 | Attribute type | Examples |
 |---|---|
-| Semantic conventions | `http.route`, `http.status_code`, `db.system`, `messaging.system` |
+| Semantic conventions | `http.route`, `http.response.status_code`, `db.system`, `messaging.system` (use the `semconv` package constants, not hand-typed strings) |
 | Domain attributes | `data_asset.id`, `tenant.id`, `sensitivity.level`, `batch.size` |
 | Causal attributes | `event.id`, `correlation.id`, `causation.id` |
 
@@ -155,6 +156,18 @@ Tracing every request at full volume is expensive and rarely necessary. Sample i
 | Rich attributes | Quantitative domain attributes on spans | Bare spans with no explanatory detail |
 | No PII on spans | Attributes carry ids/sizes, not secrets/PII | PII/secrets in span attributes |
 | Whole-trace sampling | ParentBased sampling | Independent per-span sampling → half-traces |
+
+---
+
+## Anti-Patterns
+
+- **Dropping the returned context** — `_, span := tracer.Start(ctx, …)` then passing the *old* `ctx` downward. Every child becomes a root; the tree flattens into disconnected fragments.
+- **Span names carrying data** — `"classify asset 6f9a…"` mints one span name per asset. Names are operations; the asset id is an attribute.
+- **A span per trivial function** — tracing every getter produces thousand-span traces where the story drowns in noise. Span the units of work that can fail or be slow: handlers, repository calls, broker hops.
+- **Severed async traces** — publishing without injecting headers, or consuming without extracting them, breaks the trace exactly where debugging needs it most: across the broker.
+- **Errors swallowed by the span** — returning an error without `RecordError`/`SetStatus(Error)` renders the failing span green in every trace view.
+- **Non-ParentBased sampling** — per-service independent sampling decisions produce traces with missing middles that are worse than no trace at all.
+- **PII in attributes** — a file path, an email address, or document content on a span is PII exported to a third system with its own retention. Ids and sizes only.
 
 ---
 

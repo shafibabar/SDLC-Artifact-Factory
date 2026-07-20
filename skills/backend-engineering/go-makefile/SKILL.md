@@ -7,9 +7,10 @@ description: >
   container build. The Makefile encodes the blueprint's verification gates so the
   same commands run locally and in CI. Used by the backend-engineer during
   Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, makefile, ci, race-detector, lint, govulncheck, benchmark]
 ---
 
@@ -147,6 +148,17 @@ This pairs with the architecture governance hook — defence in depth on the dep
 | Bench available | `make bench` with `-benchmem` | No benchmark target |
 | Arch enforced | `make arch` fails on a dependency-rule violation | Dependency rule unchecked |
 | Freshness | `make ci` fails on uncommitted generated/tidy diffs | Drift allowed to merge |
+
+---
+
+## Anti-Patterns
+
+- **A "fast" test target without `-race`** — the moment a race-free shortcut exists, it becomes the default, and races surface only in CI (or production). One test target, detector always on.
+- **CI YAML re-listing raw `go` commands** — the pipeline drifting from the Makefile reintroduces "passes locally, fails in CI." CI calls `make ci`, nothing else.
+- **Coverage measured but not enforced** — a number printed to a log gates nothing. The threshold check must fail the build.
+- **Un-`.PHONY` targets** — a file or directory named `test`/`build` silently turns the target into a no-op.
+- **Makefile as a programming language** — hundreds of lines of shell logic inline. Anything beyond a few lines belongs in `scripts/`, called by a thin target.
+- **Skipping the freshness check** — letting stale generated code or an untidy `go.mod` merge guarantees the next `make generate` produces a surprise diff.
 
 ---
 

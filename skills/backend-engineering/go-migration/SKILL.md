@@ -7,9 +7,10 @@ description: >
   tenant-aware migration in physical multi-tenancy, and how migrations run safely
   in CI/CD ahead of the new code. Implements the data-architect's schemas as
   ordered migration files. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, migration, postgresql, goose, expand-contract, zero-downtime]
 ---
 
@@ -52,6 +53,7 @@ Each file has an `Up` and a `Down`. Up is what production applies; Down enables 
 
 ```sql
 -- 00004_add_data_assets_sensitivity_index.sql
+-- +goose NO TRANSACTION
 -- +goose Up
 -- Build the index without locking writes (safe on a live table).
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_data_assets_tenant_sensitivity
@@ -59,10 +61,10 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_data_assets_tenant_sensitivity
     WHERE deleted_at IS NULL;
 
 -- +goose Down
-DROP INDEX IF EXISTS idx_data_assets_tenant_sensitivity;
+DROP INDEX CONCURRENTLY IF EXISTS idx_data_assets_tenant_sensitivity;
 ```
 
-`CREATE INDEX CONCURRENTLY` avoids holding a write lock on a live table — essential for zero-downtime. (Note: it cannot run inside a transaction, so it lives in its own migration.)
+`CREATE INDEX CONCURRENTLY` avoids holding a write lock on a live table — essential for zero-downtime. It cannot run inside a transaction, so the file carries the `-- +goose NO TRANSACTION` directive (goose otherwise wraps each migration in one) and lives in its own migration.
 
 ---
 
@@ -127,6 +129,18 @@ In physical multi-tenancy (separate database/namespace per tenant — see `multi
 | Concurrent index builds | Large-table indexes use `CONCURRENTLY` | Index build locking a live table |
 | Pre-deploy application | Migrations run before the new code rolls out | App auto-migrating on startup in the request path |
 | Tenant coverage | Every tenant DB migrated; version tracked | Some tenant databases left behind |
+
+---
+
+## Anti-Patterns
+
+- **Editing an applied migration** — environments that already ran it now disagree with git about what "version N" means; checksum verification breaks, and rebuild-from-zero produces a different schema. Corrections are new migrations.
+- **Auto-migrating on app startup** — N replicas racing to migrate on rollout, with a failed migration discovered only when pods crash-loop. Migrations are a discrete, single-run pre-deploy step.
+- **Down as a production rollback plan** — `DROP COLUMN` in a Down file destroys data the "rollback" was supposed to protect. Roll forward with a correcting migration.
+- **Rename/drop in the same deploy as the code change** — during the rolling update, old and new code run simultaneously; one of them is guaranteed to be broken against the schema.
+- **Plain `CREATE INDEX` on a large live table** — takes a lock that blocks writes for the duration of the build. `CONCURRENTLY`, in a `NO TRANSACTION` migration.
+- **`NOT NULL` with no backfill step** — adding the constraint in one shot fails (or locks) on existing rows. Nullable → backfill → constraint.
+- **Migrations that reference application code** — SQL files must be self-contained and replayable years later; a migration importing Go domain types couples schema history to code history.
 
 ---
 

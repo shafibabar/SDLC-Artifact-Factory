@@ -7,9 +7,10 @@ description: >
   with ReportAllocs, pprof CPU/heap/block/mutex profiles, go tool trace, and
   runtime.ReadMemStats). The governing discipline is measure-first: optimise only
   what a profile proves is hot. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
+created: 2026-06-25
 tags: [implement, go, performance, allocation, escape-analysis, sync-pool, pprof, benchmark]
 ---
 
@@ -175,6 +176,18 @@ Fewer, larger allocations beat many small ones. Reuse buffers (pool), preallocat
 | Pool used correctly | `sync.Pool` reset on get, not retained after put, profile-justified | Pool for long-lived objects; retained references |
 | Cardinality/GC | Flat allocation rate under load; stable live-object count | Monotonic heap growth; allocation storms |
 | unsafe gated | No `unsafe` unless benchmarked, reviewed, commented | `unsafe` for unproven micro-gains |
+
+---
+
+## Anti-Patterns
+
+- **Optimising from intuition** — "maps are slow", "reflection is the problem" — without a profile. The hot path is almost never where instinct says it is.
+- **Benchmarking once and believing it** — single-run numbers are noise; laptops thermal-throttle mid-run. Multiple runs plus `benchstat` or the claim doesn't count.
+- **`sync.Pool` as a cargo cult** — pooling long-lived or rarely-allocated objects adds complexity and can *increase* memory held. Pools earn their place only on profiled allocation storms.
+- **Retaining a pooled object after `Put`** — the next `Get` hands the same buffer to another goroutine; the resulting data race corrupts silently.
+- **pprof on the public port** — `net/http/pprof` on the API listener exposes heap contents and a DoS lever. Internal admin port only.
+- **Trading clarity for unmeasured nanoseconds** — an unreadable "fast" version that benchmarks identical to the simple one is pure cost. Keep the simple version.
+- **Optimising against the SLO you don't have** — without a latency/throughput target, "faster" has no finish line. The SLO decides whether the simple version already wins.
 
 ---
 
