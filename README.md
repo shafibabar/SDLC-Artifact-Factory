@@ -79,7 +79,7 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | All content built (136 skills, 13 agents, 15 commands); agents and commands are live-verified working, skills are pending a discoverability fix (see Known Issues in CHANGELOG); hooks and schemas in progress |
+| **Maturity** | All content built (136 skills, 13 agents, 15 commands, 7 hooks); agents, commands, and hooks are live-verified working, skills are pending a discoverability fix (see Known Issues in CHANGELOG); schemas remain |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
@@ -1108,6 +1108,7 @@ Any component that supports multiple tenants must enforce:
 - **Skills:** 136 across 15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6). All 15 skill domains are complete in content — **but not yet auto-discoverable by Claude Code**; see the note in Repository Structure and CHANGELOG's Known Issues.
 - **Agents:** 13 of 13 — product-strategist, requirements-analyst (Ideate + Customer Validation), domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer, data-engineer. Flat `agents/<name>.md`, verified discoverable.
 - **Commands:** 15 of 15 — all phase-driver, navigation, and cross-cutting commands, verified discoverable and one verified by live invocation.
+- **Hooks:** 7 real hooks in `hooks/hooks.json` (9 originally planned, 3 consolidated into 1 once bound to a real event — see CHANGELOG), backed by 6 scripts under `scripts/`. Every hook and every script individually triggered and its outcome verified, not just read — 3 real bugs found and fixed in the process.
 
 ### Planned Components
 
@@ -1115,7 +1116,7 @@ Any component that supports multiple tenants must enforce:
 |---|---|
 | Agents | `ai-ml-architect` (deferred until a product requires ML) |
 | Skills | Fix: flatten `skills/<domain>/<name>/SKILL.md` to `skills/<name>/SKILL.md` so they're actually discoverable (dedicated follow-up PR) |
-| Hooks | Phase-gate and governance hooks — `pre-phase-advance`, `tdd-gate`, `methodology-compliance-check`, `terminology-drift-detector` (Chunk 20) |
+| Scripts | 4 standalone utility scripts (`validate-openapi-contract.sh`, `validate-event-schema.sh`, `generate-artifact-id.sh`, `cross-reference-checker.sh`) — deferred until a command or agent actually needs them |
 | Schemas | `sdlc-config`, `sdlc-manifest` (Chunk 21) |
 | MCP Servers | Source control, project management, knowledge management, cloud platforms, data platforms, communication (deferred — defined per product) |
 
