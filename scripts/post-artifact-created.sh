@@ -34,7 +34,20 @@ if not m:
     done()  # not a product artifact path — nothing to record
 
 artifacts_root, product, phase, rel = m.group(1), m.group(2), m.group(3), m.group(4)
-artifact_type = pathlib.Path(rel).stem
+# Type inference: a single-instance artifact sits directly in the phase dir
+# (e.g. strategy/vision-statement.md) -> filename stem is the type. A
+# multi-instance artifact lives in a named subdirectory (e.g.
+# design/decisions/ADR-001-x.md, ideate/stories/US-014.md) -> the
+# subdirectory name (singularized) is the type, so repeated instances share
+# one sequence counter instead of each instance's filename becoming its own
+# "type" (found by testing: two ADRs previously got sequence 001 each,
+# never 001/002, because the per-instance filename was used as the type).
+rel_parts = pathlib.Path(rel).parts
+if len(rel_parts) > 1:
+    subdir = rel_parts[0]
+    artifact_type = subdir[:-1] if subdir.endswith("s") else subdir
+else:
+    artifact_type = pathlib.Path(rel).stem
 
 manifest_path = pathlib.Path(artifacts_root) / product / "_manifest.json"
 manifest_path.parent.mkdir(parents=True, exist_ok=True)

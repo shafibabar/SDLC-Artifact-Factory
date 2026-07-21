@@ -61,6 +61,27 @@ mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
 
 ---
 
+## Running Tests
+
+Skills and agents are prose with no build step. Commands, hooks, and scripts are real mechanics, and `tests/` (mirroring `skills/agents/commands/hooks/scripts/schemas`) verifies them by live invocation, not by reading them for coherence.
+
+```
+tests/run-smoke-tests.sh                  # everything
+tests/run-smoke-tests.sh scripts          # one category
+tests/run-smoke-tests.sh scripts schemas  # several categories
+```
+
+Categories: `skills agents commands hooks scripts schemas`. Each test file is also runnable standalone and prints its own `PASS:`/`FAIL:` lines, e.g.:
+
+```
+bash tests/scripts/tdd-gate.test.sh
+python3 tests/schemas/sdlc-config.test.py
+```
+
+`skills`, `agents`, `commands`, and `hooks` tests load this repo live via `claude --plugin-dir $REPO_ROOT -p ...` (see `tests/lib/harness.sh`) — they need the `claude` CLI on `PATH`, make real model calls, and default to a 90s per-invocation timeout (override with `SMOKE_TEST_TIMEOUT`). `scripts` tests pipe synthetic JSON directly at a `scripts/*.sh` file's stdin — no LLM call. `schemas` tests need `python3` with `jsonschema` installed and validate both known-good and deliberately-invalid instances against the Draft 2020-12 schemas.
+
+---
+
 ## Non-Negotiable Methodology
 
 These five methodologies are mandatory. Their absence in any artifact where they apply is a **defect** — not a warning, not advisory.
