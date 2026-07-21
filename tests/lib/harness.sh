@@ -136,6 +136,41 @@ smoke_test_script() {
   return 0
 }
 
+# smoke_test_acceptance <name> <dispatch-prompt> <expected-path> <validator-fn>
+# Live-dispatches an agent (or the plugin directly) to produce a real work
+# product under $SCRATCH_DIR (set by smoke_test_scratch_init), per the same
+# --add-dir pattern proven in tests/hooks/hooks-wiring.test.sh, but with
+# --permission-mode auto rather than acceptEdits/bypassPermissions. Found by
+# live testing: bypassPermissions maps to --dangerously-skip-permissions,
+# which Claude Code refuses to honor when the process is running as
+# root/sudo (this sandbox runs as root); acceptEdits auto-accepts Write/Edit
+# but still blocks Bash approval, and several agents in this plugin declare
+# `tools: [Bash]` only (e.g. backend-engineer, frontend-engineer — no Write
+# tool at all, so they create files via Bash heredocs) — under acceptEdits
+# those agents hang or error indefinitely waiting for a Bash approval that
+# never comes in a headless -p session. auto grants both non-interactively.
+# Fails fast if the anchor file at <expected-path> never lands; otherwise
+# hands $SCRATCH_DIR to <validator-fn>, which knows the rest of the
+# convention-derived paths and does structural (and, where a toolchain
+# exists, mechanical) validation. Passes iff the validator function exits 0.
+smoke_test_acceptance() {
+  local name="$1" prompt="$2" expected_path="$3" validator_fn="$4"
+  local output reason
+  output="$(timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
+    --permission-mode auto -p "$prompt" --output-format text 2>&1)"
+  if [[ ! -f "$expected_path" ]]; then
+    _fail "$name" "expected artifact not found at $expected_path. Agent output: ${output:0:300}"
+    return 1
+  fi
+  if reason="$("$validator_fn" "$SCRATCH_DIR" 2>&1)"; then
+    _pass "$name"
+    return 0
+  else
+    _fail "$name" "$reason"
+    return 1
+  fi
+}
+
 smoke_test_summary() {
   echo ""
   echo "--- Summary: $PASS_COUNT passed, $FAIL_COUNT failed ---"

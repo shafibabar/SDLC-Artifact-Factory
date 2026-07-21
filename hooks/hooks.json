@@ -56,6 +56,16 @@
             "timeout": 90
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "A file was just written or edited. Read the path from this hook's tool_input.file_path (from the JSON you were invoked with). This check is scoped ONLY to this plugin's own skill and agent component files, not product artifacts: if the path (relative to the repo root) does not match either 'skills/<name>/SKILL.md' or 'agents/<name>.md', respond with exactly PASS and stop immediately — do not read or run anything else. Otherwise identify the touched component and every acceptance test file that could exist for it: if the path is 'agents/<name>.md', the component is agent <name> and its acceptance test would be at tests/agents/<name>.acceptance.sh. If the path is 'skills/<name>/SKILL.md', the component is skill <name>, its own acceptance test (if any) would be at tests/skills/<name>.acceptance.sh, and it may also be owned by one or more agents — grep every agents/*.md file's frontmatter 'skills:' list for an entry '- <name>' to find each owning agent, whose acceptance test (if any) would be at tests/agents/<owner>.acceptance.sh. If none of the acceptance test paths you identified actually exist on disk, respond with exactly PASS followed by a short note that no acceptance test exists yet for this component, and stop — do not invoke any agent. If at least one exists, run each one with the Bash tool as 'bash <path>' (each is self-contained: it dispatches the real agent, produces a real artifact or code, and validates it — this can take a few minutes per test, that is expected). If every acceptance test you ran exits 0, respond with exactly PASS. If any exits non-zero, respond with FAIL followed by that test's FAIL: line(s). Do not modify any files yourself.",
+            "timeout": 300
+          }
+        ]
       }
     ]
   }

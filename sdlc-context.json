@@ -2,8 +2,8 @@
   "_meta": {
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
-    "last_updated": "2026-07-20",
-    "updated_by": "Chunk 21 — schemas/sdlc-config.schema.json and schemas/sdlc-manifest.schema.json complete (D017), validated against the real jsonschema library, not just written. Every item in the original build_checklist is now complete except Chunk 22 (ai-ml-architect, deferred until a product needs ML)."
+    "last_updated": "2026-07-21",
+    "updated_by": "Chunk 23 — fixed the skills/agents smoke-test loading gap (six *.fixture.sh files that never sourced the harness) and added a tiered Contract/Acceptance testing model (D018, D019), live-verified end to end."
   },
 
   "project": {
@@ -547,6 +547,19 @@
       "chunk": 22,
       "title": "ai-ml-architect agent + ML skills",
       "status": "deferred — activated when a product requires ML capability"
+    },
+    {
+      "chunk": 23,
+      "title": "Fix skills/agents smoke-test loading gap + tiered Contract/Acceptance testing model",
+      "status": "complete",
+      "deliverables": [
+        "tests/skills/*.contract.sh, tests/agents/backend-engineer.contract.sh — the 6 previously-silent *.fixture.sh files (two bare shell variables, never sourcing tests/lib/harness.sh; run-smoke-tests.sh's glob picked them up and silently reported 0 passed/0 failed) rewritten to the same self-contained smoke_test_skill/smoke_test_agent pattern every other category already uses",
+        "tests/lib/assertions.sh (new) + tests/lib/harness.sh's new smoke_test_acceptance — reusable acceptance-tier primitives: live agent dispatch, structural assertions (frontmatter field/word-count/contains), and real gofmt+go vet / tsc --noEmit validation when the toolchain is present, visibly skipped otherwise",
+        "tests/skills/vision-statement.acceptance.sh, tests/agents/backend-engineer.acceptance.sh, tests/agents/frontend-engineer.acceptance.sh — 3 new acceptance-tier exemplars, each proving an agent actually invokes a skill and produces the real work product (a vision statement / a Go chi handler / a React component) rather than just answering a question about it",
+        "tests/run-smoke-tests.sh — --skill/--agent/--changed selector flags, deriving skill-to-agent ownership from agents' existing frontmatter skills: list (grepped) instead of a second, hand-maintained tag system",
+        "hooks/hooks.json — new PostToolUse Write|Edit hook (matcher form live-verified — every prior entry only ever matched a single tool name), scoped in-prompt to skills/*/SKILL.md and agents/*.md, automatically running the mapped acceptance test on every touch and responding PASS with a note when none exists yet for that component; live-verified both paths (a real dispatch-and-validate PASS on skills/vision-statement/SKILL.md, and a cheap no-op PASS on an uncovered agent)",
+        "tests/hooks/hooks-wiring.test.sh — fixed alongside (same root cause as D019): its PostToolUse case was failing for the wrong reason before this chunk"
+      ]
     }
   ],
 
@@ -669,6 +682,20 @@
       "decision": "schemas/sdlc-config.schema.json and schemas/sdlc-manifest.schema.json (Draft 2020-12) formalize skills/sdlc-config-management and skills/artifact-manifest's already-documented Output Format shapes exactly, rather than inventing a new shape. sdlc-manifest.schema.json validates only the per-product manifest INSTANCE, not the master artifact-type catalog (which stays a prose table, extended over time — type is a free-form pattern, not a closed enum, to avoid needing a schema update on every new artifact-producing skill).",
       "rationale": "Both governance skills already had complete, worked JSON examples in their Output Format sections from when they were written (Chunk 18) — the schema's job was to encode what was already specified, not design something new. Tested against the real jsonschema library (Draft202012Validator): both skills' exact worked examples validate cleanly, and a battery of deliberately invalid instances (missing required fields, bad enums, malformed dates/semver/slugs, unknown fields, empty traceability refs) are all correctly rejected — 15 negative cases total across both schemas.",
       "alternatives_rejected": ["Also schema-ize the type catalog as a closed enum — rejected per the skill's own statement that the catalog is a representative cross-section extended over time; a closed enum would need updating on every new artifact-producing skill"]
+    },
+    {
+      "id": "D018",
+      "date": "2026-07-21",
+      "decision": "Skill/agent smoke tests split into a Contract tier (a fast, cheap LLM-answered question about one documented fact — what the 6 broken *.fixture.sh files became once fixed) and a new Acceptance tier (a live agent dispatch that must actually invoke the named skill and produce the real work product — a written artifact or real code — validated structurally and, where a toolchain exists, mechanically). Contract stays the fast canary; Acceptance proves the agent can do its job, not just recite facts about it. Selection for --skill/--agent/--changed and the new automatic hook derives from agents' existing frontmatter skills: list (grepped for ownership) rather than a second, hand-maintained tag system.",
+      "rationale": "The prior six skills/agents test files were pure two-variable shell fixtures that never sourced tests/lib/harness.sh — run-smoke-tests.sh's glob picked them up and silently reported 0 passed/0 failed, not a failure. Separately, even a fixed Q&A test (\"what's the word limit?\") never proves an agent can invoke a skill and produce its real output — Shafi's explicit objection. Reusing the skills: frontmatter block (already the single source of truth for which agent owns which skill) for selection avoids a second manifest that would drift from it; git diff --name-only drives change-based selection, the same idea as jest --onlyChanged / nx affected.",
+      "alternatives_rejected": ["A hand-maintained tag/manifest file mapping skills to owning agents and to test tiers — rejected: agents/*.md's skills: list already is that mapping; a second copy would just drift out of sync with it."]
+    },
+    {
+      "id": "D019",
+      "date": "2026-07-21",
+      "decision": "Every live agent dispatch in tests/lib/harness.sh's smoke_test_acceptance (and tests/hooks/hooks-wiring.test.sh, fixed alongside) uses --permission-mode auto, not bypassPermissions or acceptEdits.",
+      "rationale": "Found by live testing: --permission-mode bypassPermissions maps to --dangerously-skip-permissions, which Claude Code refuses to honor when the process runs as root (this environment does) — this was silently causing hooks-wiring.test.sh's second case to fail (the dispatch errored before attempting the write, so the file predictably never landed, and the test's first case — file absent after a blocked write — happened to read as a pass for the wrong reason). --permission-mode acceptEdits auto-accepts Write/Edit but still blocks Bash approval; several agents in this plugin declare tools: [Bash] only (backend-engineer, frontend-engineer — no Write tool at all, so they create files via Bash heredocs), and under acceptEdits those agents hang or error indefinitely waiting for a Bash approval that never arrives in a headless -p session. auto grants both non-interactively and was confirmed to still enforce this repo's PreToolUse/PostToolUse hooks correctly.",
+      "alternatives_rejected": ["bypassPermissions/--dangerously-skip-permissions — rejected: refused outright when running as root, which this environment does", "acceptEdits — rejected: leaves Bash-only agents unable to create files non-interactively"]
     }
   ],
 
