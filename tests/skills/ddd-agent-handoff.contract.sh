@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "ddd-agent-handoff" \
-  "If two agents' terms for the same concept conflict, which single skill is the tiebreaker?" \
-  "glossary-management"
+  "Per this skill's handoff protocol, which subdomain classification should always default to Collaboration mode, regardless of how stable or familiar the pairing is?" \
+  "Core"
 
 smoke_test_summary
