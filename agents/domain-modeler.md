@@ -36,6 +36,7 @@ skills:
   - event-storming-facilitation
   - ubiquitous-language
   - bounded-context-mapping
+  - subdomain-distillation
   - context-map-patterns
   - aggregate-design
   - domain-event-catalog
