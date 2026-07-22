@@ -33,6 +33,7 @@ skills:
   - security-implementation
   - compliance-verification
   - secrets-management
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools:

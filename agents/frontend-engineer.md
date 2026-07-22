@@ -40,6 +40,7 @@ skills:
   - react-component-testing
   - react-e2e-testing
   - react-dockerfile
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools: [Bash]

@@ -43,6 +43,7 @@ skills:
   - cqrs-pattern
   - event-driven-patterns
   - context-map-patterns
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools:

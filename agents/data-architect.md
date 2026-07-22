@@ -36,6 +36,7 @@ skills:
   - data-classification
   - data-lineage-design
   - data-retention-policy
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools: []

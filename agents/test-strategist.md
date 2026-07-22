@@ -36,6 +36,7 @@ skills:
   - go-performance-test
   - go-load-test
   - go-chaos-test
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools: [Bash]

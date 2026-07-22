@@ -41,6 +41,7 @@ skills:
   - domain-event-catalog
   - command-catalog
   - read-model-design
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools:

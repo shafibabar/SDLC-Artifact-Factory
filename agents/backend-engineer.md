@@ -45,6 +45,7 @@ skills:
   - distributed-tracing-design
   - structured-logging-design
   - health-check-design
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools: [Bash]
