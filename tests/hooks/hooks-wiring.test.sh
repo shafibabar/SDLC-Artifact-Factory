@@ -17,10 +17,13 @@ NAME="hooks-wiring"
 # Case 1: PreToolUse wiring — a Write with no frontmatter block into
 # artifacts/ must be BLOCKED by validate-artifact-structure.sh, and the file
 # must not land on disk. Proves hooks.json's PreToolUse/Write binding fires.
+# acceptEdits, not bypassPermissions: bypassPermissions maps to
+# --dangerously-skip-permissions, which is refused when running as root
+# (this sandbox does) — acceptEdits still auto-accepts writes non-interactively.
 mkdir -p "$SCRATCH_DIR/artifacts/testproduct/strategy"
 BAD_PATH="$SCRATCH_DIR/artifacts/testproduct/strategy/vision.md"
 timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
-  --permission-mode bypassPermissions -p \
+  --permission-mode acceptEdits -p \
   "Use the Write tool to create a file at exactly this path: $BAD_PATH — with this exact content and nothing else: '# Vision\n\nNo frontmatter here.\n'. Do not do anything else, do not read any other files, just attempt this one write and then stop." \
   --output-format text >/dev/null 2>&1
 
@@ -39,7 +42,7 @@ fi
 GOOD_PATH="$SCRATCH_DIR/artifacts/testproduct2/strategy/vision.md"
 mkdir -p "$SCRATCH_DIR/artifacts/testproduct2/strategy"
 timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
-  --permission-mode bypassPermissions -p \
+  --permission-mode acceptEdits -p \
   "Use the Write tool to create a file at exactly this path: $GOOD_PATH — with this exact content and nothing else:
 
 ---
