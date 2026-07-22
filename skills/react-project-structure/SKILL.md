@@ -2,138 +2,106 @@
 name: react-project-structure
 description: >
   Teaches the canonical React + TypeScript project layout for this plugin —
-  feature-based (not type-based) folder structure, the Vite build, strict
-  TypeScript and ESLint configuration, the module boundary rules (features don't
-  import each other's internals), side-effect-free ES modules for tree-shaking,
-  and where shared UI, hooks, and the generated API client live. This is the
-  skeleton every frontend is generated into. Used by the frontend-engineer during
-  Implement.
-version: 1.1.0
+  a shell (host) plus one independently-built remote app per Bounded-
+  Context-aligned fragment (see microfrontend-architecture), each remote
+  internally organised by feature-based (not type-based) folders, the Vite
+  + Module Federation build, strict TypeScript and ESLint configuration,
+  module boundary rules (both within a fragment and across fragments),
+  side-effect-free ES modules for tree-shaking, and the shared
+  design-system/API-client packages every fragment consumes. This is the
+  skeleton every frontend is generated into. Used by the frontend-engineer
+  during Implement.
+version: 2.0.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
-tags: [implement, frontend, react, typescript, vite, project-structure, tree-shaking]
+tags: [implement, frontend, react, typescript, vite, project-structure, tree-shaking, microfrontend]
 ---
 
 # React Project Structure
 
 ## Purpose
 
-Every frontend in this plugin uses the same feature-based layout so any screen is navigable by anyone who has seen one. Code is organised by **feature** (the thing a user does), not by **type** (all components here, all hooks there) — because features are how the product grows and how work is split, and a feature-based layout keeps everything for one capability in one place.
+This plugin's frontend is a **shell plus independently-built remote
+apps**, one remote per Bounded-Context-aligned fragment
+(`microfrontend-architecture`) — not one monolithic app. Within each
+remote, code is still organised by **feature** (the thing a user does),
+not by **type** (all components here, all hooks there): features are how
+one fragment grows, and a feature-based layout keeps everything for one
+capability in one place. The shell/remotes split and the feature-based
+internal layout are two different concerns, at two different scales —
+this skill covers both; full depth on each lives in `references/`.
 
-This skill produces the directory skeleton, the Vite + TypeScript + ESLint configuration, and the module-boundary rules. It implements the ux-architect's information architecture as a code structure.
+This skill produces the multi-app skeleton, the Vite + Module Federation +
+TypeScript + ESLint configuration, and the module-boundary rules. It
+implements the ux-architect's information architecture as a code
+structure, sliced along `microfrontend-architecture`'s fragment
+boundaries.
 
 ---
 
-## Feature-Based Layout
+## Shell + Remotes, at a Glance
 
 ```
-estate-ui/
-├── src/
-│   ├── app/                      # app shell: providers, router, global layout
-│   │   ├── App.tsx
-│   │   ├── providers.tsx         # QueryClientProvider, ErrorBoundary, OTel, theme
-│   │   └── router.tsx            # route tree (see react-routing)
-│   ├── features/                 # one folder per feature — the unit of growth
-│   │   ├── data-assets/
-│   │   │   ├── components/       # feature-private components
-│   │   │   ├── hooks/            # feature-private hooks (useClassifyDataAsset…)
-│   │   │   ├── api.ts            # feature's data-fetching hooks (TanStack Query)
-│   │   │   ├── types.ts          # feature-local types (derived from generated API types)
-│   │   │   └── index.ts          # PUBLIC surface — the only thing other code imports
-│   │   ├── compliance/
-│   │   ├── data-sources/
-│   │   └── estate-graph/
-│   ├── shared/                   # cross-feature, app-agnostic building blocks
-│   │   ├── ui/                   # design-system atoms/molecules (Button, Badge…)
-│   │   ├── hooks/                # generic hooks (useDebounce, useMediaQuery)
-│   │   └── lib/                  # pure utilities (formatting, guards)
-│   ├── api/
-│   │   ├── generated.ts          # GENERATED from openapi.yaml — never edited
-│   │   └── client.ts             # typed fetch client (see react-api-client)
-│   ├── telemetry/                # OTel Web, Web Vitals, error sinks (see react-observability)
-│   └── main.tsx                  # entry point
-├── tests/                        # e2e (Playwright); unit tests live beside source
-├── index.html
-├── vite.config.ts
-├── tsconfig.json
-├── eslint.config.js              # ESLint flat config (typescript-eslint + boundaries)
-├── Dockerfile
-└── package.json
+apps/shell/           # HOST — global nav, shared shell context, remote loading
+apps/<fragment>/      # REMOTE — one per Bounded-Context-aligned fragment,
+                      # internally feature-based (usually one feature per fragment)
+packages/design-system/   # shared, independently-versioned UI + tokens — every app consumes it
+packages/api-client/      # shared generated API client — one per product, not per fragment
 ```
 
-Unit tests live **beside** the file they test (`Button.tsx` + `Button.test.tsx`); end-to-end specs live in `tests/`.
+Full annotated tree, plus the complete module boundary rules at both
+scales (within a fragment, and across fragments): `references/directory-layout.md`.
+
+**One fragment, one feature (usually).** A fragment growing a second,
+distinct feature is a signal to re-check its Bounded Context boundary
+(`microfrontend-architecture`'s `assets/fragment-ownership-canvas.md`),
+not to assume the fragment naturally absorbs it.
 
 ---
 
-## Module Boundary Rules
+## Module Boundary Rules — Summary
 
-The feature layout only pays off if boundaries are enforced:
+Two scales, both enforced:
 
-1. **A feature's public surface is its `index.ts`.** Other code imports `features/data-assets`, never `features/data-assets/components/Internal`.
-2. **Features do not import each other's internals.** If two features need the same thing, it moves to `shared/`.
-3. **`shared/` never imports from `features/`.** Dependencies point inward: `features → shared → lib`. (The frontend analogue of the backend's dependency rule.)
-4. **The generated API client is the only source of server types** (see `react-api-client`). Features derive their types from it; they never redeclare server shapes.
+**Within a fragment**: a feature's public surface is its `index.ts`;
+features don't import each other's internals; the fragment's local
+`shared/` never imports from its own `features/`.
 
-These rules are enforced by ESLint (`eslint-plugin-boundaries` / `import/no-restricted-paths`), not by convention — a violating import fails `npm run lint`.
+**Across fragments**: fragments never import each other's source
+directly — only the shell context, custom events, and
+`packages/design-system`/`packages/api-client` cross a fragment boundary.
+Anything that feels like it should be shared between just two specific
+fragments is a Bounded Context boundary problem, not a shared-package
+problem.
 
----
-
-## Strict TypeScript Configuration
-
-Strictness is non-negotiable (see `typescript-types`). The `tsconfig.json` turns on the full strict family:
-
-```jsonc
-{
-  "compilerOptions": {
-    "strict": true,                          // the whole strict family
-    "noUncheckedIndexedAccess": true,        // arr[i] is T | undefined — forces the check
-    "exactOptionalPropertyTypes": true,      // optional ≠ "| undefined" sloppiness
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true,
-    "verbatimModuleSyntax": true,            // explicit type-only imports → better tree-shaking
-    "isolatedModules": true,
-    "moduleResolution": "bundler",
-    "target": "ES2022",
-    "jsx": "react-jsx"
-  }
-}
-```
-
-`any` is banned by lint rule, not just discouraged (see `typescript-types`).
+Within-fragment rules are ESLint-enforced; cross-fragment rules are
+enforced by **physical package separation** — a fragment cannot
+accidentally deep-import another fragment's source because it isn't in
+the same workspace dependency graph at all. Full detail:
+`references/directory-layout.md`.
 
 ---
 
-## Vite Build
+## Vite Build + Module Federation
 
-Vite is the default (fast dev server, native ES modules, excellent tree-shaking, frugal). Configuration enables code-splitting and bundle visibility from day one:
-
-```ts
-// vite.config.ts
-/// <reference types="vitest/config" />   // types the `test` block below
-export default defineConfig({
-  plugins: [react()],
-  build: {
-    sourcemap: true,                 // for production stack traces (see react-observability)
-    rollupOptions: {
-      output: { manualChunks: { /* split heavy deps like the graph lib */ } },
-    },
-  },
-  test: { environment: "jsdom", setupFiles: "./src/test/setup.ts" }, // Vitest
-});
-```
-
-Route-level and component-level code-splitting are detailed in `react-performance-optimization`; the structure here makes them natural.
+Vite is the default for every app — shell and every remote alike. Host
+config declares `remotes`; each remote's config declares `exposes`; both
+share an identical `shared: { react: {...} }` block. Minimal working
+examples for both roles, plus the config-drift hazard to watch for:
+`references/vite-module-federation-config.md`. Underlying negotiation
+semantics (singleton discipline, dynamic remotes, the cross-boundary
+TypeScript problem): `microfrontend-architecture`'s
+`references/module-federation-config.md`.
 
 ---
 
-## Side-Effect-Free Modules (Tree-Shaking)
+## Strict TypeScript and Tree-Shaking
 
-For the bundler to drop unused code, modules must be side-effect-free: importing a module must not *do* anything except define exports. Rules:
-
-- No top-level code that runs on import (no `console.log`, no mutation, no network call at module scope).
-- Mark the package side-effect-free where true: `"sideEffects": false` in `package.json` (with explicit exceptions for CSS).
-- Prefer named exports; avoid barrel files that re-export everything eagerly (they defeat tree-shaking and slow the dev server).
+Full strict family on, `any` lint-banned, extended across the federation
+boundary via generated `.d.ts` per remote; side-effect-free modules with
+`sideEffects: false` and no eager barrels. Full configuration and
+rationale: `references/typescript-and-tree-shaking.md`.
 
 ---
 
@@ -141,11 +109,11 @@ For the bundler to drop unused code, modules must be side-effect-free: importing
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Feature-based | Code grouped by feature with a public `index.ts` | Type-based `components/`, `hooks/` dumping grounds |
-| Boundaries enforced | ESLint blocks cross-feature internal imports | Features reaching into each other's internals |
-| Inward dependencies | `features → shared → lib`; shared never imports features | `shared/` importing a feature |
-| Strict TS | Full strict family on; `any` lint-banned | Loose `tsconfig`; `any` allowed |
-| Generated types only | Server types come from the generated client | Hand-redeclared server shapes |
+| Fragment boundary source | Each `apps/*` maps to a Bounded Context (`microfrontend-architecture`) | Fragments split by arbitrary page/component grouping |
+| Feature-based within a fragment | Code grouped by feature with a public `index.ts` | Type-based `components/`, `hooks/` dumping grounds |
+| Cross-fragment boundaries enforced | No fragment imports another fragment's source; only `packages/` + shell context + events | A fragment deep-importing another fragment's `src/` |
+| Shared code correctly scoped | Universal sharing in `packages/`; fragment-local sharing in that fragment's `shared/` | Ad-hoc shared code between two specific fragments only |
+| Strict TS across the boundary | Full strict family on; `any` lint-banned; federated imports typed via generated `.d.ts` | Loose `tsconfig`; federated import degrades to `any` |
 | Tree-shakeable | Side-effect-free modules; `sideEffects: false` | Side effects on import; eager barrels |
 
 ---
@@ -154,23 +122,25 @@ For the bundler to drop unused code, modules must be side-effect-free: importing
 
 | Anti-pattern | Instead |
 |---|---|
-| Type-based top-level folders (`components/`, `hooks/`, `utils/` as dumping grounds) | Feature folders; type folders only *inside* a feature |
-| Importing `features/x/components/Internal` from another feature | Import the feature's `index.ts` public surface only |
-| A `shared/` module importing from `features/` | Dependencies point inward — promote or invert |
-| Hand-writing types that mirror server responses | Derive from the generated API client |
-| A barrel `index.ts` re-exporting the entire app | Barrels only at feature boundaries, exporting the deliberate public surface |
-| Loosening `tsconfig` to silence errors ("temporarily") | Fix the type; strictness is the point |
-| Editing `src/api/generated.ts` by hand | Regenerate from `openapi.yaml`; the file is build output |
+| A fragment deep-importing another fragment's `src/` directly | Shell context, custom events, or `packages/` only |
+| Creating an ad-hoc shared package between just two fragments | Universal sharing goes in `packages/`; a two-fragment-only need signals a boundary problem |
+| Type-based top-level folders inside a fragment | Feature folders; type folders only *inside* a feature |
+| A fragment's local `shared/` importing from its own `features/` | Dependencies point inward — promote or invert |
+| Hand-writing types that mirror server responses | Derive from `packages/api-client`'s generated client |
+| Adopting Webpack purely to get Module Federation | `@module-federation/vite` — this repo's build tool is Vite |
+| A new feature added to an existing fragment without checking its Bounded Context still fits | Check `microfrontend-architecture`'s `assets/fragment-ownership-canvas.md` before growing a fragment's scope |
 
 ---
 
 ## Output Format
 
-Produces the project skeleton and configuration:
+Produces the multi-app skeleton and configuration:
 
 ```
-vite.config.ts, tsconfig.json, eslint.config.js, package.json
-src/app/{App.tsx,providers.tsx,router.tsx}
-src/{features,shared,api,telemetry}/   (with index.ts public surfaces)
-src/main.tsx
+apps/shell/{vite.config.ts,tsconfig.json,eslint.config.js,package.json,Dockerfile}
+apps/shell/src/{app,shell-context}/  + main.tsx
+apps/<fragment>/{vite.config.ts,tsconfig.json,eslint.config.js,package.json,Dockerfile}   (one per fragment)
+apps/<fragment>/src/{features,shared}/  + main.tsx
+packages/design-system/src/{ui,hooks}/  + tokens.css
+packages/api-client/src/{generated.ts,client.ts}
 ```
