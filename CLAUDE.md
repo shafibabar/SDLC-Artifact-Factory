@@ -52,6 +52,7 @@ schemas/sdlc-config.schema.json   Formalizes sdlc-config-management's shape — 
 schemas/sdlc-manifest.schema.json Formalizes artifact-manifest's per-product instance shape — tested
 mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
 bin/ output-styles/ themes/       Deferred — .gitkeep placeholders
+research/<domain-cluster>/        Book-derived reference material informing future skill/agent refactors — not a Skill/Agent/Command itself, just source material consulted during a refactor session
 ```
 
 **Build workflow:**
