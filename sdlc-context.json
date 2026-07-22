@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-22",
-    "updated_by": "Chunk 25 — refactored ddd-agent-handoff into progressive-disclosure form (v2.0.0) + added subdomain-distillation MVP skill; first skill processed under the skill-refactor campaign (D021) (PRs #61, #62, #64, #65, #66, #67)"
+    "updated_by": "Chunk 26 — refactored subdomain-distillation into progressive-disclosure form (v2.0.0, 6-book gap-check) + added miro-board-notation MVP skill; standardized on Miro board specs for visual artifacts (D022) (PRs #76-#82)"
   },
 
   "project": {
@@ -583,6 +583,21 @@
         "Two dev-tooling fixes to scripts/github-project/ discovered mid-campaign: plan_status.py's done now clears current_plan from local state (nothing previously did, which would have blocked plan-start for every subsequent skill refactor — PR #53); exec_complete.py now appends a deterministic git diff --staged --stat block to every commit body, so commits are self-documenting regardless of the hand-typed subject line (PR #63)",
         "This is the first skill processed under the skill-refactor campaign (see decisions D020/D021 and the auto-memory project-skill-refactor-campaign) — establishes the per-skill plan/execute pattern (one parent issue, dependency-ordered sub-issues, progressive disclosure into references/assets, Evans-standard gap-check) that subsequent skill refactors will repeat"
       ]
+    },
+    {
+      "chunk": 26,
+      "title": "subdomain-distillation full refactor (6-book gap-check) + miro-board-notation MVP skill",
+      "status": "complete",
+      "deliverables": [
+        "skills/subdomain-distillation/SKILL.md rewritten from MVP (81 lines, Evans-only) to a thin (120-line) progressive-disclosure entry point (v2.0.0), checked against Vaughn Vernon's Domain-Driven Design Distilled, Vlad Khononov's Learning Domain-Driven Design, Susanne Kaiser's Architecture for Flow, Dan Bergh Johnsson's Secure by Design, and Carola Lilienthal & Henning Schwentner's Domain-Driven Transformation in addition to Evans (GitHub issue #68, sub-issues #70/#71/#72/#74)",
+        "skills/subdomain-distillation/references/classification-techniques.md — Vernon's outsource-test heuristic and one-or-two-Core-Domains warning; Khononov's complexity-vs-strategic-importance 2x2 (a subdomain can be complicated without being Core) and pattern-selection guidance, flagging a real, unresolved tension with CLAUDE.md's blanket DDD-tactical-patterns rule; Kaiser's Wardley Mapping evolution axis (Genesis/Custom-Built/Product-Rental/Commodity) as a Miro board spec; Evans' Segregated Core / Abstract Core refactoring techniques",
+        "skills/subdomain-distillation/references/security-sensitive-subdomains.md — Secure by Design's security-sensitivity axis as separate from Core/Supporting/Generic; corrects the MVP's Authentication/Authorization worked example (buying the library is Generic, modeling how access decisions interact with domain-specific invariants is not something to skip)",
+        "skills/subdomain-distillation/references/legacy-transformation-guidance.md — Lilienthal & Schwentner's transformation-sequencing rules (Core + bounded risk first, Generic as replace-not-migrate), Strangler Fig tied to Segregated Core, the organizationally-political framing of classification in a transformation, and a Domain Vision Board as a Miro board spec",
+        "skills/subdomain-distillation/assets/subdomain-classification-canvas.md — fill-in worksheet (Miro board spec) combining every technique above into one per-subdomain form",
+        "skills/miro-board-notation/SKILL.md (new, MVP, owner: factory-governance) — the 5 Miro element types (sticky note, shape, frame, connector, text) and a standard two-table Board Spec Format, pulled into this plan as its own MVP sub-issue (#69) since 3 of the reference/asset files above depend on it, same pattern as subdomain-distillation itself was pulled into the ddd-agent-handoff plan (D020/D021)",
+        "tests/skills/subdomain-distillation.contract.sh updated to exercise the refactored deep content (Vernon's outsource test via references/classification-techniques.md), live-verified to follow the progressive-disclosure pointer; tests/skills/miro-board-notation.contract.sh added",
+        "No live Miro API/MCP connection exists in this environment — confirmed via claude mcp list before writing any Miro-related content; all Miro board specs in this chunk are structured tables only, buildable by hand or automatable later with no format changes, per Shafi's explicit decision to defer live integration (see decision D022)"
+      ]
     }
   ],
 
@@ -733,6 +748,13 @@
       "decision": "Established the skill-refactor campaign's per-skill procedure using ddd-agent-handoff as the first case: one parent GitHub issue per skill, dependency-ordered sub-issues (one per references/assets file plus a final rewrite-SKILL.md step and a housekeeping step), and a mandatory gap-check against real industry practice (here: Team Topologies' three interaction modes, and Eric Evans' Domain-Driven Design directly) before finalizing the design. When the gap-check surfaces a genuinely missing skill (subdomain-distillation, for Evans Part IV Distillation) rather than misplaced content, pull it into the same plan as its own MVP-scoped sub-issue if a dependent file needs to reference it, instead of leaving it as an unscheduled idea.",
       "rationale": "Shafi's stated goal for this campaign is skills that are 'result-oriented for a proper software organization,' not prose — a mechanical progressive-disclosure split alone doesn't guarantee that; checking against a named, credible industry standard (here, the source text DDD itself is named after) is what caught two real gaps (Core/Supporting/Generic Subdomain classification as the primary mode-selection input; the operational-pause vs. breakthrough-triggered-refactor distinction for resumed sessions) that a generic 'add more detail' pass would likely have missed. Pulling subdomain-distillation in as an MVP sub-issue (rather than deferring it) avoided handoff-protocol.md shipping with a pointer to a skill that didn't exist yet.",
       "alternatives_rejected": ["Defer subdomain-distillation as a queued idea for its own future session — rejected once handoff-protocol.md's Mode Selection Criteria was designed to depend on it; a real dependency should not ship broken", "Skip the Evans gap-check and treat the Team-Topologies-anchored design as sufficient — rejected: Shafi explicitly asked to check against the source text before treating the plan as done, and it surfaced two real gaps, not just polish"]
+    },
+    {
+      "id": "D022",
+      "date": "2026-07-22",
+      "decision": "Standardize on Miro for visual/board-style artifacts across skills and agents, but as structured board specs only for now (a new miro-board-notation skill defining Miro's real element vocabulary — sticky note, shape, frame, connector, text — and a two-table spec format), not a live API/MCP integration. The same MVP-dependency-pull pattern from D021 applied again: miro-board-notation was pulled into the subdomain-distillation refactor plan as its own sub-issue (#69) because 3 dependent files (a Wardley Map, a Domain Vision Board, and the classification canvas) needed it to exist.",
+      "rationale": "Checked via claude mcp list before writing any Miro-related content: no Miro MCP/API connection exists in this environment, and this repo's mcp/ directory is an explicitly deferred placeholder per CLAUDE.md. Writing diagrams as Miro-vocabulary board specs now costs nothing extra (they're still buildable by hand or readable as structured tables) and means zero rework once a real Miro connection exists later — the alternative (plain prose diagrams now, retrofit to Miro's vocabulary later) would require rewriting every visual artifact this campaign produces in the meantime.",
+      "alternatives_rejected": ["Wire up a live Miro MCP/API connection now — rejected per Shafi's explicit choice; no account/token readiness signal was given, and premature integration risks building against the wrong API shape before more skills actually need to render boards", "Keep diagrams as plain prose/tables with no Miro-specific vocabulary — rejected: defeats the stated goal of standardizing on Miro, and would require retrofitting every visual artifact produced during this campaign later"]
     }
   ],
 
