@@ -47,7 +47,9 @@ already active.
 Updates the Status of the currently tracked parent issue. `done` maps to the
 board's existing "Done" option — a manual convenience for closing out the
 parent once all sub-issues have actually merged; nothing infers this
-automatically.
+automatically. Marking `done` also clears `current_plan` from local state —
+this is what frees `plan_start.py` to begin the next plan; every other status
+value leaves `current_plan` in place.
 
 ### `save_draft.py add|update|reject|list|clear`
 Local-only, no GitHub calls. Keyed by a stable draft id (`d1`, `d2`, ...):
