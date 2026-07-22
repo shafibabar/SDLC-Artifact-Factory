@@ -51,12 +51,14 @@ scripts/                          Shell scripts backing command-type hooks and c
 schemas/sdlc-config.schema.json   Formalizes sdlc-config-management's shape — Draft 2020-12, tested
 schemas/sdlc-manifest.schema.json Formalizes artifact-manifest's per-product instance shape — tested
 mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
+bin/ output-styles/ themes/       Deferred — .gitkeep placeholders
 ```
 
 **Build workflow:**
 
 - One chunk = one feature branch = one PR to `main`. Branch names follow `feature/<n>-<chunk-description>` (e.g. `feature/11-test-engineering-skills-and-test-strategist-agent`).
 - After a chunk merges, update `build_checklist` status in `sdlc-context.json` and its `_meta.last_updated`/`updated_by` fields in the same piece of work.
+- Add a dated entry to `CHANGELOG.md` under `[Unreleased]` (Added/Changed/etc.) for the chunk, referencing its PR number.
 - A chunk typically delivers one skill domain directory plus its owning agent(s) together.
 
 ---
@@ -79,6 +81,8 @@ python3 tests/schemas/sdlc-config.test.py
 ```
 
 `skills`, `agents`, `commands`, and `hooks` tests load this repo live via `claude --plugin-dir $REPO_ROOT -p ...` (see `tests/lib/harness.sh`) — they need the `claude` CLI on `PATH`, make real model calls, and default to a 90s per-invocation timeout (override with `SMOKE_TEST_TIMEOUT`). `scripts` tests pipe synthetic JSON directly at a `scripts/*.sh` file's stdin — no LLM call. `schemas` tests need `python3` with `jsonschema` installed and validate both known-good and deliberately-invalid instances against the Draft 2020-12 schemas.
+
+Under non-interactive `-p` invocation, slash commands only resolve in their namespaced form (`/<plugin-name>:<command>`, e.g. `/sdlc-artifact-factory:sdlc-status`) — the bare form (`/sdlc-status`) that works interactively returns "Unknown command" under `-p`. `smoke_test_command_contains` in the harness auto-namespaces, so individual command test files can keep using the bare form.
 
 ---
 

@@ -37,6 +37,7 @@ skills:
   - dashboard-specification
   - reporting-spec
   - data-storytelling
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools: [Bash]

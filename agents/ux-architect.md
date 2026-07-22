@@ -29,6 +29,7 @@ skills:
   - information-architecture
   - ux-flow-design
   - ui-component-spec
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools: []

@@ -47,6 +47,7 @@ skills:
   - prometheus-metrics-design
   - slo-definition
   - alerting-rules-design
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools: [Bash]

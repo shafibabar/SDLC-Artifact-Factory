@@ -37,6 +37,7 @@ skills:
   - secrets-management
   - privacy-design
   - compliance-design
+  - ddd-agent-handoff
   - glossary-management
   - methodology-review
 tools:
