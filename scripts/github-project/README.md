@@ -92,7 +92,11 @@ a **draft PR**, and moves the sub-issue to Status: In Progress.
 ### `exec_complete.py <sub-issue-number> "<commit message>"`
 Commits **currently staged changes** (does not `git add` anything for you —
 stage what you want committed first), pushes, moves the sub-issue to
-Status: In Review. Stops there.
+Status: In Review. Stops there. The commit message's subject line is
+whatever is passed in, but the tool always appends a deterministic
+`git diff --staged --stat` block as the body — every commit objectively
+records which files changed regardless of how descriptive the subject line
+is. Fails fast with a clear error if nothing is staged.
 
 ## Local state
 
