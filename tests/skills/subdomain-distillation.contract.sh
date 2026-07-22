@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "subdomain-distillation" \
-  "According to this skill, which of the three subdomain types deserves the deepest modeling investment?" \
-  "Core"
+  "Per this skill's classification techniques, what one-word test does Vernon suggest asking to identify a Generic subdomain (as in, would you do this to it)?" \
+  "outsource"
 
 smoke_test_summary
