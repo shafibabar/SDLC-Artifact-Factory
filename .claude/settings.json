@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "purpose": "This repo's own dev-session config for the GitHub Project sync tooling (scripts/github-project/). Distinct from the plugin's own hooks/hooks.json: those are shipped hook governance for products this plugin builds; this file is personal tooling for developing THIS repo against the SKILL GEN Project board. See INVESTIGATION.md for what was actually verified vs. inferred.",
+    "last_updated": "2026-07-22"
+  },
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 scripts/github-project/plan_exit.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+
+  "_hooks_note": "The ExitPlanMode hook above only runs plan_exit.py WITHOUT --confirm — it prints the current draft, it never mutates GitHub. That keeps it safe to auto-fire: no approval-gated action happens without you explicitly running /plan-exit (with confirmation) afterward. There is no hookable 'entered plan mode' event distinct from the EnterPlanMode tool call itself, and that tool call carries no plan title/content to act on, so stage 1 (issue creation) has no native-hook path at all — /plan-start is the only mechanism, not a fallback for a broken automation. Whether this hook's stdout is actually surfaced to you mid-session (vs. only affecting hook exit-code/continue semantics) was not live-fire-verified while building this tooling — treat /plan-exit as the reliable path regardless."
+}
