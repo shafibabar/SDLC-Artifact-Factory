@@ -9,6 +9,11 @@ repo's default branch. Pass --base to cut from and target a different
 branch instead (e.g. an issue-level integration branch that sub-issue
 PRs merge into, rather than main directly) -- current HEAD must already
 be that branch (or a descendant of it) when this runs.
+
+The --base value is recorded in local state so exec_complete.py knows to
+auto-merge and auto-close this sub-issue once its PR is ready (see that
+script's docstring) -- default-branch sub-issues (no --base) are unaffected
+and still stop at Status: In Review, review/merge/close manual as always.
 """
 import argparse
 import re
@@ -80,6 +85,7 @@ def main():
 
         st["executions"][str(args.issue_number)] = {
             "branch": branch, "pr_url": pr_url, "status": "in_progress",
+            "base": args.base,
         }
         state.save(st)
 

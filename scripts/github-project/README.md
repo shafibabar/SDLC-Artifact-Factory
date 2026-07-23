@@ -30,8 +30,23 @@ exec-complete <n> "<msg>"     commit + push, Status -> In Review (stops there �
 
 Every command that mutates GitHub only runs when explicitly invoked (or, for
 `plan-exit`, only when `--confirm` is passed) — invoking the command *is* the
-approval checkpoint. Nothing past "In Review" (review, merge, close) is
-automated by this tooling.
+approval checkpoint. For a default-branch sub-issue (no `--base` at
+`exec-start`), nothing past "In Review" (review, merge, close) is automated
+by this tooling — that path lands directly on the default branch and still
+needs a real human review gate.
+
+For a sub-issue started with `exec-start <n> --base <branch>` (the
+issue-level-integration-branch pattern, D025), `exec-complete` goes further:
+it also marks the PR ready, merges it into `<branch>`, closes the sub-issue
+with a comment referencing the merged PR, and sets Status -> Done. This is
+necessary, not just convenient — a `--base` PR deliberately never carries
+`Closes #N` (see `exec_start.py`'s docstring: claiming that on a PR that
+merges into something other than the default branch would falsely mark the
+issue closed before the real work reaches `main`), so GitHub's own
+auto-close mechanism never fires for these sub-issues on its own. Without
+this, a `--base` sub-issue's PR can merge cleanly and the sub-issue still
+sits open forever — this happened for real on issues #112-#115 and
+#122-#124 before this behavior was added (2026-07-23).
 
 ## Commands
 
@@ -99,11 +114,18 @@ that it doesn't auto-close the issue).
 ### `exec_complete.py <sub-issue-number> "<commit message>"`
 Commits **currently staged changes** (does not `git add` anything for you —
 stage what you want committed first), pushes, moves the sub-issue to
-Status: In Review. Stops there. The commit message's subject line is
-whatever is passed in, but the tool always appends a deterministic
-`git diff --staged --stat` block as the body — every commit objectively
-records which files changed regardless of how descriptive the subject line
-is. Fails fast with a clear error if nothing is staged.
+Status: In Review. The commit message's subject line is whatever is passed
+in, but the tool always appends a deterministic `git diff --staged --stat`
+block as the body — every commit objectively records which files changed
+regardless of how descriptive the subject line is. Fails fast with a clear
+error if nothing is staged.
+
+If `exec_start.py` recorded a `--base` for this sub-issue, it doesn't stop
+at In Review: it also runs `gh pr ready`, `gh pr merge --merge
+--delete-branch` against that base, `gh issue close --reason completed`
+with a comment naming the merged PR, and sets Status: Done. Without a
+recorded `--base`, behavior is unchanged — stops at In Review, review/
+merge/close manual.
 
 ## Local state
 
