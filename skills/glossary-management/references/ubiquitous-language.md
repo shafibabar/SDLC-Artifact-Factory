@@ -133,7 +133,8 @@
 
 | Term | Definition |
 |---|---|
-| **Acceptance Testing** | Tests that verify a system meets the business requirements agreed with stakeholders. Typically expressed as BDD scenarios and executed against a deployed system. |
+| **Acceptance Test-Driven Development (ATDD)** | A practice where acceptance criteria are derived collaboratively from concrete worked examples *before* implementation (see Three Amigos), becoming the team's agreed definition of "done" for a story. Distinct from Acceptance Testing (below) — ATDD is a pre-code derivation practice; Acceptance Testing is post-deployment execution. This repo's `acceptance-criteria` + `bdd-feature-file` pairing is an ATDD practice in substance. |
+| **Acceptance Testing** | Tests that verify a system meets the business requirements agreed with stakeholders, executed against a deployed system. Distinct from Acceptance Test-Driven Development (ATDD) — this term describes running already-agreed tests post-deployment, not deriving them. |
 | **Behavior-Driven Development (BDD)** | A methodology that defines system behavior using human-readable specifications (Given/When/Then scenarios) before implementation. Specifications become executable tests. |
 | **Chaos Testing** | A testing discipline that deliberately introduces failures (network partitions, service crashes, resource exhaustion) into a system to verify it remains resilient. |
 | **Component Testing** | Tests that verify a single service or component in isolation, using test doubles for its dependencies. |
@@ -153,6 +154,7 @@
 | **Test-Driven Development (TDD)** | A methodology where tests are written before implementation code. The cycle is: write a failing test, write the minimum code to pass it, refactor. |
 | **Test Fixture** | A fixed set of data or state established before tests run, ensuring tests are reproducible and independent of each other. |
 | **Test Pyramid** | A model that guides the proportion of test types: many unit tests at the base, fewer integration tests in the middle, fewest E2E tests at the top. |
+| **Three Amigos** | A workshop practice bringing together business, development, and testing perspectives (played solo by a single agent when no live multi-role team exists) to collaboratively derive concrete examples and acceptance criteria before a story is estimated or built. See Acceptance Test-Driven Development (ATDD), Specification by Example. |
 | **Unit Testing** | Tests that verify a single unit of code (function, method, class) in complete isolation from all dependencies. |
 
 ---

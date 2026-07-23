@@ -4,11 +4,13 @@ description: >
   Teaches how to run Example Mapping — a structured conversation technique (Matt
   Wynne) for exploring a user story, discovering its rules, surfacing examples
   that clarify those rules, and identifying questions that must be answered before
-  the story is ready. Example Mapping bridges acceptance criteria and BDD feature
-  files by making implicit rules explicit through concrete examples. Used by the
-  requirements-analyst agent during the Ideate phase after acceptance criteria
-  are drafted.
-version: 1.1.0
+  the story is ready. Per Ken Pugh's ATDD practice (examples before rules, not
+  after), this runs BEFORE acceptance criteria are finalized — the map's rule and
+  example cards inform what the criteria say, not the reverse. Bridges user
+  stories and BDD feature files by making implicit rules explicit through
+  concrete examples. Used by the requirements-analyst agent during the Ideate
+  phase, before acceptance criteria are drafted.
+version: 1.2.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -24,7 +26,9 @@ Example Mapping is a structured technique for exploring user stories before they
 - **Examples** that concretely illustrate each rule (and its exceptions)
 - **Questions** that must be answered before the story is ready
 
-An example map makes implicit assumptions explicit. It consistently reveals scope that was invisible in the story and acceptance criteria — catching it here, in discovery, is far cheaper than catching it in implementation or testing.
+An example map makes implicit assumptions explicit. It consistently reveals scope that was invisible in the story — catching it here, in discovery, is far cheaper than catching it in implementation or testing.
+
+**This runs before acceptance criteria are finalized, not after.** Per Ken Pugh's ATDD practice — examples surface first, and the rule is distilled from discussing them, not decided first and illustrated afterward — this map's rule (blue) and example (green) cards are the *input* `acceptance-criteria` drafts from, once the map has no open question (red) cards. See `acceptance-criteria`'s "Deriving Criteria from a Worked Example" section for the other half of this discovery-then-draft sequence.
 
 ---
 
@@ -93,7 +97,7 @@ In a team context, example mapping is a "Three Amigos" session — product, deve
 ### Steps
 
 1. **Place the story card.** Read the story aloud. Confirm the "as a / I want to / so that" is clear.
-2. **Surface rules.** For each acceptance criterion, create a blue rule card. Ask: "Are there any implicit rules we haven't written down yet?" Add a blue card for each.
+2. **Surface rules.** For each business rule the story implies, create a blue rule card. Ask: "What must be true for this story to be considered correct?" and "Are there any implicit rules we haven't written down yet?" Add a blue card for each — acceptance criteria don't exist yet at this point; these rules are what the criteria will be drafted from, not derived from criteria already written.
 3. **Add examples per rule.** For each rule, ask: "What is the simplest example that proves this rule is satisfied?" Add a green card. Then: "What is a counter-example that would expose a bug?" Add another green card.
 4. **Capture questions.** When a disagreement or uncertainty arises about how a rule should work, stop and write a red question card. Do not resolve it through debate — record it and move on.
 5. **Assess readiness.** After the map is complete:

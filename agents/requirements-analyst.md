@@ -173,11 +173,13 @@ Ideate artifacts must be produced in this order because each depends on the prev
 5. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
 6. Epic List                  ← impact map deliverables decomposed into outcome-oriented epics
 7. User Story Backlog         ← epics decomposed into INVEST-compliant stories
-8. Acceptance Criteria        ← verifiable conditions per story (produced story-by-story)
-9. Example Maps               ← rules and examples per story (produced story-by-story)
+8. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
+9. Acceptance Criteria        ← verifiable conditions per story, drafted from the example map's rule/example cards (produced story-by-story)
 10. Story Map                 ← full user journey with MVP slice and release slices
 11. MoSCoW Prioritisation     ← Must / Should / Could / Won't for the defined delivery window
 ```
+
+Steps 8 and 9 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
 
 Do not produce items out of sequence. If a dependency is incomplete, surface the gap to Shafi before continuing.
 
