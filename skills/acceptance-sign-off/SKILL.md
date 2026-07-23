@@ -2,14 +2,15 @@
 name: acceptance-sign-off
 description: >
   Teaches how to produce the formal go/no-go artifact that closes Customer
-  Validation — the sign-off criteria checklist, the two-party sign-off
+  Validation — the sign-off criteria checklist (including exploratory
+  session findings alongside scripted UAT results), the two-party sign-off
   authority (Shafi plus a customer/design-partner representative), the
   distinction between full sign-off, conditional sign-off (with a documented
   remediation plan and target date), and no-go, and this artifact's role as
   the trigger for widening the `canary-deployment` rollout and the
   `feature-flag-design` release flag to General Availability. Used by the
   requirements-analyst during Customer Validation.
-version: 1.0.0
+version: 2.0.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -32,9 +33,10 @@ Before a sign-off decision of any kind can be recorded, the following are verifi
 
 - [ ] Every UAT scenario tracing to a Must Have story has a recorded result (`uat-plan`, `uat-scenario`)
 - [ ] The UAT pass-rate threshold stated in the `uat-plan` is met
-- [ ] Zero open Critical severity defects (`feedback-template`)
+- [ ] Every planned exploratory session has been run and debriefed (`uat-plan`'s Exploratory Testing Component) — a separate check from the pass-rate threshold, since a charter has no pass/fail; its findings are triaged into this checklist exactly like a scripted defect
+- [ ] Zero open Critical severity defects (`feedback-template`) — from either scripted UAT or exploratory sessions
 - [ ] Zero open High severity defects, **or** each is covered by a documented remediation plan with a target date (conditional path only — see below)
-- [ ] All feedback items have been triaged (`feedback-template`) — none left unreviewed
+- [ ] All feedback items have been triaged (`feedback-template`) — none left unreviewed, whether sourced from a scripted scenario or an exploratory debrief
 - [ ] No unaddressed blocking pattern exists — a pattern (`feedback-template`'s aggregation discipline) that, even at Medium severity, represents a majority of participants independently reporting the same friction on a Must Have flow is treated as blocking unless explicitly accepted with rationale
 - [ ] Beta program graduation criteria met for the relevant stage, if this release slice is progressing through `beta-program-design` stages
 
@@ -117,55 +119,10 @@ No agent widens a canary rollout or a release flag's scope to GA without a recor
 
 ---
 
-## Worked Example — Conditional Sign-Off, Release 1
+## Worked Example
 
-```markdown
----
-name: acceptance-sign-off-release-1
-product: Data Estate Mapping and Compliance Intelligence
-release-slice: Release 1 (MVP — Google Drive connect, scan, classify, gap report)
-version: 1.0.0
-phase: customer-validation
-created: 2026-07-26
-owner: requirements-analyst
----
-
-# Acceptance Sign-Off — Release 1
-
-## Sign-Off Criteria Checklist
-- [x] UAT-001 through UAT-004 all recorded (uat-plan)
-- [x] Pass-rate threshold met: 4 of 4 Must Have scenarios passed
-- [x] Zero open Critical defects
-- [x] Zero open High defects
-- [ ] Two Medium-severity items open (FB-001/FB-002 — gap report PDF export
-      hard to find; pattern confirmed across 2 of 3 design partners)
-- [x] All feedback triaged (feedback-template)
-- [x] Beta stage: closed beta graduation criteria met
-
-## Sign-Off Authority
-- Shafi (product owner)
-- Maya Chen, Compliance Officer, Northwind Compliance Co. (design-partner
-  representative)
-
-## Decision: CONDITIONAL SIGN-OFF
-
-**Conditions:**
-- FB-001/FB-002 (gap report PDF export placement, Medium, confirmed pattern) —
-  remediation plan: move export control above the fold in the report header —
-  owner: ux-architect — target date: 2026-08-05
-- No other open items
-
-## Rollout Action
-canary-deployment widens to 100% across the beta cohort's tenants immediately —
-the open items do not affect the Must Have outcome (gap report is exportable,
-just not conveniently placed). feature-flag-design release flag
-`gap-report.v1.enabled` scope widens to the full fleet on the same schedule as
-the canary; remediation is tracked independently and does not hold the release.
-
-## Follow-Up
-Re-verification of the export placement fix scheduled for 2026-08-05 via a
-targeted UAT-004 re-run with the same design-partner cohort.
-```
+Full worked example — a conditional sign-off incorporating both scripted
+UAT results and exploratory-session findings: `references/worked-example.md`.
 
 ---
 
@@ -174,6 +131,7 @@ targeted UAT-004 re-run with the same design-partner cohort.
 | Criterion | Pass | Fail |
 |---|---|---|
 | Checklist evidence-based | Every checklist item cites its source (`uat-plan`, `feedback-template`, `beta-program-design`) | Checklist items asserted without a traceable source |
+| Exploratory findings included | Exploratory-session results are checked and triaged alongside scripted UAT results, not treated as optional | A sign-off recorded while planned exploratory sessions never ran, or their findings were never triaged |
 | Two-party authority | Both Shafi and a customer/design-partner representative are named and recorded as agreeing | A unilateral internal decision recorded as "sign-off" |
 | Correct outcome category | Full/Conditional/No-go matches the actual defect/pattern status per the decision rules | A release with an open Critical defect recorded as full or conditional sign-off |
 | Conditions are dated and owned | Every conditional item has a remediation plan, an owner, and a target date | Vague "we'll fix it later" with no owner or date |
@@ -194,41 +152,10 @@ targeted UAT-004 re-run with the same design-partner cohort.
 
 **Skipping re-validation after remediation.** Assuming a fix works because it was deployed, without re-running the specific UAT scenario or re-checking the pattern, converts "remediated" into an untested claim — exactly the gap the whole Customer Validation phase exists to close.
 
+**Exploratory findings treated as informal, off-the-record chatter.** A finding surfaced during an exploratory session (`uat-plan`) is exactly as real as a scripted scenario's failure — it goes through the same `feedback-template` triage and the same checklist evidence requirement. Recording a sign-off decision without checking whether planned exploratory sessions actually ran and were debriefed reintroduces exactly the blind spot the sessions exist to close.
+
 ---
 
 ## Output Format
 
-```markdown
----
-name: acceptance-sign-off-[release-slice]
-product: [product name]
-release-slice: [name/description]
-version: 1.0.0
-phase: customer-validation
-created: [date]
-owner: requirements-analyst
----
-
-# Acceptance Sign-Off — [release-slice]
-
-## Sign-Off Criteria Checklist
-[Checklist with source citations]
-
-## Sign-Off Authority
-- Shafi (product owner)
-- [Name, role, company] (customer/design-partner representative)
-
-## Decision: [FULL SIGN-OFF / CONDITIONAL SIGN-OFF / NO-GO]
-
-**Conditions (if conditional):**
-- [Issue] — remediation plan: [...] — owner: [...] — target date: [...]
-
-**Blocking items (if no-go):**
-- [Issue] — required remediation before re-attempt: [...]
-
-## Rollout Action
-[canary-deployment widen/hold/revert instruction; feature-flag-design scope change]
-
-## Follow-Up
-[Re-verification plan and date, if conditional or no-go]
-```
+Full fill-in template: `references/output-format-template.md`.
