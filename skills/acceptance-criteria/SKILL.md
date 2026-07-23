@@ -7,14 +7,19 @@ description: >
   (via example-mapping), never decided as an abstract rule and illustrated
   afterward. Covers the Gherkin Given/When/Then format, the rule-based format,
   how to handle edge cases and negative scenarios, and how acceptance criteria
-  connect directly to BDD feature files. Acceptance criteria are the primary
-  handoff from the requirements-analyst to the test-strategist. Used during the
-  Ideate phase after user stories are written and example maps are discovered.
-version: 2.0.0
+  connect directly to BDD feature files. Includes scripts/scaffold-criteria.sh
+  (generates a new criteria doc pre-filled with story metadata) and
+  scripts/validate-criteria.sh (mechanically checks testability, Golden
+  Triangle coverage, and a traceable Derived-From link). Acceptance criteria
+  are the primary handoff from the requirements-analyst to the
+  test-strategist. Used during the Ideate phase after user stories are
+  written and example maps are discovered.
+version: 2.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, acceptance-criteria, bdd, gherkin, testing, product-discovery]
+related: [skill-authoring-standards, example-mapping]
 ---
 
 # Acceptance Criteria
@@ -28,6 +33,8 @@ Good acceptance criteria:
 - Are readable by the persona the story is written for (not just engineers)
 - Map directly to BDD scenarios in the `test-strategist`'s Gherkin feature files
 - Prevent scope creep by explicitly stating what is NOT included
+
+In the widely-used Three Cs framing of a user story (Card, Conversation, Confirmation — Ron Jeffries), acceptance criteria are the **Confirmation**: the agreed proof that the Conversation's outcome was actually built. This skill is that leg made rigorous and executable — a pedigree note, not a new requirement, since the practice below already implements it in full.
 
 ---
 
@@ -193,8 +200,17 @@ When handing off to the test-strategist, include:
 
 ---
 
+## Scripts
+
+Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides whether criteria are *good*, only whether they are structurally checkable, leaving judgment (is this Then actually observable, is the example real-feeling) to the requirements-analyst's own review.
+
+| Script | Does | Run when |
+|---|---|---|
+| `scripts/scaffold-criteria.sh <story-id> <story-title>` | Copies `assets/acceptance-criteria-template.md`, fills in the story ID/title and today's date, writes a new criteria doc under `artifacts/[product]/ideate/acceptance-criteria/` | Starting criteria for a new story, once its example map has no open red cards |
+| `scripts/validate-criteria.sh <path>` | Checks for testability red-flag words ("should", "easily", "properly", "well" with no accompanying metric), confirms at least one criterion touches each Golden Triangle angle (happy/negative/edge), and confirms a non-empty `Derived From` field pointing at an example map | Before treating a story's criteria as ready to hand off to `test-strategist` |
+
+---
+
 ## Output Format
 
-Full fill-in template, including the `Derived From` field that traces
-each story's criteria back to its example map:
-`references/output-format-template.md`.
+Fill-in-and-go: `assets/acceptance-criteria-template.md` (or generate it directly via `scripts/scaffold-criteria.sh`). Annotated template explaining each field, including the `Derived From` field that traces each story's criteria back to its example map: `references/output-format-template.md`. Mechanical check before treating criteria as done: `scripts/validate-criteria.sh`.
