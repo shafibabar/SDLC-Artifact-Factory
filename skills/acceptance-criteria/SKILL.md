@@ -2,12 +2,15 @@
 name: acceptance-criteria
 description: >
   Teaches how to write acceptance criteria that are unambiguous, testable, and
-  complete. Covers the Gherkin Given/When/Then format, the rule-based format,
+  complete — and, per Ken Pugh's Acceptance Test-Driven Development (ATDD)
+  practice, how criteria are derived: from a concrete worked example first
+  (via example-mapping), never decided as an abstract rule and illustrated
+  afterward. Covers the Gherkin Given/When/Then format, the rule-based format,
   how to handle edge cases and negative scenarios, and how acceptance criteria
   connect directly to BDD feature files. Acceptance criteria are the primary
   handoff from the requirements-analyst to the test-strategist. Used during the
-  Ideate phase after user stories are written.
-version: 1.1.0
+  Ideate phase after user stories are written and example maps are discovered.
+version: 2.0.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -96,6 +99,19 @@ A story with only happy-path criteria is not ready for the backlog. It guarantee
 
 ---
 
+## Deriving Criteria from a Worked Example
+
+Acceptance criteria are not drafted as abstract rules and illustrated afterward. Per Ken Pugh's Acceptance Test-Driven Development (ATDD) practice, they are **derived from at least one concrete, specific worked example**, with the general rule extracted from discussing it — not decided first and then illustrated. Working the other direction tends to produce rules nobody has actually stress-tested against a hard case yet.
+
+- **Start from real-feeling specifics.** A named persona, real numbers, a real edge value ("Maya, a Compliance Officer, connects a Google Drive with 3 files, one containing a Restricted-labeled document") — not a placeholder ("a user connects a source").
+- **Generalise only after two or three examples.** A criterion drafted from one example hasn't surfaced its exceptions yet.
+- **This is `example-mapping`'s job, run first.** Acceptance criteria are drafted *from* an example map's rule (blue) and example (green) cards, once the map has no open question (red) cards — not the reverse. `example-mapping` runs before this skill produces anything, not after.
+- **A story with no derivable worked example is not ready to leave Ideate.** This is a diagnostic for estimation readiness, not a formality to skip — if no concrete example of the story working can be produced, the story isn't understood well enough to write criteria for, let alone estimate.
+- **Solo-agent honesty note** (matching `example-mapping`'s own precedent): the "worked example" here is the requirements-analyst agent reasoning through Customer/Developer/Tester perspectives in sequence (the **Three Amigos** practice) — not evidence a real multi-person collaborative session occurred. State this plainly rather than implying a session that didn't happen.
+- **Criteria are a contract, not a moving target.** Once agreed, changing a criterion requires the same reasoning pass that produced it — a criterion doesn't get silently "fixed" later to match what got built.
+
+---
+
 ## Writing Criteria for Edge Cases
 
 For each story, identify:
@@ -141,6 +157,9 @@ When handing off to the test-strategist, include:
 - All Gherkin criteria (becomes Scenarios in the feature file)
 - All rule-based criteria (becomes background conditions or step definitions)
 - A list of explicitly out-of-scope edge cases (prevents uncontrolled test expansion)
+- A reference to the example map (`example-mapping`) each story's criteria were derived from — this is the traceable record of *why* the criteria say what they say, not just what they say
+
+`acceptance-criteria` and `bdd-feature-file` together are this repo's ATDD practice made executable — `uat-plan`/`uat-scenario` are a distinct, later, human-executed validation against a deployed system. Don't conflate the two: an "acceptance test" in this skill's sense is pre-code and collaboratively derived; "UAT" is post-deploy execution of already-agreed scenarios.
 
 ---
 
@@ -148,6 +167,7 @@ When handing off to the test-strategist, include:
 
 | Criterion | Pass | Fail |
 |---|---|---|
+| Derived from an example | Every story has a completed example map (no open red cards) before criteria are drafted | Criteria drafted with no preceding example map, or against a map still carrying open questions |
 | Testability | Every criterion can be evaluated as pass/fail | Any criterion containing "should", "easily", "properly", "well" |
 | Happy + negative + edge | All three angles covered | Only happy-path criteria |
 | Gherkin format for behaviour | Given/When/Then used for all behavioural criteria | Prose sentences with no verifiable structure |
@@ -169,60 +189,12 @@ When handing off to the test-strategist, include:
 
 **Boundary-blind criteria:** happy path plus one error case, with the interesting limits unexamined — the 500,001st file, the empty Google Drive, the scan that hits the 30-minute mark exactly. The Golden Triangle requires the edge angle for a reason: production incidents live at the boundaries.
 
+**Rule-first drafting:** writing the abstract criterion first ("the system must validate file size limits") and inventing an example to match it afterward, rather than starting from a real example and generalising. This is the exact inversion ATDD exists to prevent — a rule invented before being tested against a concrete case is rarely stress-tested against the hard case that actually breaks it.
+
 ---
 
 ## Output Format
 
-```markdown
----
-name: acceptance-criteria
-product: [product name]
-story-id: US-[ID]
-version: 1.0.0
-phase: ideate
-created: [date]
-owner: requirements-analyst
----
-
-# Acceptance Criteria: US-[ID] — [Story title]
-
-## Story Reference
-As a [Persona], I want to [action], so that [outcome].
-
-## Happy Path
-
-### AC-001: [Short title]
-```gherkin
-Given [precondition],
-When [action],
-Then [outcome].
-```
-
-## Error / Negative Scenarios
-
-### AC-002: [Short title]
-```gherkin
-Given [error precondition],
-When [action],
-Then [error outcome visible to user].
-```
-
-## Boundary / Edge Cases
-
-### AC-003: [Short title]
-```gherkin
-Given [boundary condition],
-When [action at limit],
-Then [expected behaviour at limit].
-```
-
-## Rule-Based Criteria
-
-### AC-004: [Rule name]
-**Rule:** [Statement]
-**Verify:** [How to verify]
-**Example:** [Concrete illustration]
-
-## Explicitly Out of Scope
-- [Edge case or scenario explicitly not covered by this story]
-```
+Full fill-in template, including the `Derived From` field that traces
+each story's criteria back to its example map:
+`references/output-format-template.md`.

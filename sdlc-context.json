@@ -2,8 +2,8 @@
   "_meta": {
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
-    "last_updated": "2026-07-22",
-    "updated_by": "Chunk 27 — adopted micro-frontend architecture (D023): 2 new skills (microfrontend-architecture, css-styling-strategy), 4 skills refactored into progressive disclosure (react-project-structure, react-routing, react-state-management, ui-component-spec), 2 agents updated (frontend-engineer, ux-architect); ended plan-start/plan-exit ceremony for future skill refactors (D024) (PRs #99-#107)"
+    "last_updated": "2026-07-23",
+    "updated_by": "Chunk 28 — refactored acceptance-criteria (v2.0.0) per Ken Pugh's ATDD practice; fixed a real sequencing bug in requirements-analyst's Execution Sequence (Example Maps now before Acceptance Criteria) and the matching example-mapping description/step; added ATDD and Three Amigos to the canonical glossary. First skill done under the no-ceremony process (D024) — no GitHub issue for this chunk."
   },
 
   "project": {
@@ -616,6 +616,19 @@
         "Explicitly out of scope: agents/platform-engineer.md (independent per-fragment CI/CD pipelines) and agents/enterprise-architect.md (container/component diagrams reflecting the new frontend topology) — real follow-ups, flagged rather than silently deferred (GitHub issue #89, sub-issues #90-#98)",
         "Process change mid-campaign (decision D024): Shafi ended the plan-start/plan-exit GitHub Project ceremony for future skill refactors, given the accumulated research and demonstrated judgment across DDD and this chunk. Skill refactors continue directly (read, gap-check against research/industry sources, progressive-disclosure split, rewrite, commit) without a new parent issue + sub-issues per skill; already-open sub-issues in this chunk (#90-#98) were still completed via the existing exec-start/exec-complete flow rather than abandoned mid-flight."
       ]
+    },
+    {
+      "chunk": 28,
+      "title": "acceptance-criteria refactor (first skill under the no-ceremony process, D024) + cross-file sequencing fix",
+      "status": "complete",
+      "deliverables": [
+        "skills/acceptance-criteria/SKILL.md rewritten (v2.0.0) with a new 'Deriving Criteria from a Worked Example' section per Ken Pugh's Acceptance Test-Driven Development (ATDD) practice (research/requirements-and-user-stories/lean-agile-atdd-pugh.md): criteria are derived from a concrete worked example via example-mapping first, never decided as an abstract rule and illustrated afterward; includes a solo-agent honesty note (the 'worked example' is the requirements-analyst agent reasoning through Customer/Developer/Tester perspectives, not a real multi-person session) and an explicit acceptance-criteria-vs-UAT boundary note. Split into progressive disclosure: references/output-format-template.md.",
+        "Fixed a real sequencing bug found during the book research (lean-agile-atdd-pugh.md): agents/requirements-analyst.md's Execution Sequence ran Acceptance Criteria (step 8) before Example Maps (step 9), backwards from Specification-by-Example's examples-first order. Swapped to Example Maps (step 8) then Acceptance Criteria (step 9), with an explicit note on why the order matters.",
+        "skills/example-mapping/SKILL.md (v1.2.0) corrected to match: step 2 no longer derives rule cards 'for each acceptance criterion' (which required criteria to already exist); description and Purpose updated to state example mapping runs before acceptance criteria are drafted, not after.",
+        "skills/glossary-management/references/ubiquitous-language.md: added 'Acceptance Test-Driven Development (ATDD)' and 'Three Amigos' as canonical terms, both previously used informally in this repo's skills but never defined. Updated the existing 'Acceptance Testing' entry to cross-reference and distinguish it from ATDD (pre-code collaborative derivation vs. post-deployment execution) -- preempting the exact kind of terminology collision the testing-research cluster flagged as a real risk pattern (Quigley's V&V dictionary research, chunk 26). Did NOT add ATDD as a 6th non-negotiable methodology in CLAUDE.md alongside DDD/Event Storming/TDD/BDD/SOLID -- that is a bigger scope decision requiring Shafi's explicit sign-off, flagged as a follow-up consideration, not decided unilaterally.",
+        "tests/skills/acceptance-criteria.contract.sh and tests/skills/example-mapping.contract.sh added, live-verified against the corrected ordering.",
+        "This is the first skill refactor done under the no-ceremony process (decision D024) -- no parent GitHub issue or sub-issues created; work proceeded directly per the updated feedback-skill-refactor-process."
+      ]
     }
   ],
 
@@ -797,6 +810,13 @@
       "question": "All 135+ skill files under skills/<domain>/<name>/SKILL.md (two-level nesting, domain-grouped) are confirmed NOT discovered by real Claude Code — verified empirically via `claude --plugin-dir` + `claude plugin details` on both the real repo and isolated test copies. Real discovery requires flat skills/<name>/SKILL.md (one level). No manifest-level path override was found to work around this. Needs a dedicated follow-up PR: flatten every skill's path (mechanical file move, no content change) and update every doc describing the domain-grouped structure (CLAUDE.md, README, every agent's skill-path references).",
       "status": "resolved — see decision D016",
       "raised_during": "Chunk 19 live testing (commands/hooks), same session that fixed the equivalent agents/<role>/AGENT.md → agents/<role>.md issue (D013)"
+    },
+    {
+      "id": "Q002",
+      "date": "2026-07-23",
+      "question": "Should Acceptance Test-Driven Development (ATDD) be promoted to a 6th non-negotiable methodology in CLAUDE.md, alongside DDD, Event Storming, TDD, BDD, and SOLID? This repo's acceptance-criteria + bdd-feature-file + example-mapping pairing already is an ATDD practice in substance (examples-first collaborative derivation, now correctly sequenced per decision in Chunk 28), and research/requirements-and-user-stories/lean-agile-atdd-pugh.md noted ATDD's absence from the methodology table is inconsistent with TDD/BDD both being listed there. Not decided unilaterally during the acceptance-criteria refactor since changing the fixed 5-methodology list is a bigger scope decision than a skill content fix.",
+      "status": "open — needs Shafi's decision",
+      "raised_during": "Chunk 28, acceptance-criteria skill refactor"
     }
   ],
 
