@@ -84,10 +84,17 @@ Status: In Progress and clears the draft.
 Safe to re-run: rows already created (tracked in local state) are skipped on
 retry, so a failure partway through a batch won't duplicate issues.
 
-### `exec_start.py <sub-issue-number>`
+### `exec_start.py <sub-issue-number> [--base <branch>]`
 Creates branch `issue-<n>-<slug-of-title>`, an empty starting commit (so a
 draft PR can open immediately with `Closes #<n>` in its body), pushes, opens
-a **draft PR**, and moves the sub-issue to Status: In Progress.
+a **draft PR**, and moves the sub-issue to Status: In Progress. Without
+`--base`, branches from current HEAD and the PR targets the repo's default
+branch. With `--base <branch>`, cuts from and targets `<branch>` instead
+(e.g. an issue-level integration branch that sub-issue PRs merge into
+rather than the default branch) — current HEAD must already be that branch
+when this runs. The PR body is adjusted accordingly (`Closes #<n>` only
+applies when merging into the default branch; a `--base` PR states plainly
+that it doesn't auto-close the issue).
 
 ### `exec_complete.py <sub-issue-number> "<commit message>"`
 Commits **currently staged changes** (does not `git add` anything for you —

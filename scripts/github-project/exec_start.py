@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
-"""exec-start <sub-issue-number>
+"""exec-start <sub-issue-number> [--base <branch>]
 
 Creates a branch + draft PR for the given sub-issue and moves it to
 Status = In Progress. Invoking this command IS the approval checkpoint.
+
+By default the branch is cut from current HEAD and the PR targets the
+repo's default branch. Pass --base to cut from and target a different
+branch instead (e.g. an issue-level integration branch that sub-issue
+PRs merge into, rather than main directly) -- current HEAD must already
+be that branch (or a descendant of it) when this runs.
 """
 import argparse
 import re
@@ -29,6 +35,7 @@ def run_git(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("issue_number", type=int)
+    parser.add_argument("--base", default=None, help="Branch to cut from and target (default: repo default branch)")
     args = parser.parse_args()
 
     try:
@@ -45,17 +52,26 @@ def main():
         run_git(["commit", "--allow-empty", "-m", f"Start #{args.issue_number}: {title}"])
         run_git(["push", "-u", "origin", branch])
 
-        pr_body = f"Closes #{args.issue_number}"
-        pr_out = subprocess.run(
-            [
-                "gh", "pr", "create",
-                "--repo", f"{config.REPO_OWNER}/{config.REPO_NAME}",
-                "--title", f"{title} (#{args.issue_number})",
-                "--body", pr_body,
-                "--draft",
-            ],
-            cwd=_REPO_ROOT, capture_output=True, text=True,
-        )
+        if args.base:
+            pr_body = (
+                f"Part of #{args.issue_number}. Merges into `{args.base}`, not directly "
+                f"into the default branch -- this does not auto-close #{args.issue_number}; "
+                f"that happens when `{args.base}` itself merges."
+            )
+        else:
+            pr_body = f"Closes #{args.issue_number}"
+
+        pr_cmd = [
+            "gh", "pr", "create",
+            "--repo", f"{config.REPO_OWNER}/{config.REPO_NAME}",
+            "--title", f"{title} (#{args.issue_number})",
+            "--body", pr_body,
+            "--draft",
+        ]
+        if args.base:
+            pr_cmd += ["--base", args.base]
+
+        pr_out = subprocess.run(pr_cmd, cwd=_REPO_ROOT, capture_output=True, text=True)
         if pr_out.returncode != 0:
             raise gh.GhError(f"gh pr create failed:\n{pr_out.stderr.strip()}")
         pr_url = pr_out.stdout.strip()
