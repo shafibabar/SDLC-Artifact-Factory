@@ -11,13 +11,17 @@ description: >
   Claude sessions) the context needed to understand why the system is built
   the way it is. Also teaches the companion Architecture Principle format for
   durable, cross-cutting guidance that many ADRs cite, as distinct from a
-  single point-in-time decision. Used by the enterprise-architect agent
-  throughout the Design phase.
-version: 2.0.0
+  single point-in-time decision. Includes scripts/scaffold-adr.sh (generates
+  a new ADR file pre-filled from the template, auto-resolving the next
+  ADR-NNN) and scripts/validate-adr.sh (mechanically checks an existing ADR
+  against this skill's Quality Criteria). Used by the enterprise-architect
+  agent throughout the Design phase.
+version: 3.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, adr, decision-records, trade-offs, principles, governance]
+related: [skill-authoring-standards, nfr-specification]
 ---
 
 # ADR Authoring
@@ -63,9 +67,9 @@ Not everything that sounds like a decision is one. An ADR is a specific, point-i
 
 An ADR's frontmatter carries `adr-id`, `title`, `status`, `date`, and `deciders`. The body has six required sections: Status, Context (stated neutrally — facts and forces, not an argument for the conclusion), Decision (an active declarative sentence), Options Considered (at least two, each with honest pros/cons), Rationale, and Consequences (Positive, Negative/Trade-offs, and Risks — all three, not just the positive). A closing Related ADRs section links dependent or related decisions.
 
-**Rationale must name the trade-off.** Per Ch. 4's framing of architecture characteristics as inherently competing, the Rationale section requires an explicit `**Trade-off:**` line naming the 2-3 characteristics being traded off against each other — e.g., "durability over latency," not left implicit in surrounding prose. For a decision with three or more genuinely competing characteristics, add an optional trade-off matrix (rows = characteristics, columns = options) to Options Considered — text-only pros/cons lose a multi-dimensional trade-off past two axes.
+**Rationale must name the trade-off.** Per Ch. 4's framing of architecture characteristics as inherently competing, the Rationale section requires an explicit `**Trade-off:**` line naming the 2-3 characteristics being traded off against each other — e.g., "durability over latency," not left implicit in surrounding prose. The characteristics being traded off are frequently the same ones `nfr-specification`'s Architecture Handoff section already flagged as architecturally significant — cite them by the same name rather than restating them in different words. For a decision with three or more genuinely competing characteristics, add an optional trade-off matrix (rows = characteristics, columns = options) to Options Considered — text-only pros/cons lose a multi-dimensional trade-off past two axes.
 
-Full template with both additions inline, ready to copy: `references/output-format-template.md`. Two full worked examples — one two-option/prose-trade-off ADR, one three-characteristic ADR with a filled-in matrix: `references/worked-example.md`.
+Full template with both additions inline, ready to copy: `references/output-format-template.md`. The identical template as a literal, fill-in-and-go file: `assets/adr-template.md` — use it directly, or run `scripts/scaffold-adr.sh` to generate a new ADR from it with the frontmatter and next ADR number already filled in. Two full worked examples — one two-option/prose-trade-off ADR, one three-characteristic ADR with a filled-in matrix: `references/worked-example.md`.
 
 ---
 
@@ -94,9 +98,9 @@ Superseding has mechanics that keep the record navigable years later:
 
 ## ADR Numbering
 
-ADRs are numbered sequentially: `ADR-001`, `ADR-002`, ...
+ADRs are numbered sequentially: `ADR-001`, `ADR-002`, ... Within a product, ADR numbering is product-scoped. `scripts/scaffold-adr.sh` resolves the next number automatically by scanning `artifacts/[product]/design/decisions/` for the highest existing `ADR-NNN` — do not hand-assign a number when the script is available, since a hand-assigned number is exactly the kind of thing two concurrent decisions can silently collide on.
 
-Within a product, ADR numbering is product-scoped. The SDLC Artifact Factory plugin itself also has ADRs for its own design decisions (already captured in `sdlc-context.json → decisions` — those will be formalised as ADRs when the remaining governance skills are built).
+The SDLC Artifact Factory plugin itself also has ADRs for its own design decisions (already captured in `sdlc-context.json → decisions` — those will be formalised as ADRs when the remaining governance skills are built).
 
 ---
 
@@ -107,6 +111,19 @@ ADRs are stored at: `artifacts/[product]/design/decisions/ADR-[NNN]-[slug].md`
 The enterprise-architect maintains an ADR index at: `artifacts/[product]/design/decisions/README.md`
 
 Principles for the same product live alongside them — see `references/architecture-principles.md` for the storage convention.
+
+---
+
+## Scripts
+
+Per `skill-authoring-standards`, this skill owns two deterministic, single-purpose scripts — neither makes a judgment call; both are mechanical checks or generation steps that free the enterprise-architect to spend reasoning on the decision itself, not the paperwork around it.
+
+| Script | Does | Run when |
+|---|---|---|
+| `scripts/scaffold-adr.sh <product> <slug>` | Copies `assets/adr-template.md`, resolves the next `ADR-NNN` by scanning `artifacts/[product]/design/decisions/`, fills in `date` and the resolved `adr-id`/`title` placeholders, writes `artifacts/[product]/design/decisions/ADR-[NNN]-[slug].md` | Starting any new ADR — replaces hand-copying the template and hand-counting existing files |
+| `scripts/validate-adr.sh <path-to-adr.md>` | Checks required frontmatter fields are present, a Rationale `**Trade-off:**` line exists, Consequences has all three subsections (Positive/Negative/Risks), and a Related ADRs section is present — reports pass/fail per check, mirroring the Quality Criteria table below | Before marking an ADR `Accepted`, or as a final check before considering an ADR done |
+
+Both are advisory, not blocking — they mechanize the parts of this skill's Quality Criteria that are actually checkable by a script (structure, presence, required sections) and leave the parts that require judgment (is the Context neutral, is the Rationale honest) to the enterprise-architect's own review.
 
 ---
 
@@ -138,9 +155,10 @@ Principles for the same product live alongside them — see `references/architec
 | **Editing an Accepted ADR in place** — updating the decision text as things change | The historical record is destroyed; "why did we believe X in June?" becomes unanswerable | Accepted ADRs are immutable except for status-line updates; changes require a superseding ADR |
 | **The mega-ADR** — one record covering event publication, API versioning, and tenancy | The parts have different lifecycles; superseding one aspect falsely invalidates the rest | Split into one ADR per independently reversible decision, cross-linked in Related ADRs |
 | **The principle disguised as a decision** — a Rationale whose reasoning generalizes far beyond the one decision at hand ("we always prefer async") | If this ADR is ever superseded, the general guidance silently disappears with it — future ADRs have nothing to cite | Pull the generalization into a Principle record (`references/architecture-principles.md`); the ADR's Rationale cites it instead of restating it |
+| **Hand-counting the next ADR number** — reading the directory listing and guessing the next `NNN` | Two decisions written close together can silently collide on the same number | Run `scripts/scaffold-adr.sh`, which resolves the number by scanning the directory itself |
 
 ---
 
 ## Output Format
 
-Template (ADR): `references/output-format-template.md`. Two worked examples: `references/worked-example.md`. Companion Principle format: `references/architecture-principles.md`.
+Fill-in-and-go: `assets/adr-template.md` (or generate it directly via `scripts/scaffold-adr.sh`). Annotated template explaining each field: `references/output-format-template.md`. Two worked examples: `references/worked-example.md`. Companion Principle format: `references/architecture-principles.md`. Mechanical structure check before calling an ADR done: `scripts/validate-adr.sh`.
