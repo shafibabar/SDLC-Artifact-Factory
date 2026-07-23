@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-23",
-    "updated_by": "Chunk 28 — refactored acceptance-criteria (v2.0.0) per Ken Pugh's ATDD practice; fixed a real sequencing bug in requirements-analyst's Execution Sequence (Example Maps now before Acceptance Criteria) and the matching example-mapping description/step; added ATDD and Three Amigos to the canonical glossary. First skill done under the no-ceremony process (D024) — no GitHub issue for this chunk."
+    "updated_by": "Chunk 29 — refactored acceptance-sign-off (v2.0.0) and added an Exploratory Testing Component to uat-plan (v2.0.0) per Hendrickson/Crispin & Gregory; updated requirements-analyst and test-strategist for the exploratory step and Quadrant ownership split. First chunk using an issue-level integration branch (D025) — issue #110, sub-issues #112-#115 merged into PR #111, which is now ready for Shafi's review."
   },
 
   "project": {
@@ -629,6 +629,19 @@
         "tests/skills/acceptance-criteria.contract.sh and tests/skills/example-mapping.contract.sh added, live-verified against the corrected ordering.",
         "This is the first skill refactor done under the no-ceremony process (decision D024) -- no parent GitHub issue or sub-issues created; work proceeded directly per the updated feedback-skill-refactor-process."
       ]
+    },
+    {
+      "chunk": 29,
+      "title": "acceptance-sign-off refactor + exploratory testing added to uat-plan -- first chunk using an issue-level integration branch",
+      "status": "complete",
+      "deliverables": [
+        "skills/uat-plan/SKILL.md rewritten (v2.0.0) adding an Exploratory Testing Component per Elisabeth Hendrickson's Explore It! and Crispin & Gregory's Agile Testing (research/testing/explore-it-hendrickson.md, research/testing/agile-testing-crispin-gregory.md) -- this repo had zero exploratory testing coverage anywhere before this chunk. Time-boxed charter template (Explore/with/to discover), session record shape, CRUD/Boundaries/Position/Interruptions/Configuration-variance/Saboteur heuristics, SFDIPOT coverage audit, and an explicit honesty note that an agent drafts the charter but a human executor does the actual exploring -- an agent reasoning over a UI alone is not exploratory testing under this definition. Added as a separate Exit Criterion (charters run and debriefed) distinct from the scripted pass-rate threshold, since a charter has no pass/fail. Split into progressive disclosure: references/exploratory-session-template.md, references/worked-example.md, references/output-format-template.md.",
+        "skills/acceptance-sign-off/SKILL.md updated (v2.0.0) to check exploratory-session findings alongside scripted UAT results in the Sign-Off Criteria Checklist -- absorbed through the existing feedback-template triage/blocking-pattern mechanics with no structural rewrite, confirming the direct research finding that this skill itself had no gap, only its upstream input (uat-plan) did. Split into progressive disclosure: references/worked-example.md, references/output-format-template.md.",
+        "agents/requirements-analyst.md (v1.3.0): Customer Validation Execution Sequence gains an explicit Exploratory Charters step (distinct from UAT Scenarios and from UAT Execution, which now explicitly covers both scripted and exploratory sessions running together); Completion Criteria gains a distinct exploratory-sessions-run-and-debriefed criterion.",
+        "agents/requirements-analyst.md and agents/test-strategist.md (v1.2.0) both gain an identical cross-agent note mapping the Agile Testing Quadrants: test-strategist owns Q1/Q2/Q4 (technology-facing + BDD), requirements-analyst owns Q3 (exploratory/UAT) -- a deliberate division of labor that was previously implicit and undocumented in both files.",
+        "tests/skills/uat-plan.contract.sh and tests/skills/acceptance-sign-off.contract.sh added, live-verified.",
+        "First chunk executed using an issue-level integration branch (issue-110-refactor-acceptance-sign-off-skill, PR #111), per Shafi's explicit request to run this 'like a proper software organization': parent issue #110 with 4 dependency-ordered sub-issues (#112-#115), each sub-issue's branch cut from and its PR targeting the integration branch (via a new exec_start.py --base flag, PR #109) rather than main, merged into the integration branch by Claude in sequence as each completed (explicitly delegated by Shafi -- 'I will review and merge the final PR'). PR #111 (integration branch -> main) is the only PR Shafi reviews/merges; it is marked ready for review once this chunk's housekeeping lands."
+      ]
     }
   ],
 
@@ -800,6 +813,13 @@
       "decision": "End the plan-start/plan-exit GitHub Project ceremony (parent issue + numbered sub-issues via save_draft/plan_exit) for future individual skill refactors. Skill refactors continue directly -- read the current skill, gap-check against research/industry sources, design a progressive-disclosure split, rewrite, commit -- without a new parent issue + sub-issue set per skill. Already-open sub-issues from in-flight plans (this chunk's #90-#98) were still completed via the existing exec-start/exec-complete flow rather than abandoned mid-flight, since abandoning already-created GitHub tracking would leave orphaned issues.",
       "rationale": "Shafi's explicit instruction, given after two full campaign cycles (ddd-agent-handoff issue #54, subdomain-distillation issue #68) and mid-way through a third (this chunk, issue #89): the plan/execute ceremony's value was establishing a repeatable, well-understood procedure (per D021's per-skill process) -- once demonstrated and understood, repeating the ceremony for every additional skill adds overhead without adding safety, given the process itself (gap-check against real sources, progressive disclosure, verification) is what's load-bearing, not the GitHub issue tracking around it.",
       "alternatives_rejected": ["Keep using plan-start/plan-exit for every future skill -- rejected per Shafi's explicit instruction once momentum and shared understanding were established", "Also abandon the already-open #90-#98 sub-issues' tracking retroactively -- rejected: they were already created and tracked; finishing them via the existing lightweight exec-start/exec-complete flow avoided orphaning GitHub state for no benefit"]
+    },
+    {
+      "id": "D025",
+      "date": "2026-07-23",
+      "decision": "Re-introduced GitHub issue/sub-issue tracking (reversing D024's default, for this case) using a new pattern: an issue-level integration branch with its own draft PR, sub-issue branches cut from and PRs targeting that integration branch (not main) via exec_start.py's new --base flag, merged into the integration branch by Claude in sequence as each sub-issue completes, with only the single integration-branch-to-main PR left for Shafi to review and merge. Used for the acceptance-sign-off refactor (issue #110, sub-issues #112-#115, integration PR #111).",
+      "rationale": "Shafi explicitly requested 'detailed issues and sub-issues and relevant PRs' for this refactor and asked that it be 'done automatically,' with only one final PR requiring his review -- a different, heavier-weight shape than D024's default direct-commit process, requested for this specific case rather than a reversal of D024 generally. The issue-level-branch pattern satisfies both asks at once: full GitHub tracking/traceability per sub-issue, but a single review/merge point for Shafi rather than one per sub-issue.",
+      "alternatives_rejected": ["Merge every sub-issue PR directly into main as in the original D021-era process -- rejected: contradicts 'I will review and merge the final PR,' which implies exactly one PR for Shafi to handle, not one per sub-issue", "Skip GitHub issues entirely per D024's default -- rejected: contradicts this specific request for 'detailed issues and sub-issues,' which D024 did not forbid for cases where Shafi explicitly asks for it again"]
     }
   ],
 
