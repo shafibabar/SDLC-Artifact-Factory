@@ -3,16 +3,21 @@ name: adr-authoring
 description: >
   Teaches how to write Architecture Decision Records (ADRs) — the authoritative
   log of every significant architectural choice, the context that prompted it,
-  the options considered, and the rationale for the decision made. ADRs are
-  mandatory for every non-obvious architecture decision in this plugin. They
-  prevent re-litigating settled decisions and give future engineers (and future
-  Claude sessions) the context needed to understand why the system is built the
-  way it is. Used by the enterprise-architect agent throughout the Design phase.
-version: 1.1.0
+  the options considered, and the rationale for the decision made, including
+  naming which architecture characteristics were explicitly traded off against
+  each other (per Fundamentals of Software Architecture). ADRs are mandatory
+  for every non-obvious architecture decision in this plugin. They prevent
+  re-litigating settled decisions and give future engineers (and future
+  Claude sessions) the context needed to understand why the system is built
+  the way it is. Also teaches the companion Architecture Principle format for
+  durable, cross-cutting guidance that many ADRs cite, as distinct from a
+  single point-in-time decision. Used by the enterprise-architect agent
+  throughout the Design phase.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, adr, decision-records, governance]
+tags: [design, architecture, adr, decision-records, trade-offs, principles, governance]
 ---
 
 # ADR Authoring
@@ -24,6 +29,8 @@ An Architecture Decision Record (ADR, Michael Nygard) is a short document that c
 ADRs serve two purposes:
 1. **Prevent re-litigation.** Once a decision is recorded as `Accepted`, it is settled. Teams stop re-arguing settled decisions and spend that energy building.
 2. **Enable informed change.** When circumstances change and a decision needs to be revisited, the ADR gives the context needed to understand what was originally intended and why. Changing the decision means superseding the ADR, not deleting it.
+
+Per Richards & Ford's *Fundamentals of Software Architecture* (Ch. 1), the deeper reason both purposes work is that **why is more important than how** — the reasoning behind a decision is what lets a future architect know when the decision no longer applies. An ADR that records the "how" without the "why" cannot be safely revisited later.
 
 ---
 
@@ -44,62 +51,21 @@ Do NOT write an ADR for:
 
 ---
 
+## Architecture Decisions vs. Architecture Principles
+
+Not everything that sounds like a decision is one. An ADR is a specific, point-in-time choice for this system, in this context — superseded when circumstances change, never edited in place. A **Principle** is durable, general guidance cited by many future ADRs (e.g., "prefer asynchronous communication across Bounded Contexts"). Writing a Principle's reasoning inside a single ADR's Rationale buries guidance that should outlive that one decision — if that ADR is ever superseded, the general guidance silently disappears along with the specific choice it happened to be attached to.
+
+**The test:** if the reasoning would apply unchanged to many future, unrelated decisions — not just the one at hand — it belongs in a Principle, not an ADR's Rationale. Full distinction, Principle format, storage convention, and a worked example: `references/architecture-principles.md`.
+
+---
+
 ## ADR Format
 
-```markdown
----
-adr-id: ADR-[NNN]
-title: [Short imperative title — "Use Transactional Outbox for Event Publication"]
-status: [Proposed | Accepted | Deprecated | Superseded by ADR-NNN]
-date: [YYYY-MM-DD]
-deciders: [Who made this decision]
----
+An ADR's frontmatter carries `adr-id`, `title`, `status`, `date`, and `deciders`. The body has six required sections: Status, Context (stated neutrally — facts and forces, not an argument for the conclusion), Decision (an active declarative sentence), Options Considered (at least two, each with honest pros/cons), Rationale, and Consequences (Positive, Negative/Trade-offs, and Risks — all three, not just the positive). A closing Related ADRs section links dependent or related decisions.
 
-# ADR-[NNN]: [Title]
+**Rationale must name the trade-off.** Per Ch. 4's framing of architecture characteristics as inherently competing, the Rationale section requires an explicit `**Trade-off:**` line naming the 2-3 characteristics being traded off against each other — e.g., "durability over latency," not left implicit in surrounding prose. For a decision with three or more genuinely competing characteristics, add an optional trade-off matrix (rows = characteristics, columns = options) to Options Considered — text-only pros/cons lose a multi-dimensional trade-off past two axes.
 
-## Status
-[Proposed | Accepted | Deprecated | Superseded by ADR-NNN]
-
-## Context
-[The situation that made this decision necessary. What forces are at play?
-What problem are we solving? What constraints exist? What would happen
-if we did nothing?]
-
-## Decision
-[The decision that was made, stated as a clear, active declarative sentence.
-"We will..." or "We have decided to..."]
-
-## Options Considered
-
-### Option A: [Name]
-**Description:** [What this option entails]
-**Pros:** [Benefits]
-**Cons:** [Drawbacks]
-
-### Option B: [Name]
-[Repeat]
-
-### Option C: [Name] (if applicable)
-[Repeat]
-
-## Rationale
-[Why was this option chosen over the others? Which criteria were most important?
-What trade-offs were deliberately accepted?]
-
-## Consequences
-
-### Positive
-- [Benefit that results from this decision]
-
-### Negative / Trade-offs
-- [Cost or constraint this decision introduces]
-
-### Risks
-- [What could go wrong; how it is mitigated]
-
-## Related ADRs
-- [ADR-NNN — related or dependent decision]
-```
+Full template with both additions inline, ready to copy: `references/output-format-template.md`. Two full worked examples — one two-option/prose-trade-off ADR, one three-characteristic ADR with a filled-in matrix: `references/worked-example.md`.
 
 ---
 
@@ -134,93 +100,13 @@ Within a product, ADR numbering is product-scoped. The SDLC Artifact Factory plu
 
 ---
 
-## Example ADR
-
-```markdown
----
-adr-id: ADR-001
-title: Use Transactional Outbox Pattern for Domain Event Publication
-status: Accepted
-date: 2026-06-25
-deciders: enterprise-architect
----
-
-# ADR-001: Use Transactional Outbox Pattern for Domain Event Publication
-
-## Status
-Accepted
-
-## Context
-Services must publish Domain Events to Redpanda when Aggregate state changes.
-The naive approach — update the Aggregate table and then publish to Redpanda in
-the same request handler — creates a dual-write problem: if the service crashes
-between the database write and the Redpanda publish, the event is lost. The
-Aggregate state is updated, but the downstream services never receive the event,
-leaving the system in an inconsistent state.
-
-A distributed transaction (two-phase commit across PostgreSQL and Redpanda) would
-solve the atomicity problem but would introduce significant complexity, latency,
-and a dependency on a transaction coordinator — unacceptable given our frugality
-and reliability constraints.
-
-## Decision
-We will use the Transactional Outbox pattern for all Domain Event publication.
-Domain Events are written to an `outbox_events` table in the same PostgreSQL
-database as the Aggregate tables, within the same database transaction. A separate
-Outbox Relay process reads unpublished events and publishes them to Redpanda,
-then marks them published.
-
-## Options Considered
-
-### Option A: Transactional Outbox (chosen)
-**Pros:** Guaranteed at-least-once delivery; no distributed transaction; uses
-existing PostgreSQL; relay is independently restartable.
-**Cons:** Adds latency (relay poll interval, default 1s); requires an outbox table
-per service; consumers must be idempotent (at-least-once delivery).
-
-### Option B: Dual-write (publish to Redpanda directly from handler)
-**Pros:** Simpler code; lower latency.
-**Cons:** Events lost on crash between DB write and Redpanda publish; inconsistency
-cannot be detected without expensive reconciliation.
-
-### Option C: Change Data Capture (CDC) via Debezium
-**Pros:** Zero application code change; sub-second latency.
-**Cons:** Adds Debezium as a dependency; requires Kafka Connect; increases
-operational complexity; violates frugality constraint.
-
-## Rationale
-Option A (Transactional Outbox) provides the guaranteed delivery semantics required
-for the compliance use case (a missed event could mean a compliance gap is never
-detected) while remaining within the operational complexity constraints. The
-at-least-once delivery trade-off is acceptable because all consumers are designed
-to be idempotent using the `eventId` field.
-
-## Consequences
-
-### Positive
-- Domain Events are never silently lost
-- No distributed transaction required
-- Relay failure does not corrupt state — events accumulate in the outbox until the relay recovers
-
-### Negative / Trade-offs
-- ~1 second additional latency between event emission and consumer receipt (relay poll interval)
-- All consumers must implement idempotency using `eventId`
-- Each service requires an `outbox_events` table
-
-### Risks
-- Outbox table growth if relay is stopped for extended period — mitigated by relay monitoring and alerting on `published = false AND created_at < now() - interval '5 minutes'`
-
-## Related ADRs
-- ADR-002 — Idempotency strategy for Domain Event consumers
-```
-
----
-
 ## ADR Storage
 
 ADRs are stored at: `artifacts/[product]/design/decisions/ADR-[NNN]-[slug].md`
 
 The enterprise-architect maintains an ADR index at: `artifacts/[product]/design/decisions/README.md`
+
+Principles for the same product live alongside them — see `references/architecture-principles.md` for the storage convention.
 
 ---
 
@@ -230,11 +116,13 @@ The enterprise-architect maintains an ADR index at: `artifacts/[product]/design/
 |---|---|---|
 | Context is neutral | Context states facts and forces — does not argue for a conclusion | Context written to justify the chosen option |
 | Multiple options | At least two options considered with honest pros/cons | Single-option "decision" with no alternatives |
+| Named trade-off | Rationale's `**Trade-off:**` line names the 2-3 characteristics traded off | Rationale describes the choice without naming competing characteristics |
 | Honest consequences | Negative consequences and trade-offs explicitly listed | Only positive consequences listed |
 | Active decision statement | "We will..." or "We have decided to..." | Passive or hedged decision statements |
 | Status current | Status field reflects actual state | ADR still marked Proposed after it was implemented |
 | Never deleted | Superseded ADRs link to the superseding ADR; both exist | ADRs deleted when decisions change |
 | Chain integrity | Supersession links are bidirectional and always point to the chain head | One-way links, or an ADR superseding an already-superseded ADR |
+| Decision vs. Principle | General, durable guidance is recorded as a Principle, cited by ADRs | A Principle's reasoning is buried inside one ADR's Rationale |
 
 ---
 
@@ -249,10 +137,10 @@ The enterprise-architect maintains an ADR index at: `artifacts/[product]/design/
 | **ADR as documentation dump** — recording tutorials, diagrams, and how-to content in an ADR | The decision drowns; nobody can find what was actually decided | One decision per ADR; reference designs and diagrams live in their own artifacts, linked |
 | **Editing an Accepted ADR in place** — updating the decision text as things change | The historical record is destroyed; "why did we believe X in June?" becomes unanswerable | Accepted ADRs are immutable except for status-line updates; changes require a superseding ADR |
 | **The mega-ADR** — one record covering event publication, API versioning, and tenancy | The parts have different lifecycles; superseding one aspect falsely invalidates the rest | Split into one ADR per independently reversible decision, cross-linked in Related ADRs |
+| **The principle disguised as a decision** — a Rationale whose reasoning generalizes far beyond the one decision at hand ("we always prefer async") | If this ADR is ever superseded, the general guidance silently disappears with it — future ADRs have nothing to cite | Pull the generalization into a Principle record (`references/architecture-principles.md`); the ADR's Rationale cites it instead of restating it |
 
 ---
 
 ## Output Format
 
-See ADR format above. Each ADR is a standalone Markdown file:
-`artifacts/[product]/design/decisions/ADR-[NNN]-[kebab-case-title].md`
+Template (ADR): `references/output-format-template.md`. Two worked examples: `references/worked-example.md`. Companion Principle format: `references/architecture-principles.md`.

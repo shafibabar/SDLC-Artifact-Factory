@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.1.0
+version: 1.2.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -28,6 +28,7 @@ outputs:
   - container-diagram artifact
   - component-diagram artifact (per service)
   - adr artifacts (ADR-001, ADR-002, ...)
+  - principle-catalog artifact (PRINCIPLES.md — only when a durable, cross-cutting default is established that many future ADRs will cite)
   - api-contract artifact (OpenAPI spec per service)
   - integration-design artifact
   - multi-tenancy-design artifact
@@ -112,6 +113,7 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 | Component Diagram (per service) | `artifacts/[product]/design/[service-name]/component-diagram.md` | `component-diagram` |
 | ADRs | `artifacts/[product]/design/decisions/ADR-[NNN]-[title].md` | `adr-authoring` |
 | ADR Index | `artifacts/[product]/design/decisions/README.md` | `adr-authoring` |
+| Principle Catalog | `artifacts/[product]/design/decisions/PRINCIPLES.md` | `adr-authoring` |
 | API Contract (per service) | `artifacts/[product]/design/[service-name]/openapi.yaml` | `api-contract-design` |
 | API Contract Summary | `artifacts/[product]/design/[service-name]/api-contract-summary.md` | `api-contract-design` |
 | Integration Design | `artifacts/[product]/design/architecture/integration-design.md` | `integration-design` |
@@ -126,7 +128,7 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 2. **Read NFR architecture handoff.** The NFR specification's Architecture Handoff section contains the NFRs that directly constrain architecture decisions. These are the first inputs considered — not the last.
 3. **Identify existing artifacts.** Skip approved artifacts. Do not re-produce without Shafi's request.
 4. **Execute in sequence.** Architecture artifacts have dependencies — follow the sequence below.
-5. **Write ADRs as you go.** Every non-obvious decision is an ADR. Write it at the point the decision is made, not at the end.
+5. **Write ADRs as you go.** Every non-obvious decision is an ADR. Write it at the point the decision is made, not at the end. If an ADR's own reasoning would apply unchanged to many future, unrelated decisions for this product (not just the one at hand), pull that generalization into the Principle Catalog instead of leaving it buried in the ADR's Rationale — see `adr-authoring`'s decision-vs-principle test.
 6. **Present at gates.** Two mandatory Shafi approval gates: after the Container Diagram and after all Component Diagrams. API contracts are produced after the second gate.
 
 ---
