@@ -110,7 +110,7 @@ Skills     = Expertise    — knowledge, standards, patterns. No reasoning, no d
 Agents     = Reasoning    — design, analysis, code generation, test writing. Use skills for knowledge.
 Commands   = Workflows    — user-facing phase drivers. Orchestrate agents. No domain expertise.
 Hooks      = Governance   — event-driven, self-imposed <2s target, idempotent. Validate only. No business logic.
-Scripts    = Actions      — atomic, deterministic, stateless. Single purpose. Invoked by hooks/commands, not a discovered component type.
+Scripts    = Actions      — atomic, deterministic, stateless. Single purpose. Invoked by hooks/commands (repo-root `scripts/`) or by the agent applying a skill that owns one (`skills/<name>/scripts/`) — not a discovered component type either way.
 MCP        = Integrations — external systems. Deferred.
 LSP        = Code intel   — language-aware analysis. Pending.
 ```
@@ -132,6 +132,25 @@ Hook → Script (command-type handlers) or → Agent/Skill (prompt/agent-type ha
 **Two boundary clarifications:**
 - Decision *criteria* — selection tables, "use when / do not use when" guides, defaults — are knowledge and belong in Skills. *Applying* those criteria to a specific system is reasoning and belongs in Agents. A pattern-selection table in a skill is not a violation.
 - An agent may carry a compressed **Behavioral Directives** index: short imperative bullets that each cite the owning skill in parentheses. This is a table of contents into skills, not stored knowledge. Any directive whose substance is not actually present in the cited skill is a defect — move the substance into the skill.
+
+---
+
+## Skill Authoring & Progressive Disclosure
+
+Every skill's *shape*, not just its content, follows a stated rubric: `skills/skill-authoring-standards/SKILL.md`. In brief — a skill has one mandatory part and three optional ones, added only when the content genuinely warrants them:
+
+| Part | Holds | Loaded when |
+|---|---|---|
+| `SKILL.md` (mandatory) | Decision-shaping guidance | Every time the skill's trigger surface matches |
+| `references/*.md` | Reference material — full templates, worked examples, exhaustive checklists | Only when the body explicitly points to it |
+| `assets/*` | Copyable files used as-is in a produced artifact | Only when the skill's procedure calls for copying one in |
+| `scripts/*.sh` | Deterministic scaffolding/validation executables | Only when the skill's procedure calls for running one via the Bash tool |
+
+A skill-owned `scripts/*.sh` is invoked by the agent applying that skill, at a path the skill's own body names — a different invocation context from the repo-root `scripts/` folder in "Command and Hook Mechanics" below (hook- or command-invoked), though the same Scripts = Actions rule governs both.
+
+A `SKILL.md` body whose content below the frontmatter exceeds roughly 200 lines is a split candidate — reference material moves to `references/`, decision-shaping guidance stays. `description` is the literal discovery/matching surface a skill fires on, not a summary written for a human reader. Version bumps follow a two-surface rule: a `description` change that could alter what prompts match it is MAJOR; body content added without changing the trigger surface is MINOR; wording-only fixes are PATCH. An optional `related:` frontmatter field (not part of the closed Component Frontmatter schema below) declares which other skills a skill's body references in prose, retrofit-as-you-go rather than all at once.
+
+Full rubric, worked reasoning, Quality Criteria, and Anti-Patterns: `skill-authoring-standards`.
 
 ---
 
@@ -215,13 +234,15 @@ The plugin's own components carry these canonical schemas — no other shapes ar
 
 Every agent's `skills:` list includes `glossary-management` and `methodology-review` in addition to its domain skills. Agents that run shell commands (build, test, scan) declare `tools: [Bash]`.
 
+A skill may additionally declare an optional `related:` field (a list of other skill names its body references in prose) — not part of the required, ordered schema above, and not required on every skill. See `skill-authoring-standards`.
+
 ### Command and Hook Mechanics
 
 Commands and hooks are real Claude Code mechanics, not documentation. Their shape is fixed by the platform, not by this plugin's conventions:
 
 - **Commands** are single files at `commands/<name>.md`. Frontmatter is `description` (required), `argument-hint`, `allowed-tools`, `model`, `disable-model-invocation` — never the Skill/Agent schema above. The body is a prompt: it instructs Claude to read `sdlc-context.json`, gather the artifacts a downstream agent needs, and invoke that agent via the Agent tool. `$ARGUMENTS` (everything after the command name) or `$0`/`$1`... (positional, split on `argument-hint`) substitute user input into the prompt. A command cannot programmatically invoke an agent — it can only instruct Claude to do so; the instruction must be concrete enough that Claude reliably does it.
 - **Hooks** are entries in the single file `hooks/hooks.json`, matching the same schema as the `hooks` key in `settings.json`. Real events: `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Stop`, `SubagentStop`, `SessionStart`, `SessionEnd`, `PreCompact`, `Notification`, `PermissionRequest`, `PermissionDenied`. A hook entry has a `matcher` (tool name or regex) and one or more handlers of type `command` (a script under `scripts/`, JSON on stdin, exit 0/2/other = success/block/non-blocking-error), `prompt` (single-turn LLM judgment — the right choice for a hook that consults `methodology-review`'s or `glossary-management`'s criteria), or `agent` (a full subagent with tool access). There is no `HOOK.md` file, no per-hook frontmatter, and no `before-file-create`/`after-agent`-style events — those never existed in Claude Code.
-- **Scripts** (`scripts/*.sh`) are plain shell scripts with no discovery mechanism and no frontmatter. A hook's `command` handler or a command's prompt body (via the Bash tool) is the only way a script runs. "Tools" in real Claude Code vocabulary means MCP-server-exposed tools specifically — never use that word for these scripts.
+- **Scripts** (`scripts/*.sh` at the repo root) are plain shell scripts with no discovery mechanism and no frontmatter. A hook's `command` handler or a command's prompt body (via the Bash tool) is the only way a repo-root script runs. A skill may additionally own `skills/<name>/scripts/*.sh` — same rule, but invoked by the agent applying that skill rather than by a hook or command; see "Skill Authoring & Progressive Disclosure" above and `skill-authoring-standards`. "Tools" in real Claude Code vocabulary means MCP-server-exposed tools specifically — never use that word for these scripts.
 
 ---
 
