@@ -1,6 +1,6 @@
 # Canonical Ubiquitous Language
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-23
 **Maintained by:** glossary-management skill
 **Rule:** Use every term exactly as defined here. Synonyms are not acceptable substitutes.
 
@@ -25,6 +25,17 @@
 | **Subdomain** | A part of the overall Domain. May be a Core Domain (primary differentiator), Supporting Subdomain (necessary but not differentiating), or Generic Subdomain (commodity, often bought rather than built). |
 | **Ubiquitous Language** | The shared, precise vocabulary used consistently by developers, domain experts, and all project artefacts within a Bounded Context. Must not drift between code, documents, and conversations. |
 | **Write Model** | In CQRS, the model responsible for processing commands, enforcing business rules, and producing Domain Events. Separate from the Read Model. |
+
+---
+
+## Architecture Decisions
+
+| Term | Definition |
+|---|---|
+| **Architecture Characteristic** | An "-ility" (availability, scalability, consistency, etc.) that has structural design impact and is critical or important to a system's success — distinct from a merely domain-specific or cosmetic quality. Architecture Characteristics compete with each other; every Architecture Decision trades some off against others. |
+| **Architecture Decision** | A specific, concrete, point-in-time choice made for a particular system in a particular context, recorded as an ADR. Superseded when circumstances change — never edited in place. Distinct from an Architecture Principle, which is durable and general. |
+| **Architecture Decision Record (ADR)** | A short document (Michael Nygard) capturing one significant Architecture Decision: the Context that made it necessary, the Options Considered, the Decision, and the Consequences (positive and negative). Immutable once Accepted except for status-line changes; changes require a superseding ADR. |
+| **Architecture Principle** | Durable, general guidance that many future Architecture Decisions cite (e.g., "prefer asynchronous communication across Bounded Contexts") — as distinct from a single Architecture Decision, which is specific and point-in-time. Revised directly as understanding improves, not superseded. |
 
 ---
 
