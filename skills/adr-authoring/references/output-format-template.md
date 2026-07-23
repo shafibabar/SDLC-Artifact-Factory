@@ -2,6 +2,8 @@
 
 Self-contained — loadable without reading `SKILL.md` first.
 
+This is the **annotated** version — every placeholder explains what belongs there and why. For a literal, fill-in-and-go copy with no explanatory brackets, use `assets/adr-template.md` directly, or run `scripts/scaffold-adr.sh <product> <slug>` to generate a new ADR file from it with the frontmatter and next `ADR-NNN` already resolved.
+
 ---
 
 ```markdown

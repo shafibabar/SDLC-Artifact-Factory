@@ -7,6 +7,12 @@ for a decision with three or more competing architecture characteristics
 (per *Fundamentals of Software Architecture* Ch. 4 and Ch. 18 —
 `research/software-architecture/fundamentals-of-software-architecture-richards-ford.md`).
 
+Both examples below pass every check `scripts/validate-adr.sh` runs
+mechanically — required frontmatter, the Rationale `**Trade-off:**` line,
+all three Consequences subsections, and a Related ADRs section. Running
+the script against either one is a quick way to see what it actually
+checks before relying on it for a real ADR.
+
 ---
 
 ## Example 1: Two Options, Prose Trade-offs
