@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "adr-authoring" \
-  "According to this skill, when an Architecture Principle needs to change as understanding improves, is it superseded like an ADR, or revised in place?" \
-  "revised in place"
+  "According to this skill, instead of hand-counting the next ADR-NNN when starting a new ADR, what should you run?" \
+  "scaffold-adr.sh"
 
 smoke_test_summary
