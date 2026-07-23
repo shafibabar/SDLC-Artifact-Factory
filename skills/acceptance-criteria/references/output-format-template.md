@@ -3,6 +3,8 @@
 The full fill-in template for a story's acceptance criteria artifact.
 Self-contained — loadable without reading `SKILL.md` first.
 
+This is the **annotated** version — every placeholder explains what belongs there and why. For a literal, fill-in-and-go copy with no explanatory brackets, use `assets/acceptance-criteria-template.md` directly, or run `scripts/scaffold-criteria.sh <story-id> <story-title>` to generate a new criteria doc from it.
+
 ---
 
 ```markdown
