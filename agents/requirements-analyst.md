@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.2.0
+version: 1.3.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -268,15 +268,18 @@ If the Quality phase gates have not passed or no deployed environment exists, ha
 ### Execution Sequence
 
 ```
-1. UAT Plan            ← scope from Must Have stories, environment, participants, entry/exit criteria (uat-plan)
-2. UAT Scenarios        ← one per Must Have story, extending its Ideate-phase acceptance criteria for human execution (uat-scenario)
-3. Beta Program Design  ← only if a design-partner cohort is in scope for this release (beta-program-design)
-4. UAT Execution        ← scenarios run against the deployed environment; results and defects recorded
-5. Feedback Capture     ← structured intake and triage of everything surfaced during UAT/beta (feedback-template)
-6. Acceptance Sign-Off  ← the formal go/no-go closing this phase (acceptance-sign-off)
+1. UAT Plan             ← scope from Must Have stories, environment, participants, entry/exit criteria (uat-plan)
+2. UAT Scenarios         ← one per Must Have story, extending its Ideate-phase acceptance criteria for human execution (uat-scenario)
+3. Exploratory Charters  ← drafted per area of meaningful risk/complexity, distinct from scripted scenarios — surfaces what no one wrote a scenario for (uat-plan)
+4. Beta Program Design   ← only if a design-partner cohort is in scope for this release (beta-program-design)
+5. UAT Execution         ← scripted scenarios AND exploratory sessions run against the deployed environment, same executor(s), same window; scripted results, defects, and exploratory debriefs all recorded
+6. Feedback Capture      ← structured intake and triage of everything surfaced during UAT/beta/exploratory sessions (feedback-template)
+7. Acceptance Sign-Off   ← the formal go/no-go closing this phase (acceptance-sign-off)
 ```
 
-UAT scenarios are not automated tests — `test-strategist`'s `bdd-feature-file`/`go-e2e-test` already proved the system behaves correctly in the Quality phase. UAT proves the system is *right* for real users; it is human-executed, once per release, against a live environment.
+UAT scenarios are not automated tests — `test-strategist`'s `bdd-feature-file`/`go-e2e-test` already proved the system behaves correctly in the Quality phase. UAT proves the system is *right* for real users; it is human-executed, once per release, against a live environment. Exploratory sessions (step 3, run in step 5) are a distinct activity from both — see `uat-plan`'s Exploratory Testing Component. A charter has no pass/fail, only findings; step 5 does not close having run zero exploratory sessions and still call itself complete.
+
+**The Agile Testing Quadrants, split across two agents**: `test-strategist` owns Q1 (unit/technology-facing-supporting), Q2 (BDD feature files — business-facing-supporting), and Q4 (performance/load/chaos — technology-facing-critiquing). This agent owns **Q3** (exploratory/UAT — business-facing, critiquing the product). This is a deliberate division of labor, not an artifact of how the phases happen to be organized — see the identical note in `agents/test-strategist.md`.
 
 ### Handoffs
 
@@ -325,7 +328,8 @@ The requirements-analyst escalates to Shafi (does not proceed autonomously) when
 ### Customer Validation phase complete when:
 
 - [ ] Every Must Have story has a UAT scenario, executed, with a recorded pass/fail result
-- [ ] Zero open Critical or High severity defects from UAT or beta feedback
+- [ ] Every planned exploratory charter has been run and debriefed — a separate criterion from the pass-rate one, since a charter has no pass/fail
+- [ ] Zero open Critical or High severity defects from UAT, beta, or exploratory-session feedback
 - [ ] All feedback is triaged and routed; no unaddressed blocking pattern remains
 - [ ] An acceptance sign-off artifact exists with explicit sign-off authority (Shafi + customer/design-partner representative)
 - [ ] Any conditional sign-off has a documented remediation plan with a target date, approved by Shafi
