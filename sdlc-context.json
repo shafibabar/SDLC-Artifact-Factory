@@ -2,8 +2,8 @@
   "_meta": {
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
-    "last_updated": "2026-07-23",
-    "updated_by": "Chunk 32 — established skill-authoring-standards (D028: three-tier progressive disclosure, description-as-discovery-surface, 200-line split threshold, two-surface versioning, optional related: field, and a new scripts/+assets/ convention for skills alongside references/) and rebuilt adr-authoring as its flagship pilot (v3.0.0, superseding v2.0.0 — never edited in place), adding assets/adr-template.md, scripts/scaffold-adr.sh, and scripts/validate-adr.sh, each independently tested. Executed via the full plan/execute GitHub cycle (issue #128, sub-issues #130-#136) per Shafi's explicit request, not the D024 no-ceremony default. Yuan Zhu's context-engineering-for-ai-agents findings kept out of scope, deferred to a separate future issue."
+    "last_updated": "2026-07-24",
+    "updated_by": "Chunk 33 — acceptance-criteria rebuilt under skill-authoring-standards (v2.1.0), the second skill (after adr-authoring, #128) to adopt the four-part scripts/assets shape: scaffold-criteria.sh, validate-criteria.sh, both tested. Checked against all 6 research/ files mentioning acceptance criteria; honest finding is no new content gap, only one small Three Cs pedigree note — the real value is shape, not new prose. Issue #145, sub-issues #146-#149, issue-level integration branch per D025."
   },
 
   "project": {
@@ -679,6 +679,19 @@
         "tests/skills/skill-authoring-standards.contract.sh added (new). tests/skills/adr-authoring.contract.sh's question changed to test v3.0.0-specific content (the scaffold-adr.sh pointer) rather than the unchanged Architecture-Principles content, since the old question no longer distinguished the rewrite from v2.0.0. Both live-verified via claude --plugin-dir before this sub-issue was marked complete.",
         "Executed via the full plan/execute GitHub cycle (issue #128, sub-issues #130-#136, dependency-ordered d1->d7) rather than the D024 no-ceremony default, per Shafi's explicit request to associate this planning with the already-open adr-authoring issue and to break it into smaller, independently testable chunks.",
         "Yuan Zhu's research/ai-agent-engineering/context-engineering-for-ai-agents-zhu.md findings (sdlc-context.json/CLAUDE.md state hygiene, the Q001 resolved-but-retained bug, decision archival) were explicitly kept out of scope for this chunk -- a different concern (context/memory bookkeeping, not skill shape) -- and deferred to a separate future issue, per Shafi's decision when this chunk was scoped."
+      ]
+    },
+    {
+      "chunk": 33,
+      "title": "acceptance-criteria rebuilt under skill-authoring-standards -- issue #145, sub-issues #146-#149",
+      "status": "complete",
+      "deliverables": [
+        "Checked skills/acceptance-criteria/SKILL.md (v2.0.0, Chunk 28) against every research/ file mentioning acceptance criteria before writing anything: Pugh, Cohn, Hathaway, Lee, Hendrickson, Crispin & Gregory (6 files). Honest, consistent finding across all six: no new content gap. Hathaway's own research file states 'No real gap.' Lee's: 'at most a one-line cross-reference.' Cohn's and the testing-cluster files' exploratory-testing gap analysis targets uat-plan/uat-scenario/acceptance-sign-off, not this skill. This chunk deliberately does not manufacture content to make the version bump look bigger than the research supports.",
+        "skills/acceptance-criteria/SKILL.md updated (v2.1.0, MINOR -- body content added, no trigger-surface change): one honest content addition (the Three Cs 'Confirmation' pedigree note, Ron Jeffries via Lee/Cohn), plus the skill-authoring-standards shape -- tightened description naming the two new scripts, an optional related: [skill-authoring-standards, example-mapping] field, and a new Scripts section. Body stays at 216 lines, within the 200-line split-threshold guidance.",
+        "New skills/acceptance-criteria/assets/acceptance-criteria-template.md (literal, minimal-placeholder copy) and skills/acceptance-criteria/scripts/scaffold-criteria.sh (generates a new criteria doc pre-filled with story metadata). Caught and fixed a real bug during authoring: a naive global replace of the [ID] placeholder also overwrote the unrelated EM-[ID] example-map placeholder in the Derived From section, silently inventing a fake traceability link -- fixed by scoping the replacement to US-[ID] specifically, regression-guarded by its own test assertion.",
+        "New skills/acceptance-criteria/scripts/validate-criteria.sh (mechanically checks testability red-flag words, independent per-section Golden Triangle coverage, at least one Gherkin block, and a non-placeholder Derived From field). tests/scripts/scaffold-criteria.test.sh (6 assertions) and tests/scripts/validate-criteria.test.sh (6 assertions) added, synthetic scratch dir, no LLM call.",
+        "tests/skills/acceptance-criteria.contract.sh's question changed from the unchanged-since-v2.0.0 'before or after the example map?' to the v2.1.0-specific 'what script generates a new criteria doc?' (expects scaffold-criteria.sh), live-verified via claude --plugin-dir before this sub-issue was marked complete.",
+        "Executed via the issue-level integration-branch pattern (D025): issue #145, sub-issues #146-#149 branched from and merged into issue-145-refactor-acceptance-criteria via exec_start.py --base/exec_complete.py's auto-merge-and-close, then that branch merged to main in one final reviewed PR."
       ]
     }
   ],
