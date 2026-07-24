@@ -1,13 +1,3 @@
-# Acceptance Criteria Output Format Template
-
-The full fill-in template for a story's acceptance criteria artifact.
-Self-contained — loadable without reading `SKILL.md` first.
-
-This is the **annotated** version — every placeholder explains what belongs there and why. For a literal, fill-in-and-go copy with no explanatory brackets, use `assets/acceptance-criteria-template.md` directly, or run `scripts/scaffold-criteria.sh <story-id> <story-title>` to generate a new criteria doc from it.
-
----
-
-```markdown
 ---
 name: acceptance-criteria
 product: [product name]
@@ -62,11 +52,3 @@ Then [expected behaviour at limit].
 
 ## Explicitly Out of Scope
 - [Edge case or scenario explicitly not covered by this story]
-```
-
-The **Derived From** field is new relative to earlier versions of this
-template — it records which example map (`example-mapping`) this story's
-criteria were drafted from, and confirms the map had zero open question
-cards before the criteria were finalized. A story with no `Derived From`
-reference is a sign criteria were drafted without the discovery step —
-see `SKILL.md`'s "Deriving Criteria from a Worked Example" section.
