@@ -14,7 +14,7 @@ description: >
   frontend-engineer. Includes scripts/scaffold-api-contract-design.sh and
   scripts/validate-api-contract-design.sh. Used by the enterprise-architect
   agent after the Command Catalog and Read Model designs are complete.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -33,6 +33,8 @@ This approach:
 - Creates a machine-readable contract that tools can validate, mock, and generate code from
 - Forces explicit decisions about resource naming, versioning, and error handling before they become embedded in code
 - Creates Consumer-Driven Contract test anchors
+
+**The contract is a product, not plumbing** (per Kin Lane's *The API-First Transformation*): it is the durable interface a future mobile client, partner integration, or internal automation will be built against, long after the UI that motivated it first has changed or been replaced. Its design quality is reviewed with the same seriousness as a pricing model or a positioning statement — not treated as an implementation formality that happens to come first.
 
 ---
 
@@ -231,6 +233,25 @@ Top-level shape: `openapi` version, `info`, `servers` (with the `tenantId` path 
 | Async operations resolvable | Every `202 Accepted` status URL returns a fully-specified `Operation` resource | A "status URL" with no documented response shape |
 | Custom methods disciplined | Any `resource:verb` endpoint is a genuine non-CRUD action, not a CRUD workaround | Custom methods used where a standard method or resource-field update would fit |
 | Concurrency-sensitive resources revisioned | Resources with real concurrent-writer risk carry `etag`/`If-Match` | Silent lost updates on a resource multiple clients can write concurrently |
+
+---
+
+## API Contract Review Checklist
+
+Large organizations catch cross-API drift with a governance board reviewing every contract before publication — a real, standing institution that exists because no single author has authority over every producing team. That institution has no referent here: `enterprise-architect` is the sole author of every API contract this factory produces, so the discipline a governance board enforces (consistency checked before a contract ships) still applies, just without the board. Run this checklist once, deliberately, over the finished spec — the same way `scripts/validate-adr.sh` is a distinct, named gate rather than something folded silently into "writing the ADR" — immediately before treating a contract as ready for the Design phase gate. It inherits every row from the Quality Criteria table above; it adds no new criteria, only the discipline of checking them as one deliberate pass rather than assuming they held because the skill was followed:
+
+- [ ] Every resource name traces to the domain Ubiquitous Language, not a database table or a generic noun
+- [ ] Every Command Catalog entry has a corresponding endpoint; every Read Model has a `GET`
+- [ ] Every error response, on every documented failure branch, uses the standard `ErrorResponse` shape
+- [ ] The path carries a `/v1/` (or current) version prefix
+- [ ] `BearerAuth` is applied globally, with only health checks excluded
+- [ ] Every mutating endpoint documents `Idempotency-Key` support
+- [ ] Every collection endpoint uses the shared cursor-pagination shape, with no per-endpoint variant
+- [ ] Every `202 Accepted` status URL resolves to a fully-specified `Operation` resource, not an unspecified "status URL"
+- [ ] Any `resource:verb` custom method is a genuine non-CRUD action, not a workaround for a standard method
+- [ ] Every resource with real concurrent-writer risk carries `etag`/`If-Match`
+
+A contract that fails any row here is not ready for the Design phase gate, regardless of how much of the spec is otherwise written.
 
 ---
 

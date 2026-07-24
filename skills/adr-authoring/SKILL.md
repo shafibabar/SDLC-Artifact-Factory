@@ -16,7 +16,7 @@ description: >
   ADR-NNN) and scripts/validate-adr.sh (mechanically checks an existing ADR
   against this skill's Quality Criteria). Used by the enterprise-architect
   agent throughout the Design phase.
-version: 3.0.0
+version: 3.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
