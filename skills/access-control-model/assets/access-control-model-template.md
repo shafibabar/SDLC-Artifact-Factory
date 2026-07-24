@@ -1,12 +1,3 @@
-# Access Control Model Output Format Template
-
-Self-contained — loadable without reading `SKILL.md` first.
-
-This is the **annotated** version. For a literal, fill-in-and-go copy, use `assets/access-control-model-template.md` directly, or run `scripts/scaffold-access-control-model.sh <product>` to generate a new design doc from it.
-
----
-
-```markdown
 ---
 name: access-control-model
 product: [product name]
@@ -47,4 +38,3 @@ owner: security-architect
 ## Enforcement Locations
 | Layer | What is checked | Who calls the policy |
 |---|---|---|
-```
