@@ -1,12 +1,3 @@
-# Acceptance Sign-Off Output Format Template
-
-Self-contained — loadable without reading `SKILL.md` first.
-
-This is the **annotated** version. For a literal, fill-in-and-go copy with no explanatory brackets, use `assets/sign-off-template.md` directly, or run `scripts/scaffold-signoff.sh <product> <release-slice>` to generate a new sign-off doc from it with the checklist already copied in.
-
----
-
-```markdown
 ---
 name: acceptance-sign-off-[release-slice]
 product: [product name]
@@ -20,7 +11,15 @@ owner: requirements-analyst
 # Acceptance Sign-Off — [release-slice]
 
 ## Sign-Off Criteria Checklist
-[Checklist with source citations, including exploratory sessions run/debriefed]
+
+- [ ] Every UAT scenario tracing to a Must Have story has a recorded result
+- [ ] The UAT pass-rate threshold stated in the uat-plan is met
+- [ ] Every planned exploratory session has been run and debriefed
+- [ ] Zero open Critical severity defects
+- [ ] Zero open High severity defects, or each is covered by a documented remediation plan with a target date (conditional path only)
+- [ ] All feedback items have been triaged
+- [ ] No unaddressed blocking pattern exists
+- [ ] Beta program graduation criteria met for the relevant stage (if applicable)
 
 ## Sign-Off Authority
 - Shafi (product owner)
@@ -40,4 +39,3 @@ owner: requirements-analyst
 ## Follow-Up
 [Re-verification plan and date, if conditional or no-go — including any
 exploratory charter that needs re-running, not just scripted scenarios]
-```
