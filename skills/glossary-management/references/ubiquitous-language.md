@@ -68,10 +68,15 @@
 | **Consumer-Driven Contract** | A contract testing approach where the consumer of an API defines the expectations (the contract) it holds of the provider. The provider must satisfy all consumer contracts. |
 | **Contract-First Design** | The practice of defining integration contracts (API schemas, event schemas, message schemas) before writing any implementation code. |
 | **CQRS (Command Query Responsibility Segregation)** | An architectural pattern that separates the Write Model (commands that change state) from the Read Model (queries that return state). The two models may use different data stores. |
+| **Custom Method** | A resource-scoped, colon-suffixed action endpoint (`POST /{resource}:verb`) reserved for operations that don't fit the standard Create/Get/List/Update/Delete set — the disciplined exception to a "no free-floating verb endpoints" rule, not a return to unstructured RPC-style APIs. |
 | **Don't Repeat Yourself (DRY)** | Every piece of knowledge must have a single, unambiguous, authoritative representation in the system. |
+| **Field Mask** | A list of field paths identifying which fields a partial update (or partial response) should touch — resolves the ambiguity of what an omitted field in a `PATCH` body means (leave unchanged) versus an explicit `null` (clear the field). |
+| **Long-Running Operation (Operation Resource)** | A standard resource shape (`name`, `done`, and once done, either `response` or `error`) for tracking asynchronous work, polled via `GET` until complete — the fully-specified sibling to a bare `202 Accepted` status URL. |
 | **Model-View-Controller (MVC)** | A pattern that separates an application into Model (data and business logic), View (presentation), and Controller (input handling). |
+| **Resource Revision (ETag)** | A server-issued opaque identifier of a resource's current state, sent back on a conditional update (`If-Match`) to detect and reject a write based on a stale read. Optimistic concurrency — distinct from a business-rule conflict. |
 | **Separation of Concerns** | The principle of dividing a program into distinct sections, each addressing a separate concern. Changes to one concern should not require changes to others. |
 | **Single Responsibility Principle (SRP)** | Every module, class, or function should have exactly one reason to change. |
+| **Singleton Sub-resource** | A sub-resource with exactly one instance per parent and no independent create/delete lifecycle (`GET`/`UPDATE` only), addressed at a fixed path under its parent — distinct from nesting depth, which governs how far a sub-resource path can go, not how many instances exist. |
 | **SOLID** | Five object-oriented design principles: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion. |
 
 ---
