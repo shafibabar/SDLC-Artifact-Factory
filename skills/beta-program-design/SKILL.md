@@ -5,12 +5,19 @@ description: >
   the closed alpha to closed beta to open beta to GA progression with
   entry/exit criteria per stage mapped to `canary-deployment` and
   `feature-flag-design` rollout mechanics, participant selection from the
-  stakeholder register's design-partner cohort, a beta agreement setting
-  mutual expectations under an unrelaxed SOC 2 security posture, structured
-  feedback cadence feeding `feedback-template`, and graduation criteria to
-  exit each stage. Used by the requirements-analyst during Customer
-  Validation.
-version: 1.0.0
+  stakeholder register's design-partner cohort (including Steve Blank's
+  earlyvangelist screening criteria), a beta agreement setting mutual
+  expectations under an unrelaxed SOC 2 security posture, structured
+  feedback cadence feeding `feedback-template`, and evidence-based
+  graduation criteria — extend, remediate, or pivot — to exit each stage.
+  Covers the earlyvangelist screening checklist, the pivot decision
+  framework, the outside-the-building check, and the sign-off repeatability
+  check in references/customer-development-and-graduation-discipline.md.
+  Includes assets/beta-program-design-template.md and
+  scripts/scaffold-beta-program-design.sh /
+  scripts/validate-beta-program-design.sh. Used by the requirements-analyst
+  during Customer Validation.
+version: 2.0.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -24,6 +31,8 @@ tags: [customer-validation, beta-program, design-partners, canary, feature-flags
 A beta program is the structured, staged way real customers are exposed to a release before it reaches General Availability (GA). It is the human program that wraps the platform's technical progressive-delivery mechanics (`canary-deployment`, `feature-flag-design`) — the stages of the program and the stages of the rollout move together, but they are not the same thing: the rollout mechanism controls *how much traffic or how many tenants* run the new release; the beta program controls *which humans are watching, what they've agreed to, and what evidence graduates the release forward.*
 
 This skill governs the program design once — its stage structure, participant selection, agreement terms, feedback cadence, and graduation bar. `uat-plan` governs the specific validation activity within it for a given release slice.
+
+This skill's `phase: customer-validation` is not a coincidental name — it is Steve Blank's own Customer Development terminology (Customer Discovery → **Customer Validation** → Customer Creation → Company Building). The four stages below are a rollout-mechanics subdivision entirely *within* Blank's single Customer Validation stage: they run after product/problem fit is already assumed settled (Ideate's `jtbd-analysis` is this repo's Customer Discovery equivalent), and none of them turn on demand-generation spending, which is what would mark the transition into Blank's Customer Creation. Blank's actual test for this stage is repeatability — proving a documented process converts a *new* prospect, not just re-confirming "yes, design partners like it." See `references/customer-development-and-graduation-discipline.md`.
 
 ---
 
@@ -50,6 +59,10 @@ Beta participants for closed alpha and closed beta are recruited from the **desi
 | **Willing to give structured feedback** | Beta only works if participants engage with the feedback cadence, not just use the product silently |
 | **Tolerant of rough edges** | Beta software has defects by definition; a participant who churns at the first bug is the wrong fit for closed alpha/beta, even if otherwise a strong ICP match |
 | **Named contact with decision authority or direct access to one** | Feedback and sign-off (`acceptance-sign-off`) need a real counterpart who can commit to the two-party sign-off, not an anonymous user base |
+| **Credible reference for stage-expansion** | Closed beta's evidence needs to de-risk open beta's wider, less relationship-warm audience — a participant who can't or won't be referenced (case study, name-check, direct connection to a prospect) limits how much closed-beta evidence actually transfers forward |
+| **Evidence of prior self-funded effort to solve the problem** | A named workaround, spreadsheet, consultant, or competing tool the candidate already tried is concrete evidence the pain is real and motivated — distinct from merely resembling the ICP; predicts whether feedback reflects genuine pain rather than goodwill toward the relationship |
+
+These last two criteria are Steve Blank's **earlyvangelist** conditions, screened for explicitly rather than inferred — see `references/customer-development-and-graduation-discipline.md` for the full four-condition checklist.
 
 Recruitment happens through the engagement plan already defined in the stakeholder map — design partners are already in a "Manage Closely" relationship before the beta program starts; the program formalizes an existing relationship, it does not cold-recruit strangers into a Critical-defect-tolerant role.
 
@@ -111,7 +124,15 @@ A stage does not graduate on a calendar date alone — it graduates when its evi
 | **Quantitative** | UAT pass rate threshold met (`uat-plan`); zero open Critical/High defects (`feedback-template` severity); SLO adherence during the stage's canary window (`canary-deployment`) |
 | **Qualitative** | The named participant contact affirms the release is usable for its intended purpose — a clean defect count with a participant who still finds the product frustrating to use is not a graduation-ready result |
 
-If either dimension fails, the stage extends (more time in closed beta, a further remediation cycle) rather than proceeding on a fixed calendar regardless of evidence.
+If either dimension fails, one of three outcomes follows — never proceeding on a fixed calendar regardless of evidence:
+
+| Outcome | When |
+|---|---|
+| **Extend** | The hypothesis (segment, problem, solution) is believed sound; the stage simply needs more time or more participant coverage to gather sufficient evidence |
+| **Remediate** | A specific, named defect or gap is blocking graduation; the fix is scoped and the stage resumes once it lands |
+| **Pivot** | The evidence gathered points at the hypothesis itself being wrong — the wrong segment, the wrong problem, or the wrong solution — not merely at needing more time against an unchanged hypothesis |
+
+Before choosing, name which hypothesis is suspect. "Extend" and "remediate" both assume the underlying hypothesis is sound; "pivot" is the outcome when it isn't. See `references/customer-development-and-graduation-discipline.md` for the full diagnostic framework.
 
 ---
 
@@ -211,5 +232,9 @@ owner: requirements-analyst
 - Qualitative: [named-contact affirmation]
 
 ## Exit Decision
-[Advance to next stage / extend / escalate — feeds acceptance-sign-off]
+[Advance to next stage / extend / remediate / pivot — feeds acceptance-sign-off]
 ```
+
+- **Starting a new beta program record** — copy `assets/beta-program-design-template.md`, or run `scripts/scaffold-beta-program-design.sh` to generate one pre-filled with the product and release-slice metadata.
+- **Checking a beta program record mechanically** — run `scripts/validate-beta-program-design.sh` to check Stage validity, non-empty Participants, an unchanged SOC 2 CC6/CC7/A1 Data Handling Statement, and both Graduation Criteria dimensions present.
+- **Going deeper on earlyvangelist screening, the pivot decision framework, or the outside-the-building check** — read `references/customer-development-and-graduation-discipline.md`.
