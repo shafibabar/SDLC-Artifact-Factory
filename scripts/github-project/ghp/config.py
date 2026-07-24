@@ -28,6 +28,11 @@ STATUS_OPTION_IDS = {
 
 SEQUENCE_FIELD_NAME = "Sequence"
 
+# Shafi's decision (2026-07-24): every issue, sub-issue, and PR created through
+# this tooling must carry at least one of these labels (multiple allowed).
+# Enforced in plan_start.py, save_draft.py, and plan_exit.py.
+CANONICAL_LABELS = ("discovery", "agent", "skill", "bug", "documentation", "enhancement")
+
 REQUIRED_SCOPES = ("repo", "project")
 
 STATE_FILE = "scripts/github-project/.state.json"

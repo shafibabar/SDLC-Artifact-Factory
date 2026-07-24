@@ -35,6 +35,7 @@ def print_table(rows):
         print(f"      description: {row['description']}")
         print(f"      depends_on:  {deps}")
         print(f"      sequence:    {row['sequence'] or '(none)'}")
+        print(f"      labels:      {', '.join(row.get('labels', [])) or '(none)'}")
 
 
 def main():
@@ -76,7 +77,8 @@ def main():
                 print(f"skip (already created): {row_id} -> #{created[row_id]['number']}")
                 continue
             issue = project.create_issue(
-                row["title"], row["description"], parent_issue_id=plan["issue_id"]
+                row["title"], row["description"], parent_issue_id=plan["issue_id"],
+                labels=row.get("labels"),
             )
             item_id = project.add_item_to_project(issue["id"])
             project.set_status(item_id, "todo")

@@ -4,10 +4,12 @@ argument-hint: <short title>
 allowed-tools: Bash(python3 scripts/github-project/plan_start.py:*)
 ---
 
-Run:
+Determine the right label(s) for this parent issue from: discovery, agent,
+skill, bug, documentation, enhancement (comma-separated if more than one
+applies — most parent issues are just `skill`). Then run:
 
 ```
-python3 scripts/github-project/plan_start.py "$ARGUMENTS"
+python3 scripts/github-project/plan_start.py "$ARGUMENTS" --labels <labels>
 ```
 
 Report the created issue number, URL, and Status back to Shafi in plain

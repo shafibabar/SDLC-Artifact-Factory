@@ -6,7 +6,7 @@ Structure:
 {
   "current_plan": {"issue_number", "issue_id", "title", "item_id", "status"},
   "draft": {"next_id": int, "rows": {"d1": {"title", "description",
-            "depends_on": [draft ids], "sequence"}}},
+            "depends_on": [draft ids], "sequence", "labels": [canonical label names]}}},
   "sub_issues": {"<number>": {"id", "item_id", "title", "sequence"}},
   "executions": {"<number>": {"branch", "status"}}
 }

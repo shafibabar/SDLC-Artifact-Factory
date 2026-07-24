@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""plan-start "<title>" [--body "<body>"]
+"""plan-start "<title>" --labels <l1,l2,...> [--body "<body>"]
 
 Creates the parent issue for a new planning cycle, adds it to the Project,
 sets Status = Todo then In Planning, and tracks it as the active plan in
 local state. Invoking this command IS the approval checkpoint for stage 1 —
 no further confirmation step.
+
+--labels is required: at least one of discovery, agent, skill, bug,
+documentation, enhancement (comma-separated for more than one).
 """
 import argparse
 import sys
@@ -16,9 +19,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("title")
     parser.add_argument("--body", default="")
+    parser.add_argument(
+        "--labels", required=True,
+        help="Comma-separated, from: " + ", ".join(config.CANONICAL_LABELS),
+    )
     args = parser.parse_args()
+    labels = [l.strip() for l in args.labels.split(",") if l.strip()]
 
     try:
+        gh.validate_labels(labels)
         gh.check_auth()
 
         existing = state.load()
@@ -31,7 +40,7 @@ def main():
             )
             sys.exit(1)
 
-        issue = project.create_issue(args.title, args.body)
+        issue = project.create_issue(args.title, args.body, labels=labels)
         item_id = project.add_item_to_project(issue["id"])
         project.set_status(item_id, "todo")
         project.set_status(item_id, "in_planning")

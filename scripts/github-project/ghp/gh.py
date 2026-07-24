@@ -75,3 +75,41 @@ def graphql(query):
     if "errors" in data:
         raise GhError("GitHub API error: " + json.dumps(data["errors"], indent=2))
     return data["data"]
+
+
+def validate_labels(labels):
+    """Every issue/sub-issue/PR created by this tooling must carry at least
+    one canonical label (Shafi's decision, 2026-07-24). Raises GhError with
+    a message a non-programmer can act on if the set is empty or unknown."""
+    if not labels:
+        raise GhError(
+            "At least one label is required: " + ", ".join(config.CANONICAL_LABELS)
+        )
+    unknown = [l for l in labels if l not in config.CANONICAL_LABELS]
+    if unknown:
+        raise GhError(
+            f"Unknown label(s): {', '.join(unknown)}. Choose from: "
+            + ", ".join(config.CANONICAL_LABELS)
+        )
+
+
+def add_labels(number, labels):
+    """Attach labels to an issue or PR. Deliberately goes through the REST
+    labels endpoint (`gh api .../issues/<n>/labels`, which treats PRs as
+    issues) rather than `gh issue edit`/`gh pr edit --add-label` -- both of
+    those trigger a GraphQL query touching deprecated "Projects (classic)"
+    fields that fails outright for PRs on this repo (confirmed empirically:
+    `gh pr edit --add-label` returns exit 1 and the label is never applied,
+    while the REST endpoint works for both issues and PRs)."""
+    if not labels:
+        return
+    args = ["api", f"repos/{config.REPO_OWNER}/{config.REPO_NAME}/issues/{number}/labels"]
+    for label in labels:
+        args += ["-f", f"labels[]={label}"]
+    _run(args)
+
+
+def get_issue_labels(number):
+    stdout = _run(["issue", "view", str(number), "--repo",
+                    f"{config.REPO_OWNER}/{config.REPO_NAME}", "--json", "labels"])
+    return [l["name"] for l in json.loads(stdout)["labels"]]
