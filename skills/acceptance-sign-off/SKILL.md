@@ -8,13 +8,18 @@ description: >
   distinction between full sign-off, conditional sign-off (with a documented
   remediation plan and target date), and no-go, and this artifact's role as
   the trigger for widening the `canary-deployment` rollout and the
-  `feature-flag-design` release flag to General Availability. Used by the
+  `feature-flag-design` release flag to General Availability. Includes
+  scripts/scaffold-signoff.sh (generates a new sign-off doc pre-filled with
+  release-slice metadata and the full checklist) and
+  scripts/validate-signoff.sh (mechanically checks the checklist, both
+  parties, and a stated decision/rollout action). Used by the
   requirements-analyst during Customer Validation.
-version: 2.0.0
+version: 2.1.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
 tags: [customer-validation, sign-off, go-no-go, canary, release-gate]
+related: [skill-authoring-standards, uat-plan, feedback-template]
 ---
 
 # Acceptance Sign-Off
@@ -52,6 +57,8 @@ A checklist item left unchecked does not automatically mean no-go — it means t
 | **Customer/design-partner representative** | The named contact from the participating design partner (e.g., Maya Chen) — accountable for confirming the release is genuinely usable and acceptable from the customer's side |
 
 Both parties review the compiled evidence and both must agree for a sign-off (full or conditional) to be recorded. This is deliberate: a unilateral internal decision to ship is not "acceptance" — acceptance, by definition, requires the accepting party's affirmative agreement. If no design-partner tenant participated in this release slice (an internal-proxy-only UAT per `uat-plan`), the sign-off cannot be full — it is capped at conditional, with the specific limitation ("validated by internal proxy only, no external design-partner confirmation") stated as one of the open conditions.
+
+This two-party, never-unilateral rule is this repo's clearest product-facing instance of keeping a human as the actual point of final consent (per Ethan Mollick's *Co-Intelligence*, `research/human-ai-collaboration/co-intelligence-mollick.md`) — the same principle `CLAUDE.md`'s own Session Startup gate applies to *this repo's* engineering work. No amount of green dashboards, passing scripted scenarios, or agent-generated confidence substitutes for an actual person affirming the release is acceptable.
 
 ---
 
@@ -156,6 +163,17 @@ UAT results and exploratory-session findings: `references/worked-example.md`.
 
 ---
 
+## Scripts
+
+Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides *whether* a release is acceptable, only whether the sign-off record is structurally complete, leaving the actual go/no-go judgment to the two named parties.
+
+| Script | Does | Run when |
+|---|---|---|
+| `scripts/scaffold-signoff.sh <product> <release-slice>` | Copies `assets/sign-off-template.md`, fills in the release-slice name and today's date, writes a new sign-off doc under `artifacts/[product]/customer-validation/sign-off/` with the full Sign-Off Criteria Checklist copied in unchecked | Starting the sign-off record for a release slice, once `uat-plan` execution and any exploratory sessions have run |
+| `scripts/validate-signoff.sh <path>` | Checks the Sign-Off Criteria Checklist section is present, both sign-off parties are named (not still bracketed placeholders), the Decision line names exactly one of the three valid outcomes, and a Rollout Action is stated | Before treating a sign-off record as final |
+
+---
+
 ## Output Format
 
-Full fill-in template: `references/output-format-template.md`.
+Fill-in-and-go: `assets/sign-off-template.md` (or generate it directly via `scripts/scaffold-signoff.sh`). Annotated template explaining each field: `references/output-format-template.md`. Mechanical check before treating a sign-off as final: `scripts/validate-signoff.sh`.
