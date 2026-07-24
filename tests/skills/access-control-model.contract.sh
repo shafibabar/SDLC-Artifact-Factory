@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "access-control-model" \
-  "According to this skill, what does Go always have that Java or Kotlin examples of Domain Primitives don't have to guard against in the same way, making the zero-value trap a real risk for a type like TenantID?" \
-  "accessible zero value"
+  "According to this skill, what should you run to generate a new access control design doc, instead of hand-copying the template?" \
+  "scaffold-access-control-model.sh"
 
 smoke_test_summary
