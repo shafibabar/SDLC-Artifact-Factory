@@ -121,6 +121,58 @@ requirements documented in `integration-design`.
   query (justified exception, per Scope)
 ```
 
+A second illustrative Principle, this time formalizing a default already
+stated in prose inside `skills/api-contract-design/SKILL.md`'s Purpose
+section (per Kin Lane's *The API-First Transformation*,
+`research/software-architecture/api-first-transformation-lane.md`):
+
+```markdown
+---
+principle-id: PRINCIPLE-002
+statement: This product's API contracts are designed and versioned as durable products, not as incidental plumbing for the current UI.
+established: 2026-06-25
+owner: enterprise-architect
+---
+
+# PRINCIPLE-002: APIs Are Durable Products, Not UI Plumbing
+
+## Statement
+Every public or partner-facing API contract is designed and versioned
+as a product in its own right — with a lifecycle, a deprecation policy,
+and a consumer base independent of any single consuming application —
+not as an implementation detail bolted on after a UI ships.
+
+## Rationale
+An API contract this factory designs today may outlive the UI that
+motivated it: a future mobile client, a partner integration, or an
+internal automation may depend on it long after the original frontend
+has changed or been replaced. Treating the contract as durable product
+surface — reviewed with the same seriousness as a pricing model or a
+positioning statement — is what makes `api-contract-design`'s existing
+6-month deprecation window and `Deprecation` header discipline a
+genuine commitment to those future consumers, not a formality applied
+to a contract nobody outside the current UI actually depends on.
+
+## Scope
+Governs the versioning and deprecation discipline applied to any
+contract with real consumers beyond the product's own first-party
+frontend — a public API, a partner integration, or a documented
+internal automation. Does not relax `api-contract-design`'s existing
+policy for purely internal, single-consumer contracts, which already
+apply the same versioning table by default; this Principle names why
+that discipline must never be skipped once a second, uncoordinated
+consumer exists, not a reason to loosen it for the common case.
+
+## Exceptions
+- None recorded yet. A contract judged genuinely single-consumer and
+  unlikely to gain a second consumer within its foreseeable lifetime
+  could justify a lighter deprecation window as an exception — but
+  this should be argued explicitly in an ADR, not assumed by default.
+
+## Cited By
+- (none yet — illustrative Principle, not yet cited by a real product's ADR)
+```
+
 ---
 
 ## Storage

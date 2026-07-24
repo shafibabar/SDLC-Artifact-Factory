@@ -4,16 +4,22 @@ description: >
   Teaches how to design API contracts using the API-First approach — defining
   the OpenAPI 3.1 specification before any implementation code is written.
   Covers resource naming, HTTP method selection, request/response schema design,
-  error response standards, versioning strategy, authentication headers, and
-  how the API contract connects to the Command Catalog and Read Model designs
-  from domain modelling. The OpenAPI spec is the authoritative contract between
-  the backend-engineer and frontend-engineer. Used by the enterprise-architect
+  error response standards, versioning strategy, authentication headers, how
+  the API contract connects to the Command Catalog and Read Model designs from
+  domain modelling, and — grounded in JJ Geewax's *API Design Patterns* —
+  custom methods for actions that don't fit clean CRUD, the long-running
+  operation (Operation resource) pattern for async work, resource revisions
+  (ETags) for optimistic concurrency, and field masks for partial updates. The
+  OpenAPI spec is the authoritative contract between the backend-engineer and
+  frontend-engineer. Includes scripts/scaffold-api-contract-design.sh and
+  scripts/validate-api-contract-design.sh. Used by the enterprise-architect
   agent after the Command Catalog and Read Model designs are complete.
-version: 1.1.0
+version: 2.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, api-first, openapi, contract-first, rest]
+related: [skill-authoring-standards, command-catalog, read-model-design]
 ---
 
 # API Contract Design
@@ -27,6 +33,8 @@ This approach:
 - Creates a machine-readable contract that tools can validate, mock, and generate code from
 - Forces explicit decisions about resource naming, versioning, and error handling before they become embedded in code
 - Creates Consumer-Driven Contract test anchors
+
+**The contract is a product, not plumbing** (per Kin Lane's *The API-First Transformation*): it is the durable interface a future mobile client, partner integration, or internal automation will be built against, long after the UI that motivated it first has changed or been replaced. Its design quality is reviewed with the same seriousness as a pricing model or a positioning statement — not treated as an implementation formality that happens to come first.
 
 ---
 
@@ -60,6 +68,8 @@ Rules:
 - Nest only one level deep: `/data-assets/{id}/classification` — not deeper
 - Actions that are not CRUD: use a sub-resource noun — `/estate-scans` (not `/scan-estate`)
 
+For the rarer action that genuinely isn't a resource-field update — not a state transition a `PATCH` can express — a **custom method** (`POST /{resource}:verb`) is the disciplined fallback, not a return to free-floating verb endpoints. See `references/advanced-resource-patterns.md`.
+
 ---
 
 ## HTTP Method → Command/Query Mapping
@@ -72,7 +82,7 @@ Rules:
 | `DELETE` | Remove a resource | Command |
 | `GET` | Read a resource or collection | Query → Read Model |
 
-Every Command from the Command Catalog maps to a `POST`, `PUT`, `PATCH`, or `DELETE` endpoint. Every Read Model query maps to a `GET` endpoint.
+Every Command from the Command Catalog maps to a `POST`, `PUT`, `PATCH`, or `DELETE` endpoint. Every Read Model query maps to a `GET` endpoint. An omitted field in a `PATCH` body means "leave unchanged" — for resources with many optional fields, an explicit field mask removes the ambiguity; see `references/advanced-resource-patterns.md`.
 
 ---
 
@@ -84,7 +94,7 @@ Every Command from the Command Catalog maps to a `POST`, `PUT`, `PATCH`, or `DEL
 |---|---|
 | `200 OK` | Successful GET, PUT, PATCH |
 | `201 Created` | Successful POST that creates a resource |
-| `202 Accepted` | Command accepted for async processing — the body returns the resource ID and a status URL; the domain outcome arrives via a Domain Event |
+| `202 Accepted` | Command accepted for async processing — the body returns the resource ID and a status URL pointing to a fully-specified `Operation` resource (`references/advanced-resource-patterns.md`); the domain outcome also arrives via a Domain Event |
 | `204 No Content` | Successful DELETE, or action with no response body |
 
 ### Error responses
@@ -128,6 +138,8 @@ ErrorResponse:
 | `422 Unprocessable Entity` | Payload is structurally valid but semantically invalid | `[VALIDATION_ERROR]` |
 | `429 Too Many Requests` | Rate limit exceeded | `RATE_LIMIT_EXCEEDED` |
 | `500 Internal Server Error` | Unexpected server error — never include internal details | `INTERNAL_ERROR` |
+
+`409 Conflict` here is a business-rule violation, not a lost-update collision between two concurrent writers — for resources with real concurrent-writer risk, pair it with the resource-revisions (`ETag`/`If-Match`) mechanism in `references/advanced-resource-patterns.md`, which detects the latter.
 
 ---
 
@@ -196,64 +208,13 @@ Collection endpoints share one convention — never invent a per-endpoint varian
 - **Sorting:** `?sort=classifiedAt&order=desc`. Only fields the Read Model indexes are sortable; the spec enumerates them.
 - **Stable ordering is a contract.** Every paginated response has a deterministic total order (sort field plus ID tiebreaker); otherwise cursors are meaningless.
 
+Named-query-parameter filtering (rather than a single filter-expression-string parameter) is a deliberate choice: simpler to implement, simpler to validate against undocumented filters, and simpler for a non-programmer PM to review in a spec. Do not "fix" this to match a filter-expression-string convention absent a concrete need for compound/boolean filter logic — see `references/advanced-resource-patterns.md`'s Caveats-equivalent note for the full reasoning.
+
 ---
 
 ## OpenAPI Spec Structure
 
-```yaml
-openapi: "3.1.0"
-
-info:
-  title: "[Service Name] API"
-  version: "1.0.0"
-  description: "[Service responsibility in one paragraph]"
-
-servers:
-  - url: "https://api.{tenantId}.example.com/v1"
-    variables:
-      tenantId:
-        description: "Tenant identifier for physical multi-tenancy routing"
-        default: "demo"
-
-security:
-  - BearerAuth: []
-
-tags:
-  - name: DataAssets
-    description: "Operations on discovered data assets"
-
-paths:
-  /data-assets:
-    get:
-      summary: "List data assets"
-      tags: [DataAssets]
-      parameters: [...]
-      responses:
-        "200":
-          description: "Paginated list of data assets"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DataAssetListResponse"
-
-components:
-  schemas:
-    DataAssetListResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/DataAssetListItem"
-        pagination:
-          $ref: "#/components/schemas/PaginationMeta"
-
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-```
+Top-level shape: `openapi` version, `info`, `servers` (with the `tenantId` path variable for physical multi-tenancy routing), global `security`, `tags`, `paths`, and `components` (`schemas` plus `securitySchemes`). Full worked example, including a complete `paths` entry and its referenced schemas: `references/openapi-spec-structure-example.md`.
 
 ---
 
@@ -269,6 +230,28 @@ components:
 | Auth on all endpoints | BearerAuth applied globally; health checks excluded | Endpoints missing authentication |
 | Idempotency header | Documented on all mutating endpoints | POST endpoints with no idempotency support |
 | Pagination convention | All collection endpoints use the shared cursor pagination shape | Per-endpoint pagination variants, or uncapped `limit` |
+| Async operations resolvable | Every `202 Accepted` status URL returns a fully-specified `Operation` resource | A "status URL" with no documented response shape |
+| Custom methods disciplined | Any `resource:verb` endpoint is a genuine non-CRUD action, not a CRUD workaround | Custom methods used where a standard method or resource-field update would fit |
+| Concurrency-sensitive resources revisioned | Resources with real concurrent-writer risk carry `etag`/`If-Match` | Silent lost updates on a resource multiple clients can write concurrently |
+
+---
+
+## API Contract Review Checklist
+
+Large organizations catch cross-API drift with a governance board reviewing every contract before publication — a real, standing institution that exists because no single author has authority over every producing team. That institution has no referent here: `enterprise-architect` is the sole author of every API contract this factory produces, so the discipline a governance board enforces (consistency checked before a contract ships) still applies, just without the board. Run this checklist once, deliberately, over the finished spec — the same way `scripts/validate-adr.sh` is a distinct, named gate rather than something folded silently into "writing the ADR" — immediately before treating a contract as ready for the Design phase gate. It inherits every row from the Quality Criteria table above; it adds no new criteria, only the discipline of checking them as one deliberate pass rather than assuming they held because the skill was followed:
+
+- [ ] Every resource name traces to the domain Ubiquitous Language, not a database table or a generic noun
+- [ ] Every Command Catalog entry has a corresponding endpoint; every Read Model has a `GET`
+- [ ] Every error response, on every documented failure branch, uses the standard `ErrorResponse` shape
+- [ ] The path carries a `/v1/` (or current) version prefix
+- [ ] `BearerAuth` is applied globally, with only health checks excluded
+- [ ] Every mutating endpoint documents `Idempotency-Key` support
+- [ ] Every collection endpoint uses the shared cursor-pagination shape, with no per-endpoint variant
+- [ ] Every `202 Accepted` status URL resolves to a fully-specified `Operation` resource, not an unspecified "status URL"
+- [ ] Any `resource:verb` custom method is a genuine non-CRUD action, not a workaround for a standard method
+- [ ] Every resource with real concurrent-writer risk carries `etag`/`If-Match`
+
+A contract that fails any row here is not ready for the Design phase gate, regardless of how much of the spec is otherwise written.
 
 ---
 
@@ -287,36 +270,19 @@ components:
 
 ---
 
+## Scripts
+
+Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides whether an API contract is *good*, only whether the contract summary document is structurally complete, leaving judgment (are the resources actually well-named, is a custom method genuinely warranted) to the enterprise-architect's own review.
+
+| Script | Does | Run when |
+|---|---|---|
+| `scripts/scaffold-api-contract-design.sh <product> <service-name>` | Copies `assets/api-contract-summary-template.md`, fills in product/service/date metadata, writes a new contract summary doc | Starting API contract design for a service |
+| `scripts/validate-api-contract-design.sh <path>` | Checks required frontmatter, presence of all three Output Format sections, and that the Endpoints table has at least one real data row beyond its header | Before treating the contract as ready for the Design phase gate |
+
+---
+
 ## Output Format
 
-The primary output is the `api/openapi.yaml` file in the service repository:
-`artifacts/[product]/design/[service-name]/openapi.yaml`
+The primary output is the `api/openapi.yaml` file in the service repository: `artifacts/[product]/design/[service-name]/openapi.yaml`, per `references/openapi-spec-structure-example.md`.
 
-Accompanied by a contract summary:
-`artifacts/[product]/design/[service-name]/api-contract-summary.md`
-
-```markdown
----
-name: api-contract-summary
-product: [product name]
-service: [service name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: enterprise-architect
-openapi-spec: artifacts/[product]/design/[service-name]/openapi.yaml
----
-
-# API Contract Summary: [Service Name]
-
-## Endpoints
-
-| Method | Path | Command / Read Model | Auth | Idempotency |
-|---|---|---|---|---|
-
-## Breaking Change Log
-[Version history and breaking changes — starts empty]
-
-## Consumer Registry
-[List of known consumers of this API — required for Consumer-Driven Contract tests]
-```
+Accompanied by a contract summary — fill-in-and-go: `assets/api-contract-summary-template.md` (or generate it directly via `scripts/scaffold-api-contract-design.sh`). Annotated template explaining each field: `references/output-format-template.md`. Mechanical completeness check: `scripts/validate-api-contract-design.sh`.
