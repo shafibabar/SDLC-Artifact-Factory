@@ -1,0 +1,11 @@
+{
+  "_meta": {
+    "purpose": "Registry of every artifact produced for this product. Read before producing a new artifact to check whether it already exists; updated by the post-artifact-created hook on every artifact write.",
+    "how_to_use": "1. Look up an artifact by id or type before creating a new one. 2. Check status before treating an entry as current — superseded entries are historical only. 3. Follow traces_to to find the requirement, decision, or event behind any artifact.",
+    "last_updated": "0001-01-01",
+    "updated_by": "<decision id or event that produced this manifest, e.g. the /sdlc-start run that created this product>"
+  },
+  "product": "<product name>",
+  "product_slug": "replace-with-product-slug",
+  "artifacts": []
+}
