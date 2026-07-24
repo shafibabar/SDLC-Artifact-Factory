@@ -16,7 +16,7 @@ description: >
   scripts/validate-alerting-rules-design.sh. Deep derivation, saturation
   patterns, toil, and escalation content split across references/. Used by
   the platform-engineer during Deploy.
-version: 2.0.0
+version: 2.0.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -270,18 +270,22 @@ owner: platform-engineer
 
 ## Alert Inventory
 | Alert | Symptom / SLO protected | Severity | Windows / burn rate | Runbook |
+|---|---|---|---|---|
 
 ## Burn-Rate Policy Applied
 | SLO | Fast burn (page) | Slow burn (page) | Trickle (ticket) |
+|---|---|---|---|
 
 ## Pipeline Leading Indicators
 | Alert | Condition | Severity | Rationale |
+|---|---|---|---|
 
 ## Routing and Inhibition
 [Route tree, grouping keys, inhibition rules, receivers]
 
 ## Review Log
 | Date | Alert | Fired count | Actioned? | Toil (repeat manual fix?) | Decision (keep/tune/delete/automate) |
+|---|---|---|---|---|---|
 
 ## Configuration Files
 - prometheus/rules/slo-burn-*.yaml

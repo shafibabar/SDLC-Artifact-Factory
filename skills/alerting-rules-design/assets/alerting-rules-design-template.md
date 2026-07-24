@@ -11,18 +11,22 @@ owner: platform-engineer
 
 ## Alert Inventory
 | Alert | Symptom / SLO protected | Severity | Windows / burn rate | Runbook |
+|---|---|---|---|---|
 
 ## Burn-Rate Policy Applied
 | SLO | Fast burn (page) | Slow burn (page) | Trickle (ticket) |
+|---|---|---|---|
 
 ## Pipeline Leading Indicators
 | Alert | Condition | Severity | Rationale |
+|---|---|---|---|
 
 ## Routing and Inhibition
 [Route tree, grouping keys, inhibition rules, receivers]
 
 ## Review Log
 | Date | Alert | Fired count | Actioned? | Toil (repeat manual fix?) | Decision (keep/tune/delete/automate) |
+|---|---|---|---|---|---|
 
 ## Configuration Files
 - prometheus/rules/slo-burn-*.yaml
