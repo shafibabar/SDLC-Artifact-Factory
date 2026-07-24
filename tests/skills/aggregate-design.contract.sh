@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "aggregate-design" \
-  "This skill uses one specific word to describe an Aggregate instance where thousands of Commands converge on a single row during a scan. What is that word?" \
-  "hotspot"
+  "According to this skill's worked examples, is ExtractedEntity designed as its own separate Aggregate, or as a locally-identified child Entity inside DataAsset?" \
+  "child"
 
 smoke_test_summary
