@@ -1,6 +1,6 @@
 # Canonical Ubiquitous Language
 
-**Last updated:** 2026-07-23
+**Last updated:** 2026-07-24
 **Maintained by:** glossary-management skill
 **Rule:** Use every term exactly as defined here. Synonyms are not acceptable substitutes.
 
@@ -244,3 +244,13 @@
 | **Product Validation** | The process of testing assumptions about user needs, market fit, and solution viability before full investment in development. |
 | **User Story Mapping** | A product planning technique that organises user stories as a two-dimensional map: a horizontal narrative of the user journey and vertical slices of increasing detail. Used to sequence delivery and identify MVP scope. |
 | **Value Stream Mapping** | A lean technique for visualising the complete flow of steps required to deliver value to a customer, from concept to production. Used to identify and eliminate waste. |
+
+---
+
+## Governance and Traceability
+
+| Term | Definition |
+|---|---|
+| **Artifact Manifest** | The per-product registry, at `artifacts/[product]/_manifest.json`, of every artifact actually produced for that product — one entry per artifact instance, each carrying a stable ID, path, version, status, and `traces_to` reference. Distinct from the Artifact-Type Catalog, which lists what the plugin *can* produce rather than what a specific product actually has. Maintained by `governance/artifact-manifest`. |
+| **Artifact-Type Catalog** | The plugin-wide, product-agnostic table of every artifact type this plugin can produce — one row per type, naming its producing agent, owning skill, file path pattern, phase, and required frontmatter fields. The schema against which every product's Artifact Manifest entries are checked for `type` conformance. Maintained as a prose table in `governance/artifact-manifest`'s `references/artifact-type-catalog.md`, since it is extended over time as new skills are added. |
+| **Traceability** | The requirement that every artifact reference the requirement, decision, or event that caused it to exist, recorded in an Artifact Manifest entry's `traces_to` field. Mandated by `CLAUDE.md`'s Artifact Standards; an entry with no `traces_to` value is an orphan (see `governance/artifact-manifest`'s Anti-Patterns). |
