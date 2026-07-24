@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "acceptance-sign-off" \
-  "According to this skill's checklist, should exploratory-session findings be treated differently from scripted UAT scenario results, or the same way?" \
-  "same"
+  "According to this skill, instead of hand-copying the sign-off template and its checklist, what should you run to generate a new sign-off doc?" \
+  "scaffold-signoff.sh"
 
 smoke_test_summary
