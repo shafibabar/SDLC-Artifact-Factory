@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "acceptance-criteria" \
-  "According to this skill, should acceptance criteria be drafted before or after a story's example map is complete?" \
-  "after"
+  "According to this skill, what script should you run to generate a new acceptance-criteria doc pre-filled with story metadata, instead of hand-copying the template?" \
+  "scaffold-criteria.sh"
 
 smoke_test_summary
