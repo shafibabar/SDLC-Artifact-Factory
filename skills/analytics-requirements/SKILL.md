@@ -4,16 +4,21 @@ description: >
   Teaches how to elicit analytics requirements from stakeholders before any metric,
   dashboard, or report is built — starting from the decision the metric must inform,
   not the metric itself. Covers the requirements-elicitation template (decision →
-  metric → data source → cadence → owner), a vanity-metric detection checklist, and
-  traceability from analytics requirements to OKRs and the North Star Metric. This is
-  the analytics discipline's discovery step — it precedes `dashboard-specification`,
-  `reporting-spec`, and `metrics-instrumentation-plan`. Used by the data-engineer
-  during Data.
-version: 1.0.0
+  metric → data source → cadence → owner), a six-point vanity-metric detection
+  checklist grounded in Croll & Yoskovitz's actionable-vs-vanity-metric framework
+  (including a cohort-analysis check for retention/stickiness metrics), a clarified
+  distinction between the One Metric That Matters and this repo's North Star Metric,
+  and traceability from analytics requirements to OKRs. This is the analytics
+  discipline's discovery step — it precedes `dashboard-specification`,
+  `reporting-spec`, and `metrics-instrumentation-plan`. Includes
+  scripts/scaffold-analytics-requirements.sh and
+  scripts/validate-analytics-requirements.sh. Used by the data-engineer during Data.
+version: 1.1.0
 phase: data
 owner: data-engineer
 created: 2026-07-20
 tags: [data, analytics, requirements, metrics, okr, stakeholder-elicitation, vanity-metrics]
+related: [skill-authoring-standards, okr-authoring, dashboard-specification]
 ---
 
 # Analytics Requirements
@@ -77,7 +82,7 @@ A requirement missing any of these six fields is not ready to build. "We'll figu
 
 ## Vanity-Metric Detection Checklist
 
-A vanity metric looks impressive, moves in a reassuring direction, and drives no decision. Reject or reframe a requirement that fails any of these:
+A vanity metric looks impressive, moves in a reassuring direction, and drives no decision. Reject or reframe a requirement that fails any of these — this checklist is, in substance, Alistair Croll and Benjamin Yoskovitz's actionable-vs-vanity-metric framework (*Lean Analytics*, 2013): Actionability, Comparability, and Denominator honesty below are near-verbatim restatements of the book's own "changes behavior," "comparative," and "ratio, not raw count" tests, applied to this domain.
 
 | Check | Fail signal |
 |---|---|
@@ -86,6 +91,9 @@ A vanity metric looks impressive, moves in a reassuring direction, and drives no
 | **Denominator honesty** | A raw count is presented where a rate would reveal the real story ("500 gaps closed" vs. "500 of 8,000 gaps closed, 6% closure rate") |
 | **Gameable in isolation** | The metric can go up while the underlying outcome gets worse (e.g., "files scanned" rises while "files correctly classified" falls) |
 | **Survives disaggregation** | An aggregate that looks good only because it hides a bad segment (overall extraction confidence is high because 90% of files are simple .txt, masking poor PDF performance) |
+| **Understandable** | The metric can't be explained in one plain sentence a non-specialist stakeholder could remember and argue about — distinct from restating a request in Ubiquitous Language (Elicitation Method, step 2), which optimizes for precision, not memorability. A metric can be precisely correct and still too complex for anyone but its author to reason about |
+
+**For retention- or stickiness-flavored metrics specifically**, run one additional check before committing to build: **cohort analysis**. A rising cumulative count (total users retained, total accounts active) can pass every check above while still hiding declining per-cohort retention — segment users by when they started, and compare each cohort's behavior at the same elapsed time since signup. If a cohort that joined this month retains worse at day 30 than a cohort that joined three months ago, the product is getting worse even while the cumulative graph trends up; a cumulative total cannot tell the difference.
 
 This checklist mirrors the OKR discipline's Key Result criteria (`okr-authoring`) — a metric that would fail as a Key Result usually fails as a dashboard metric for the same reasons: it measures activity, not outcome.
 
@@ -101,6 +109,8 @@ Every analytics requirement should be traceable to one of two things:
 A requirement tracing to neither is the clearest vanity-metric signal there is. Record the trace explicitly in the requirements document — it is what lets a later cleanup pass ask "does anyone still use this?" against something more durable than institutional memory.
 
 The **North Star Metric** (the single metric capturing the core value delivered to customers, set during Strategy — `okr-authoring`) sits above individual analytics requirements. When several requirements are competing for the data-engineer's limited build capacity, the one that most directly moves or explains the North Star Metric wins the priority argument.
+
+Don't conflate this with Croll and Yoskovitz's **One Metric That Matters (OMTM)** (*Lean Analytics*) — a superficially similar idea that means something different. OMTM is explicitly stage-relative and deliberately rotates as the business's single biggest open risk changes, sometimes every few weeks (from "will anyone use this" to "will they come back" to "will they pay"). The North Star Metric here is fixed for the duration of an OKR cycle, not disposable week to week. If a requirement's priority argument seems to call for a metric that should change focus every few weeks rather than hold for a full cycle, that's a signal the underlying question is tactical — closer to OMTM's role — not a reason to force it under the North Star Metric's more durable umbrella.
 
 ---
 
@@ -132,7 +142,7 @@ Each of these three feeds directly into `dashboard-specification`'s per-widget m
 |---|---|---|
 | Decision-first | Every requirement states the decision it informs, elicited before the metric | Metric named before any decision is identified |
 | Template complete | All six fields (question, decision, metric, source, cadence, owner) present | Any field missing or "TBD" |
-| Vanity check applied | Every requirement passes the actionability, comparability, denominator, gameability, and disaggregation checks | A requirement shipped without running the checklist |
+| Vanity check applied | Every requirement passes the actionability, comparability, denominator, gameability, disaggregation, and understandability checks | A requirement shipped without running the checklist |
 | Traceable | Requirement links to a Key Result or a named recurring operational decision | Requirement with no OKR or decision trace |
 | Ubiquitous Language | Question and metric restated in canonical glossary terms | Stakeholder's informal phrasing carried through unchanged |
 | Cadence matches decision tempo | Refresh interval justified by how often the decision is made | Cadence set to "as fast as possible" with no justification |
@@ -151,32 +161,17 @@ Each of these three feeds directly into `dashboard-specification`'s per-widget m
 
 ---
 
+## Scripts
+
+Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides whether an analytics requirement is *good*, only whether the requirements document is structurally complete, leaving judgment (is this really the decision, is the vanity-metric check genuinely satisfied) to the data-engineer's own review.
+
+| Script | Does | Run when |
+|---|---|---|
+| `scripts/scaffold-analytics-requirements.sh <product>` | Copies `assets/analytics-requirements-template.md`, fills in product/date metadata, writes a new analytics requirements doc | Starting analytics requirements elicitation for a product |
+| `scripts/validate-analytics-requirements.sh <path>` | Checks required frontmatter, presence of all four Output Format sections, and that the Requirements Table and Vanity-Metric Review tables have at least one real data row beyond their header | Before treating requirements as ready to hand off to `dashboard-specification`/`reporting-spec`/`metrics-instrumentation-plan` |
+
+---
+
 ## Output Format
 
-```markdown
----
-name: analytics-requirements
-product: [product name]
-version: 1.0.0
-phase: data
-created: [date]
-owner: data-engineer
----
-
-# Analytics Requirements
-
-## Requirements Table
-| Question | Decision it informs | Metric | Data source | Refresh cadence | Owner |
-|---|---|---|---|---|---|
-
-## Vanity-Metric Review
-| Candidate metric | Actionable? | Comparable? | Honest denominator? | Gameable? | Survives disaggregation? | Verdict |
-|---|---|---|---|---|---|---|
-
-## OKR / Decision Traceability
-| Requirement | Traces to (Key Result or named recurring decision) |
-|---|---|
-
-## Deferred / Rejected Requests
-[Requests that failed the decision test or the vanity-metric check, and why]
-```
+Fill-in-and-go: `assets/analytics-requirements-template.md` (or generate it directly via `scripts/scaffold-analytics-requirements.sh`). Annotated template explaining each field: `references/output-format-template.md`. Mechanical completeness check before treating requirements as ready: `scripts/validate-analytics-requirements.sh`.

@@ -226,6 +226,7 @@
 
 | Term | Definition |
 |---|---|
+| **Cohort Analysis** | A technique that segments users by when they started (or another shared starting event) and compares each cohort's behaviour — typically retention or engagement — at the same elapsed time since that start, revealing trends a cumulative aggregate would hide (a rising total-users count can coexist with declining per-cohort retention). Used by `analytics-requirements` as a vanity-metric check for retention/stickiness-flavoured metrics specifically. |
 | **Domain Storytelling** | A collaborative technique where domain experts narrate their work as stories using a pictographic language, helping teams understand workflows and discover domain concepts. |
 | **Example Mapping** | A structured workshop technique for breaking down user stories into concrete examples, identifying rules, and surfacing questions before development begins. |
 | **Impact Mapping** | A strategic planning technique that maps goals to actors, impacts, and deliverables, ensuring all work traces back to a measurable business goal. |
