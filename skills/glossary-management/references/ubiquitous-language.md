@@ -116,11 +116,16 @@
 
 | Term | Definition |
 |---|---|
+| **Burn Rate** | The speed at which an Error Budget is being consumed, normalized as `observed error ratio / budget fraction`; a burn rate of 1 exhausts the budget exactly at the SLO window's end. `alerting-rules-design`'s multiwindow multi-burn-rate alerts fire on this quantity. |
 | **Business Continuity** | The capability of an organisation to maintain essential functions during and after a disaster or disruption. |
 | **Capacity Planning** | The process of determining the computing resources required to meet current and future demand at acceptable performance levels. |
+| **Corrective Action** | A specific, owned, dated task produced by a postmortem and tracked to actual closure, not merely recorded in a document. Also called an Action Item. |
 | **Disaster Recovery** | The documented process for restoring systems and data after a catastrophic failure. Includes Recovery Time Objective (RTO) and Recovery Point Objective (RPO). |
 | **Distributed Tracing** | A technique for tracking a request as it propagates through multiple services in a distributed system, correlating logs and metrics across service boundaries using a Trace ID. |
+| **Error Budget** | `1 − SLO target`, the quantity of allowed unreliability a service may spend before reliability work takes priority over feature work — spent deliberately, not merely tracked. |
+| **Escalation Policy** | The documented answer to what happens when a page goes unacknowledged. A short Alertmanager `repeat_interval` alone is not an escalation policy — it re-pages the same person, it does not notify anyone else. |
 | **Fault Tolerance** | The ability of a system to continue operating correctly in the presence of component failures. |
+| **Four Golden Signals** | The organising framework — Latency, Traffic, Errors, Saturation — for what to monitor first on any user-facing system, per Google's SRE discipline. |
 | **Graceful Degradation** | A resilience approach where a system continues to operate at reduced capacity or functionality when components fail, rather than failing completely. |
 | **Health Check** | An endpoint or probe that reports the operational status of a service, used by orchestration platforms and load balancers to route traffic only to healthy instances. |
 | **High Availability** | A design characteristic of a system that ensures an agreed level of operational performance (uptime) for a higher-than-normal period. |
@@ -129,10 +134,14 @@
 | **Metrics** | Numeric measurements of system behaviour over time (e.g. request rate, error rate, latency). Used for alerting, dashboards, and SLO tracking. |
 | **Monitoring** | The continuous collection and analysis of Metrics, Logs, and Traces to detect and respond to problems in a system. |
 | **Observability** | The degree to which the internal state of a system can be inferred from its external outputs (Metrics, Logs, Traces). A system is observable if it can be diagnosed without deploying new code. |
+| **On-Call** | The state of being the designated responder for pages during a given period. At a headcount of one, on-call has no rotation and no secondary to hand an unacknowledged page to. |
+| **Postmortem Trigger Criteria** | The explicit, written thresholds (e.g. user-visible downtime, data loss, a page requiring active intervention, detection by something other than monitoring) that make writing a postmortem mandatory rather than discretionary. |
 | **Resilience Engineering** | The practice of designing systems to anticipate, withstand, recover from, and adapt to adverse conditions. |
+| **Saturation** | How "full" a service is relative to its most constrained resource, ideally expressed as a trend toward exhaustion rather than a static percentage. The fourth of the Four Golden Signals. |
 | **Service Level Agreement (SLA)** | A formal contract between a service provider and a customer specifying the expected service level, including uptime guarantees, penalties for breach, and support commitments. |
 | **Service Level Indicator (SLI)** | A quantitative measure of the level of service being provided (e.g. request success rate, latency at the 99th percentile). |
 | **Service Level Objective (SLO)** | A target value or range for an SLI (e.g. 99.9% of requests succeed within 200ms). SLOs are the internal target; SLAs are the external commitment. |
+| **Toil** | Operational work that is manual, repetitive, automatable, tactical, devoid of enduring value, and scales linearly with service growth — distinct from irreducible engineering judgment, which is none of these. |
 | **Vertical Scalability** | Increasing the capacity of a single node (more CPU, RAM) rather than adding more nodes. |
 
 ---
