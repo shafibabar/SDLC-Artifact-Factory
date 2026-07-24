@@ -185,14 +185,19 @@
 | **Contract Testing** | Tests that verify the interactions between a consumer and a provider conform to a shared contract. Prevents integration failures caused by API changes. |
 | **Continuous Testing** | The practice of executing automated tests at every stage of the delivery pipeline to provide immediate feedback on code quality. |
 | **End-to-End Testing (E2E)** | Tests that exercise a complete user journey through the full system stack, from the UI to the database and back. |
+| **Feature File** | A Gherkin document (`.feature`) containing one `Feature` and its `Scenario`s, serving simultaneously as a specification a Product Manager can read and approve and an executable test proving the system meets it. See `bdd-feature-file`. |
+| **Given/When/Then** | The three-step structure of a Gherkin `Scenario`: `Given` establishes a precondition, `When` names the single action under test, `Then` asserts an observable outcome. Illustrates a business rule declaratively — never a UI/HTTP-mechanics script (see Specification by Example). |
 | **Integration Testing** | Tests that verify two or more components work correctly together. Typically use real (or containerised) dependencies rather than mocks. |
+| **Living Documentation** | A specification that is both (a) automatically validated against the system on a regular cadence and (b) mechanically rendered back to the team as a browsable documentation artifact generated from the validated results — not merely a spec that happens to stay current because it runs in CI. Gojko Adzic's term (Specification by Example). |
 | **Load Testing** | Tests that verify a system can handle the expected peak volume of traffic without degradation. |
 | **Mutation Testing** | A technique that introduces small deliberate defects (mutations) into source code and verifies that the test suite detects them. Measures the quality of tests, not just coverage. |
 | **Performance Testing** | Tests that verify a system meets its response time, throughput, and resource consumption requirements under defined load conditions. |
 | **Regression Testing** | The re-execution of existing test suites after a change to verify that previously working functionality has not been broken. |
+| **Scenario** | One concrete example of system behaviour within a Feature File, expressed as a Given/When/Then sequence — the unit both a business reader and an automated test consume identically. |
 | **Security Testing** | Tests that verify a system's resistance to known attack vectors, including injection, authentication bypass, authorisation flaws, and insecure data handling. |
 | **Shift Left Testing** | The practice of performing testing activities as early as possible in the development lifecycle, starting at requirements definition rather than after implementation. |
 | **Specification by Example** | A technique for defining system behaviour through concrete examples agreed with domain experts, which become the basis for automated acceptance tests. |
+| **Specification Workshop** | Gojko Adzic's name for the short, focused, collaborative session (business, development, and testing perspectives) that derives concrete examples before Gherkin is written — the concrete mechanics behind the Three Amigos expectation. A specification is ready to leave the workshop once it is expressed in business language only, traceable to a single rule, and explicitly agreed by the team present. |
 | **Stress Testing** | Tests that push a system beyond its normal operating limits to determine its breaking point and recovery behaviour. |
 | **Test-Driven Development (TDD)** | A methodology where tests are written before implementation code. The cycle is: write a failing test, write the minimum code to pass it, refactor. |
 | **Test Fixture** | A fixed set of data or state established before tests run, ensuring tests are reproducible and independent of each other. |
