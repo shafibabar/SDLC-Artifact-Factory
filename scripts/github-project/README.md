@@ -53,10 +53,14 @@ sits open forever — this happened for real on issues #112-#115 and
 Run from the repo root: `python3 scripts/github-project/<script>.py ...`
 (the paired slash commands in `.claude/commands/` wrap these.)
 
-### `plan_start.py "<title>" [--body "<body>"]`
+### `plan_start.py "<title>" --labels <l1,l2,...> [--body "<body>"]`
 Creates the parent issue, adds it to the Project, sets Status Todo -> In
 Planning, and tracks it as the active plan in local state. Fails if a plan is
-already active.
+already active. `--labels` is required — at least one of `discovery`, `agent`,
+`skill`, `bug`, `documentation`, `enhancement` (comma-separated for more than
+one). Every issue, sub-issue, and PR this tooling creates must carry one of
+these (Shafi's decision, 2026-07-24); an unknown or empty label set fails
+before the GitHub mutation ever runs.
 
 ### `plan_status.py <planning|in-progress|in-review|done>`
 Updates the Status of the currently tracked parent issue. `done` maps to the
@@ -70,12 +74,16 @@ value leaves `current_plan` in place.
 Local-only, no GitHub calls. Keyed by a stable draft id (`d1`, `d2`, ...):
 
 ```
-save_draft.py add --title T --description D [--depends-on d1,d2] [--sequence 3.a]
-save_draft.py update <id> [--title T] [--description D] [--depends-on d1,d2] [--sequence 3.a]
+save_draft.py add --title T --description D --labels l1,l2 [--depends-on d1,d2] [--sequence 3.a]
+save_draft.py update <id> [--title T] [--description D] [--labels l1,l2] [--depends-on d1,d2] [--sequence 3.a]
 save_draft.py reject <id>
 save_draft.py list
 save_draft.py clear
 ```
+
+`--labels` is required on `add` (same canonical set as `plan_start.py`) and
+optional on `update`. `plan_exit.py --confirm` applies each row's labels when
+it creates the sub-issue.
 
 `update` only touches the fields you pass; other rows are never rewritten.
 `reject` deletes the row entirely and strips it from every other row's
@@ -109,7 +117,9 @@ branch. With `--base <branch>`, cuts from and targets `<branch>` instead
 rather than the default branch) — current HEAD must already be that branch
 when this runs. The PR body is adjusted accordingly (`Closes #<n>` only
 applies when merging into the default branch; a `--base` PR states plainly
-that it doesn't auto-close the issue).
+that it doesn't auto-close the issue). The PR's labels are not chosen
+separately — it mirrors whatever labels are already on sub-issue `<n>`, since
+that issue is the single source of truth for what the work is.
 
 ### `exec_complete.py <sub-issue-number> "<commit message>"`
 Commits **currently staged changes** (does not `git add` anything for you —

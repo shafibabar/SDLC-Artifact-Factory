@@ -5,18 +5,21 @@ Persists the in-conversation sub-issue draft table, one row at a time, keyed
 by a stable draft id (d1, d2, ...) so that modifying or rejecting one row
 never touches the others.
 
-  save-draft add --title T --description D [--depends-on d1,d2] [--sequence 3.a]
-  save-draft update <id> [--title T] [--description D] [--depends-on d1,d2] [--sequence 3.a]
+  save-draft add --title T --description D --labels l1,l2 [--depends-on d1,d2] [--sequence 3.a]
+  save-draft update <id> [--title T] [--description D] [--labels l1,l2] [--depends-on d1,d2] [--sequence 3.a]
   save-draft reject <id>
   save-draft list
   save-draft clear
+
+--labels is required on add: at least one of discovery, agent, skill, bug,
+documentation, enhancement (comma-separated for more than one).
 """
 import argparse
 import json
 import re
 import sys
 
-from ghp import state
+from ghp import gh, state
 
 SEQUENCE_RE = re.compile(r"^\d+(\.[a-z])?$")
 
@@ -24,6 +27,10 @@ SEQUENCE_RE = re.compile(r"^\d+(\.[a-z])?$")
 def _split_ids(raw):
     if raw is None:
         return None
+    return [x.strip() for x in raw.split(",") if x.strip()]
+
+
+def _split_labels(raw):
     return [x.strip() for x in raw.split(",") if x.strip()]
 
 
@@ -45,6 +52,13 @@ def cmd_add(args, st):
         sys.exit(1)
     _warn_sequence(args.sequence)
 
+    labels = _split_labels(args.labels)
+    try:
+        gh.validate_labels(labels)
+    except gh.GhError as e:
+        print(f"error: {e}", file=sys.stderr)
+        sys.exit(1)
+
     row_id = f"d{st['draft']['next_id']}"
     st["draft"]["next_id"] += 1
     rows[row_id] = {
@@ -52,6 +66,7 @@ def cmd_add(args, st):
         "description": args.description or "",
         "depends_on": depends_on,
         "sequence": args.sequence or "",
+        "labels": labels,
     }
     state.save(st)
     print(f"added {row_id}: {args.title}")
@@ -77,6 +92,14 @@ def cmd_update(args, st):
     if args.sequence is not None:
         _warn_sequence(args.sequence)
         row["sequence"] = args.sequence
+    if args.labels is not None:
+        labels = _split_labels(args.labels)
+        try:
+            gh.validate_labels(labels)
+        except gh.GhError as e:
+            print(f"error: {e}", file=sys.stderr)
+            sys.exit(1)
+        row["labels"] = labels
     state.save(st)
     print(f"updated {args.id}")
 
@@ -116,6 +139,7 @@ def main():
     p_add.add_argument("--description", default="")
     p_add.add_argument("--depends-on")
     p_add.add_argument("--sequence")
+    p_add.add_argument("--labels", required=True, help="Comma-separated canonical labels")
     p_add.set_defaults(func=cmd_add)
 
     p_update = sub.add_parser("update")
@@ -124,6 +148,7 @@ def main():
     p_update.add_argument("--description")
     p_update.add_argument("--depends-on")
     p_update.add_argument("--sequence")
+    p_update.add_argument("--labels", help="Comma-separated canonical labels")
     p_update.set_defaults(func=cmd_update)
 
     p_reject = sub.add_parser("reject")

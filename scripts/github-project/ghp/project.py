@@ -52,9 +52,12 @@ def ensure_sequence_field():
     return _sequence_field_id_cache
 
 
-def create_issue(title, body, parent_issue_id=None):
+def create_issue(title, body, parent_issue_id=None, labels=None):
     """Create an issue in the tracked repo. If parent_issue_id is given,
-    creates it as a native GitHub sub-issue of that parent in the same call."""
+    creates it as a native GitHub sub-issue of that parent in the same call.
+    labels is required (Shafi's decision, 2026-07-24) -- validated before
+    the mutation runs so a bad label set never creates an orphaned issue."""
+    gh.validate_labels(labels)
     parent_clause = (
         f"parentIssueId: {gh.gql_string(parent_issue_id)}" if parent_issue_id else ""
     )
@@ -72,7 +75,9 @@ def create_issue(title, body, parent_issue_id=None):
         }}
         """
     )
-    return data["createIssue"]["issue"]
+    issue = data["createIssue"]["issue"]
+    gh.add_labels(issue["number"], labels)
+    return issue
 
 
 def add_item_to_project(content_id):

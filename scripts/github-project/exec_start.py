@@ -66,6 +66,12 @@ def main():
         else:
             pr_body = f"Closes #{args.issue_number}"
 
+        # Mirror the sub-issue's labels onto its PR (Shafi's decision, 2026-07-24:
+        # every issue/sub-issue/PR must carry at least one canonical label). The
+        # issue is the single source of truth; the PR never asks for its own set.
+        labels = gh.get_issue_labels(args.issue_number)
+        gh.validate_labels(labels)
+
         pr_cmd = [
             "gh", "pr", "create",
             "--repo", f"{config.REPO_OWNER}/{config.REPO_NAME}",
@@ -80,6 +86,14 @@ def main():
         if pr_out.returncode != 0:
             raise gh.GhError(f"gh pr create failed:\n{pr_out.stderr.strip()}")
         pr_url = pr_out.stdout.strip()
+
+        # Applied via the REST labels endpoint, not `gh pr create --label` --
+        # that flag routes through the same GraphQL "Projects (classic)" query
+        # that makes `gh pr edit --add-label` fail outright on this repo.
+        pr_number_match = re.search(r"/pull/(\d+)", pr_url)
+        if not pr_number_match:
+            raise gh.GhError(f"Could not parse a PR number out of {pr_url!r}.")
+        gh.add_labels(pr_number_match.group(1), labels)
 
         project.set_status(item_id, "in_progress")
 
