@@ -5,9 +5,17 @@ description: >
   Given/When/Then structure, mapping acceptance criteria to scenarios, scenario
   outlines for data variation, the ubiquitous-language rule for step wording,
   binding steps to Go step definitions (godog) and to frontend e2e, and keeping
-  feature files as living documentation a PM can read. BDD is a mandatory
-  methodology. Used by the test-strategist during Implement and Quality.
-version: 1.1.0
+  feature files as living documentation a PM can read. Covers the Specification
+  Workshop definition-of-ready (business-language-only, one-rule-per-example,
+  team-agreed — the Three Amigos collaborative-authorship expectation made
+  checkable), Living Documentation's full two-part definition, and the Key
+  Examples minimality principle, in
+  references/collaborative-specification-and-living-documentation.md. Includes
+  assets/bdd-feature-file-template.md and
+  scripts/scaffold-bdd-feature-file.sh / scripts/validate-bdd-feature-file.sh.
+  BDD is a mandatory methodology. Used by the test-strategist during Implement
+  and Quality.
+version: 2.0.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -32,6 +40,8 @@ Feature files are not invented by the test-strategist — they are the realisati
 acceptance-criteria (Ideate) ──► bdd-feature-file (Implement) ──► step definitions (Go/JS)
    the agreement                    the executable spec              the automation
 ```
+
+The examples a feature file's scenarios are built from should come from a **Three Amigos** session — business, development, and testing perspectives deriving concrete examples together before Gherkin is finalised (see the canonical glossary; played solo by a single agent when no live multi-role team exists). In this repo that expectation is realised as a joint sanity check between `requirements-analyst` and `test-strategist`, not a one-directional handoff refined solo. `references/collaborative-specification-and-living-documentation.md` gives this a concrete, checkable definition-of-ready.
 
 ---
 
@@ -106,11 +116,13 @@ When the same behaviour holds across many inputs, use a `Scenario Outline` with 
 
 This mirrors the data-architect's classification control mapping (`data-classification`) — one spec, verified across every level.
 
+An Examples table answers "how many rows," a question the Golden Triangle doesn't address (it governs *which angles* — happy/negative/edge — not *how many examples per angle*). `references/collaborative-specification-and-living-documentation.md` gives the minimality principle for pruning a table that's grown past what actually teaches the reader something new.
+
 ---
 
 ## Ubiquitous Language in Steps
 
-Step wording uses the **canonical glossary terms** — "data asset," "sensitivity level," "classify," "tenant." Never synonyms ("file," "label," "tag"). Because feature files are read by Shafi and bind to code, drift in step language is drift in the product. Step phrasing is declarative (what, not how): "she classifies the asset," not "she sends a PATCH to /v1/data-assets/{id}/classification" — the HTTP detail lives in the step definition, not the spec.
+Step wording uses the **canonical glossary terms** — "data asset," "sensitivity level," "classify," "tenant." Never synonyms ("file," "label," "tag"). Because feature files are read by Shafi and bind to code, drift in step language is drift in the product. Step phrasing is declarative (what, not how): "she classifies the asset," not "she sends a PATCH to /v1/data-assets/{id}/classification" — the HTTP detail lives in the step definition, not the spec. This declarative discipline is this repo's permanent instance of Ken Pugh's ATDD point (`research/requirements-and-user-stories/lean-agile-atdd-pugh.md`) and Gojko Adzic's framing of Given/When/Then as illustrating a business rule, not scripting a UI interaction (`research/testing/specification-by-example-adzic.md`) — cited here as provenance, not an unattributed local rule.
 
 ---
 
@@ -141,6 +153,8 @@ Journey-level scenarios bind to Playwright e2e steps (see `react-e2e-testing`), 
 
 Feature files live in the repo (`features/`), are reviewed in PRs, and run in CI. They are always current because a stale scenario fails the build. This makes them trustworthy documentation — unlike a wiki page, a feature file cannot quietly drift from the system, because it *is* tested against the system.
 
+This is half of what "living documentation" actually requires. `references/collaborative-specification-and-living-documentation.md` covers the other half: mechanically deriving a browsable documentation artifact from the executed spec suite, so what a PM reads is generated from verified results — not a raw `.feature` file browsed in a repo.
+
 ---
 
 ## Quality Criteria
@@ -165,6 +179,7 @@ Feature files live in the repo (`features/`), are reviewed in PRs, and run in CI
 - **`Then` steps with no observable assertion** — "Then the system processes the request" verifies nothing; assert an outcome a user or downstream consumer can observe (state, response, Domain Event).
 - **Feature files written after the code** — they become descriptions of what was built, not specifications of what was agreed; BDD writes the Scenario first.
 - **Synonym drift in steps** — "file," "label," "tag" instead of "data asset," "sensitivity level," "classification" silently forks the Ubiquitous Language.
+- **Untended specification growth** — duplicated step definitions, overlapping scenarios, and scenarios that no longer reflect a live business rule left to accumulate as the suite grows, until no one trusts whether the whole suite still reflects live behaviour. Refactor the specification suite the way disciplined teams refactor production code, not as an afterthought (see `references/collaborative-specification-and-living-documentation.md`).
 
 ---
 
@@ -177,3 +192,7 @@ features/*.feature                         (Gherkin scenarios — readable by Sh
 internal/test/bdd/steps_*.go               (godog step definitions)
 tests/e2e/*.spec.ts                         (journey scenarios bound to Playwright)
 ```
+
+- **Starting a new feature file** — copy `assets/bdd-feature-file-template.md`, or run `scripts/scaffold-bdd-feature-file.sh` to generate one pre-filled with the Golden Triangle's three tagged placeholder scenarios.
+- **Checking a feature file mechanically** — run `scripts/validate-bdd-feature-file.sh` to check Golden Triangle tag presence, imperative/HTTP-mechanics leakage in step text, and multiple-`When`-per-scenario.
+- **Going deeper on collaborative authorship, living documentation, or example minimality** — read `references/collaborative-specification-and-living-documentation.md`.
