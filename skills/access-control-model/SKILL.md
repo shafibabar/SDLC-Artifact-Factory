@@ -8,12 +8,18 @@ description: >
   enforcement patterns, a per-Aggregate trust-boundary decision checklist,
   the distinction between authentication and authorisation, role-to-permission
   mapping, and how ABAC policies connect to JWT claims and API endpoint guards.
-  Used by the security-architect agent during the Design phase.
-version: 2.0.0
+  Includes scripts/scaffold-access-control-model.sh (generates a new design
+  doc pre-filled with product metadata) and
+  scripts/validate-access-control-model.sh (mechanically checks required
+  frontmatter and that the Domain Primitives/Policies/Trust-Boundary tables
+  actually have data, not just headers). Used by the security-architect
+  agent during the Design phase.
+version: 2.1.0
 phase: design
 owner: security-architect
 created: 2026-06-25
 tags: [design, security, abac, access-control, authorisation, rbac, jwt, go]
+related: [skill-authoring-standards, subdomain-distillation, zero-trust-design]
 ---
 
 # Access Control Model
@@ -216,6 +222,17 @@ For physical multi-tenancy (separate deployments per tenant), the tenant isolati
 
 ---
 
+## Scripts
+
+Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides whether a policy design is *correct*, only whether the design document is structurally complete, leaving the actual attribute/policy modeling judgment to the security-architect.
+
+| Script | Does | Run when |
+|---|---|---|
+| `scripts/scaffold-access-control-model.sh <product>` | Copies `assets/access-control-model-template.md`, fills in the product name and today's date, writes a new design doc under `artifacts/[product]/design/` | Starting the access control design for a new product |
+| `scripts/validate-access-control-model.sh <path>` | Checks required frontmatter fields are present, and that the Domain Primitives, Policies, and Per-Aggregate Trust-Boundary Decisions tables each have at least one data row beyond their header — an unfilled table is not a completed design | Before treating the design document as ready for the Container Diagram gate |
+
+---
+
 ## Output Format
 
-Template: `references/output-format-template.md`. Includes attribute schema, Domain Primitives table, policies, role→permission mapping, permission registry, per-Aggregate trust-boundary decisions, Go policy interface, and enforcement locations.
+Fill-in-and-go: `assets/access-control-model-template.md` (or generate it directly via `scripts/scaffold-access-control-model.sh`). Annotated template: `references/output-format-template.md`. Mechanical completeness check: `scripts/validate-access-control-model.sh`. Includes attribute schema, Domain Primitives table, policies, role→permission mapping, permission registry, per-Aggregate trust-boundary decisions, Go policy interface, and enforcement locations.
