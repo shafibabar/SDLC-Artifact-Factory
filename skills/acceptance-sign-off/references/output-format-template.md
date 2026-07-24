@@ -2,6 +2,8 @@
 
 Self-contained — loadable without reading `SKILL.md` first.
 
+This is the **annotated** version. For a literal, fill-in-and-go copy with no explanatory brackets, use `assets/sign-off-template.md` directly, or run `scripts/scaffold-signoff.sh <product> <release-slice>` to generate a new sign-off doc from it with the checklist already copied in.
+
 ---
 
 ```markdown
