@@ -5,13 +5,18 @@ description: >
   structure, boundary/nil/edge analysis, the Red-Green-Refactor TDD loop, strict
   actionable assertions (expected/got), native fuzzing for input mutation, parallel
   safety with t.Parallel, and decoupling tests from implementation details so they
-  survive refactors. This is the base of the pyramid; authored by the test-strategist
-  and applied by the backend-engineer test-first. Used during Implement.
-version: 1.1.0
+  survive refactors. Includes Khorikov's four-pillars test-quality rubric (protection
+  against regressions, resistance to refactoring, fast feedback, maintainability) as
+  the rationale for that decoupling, and a code-complexity quadrant heuristic (domain
+  complexity × collaborator count) for deciding what deserves a unit test versus an
+  integration test versus no dedicated test at all. This is the base of the pyramid;
+  authored by the test-strategist and applied by the backend-engineer test-first.
+  Used during Implement.
+version: 2.0.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
-tags: [implement, go, unit-test, table-driven, tdd, fuzzing, boundary, assertions]
+tags: [implement, go, unit-test, table-driven, tdd, fuzzing, boundary, assertions, four-pillars, complexity-quadrants]
 ---
 
 # Go Unit Test
@@ -21,6 +26,21 @@ tags: [implement, go, unit-test, table-driven, tdd, fuzzing, boundary, assertion
 Unit tests are the foundation of the pyramid: fast, deterministic, isolated checks that a function or Aggregate behaves correctly. They run in milliseconds, so there can be thousands of them, and they pinpoint a failure to one unit. They are the cheapest place to catch a bug and the safety net that makes refactoring fearless.
 
 This skill is authored by the test-strategist as the canonical pattern; the backend-engineer applies it **test-first** (TDD) for the code it writes (`go-domain-model`, `go-service-layer`). The patterns here are the standard both follow.
+
+---
+
+## What Deserves a Unit Test: The Complexity Quadrants
+
+Not every function earns the same treatment. Before writing a test, classify the code on two axes — **domain complexity** and **number of collaborators** — and let the quadrant decide the strategy:
+
+| Quadrant | Domain complexity | Collaborators | Verdict |
+|---|---|---|---|
+| 1 — Domain logic | High | Few | Best return on unit-test investment — thorough table-driven unit tests belong here (`go-domain-model` Aggregates, value objects, pure calculations) |
+| 2 — Overcomplicated | High | Many | The danger zone: decompose first, pulling the complex logic into quadrant 1, then unit-test the extracted logic *and* add integration tests (`go-integration-test`) for the wiring left behind |
+| 3 — Controllers | Low | Many | A thin chi handler that deserializes and delegates — forcing exhaustive unit coverage here is waste; apply Humble Object (`go-chi-handler`) and verify with integration/e2e tests (`go-integration-test`) instead |
+| 4 — Trivial | Low | Few | A getter, a simple mapper — often needs no dedicated test at all |
+
+Quadrant 3 is the common trap: writing table-driven unit tests for a handler with no logic of its own really tests wiring, not behaviour, and feels brittle for exactly that reason. `go-chi-handler`'s handler → service → encode split is already this fix in practice — the handler stays humble (deliberately not unit-tested for business behaviour) and the business decisions it delegates to land in quadrant 1, where they get real unit coverage.
 
 ---
 
@@ -39,35 +59,11 @@ If a "unit" test needs a real database, it is an integration test — move it (s
 
 ## Table-Driven Tests
 
-The idiomatic Go pattern: one test function, a table of cases, a loop. Adding a case is one line; the structure makes the inputs and expectations explicit and scannable.
+The idiomatic Go pattern: one test function, a table of cases, a loop. Adding a case is one line; the structure makes the inputs and expectations explicit and scannable. This is the shape *The Go Programming Language* (Donovan & Kernighan, Ch. 11) established as Go's default test structure — named here as **Table-Driven Test** because it is a term of art, not just a habit.
 
-```go
-func TestSensitivityLevel_IsHigherThan(t *testing.T) {
-    t.Parallel()
-    tests := []struct {
-        name string
-        a, b domain.SensitivityLevel
-        want bool
-    }{
-        {"restricted over public", domain.SensitivityRestricted, domain.SensitivityPublic, true},
-        {"public not over restricted", domain.SensitivityPublic, domain.SensitivityRestricted, false},
-        {"equal is not higher", domain.SensitivityConfidential, domain.SensitivityConfidential, false},
-        {"unclassified is lowest", domain.SensitivityUnclassified, domain.SensitivityPublic, false},
-    }
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            t.Parallel()
-            if got := tt.a.IsHigherThan(tt.b); got != tt.want {
-                t.Errorf("IsHigherThan(%q,%q) = %v, want %v", tt.a, tt.b, got, tt.want)
-            }
-        })
-    }
-}
-```
+Each case runs as a named subtest (`t.Run`) so failures name the exact case, and cases run in parallel via `t.Parallel()`. See `references/worked-example.md` for a complete table-driven test (`TestSensitivityLevel_IsHigherThan`) with named cases, subtest wiring, and the single-case `-run` invocation.
 
-Each case is a subtest (`t.Run`) so failures name the exact case, and cases run in parallel.
-
-Since Go 1.22, `for` loop variables are per-iteration — the old `tt := tt` re-declaration inside the loop is dead weight and must not appear in new code. Run a single case with `go test -run 'TestSensitivityLevel_IsHigherThan/equal_is_not_higher'` (spaces in subtest names become underscores).
+Since Go 1.22, `for` loop variables are per-iteration — the old `tt := tt` re-declaration inside the loop is dead weight and must not appear in new code.
 
 ---
 
@@ -151,6 +147,10 @@ One structural pitfall: when a parent test spawns parallel subtests, the parent 
 
 ## Decoupled from Implementation
 
+Khorikov's **four pillars of a good unit test** are the "why" behind this rule: **Protection Against Regressions** (does it catch a real bug?), **Resistance to Refactoring** (does it stay green through a pure refactor, or throw false positives?), **Fast Feedback**, and **Maintainability** (cheap to read and change). The pillars are multiplicative, not additive — a test can't maximize all four at once, and a missing pillar zeroes out the value of the others rather than just discounting it.
+
+This is exactly the trade-off behind the rule below. Asserting a private call count *looks* like it buys more protection — it "watches" more of what happened — but it destroys resistance to refactoring: any internal restructuring that preserves behaviour still breaks the test, training the team to distrust red tests. A test that stays green through refactors and red only when behaviour changes is worth more than one that watches more internals, even though the second one feels more thorough.
+
 Tests assert **behaviour through the public surface**, not internal state. A test that reaches into private fields or asserts how many times an internal method was called breaks on every refactor and proves nothing the caller cares about.
 
 ```go
@@ -178,6 +178,7 @@ A well-decoupled test stays green through any refactor that preserves behaviour,
 | Fuzzed where apt | Parsers/validators have fuzz tests | Untrusted-input code unfuzzed |
 | Parallel-safe | `t.Parallel()`; no shared state; race-clean | Order-dependent, shared-state tests |
 | Behaviour-coupled | Asserts public behaviour | Asserts private state / call counts |
+| Right-sized | Quadrant classified before testing; controllers pointed at Humble Object + integration | Exhaustive unit tests forced onto thin controller/glue code |
 
 ---
 

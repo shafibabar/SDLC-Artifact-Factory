@@ -7,7 +7,7 @@ description: >
   optimistic concurrency, the outbox and idempotent consumer round-trips,
   test-trace correlation, and keeping the suite parallel-safe and CI-portable.
   Sits above unit in the pyramid; applied by the backend-engineer. Used during Implement.
-version: 1.1.0
+version: 1.1.1
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -20,7 +20,7 @@ tags: [implement, go, integration-test, testcontainers, postgres, redpanda, herm
 
 Unit tests prove your logic; integration tests prove it works against the **real** dependencies — that the SQL actually runs on PostgreSQL, the optimistic-concurrency CAS actually conflicts, the outbox row actually publishes to Redpanda, and the idempotent consumer actually dedups on redelivery. Mocks can't catch a wrong column name, a broken migration, or a real transaction-isolation surprise; integration tests can.
 
-This skill is authored by the test-strategist; the backend-engineer applies it for its repositories, publishers, and consumers (`go-repository-pattern`, `go-event-publisher`, `go-event-consumer`). The defining choice: real dependencies, spun up hermetically with Testcontainers.
+This skill is authored by the test-strategist; the backend-engineer applies it for its repositories, publishers, and consumers (`go-repository-pattern`, `go-event-publisher`, `go-event-consumer`). The defining choice: real dependencies, spun up hermetically with Testcontainers. This is also the destination `go-unit-test`'s complexity-quadrant heuristic points to for verifying quadrant-2 (overcomplicated, post-decomposition) and quadrant-3 (thin controller/handler) code once its wiring — not its logic — is what needs checking.
 
 ---
 

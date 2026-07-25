@@ -7,7 +7,7 @@ description: >
   frugally (periodically, on critical packages, not every PR), interpreting
   survived mutants, and acting on the results. Mutation testing is the antidote to
   high-coverage-but-weak tests. Used by the test-strategist during Quality.
-version: 1.1.0
+version: 1.2.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -54,6 +54,8 @@ Mutation says:  "we broke line 42 and your tests didn't notice."
 
 Coverage is necessary but not sufficient — it's gameable with assertion-free tests. Mutation score is hard to game: the only way to kill a mutant is to have a test that actually asserts the behaviour the mutant breaks. This is why the `test-pyramid` skill treats mutation testing as the true quality check behind the coverage gate.
 
+Named precisely (Khorikov's four pillars — see `go-unit-test`'s "Decoupled from Implementation"), a survived mutant is specifically a **Protection Against Regressions** gap: the suite covers the line but doesn't verify behaviour precisely enough to notice when that behaviour breaks. It says nothing about the other three pillars (resistance to refactoring, fast feedback, maintainability) — a suite can be excellent on those and still leak survivors, which is exactly why mutation testing is a distinct signal, not a replacement for the others.
+
 ---
 
 ## Tooling (Go)
@@ -80,7 +82,7 @@ unleash:
 
 Mutation testing runs the whole suite once per mutant, so it is slow and costly. Running it on every PR would wreck the CI feedback loop. The frugal policy:
 
-1. **Targeted** — run on the **critical packages** where correctness matters most: the domain (`internal/domain`), the application command handlers, security-adjacent logic. Not generated code, not transport glue.
+1. **Targeted** — run on the **critical packages** where correctness matters most: the domain (`internal/domain`), the application command handlers, security-adjacent logic. Not generated code, not transport glue — that's quadrant-3/4 territory in `go-unit-test`'s complexity-quadrant heuristic (low domain significance), not worth the mutation budget.
 2. **Periodic** — on a schedule (nightly or weekly) and before a release, **not** on every PR.
 3. **Bounded** — set an efficacy threshold (e.g., 80%) on the targeted packages; a drop fails the scheduled job and is triaged.
 
