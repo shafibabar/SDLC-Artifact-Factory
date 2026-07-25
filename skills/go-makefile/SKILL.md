@@ -7,7 +7,7 @@ description: >
   container build. The Makefile encodes the blueprint's verification gates so the
   same commands run locally and in CI. Used by the backend-engineer during
   Implement.
-version: 1.1.0
+version: 1.1.1
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -108,7 +108,7 @@ ci: tidy generate vet lint arch vuln cover ## Everything CI runs
 | `bench` with `-benchmem` | Performance-critical paths are benchmarked with allocs | §5 Benchmark Testing |
 | `vet` + `lint` | Idiomatic, bug-free, bounded-complexity code | §2 Idiomatic Go |
 | `vuln` (`govulncheck`) | No known-vulnerable dependencies ship | Security supply chain |
-| `arch` | The dependency rule (domain imports no framework) | Clean architecture (`go-project-structure`) |
+| `arch` | The Dependency Rule (domain imports no framework) | Clean Architecture (`go-project-structure`) |
 | `tidy` + `git diff` | `go.mod` and generated code can't drift | Reproducibility |
 
 `make ci` is the **one command** that gates a merge. If `make ci` is green, the change satisfies every standard this plugin holds for backend code.
@@ -123,7 +123,7 @@ ci: tidy generate vet lint arch vuln cover ## Everything CI runs
 
 ## The Architecture Lint
 
-The `arch` target mechanically enforces the inward-only dependency rule from `go-project-structure` — so the Clean Architecture boundary is verified by tooling, not by reviewer vigilance:
+The `arch` target mechanically enforces the inward-only Dependency Rule from `go-project-structure` — a **fitness function** (Clean Architecture's term for an automated, executable check that guards an architectural invariant, rather than trusting reviewer vigilance to catch a violation before it merges):
 
 ```bash
 # scripts/check-imports.sh (sketch)
@@ -133,7 +133,7 @@ if go list -deps ./internal/domain/... | grep -E 'jackc/pgx|go-chi/chi|opentelem
 fi
 ```
 
-This pairs with the architecture governance hook — defence in depth on the dependency rule.
+This pairs with the architecture governance hook — defence in depth on the Dependency Rule.
 
 ---
 
@@ -146,7 +146,7 @@ This pairs with the architecture governance hook — defence in depth on the dep
 | Local == CI | Same targets run in both places | Different commands locally vs CI |
 | Coverage enforced | Threshold checked and failing build | Coverage measured but not enforced |
 | Bench available | `make bench` with `-benchmem` | No benchmark target |
-| Arch enforced | `make arch` fails on a dependency-rule violation | Dependency rule unchecked |
+| Arch enforced | `make arch` fails on a Dependency Rule violation | Dependency Rule unchecked |
 | Freshness | `make ci` fails on uncommitted generated/tidy diffs | Drift allowed to merge |
 
 ---
