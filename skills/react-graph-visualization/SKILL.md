@@ -8,7 +8,7 @@ description: >
   performance at thousands of nodes, accessibility fallbacks, and keeping the heavy
   graph bundle code-split. Visualizes the data-architect's graph model. Used by the
   frontend-engineer during Implement.
-version: 1.1.0
+version: 1.2.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
@@ -67,26 +67,27 @@ A full estate graph may have millions of nodes — loading it all is neither pos
 3. Cap the visible node count; beyond it, cluster or require filtering.
 
 ```ts
-const graph = useMemo(() => new Graph(), []);       // graphology model, stable across renders
+// graphRef, not useMemo -- the graph is imperatively mutated on every expand() call
+// (mergeIntoGraph adds nodes/edges in place), and useMemo is a discardable React
+// performance hint, not a lifetime guarantee: React is allowed to drop and recompute
+// it, silently losing every merged node. A ref survives for the component's full
+// lifetime by construction, which is what a mutable model that outlives any single
+// render actually needs.
+const graphRef = useRef<Graph | null>(null);
+if (graphRef.current === null) graphRef.current = new Graph(); // lazy init, once
+
 function expand(nodeId: string) {
-  api.getGraphNeighbourhood(nodeId, 1).then((nbhd) => mergeIntoGraph(graph, nbhd));
+  api.getGraphNeighbourhood(nodeId, 1).then((nbhd) => mergeIntoGraph(graphRef.current!, nbhd));
 }
 ```
 
-This keeps both the network payload and the GPU load bounded regardless of estate size.
+This keeps both the network payload and the GPU load bounded regardless of estate size. The full graph/worker/renderer lifecycle — how `graphRef` here connects to the layout worker and the Sigma renderer — is one consolidated example in Performance Guardrails below, not three independent snippets.
 
 ---
 
 ## Layout Off the Main Thread
 
-Force-directed layout is CPU-heavy; running it on the main thread causes long tasks (the INP killer — see `react-observability`). Run layout in a **Web Worker** so the UI stays responsive.
-
-```ts
-// graphology-layout-forceatlas2 in a worker; post positions back to the main thread
-const worker = new Worker(new URL("./layout.worker.ts", import.meta.url), { type: "module" });
-worker.postMessage({ nodes, edges });
-worker.onmessage = (e) => applyPositions(graph, e.data.positions);
-```
+Force-directed layout is CPU-heavy; running it on the main thread causes long tasks (the INP killer — see `react-observability`). Run layout in a **Web Worker** so the UI stays responsive — created once in a mount effect and held in a ref (same lifetime-survival reasoning as `graphRef` above), so the same worker instance is still reachable from the cleanup effect that terminates it. Full consolidated example: Performance Guardrails, below.
 
 Pre-compute layout where possible (or persist positions) so reopening the graph is instant.
 
@@ -116,11 +117,33 @@ Selection and filter state live in the URL where it makes the view shareable (se
 - **Code-split** the graph bundle.
 - **Clean up** the Sigma instance, the worker, and event listeners on unmount (the leak rule from `react-performance-optimization`) — a retained WebGL context is a serious leak.
 
+The full lifecycle, consolidated — `graphRef` from Progressive Loading, the worker from Layout Off the Main Thread, and the Sigma renderer, created and torn down together in one mount effect:
+
 ```tsx
-useEffect(() => {
-  const renderer = new Sigma(graph, containerRef.current!);
-  return () => { renderer.kill(); worker.terminate(); }; // release GPU context + worker
-}, [graph]);
+function EstateGraph() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const graphRef = useRef<Graph | null>(null);
+  if (graphRef.current === null) graphRef.current = new Graph();
+  const workerRef = useRef<Worker | null>(null);
+
+  useEffect(() => {
+    const graph = graphRef.current!;
+    const renderer = new Sigma(graph, containerRef.current!);
+
+    const worker = new Worker(new URL("./layout.worker.ts", import.meta.url), { type: "module" });
+    worker.onmessage = (e) => applyPositions(graph, e.data.positions);
+    workerRef.current = worker;
+    worker.postMessage({ nodes: graph.nodes(), edges: graph.edges() });
+
+    // Both refs and the renderer are created and torn down in the SAME effect —
+    // no cross-snippet reference to a variable declared somewhere else in the
+    // component. []: the graph and worker are refs precisely so this effect
+    // runs once per mount, not once per graph mutation.
+    return () => { renderer.kill(); worker.terminate(); };
+  }, []);
+
+  return <div ref={containerRef} />;
+}
 ```
 
 ---
