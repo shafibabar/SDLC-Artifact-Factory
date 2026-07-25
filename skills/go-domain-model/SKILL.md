@@ -6,8 +6,10 @@ description: >
   value types, domain event recording, factory/reconstitution functions, and the
   value-vs-pointer decision driven by escape analysis. The domain layer is pure:
   no framework, no I/O, fully unit-testable. Implements the domain-modeler's and
-  data-architect's model in code. Used by the backend-engineer during Implement.
-version: 1.1.0
+  data-architect's model in code. Full Value Object and Domain Event worked
+  examples are in references/value-objects-and-events.md. Used by the
+  backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -66,6 +68,12 @@ func (a *DataAsset) Classify(level SensitivityLevel, by uuid.UUID, now time.Time
 func (a *DataAsset) recordEvent(e DomainEvent) { a.events = append(a.events, e) }
 
 // PullEvents returns and clears uncommitted events — the repository drains these into the outbox.
+// Reassigning to nil (not truncating with a.events[:0]) is deliberate: [:0] keeps the old backing
+// array alive and shares capacity with the slice just returned to the caller (or with any slice a
+// caller obtained by ranging over the field directly before this call) — the next recordEvent's
+// append could then silently overwrite entries the repository is still draining into the outbox.
+// nil starts a fresh backing array on the next append, closing that capacity-sharing hazard
+// entirely rather than relying on callers never re-reading a drained slice.
 func (a *DataAsset) PullEvents() []DomainEvent {
     e := a.events
     a.events = nil
@@ -109,41 +117,7 @@ Reconstitution does not emit events and does not re-validate (the data was valid
 
 ## Value Objects
 
-Value Objects are immutable, compared by value, and have no identity. Implement them as small value types (often a defined string/int) with behaviour attached.
-
-```go
-// internal/domain/sensitivity.go
-package domain
-
-type SensitivityLevel string
-
-const (
-    SensitivityUnclassified SensitivityLevel = ""
-    SensitivityPublic       SensitivityLevel = "Public"
-    SensitivityInternal     SensitivityLevel = "Internal"
-    SensitivityConfidential SensitivityLevel = "Confidential"
-    SensitivityRestricted   SensitivityLevel = "Restricted"
-)
-
-func (s SensitivityLevel) IsValid() bool {
-    switch s {
-    case SensitivityPublic, SensitivityInternal, SensitivityConfidential, SensitivityRestricted:
-        return true
-    }
-    return false
-}
-
-func (s SensitivityLevel) rank() int {
-    return map[SensitivityLevel]int{
-        SensitivityUnclassified: 0, SensitivityPublic: 1, SensitivityInternal: 2,
-        SensitivityConfidential: 3, SensitivityRestricted: 4,
-    }[s]
-}
-
-func (s SensitivityLevel) IsHigherThan(other SensitivityLevel) bool { return s.rank() > other.rank() }
-```
-
-A Value Object is never a pointer in the domain — passing it by value is cheap, prevents aliasing bugs, and keeps it immutable.
+Value Objects are immutable, compared by value, and have no identity — implemented as small value types (often a defined string/int) with behaviour attached, and never a pointer in the domain (passing by value is cheap, prevents aliasing bugs, and keeps the type immutable). Full worked `SensitivityLevel` example (validity check, ranked comparison): `references/value-objects-and-events.md`.
 
 ---
 
@@ -163,24 +137,7 @@ Aggregate Roots are passed by pointer because their methods mutate (record event
 
 ## Domain Events as Types
 
-Domain Events are plain immutable value types implementing a tiny interface. The serialization contract is owned by `event-schema-design`; the domain only defines the in-memory shape.
-
-```go
-// internal/domain/events.go
-package domain
-
-type DomainEvent interface{ EventType() string }
-
-type DataAssetClassified struct {
-    AggregateID  uuid.UUID
-    TenantID     uuid.UUID
-    Sensitivity  SensitivityLevel
-    ClassifiedBy uuid.UUID
-    OccurredAt   time.Time
-}
-
-func (DataAssetClassified) EventType() string { return "DataAssetClassified" }
-```
+Domain Events are plain immutable value types implementing a tiny interface (`DomainEvent interface{ EventType() string }`), each with a compile-time `var _ DomainEvent = ...{}` assertion next to its definition so a renamed or re-typed method fails to compile at the type that must satisfy it, not wherever the interface is later used. The serialization contract is owned by `event-schema-design`; the domain only defines the in-memory shape. Full worked `DataAssetClassified` example: `references/value-objects-and-events.md`.
 
 ---
 
@@ -225,3 +182,5 @@ internal/domain/events.go           (Domain Events)
 internal/domain/errors.go           (sentinel errors)
 internal/domain/dataasset_test.go   (table-driven invariant tests — written first)
 ```
+
+Full Value Object and Domain Event worked examples: `references/value-objects-and-events.md`.

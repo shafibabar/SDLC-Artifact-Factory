@@ -8,7 +8,7 @@ description: >
   change, mandatory tenant scoping, parameterised queries, and context
   propagation. Implements the data-architect's schemas. Used by the
   backend-engineer during Implement.
-version: 1.1.0
+version: 1.2.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -22,6 +22,8 @@ tags: [implement, go, pgx, repository, postgres, outbox, optimistic-concurrency,
 A repository is the only thing that knows how an Aggregate is persisted. It satisfies the small, consumer-defined port from `domain/ports.go`, hides pgx entirely from the application layer, and guarantees two non-negotiables: every write carries the Aggregate's Domain Events into the Transactional Outbox *in the same transaction*, and every query is scoped to the tenant.
 
 This skill implements the schemas from the data-architect's `data-model-design` and uses the outbox table from `domain-event-catalog`. It performs no business logic — it loads, saves, and translates.
+
+A repository is Robert Martin's **Humble Object** pattern applied to persistence: a thin, hard-to-unit-test wrapper around pgx that is deliberately kept so simple it barely needs its own tests — verified instead by a small number of integration tests against a real database (see Output Format), not by unit tests with a mocked driver. The logic that is actually worth unit-testing — invariants, state transitions, decisions — lives in the Aggregate, which is fully testable in isolation with no database at all. The split is the point: hard-to-test boundary code stays humble and thin; real logic never migrates into it.
 
 ---
 
@@ -38,7 +40,15 @@ type DataAssetRepo struct {
 }
 
 func NewDataAssetRepo(pool *pgxpool.Pool) *DataAssetRepo { return &DataAssetRepo{pool: pool} }
+
+// Compile-time assertion: forces the compiler to check DataAssetRepo's method set against
+// domain.DataAssetRepository right here, at the implementation — a renamed or re-typed method
+// fails to compile at this file instead of surfacing wherever the interface is later used (see
+// go-project-structure's Minimalist Interfaces). Add one next to every port implementation.
+var _ domain.DataAssetRepository = (*DataAssetRepo)(nil)
 ```
+
+This repository is pgx-native throughout — `pgxpool.Pool`, `pgx.Batch`, `pgx.ErrNoRows` — with no `database/sql`/`sqlx` code anywhere in it. That is a deliberate, justified departure from the more portable-but-slower `database/sql`+`sqlx` mainstream default, made to use Postgres-specific features directly (the binary protocol, `pgx.Batch`, `FOR UPDATE SKIP LOCKED` in the companion outbox relay) — not an oversight to reconcile.
 
 ---
 
