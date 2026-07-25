@@ -4,11 +4,13 @@ description: >
   Teaches how to implement the application layer — the command and query handlers
   that orchestrate use cases (CQRS write/read separation). Covers the handler
   shape, transaction/consistency boundaries, ABAC policy enforcement before
-  mutation, idempotency, parallel orchestration with errgroup, and the rule that
-  the application layer coordinates but never contains domain rules. Implements
-  the enterprise-architect's CQRS design. Used by the backend-engineer during
-  Implement.
-version: 1.1.0
+  mutation, idempotency, parallel orchestration with errgroup (ad hoc
+  confinement), the optional cache-aside pattern for cache-eligible query
+  handlers, and the rule that the application layer coordinates but never
+  contains domain rules. Full cache-aside worked example is in
+  references/cache-aside.md. Implements the enterprise-architect's CQRS design.
+  Used by the backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -126,6 +128,12 @@ func (h *ListDataAssetsHandler) Handle(ctx context.Context, q ListDataAssets) (P
 
 ---
 
+## Optional: Cache-Aside for Cache-Eligible Views
+
+Where a query handler fronts a view `read-model-design` has already flagged as cache-eligible ("high-frequency, low-change dashboard summaries"), an optional cache-aside layer applies: check cache → on miss, query the view → populate with a bounded TTL. Not for every handler — `ListDataAssetsHandler` above has no documented latency problem today and stays uncached; add this only where the view is already flagged as cache-eligible. Full worked example: `references/cache-aside.md`.
+
+---
+
 ## Consistency Boundary
 
 A command handler changes **exactly one Aggregate per transaction** (the aggregate-design rule). If a use case appears to need two Aggregates changed atomically, that is a signal to either (a) reconsider the Aggregate boundaries, or (b) use eventual consistency via Domain Events / a Saga (see `event-driven-patterns`). The application layer never opens a transaction spanning two Aggregates.
@@ -159,7 +167,7 @@ func (h *DashboardHandler) Handle(ctx context.Context, q Dashboard) (DashboardDT
 }
 ```
 
-Each goroutine writes to its own variable (no shared mutable state, no race); `g.Wait()` is the join point. (Patterns: `go-concurrency-patterns`.)
+Each goroutine writes to its own variable — this is Cox-Buday's **ad hoc confinement**: structuring code so, by construction, only one goroutine can ever touch a given piece of data. `assets` is written by exactly one goroutine and `gaps` by exactly one other; neither is ever shared, so there is nothing to synchronize — no mutex to acquire, no channel to coordinate through, and no synchronization overhead to pay, because the race the synchronization would have prevented cannot occur in the first place. `g.Wait()` is the join point. (Patterns: `go-concurrency-patterns`.)
 
 ---
 
@@ -208,3 +216,5 @@ internal/application/commands/classify_data_asset_test.go   (written first; mock
 internal/application/queries/list_data_assets.go
 internal/application/queries/list_data_assets_test.go
 ```
+
+Full cache-aside worked example: `references/cache-aside.md`.
