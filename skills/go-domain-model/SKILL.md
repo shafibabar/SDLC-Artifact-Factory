@@ -1,186 +1,176 @@
 ---
 name: go-domain-model
 description: >
-  Teaches how to implement a DDD Aggregate in idiomatic Go — the Aggregate Root
-  with private fields and invariant-enforcing methods, Value Objects as immutable
-  value types, domain event recording, factory/reconstitution functions, and the
-  value-vs-pointer decision driven by escape analysis. The domain layer is pure:
-  no framework, no I/O, fully unit-testable. Implements the domain-modeler's and
-  data-architect's model in code. Full Value Object and Domain Event worked
-  examples are in references/value-objects-and-events.md. Used by the
+  Teaches how to implement a DDD Aggregate in idiomatic Go to a checkable
+  engineering standard, not just a shape: the failing-constructor pattern
+  (any constructor that can violate an invariant returns (*T, error), never
+  a zero-value struct silently missing one), the precise pointer-vs-value
+  receiver rule and how a type's method set determines interface
+  satisfaction, Value Object immutability (unexported fields, no setters,
+  equality by value, and the compile-time trap of a slice/map field making
+  == uncompilable), the Domain Event struct-shape and past-tense-naming
+  standard and exactly when an Aggregate method emits one, the
+  invariant-violation error standard (one named error type per broken
+  invariant, carrying the violating values, never a generic errors.New
+  bucket), and what a domain-model unit test must specifically assert
+  (invariant enforcement at every mutation path, immutability, event-
+  emission completeness). The domain layer is pure: no framework, no I/O,
+  fully unit-testable. Implements the domain-modeler's aggregate-design
+  output and the data-architect's schemas in code. Full worked examples in
+  references/value-objects-and-events.md and
+  references/aggregate-invariant-enforcement.md. Used by the
   backend-engineer during Implement.
-version: 2.0.0
+version: 3.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, go, ddd, aggregate, value-object, domain-event, invariants, escape-analysis]
+tags: [implement, go, ddd, aggregate, value-object, domain-event, invariants, receiver-type, escape-analysis]
+related: [aggregate-design, go-error-handling, go-unit-test, go-project-structure, go-repository-pattern, event-schema-design, go-performance-optimization]
 ---
 
 # Go Domain Model
 
 ## Purpose
 
-The domain layer is where the business rules live, expressed in the Ubiquitous Language, with zero knowledge of how data is stored or transported. An Aggregate enforces its invariants so that an instance in memory is always valid — it is impossible to construct or mutate it into an illegal state. This is the heart of DDD made concrete in Go.
-
-This skill turns the domain-modeler's Aggregates, Value Objects, and Domain Events, and the data-architect's schemas, into Go types. It writes no SQL and no HTTP — those are other layers.
+The domain layer is where business rules live, expressed in the Ubiquitous Language, with zero knowledge of how data is stored or transported. An Aggregate enforces its invariants so an instance in memory is always valid — illegal states must be unrepresentable, not merely undocumented. This skill is the Go-implementation standard for `aggregate-design`'s DDD tactical patterns; it does not re-teach Aggregate boundary theory, sizing, or when Event Sourcing is justified — `aggregate-design` owns that reasoning. This skill owns only how the chosen boundary becomes correct, idiomatic Go.
 
 ---
 
-## Aggregate Root
+## Aggregate Root: The Invariant-Enforcement Standard
 
-The Aggregate Root has **unexported fields** so no outside code can bypass its invariants. State changes go through methods that validate first, mutate second, and record a Domain Event.
+**Every constructor that can fail returns `(*T, error)` — never a zero-value struct with a missing invariant silently left for a caller to notice later.** Fields are unexported; the only way to change state is a method that validates first, mutates second, and records a Domain Event third — in that order, atomically, within the same method call.
 
 ```go
 // internal/domain/dataasset.go
 package domain
 
 type DataAsset struct {
-    id          uuid.UUID
-    tenantID    uuid.UUID
-    sourceID    uuid.UUID
-    sensitivity SensitivityLevel   // Value Object; zero value = "unclassified"
+    id, tenantID, sourceID uuid.UUID
+    sensitivity  SensitivityLevel // Value Object; zero value = "unclassified"
     classifiedBy uuid.UUID
     classifiedAt time.Time
-    version     int64              // optimistic concurrency (matches data-model-design)
-
-    events []DomainEvent           // uncommitted events; drained on save
+    version      int64  // optimistic concurrency (data-model-design)
+    events       []DomainEvent
 }
 
-// Classify enforces the invariant and records the event. It is the ONLY way to set sensitivity.
-func (a *DataAsset) Classify(level SensitivityLevel, by uuid.UUID, now time.Time) error {
-    if !level.IsValid() {
-        return fmt.Errorf("classify data asset %s: %w", a.id, ErrInvalidSensitivity)
-    }
-    // Invariant: de-escalation must be explicit/audited — block silent downgrade here.
-    if a.sensitivity.IsHigherThan(level) {
-        return fmt.Errorf("classify data asset %s: %w", a.id, ErrCannotDowngradeSilently)
-    }
-    a.sensitivity = level
-    a.classifiedBy = by
-    a.classifiedAt = now
-    a.recordEvent(DataAssetClassified{
-        AggregateID: a.id, TenantID: a.tenantID,
-        Sensitivity: level, ClassifiedBy: by, OccurredAt: now,
-    })
-    return nil
-}
-
-func (a *DataAsset) recordEvent(e DomainEvent) { a.events = append(a.events, e) }
-
-// PullEvents returns and clears uncommitted events — the repository drains these into the outbox.
-// Reassigning to nil (not truncating with a.events[:0]) is deliberate: [:0] keeps the old backing
-// array alive and shares capacity with the slice just returned to the caller (or with any slice a
-// caller obtained by ranging over the field directly before this call) — the next recordEvent's
-// append could then silently overwrite entries the repository is still draining into the outbox.
-// nil starts a fresh backing array on the next append, closing that capacity-sharing hazard
-// entirely rather than relying on callers never re-reading a drained slice.
-func (a *DataAsset) PullEvents() []DomainEvent {
-    e := a.events
-    a.events = nil
-    return e
-}
-
-// Accessors expose state read-only.
-func (a *DataAsset) ID() uuid.UUID            { return a.id }
-func (a *DataAsset) TenantID() uuid.UUID      { return a.tenantID }
-func (a *DataAsset) Sensitivity() SensitivityLevel { return a.sensitivity }
-func (a *DataAsset) Version() int64           { return a.version }
-```
-
----
-
-## Construction vs Reconstitution
-
-Two distinct entry points, never conflated:
-
-```go
-// NewDataAsset — creates a NEW asset (a real domain event: it came into existence).
+// NewDataAsset creates a NEW asset. Returns (*DataAsset, error) — construction
+// itself is an invariant-checked operation, exactly like any mutating method.
 func NewDataAsset(id, tenantID, sourceID uuid.UUID, now time.Time) (*DataAsset, error) {
     if id == uuid.Nil || tenantID == uuid.Nil {
-        return nil, ErrMissingIdentity
+        return nil, ErrMissingIdentity // no *DataAsset escapes half-built
     }
     a := &DataAsset{id: id, tenantID: tenantID, sourceID: sourceID, version: 1}
     a.recordEvent(DataAssetRegistered{AggregateID: id, TenantID: tenantID, OccurredAt: now})
     return a, nil
 }
 
-// Reconstitute — rebuilds an EXISTING asset from storage. No events; it already exists.
-// Called only by the repository (see go-repository-pattern).
-func Reconstitute(id, tenantID, sourceID uuid.UUID, level SensitivityLevel, version int64) *DataAsset {
-    return &DataAsset{id: id, tenantID: tenantID, sourceID: sourceID, sensitivity: level, version: version}
+// Classify is the ONLY way to set sensitivity: validate, mutate, record — in order.
+func (a *DataAsset) Classify(level SensitivityLevel, by uuid.UUID, now time.Time) error {
+    if !level.IsValid() {
+        return fmt.Errorf("classify data asset %s: %w", a.id, ErrInvalidSensitivity)
+    }
+    if a.sensitivity.IsHigherThan(level) { // True Invariant: no silent downgrade
+        return &ErrSensitivityDowngrade{AssetID: a.id, From: a.sensitivity, To: level}
+    }
+    a.sensitivity, a.classifiedBy, a.classifiedAt = level, by, now
+    a.recordEvent(DataAssetClassified{AggregateID: a.id, TenantID: a.tenantID,
+        Sensitivity: level, ClassifiedBy: by, OccurredAt: now})
+    return nil
 }
 ```
 
-Reconstitution does not emit events and does not re-validate (the data was valid when stored) — conflating it with creation would double-fire events on every load.
+Because validation runs *before* any field is written, a rejected `Classify` call leaves `a` byte-for-byte unchanged — there is no partial-mutation state to roll back. `Reconstitute` (rebuilding from storage) is a *separate* code path from `New…` — it does not re-validate and does not emit events, because the data was already valid when stored and it already exists. Full failing-constructor worked example (including the anti-pattern this replaces, and a table-driven test asserting the invariant), the precise Go method-set rule, and the one-type-per-invariant error standard below: `references/aggregate-invariant-enforcement.md`.
 
 ---
 
-## Value Objects
+## Receiver-Type Standard: Pointer vs Value, and Method Sets
 
-Value Objects are immutable, compared by value, and have no identity — implemented as small value types (often a defined string/int) with behaviour attached, and never a pointer in the domain (passing by value is cheap, prevents aliasing bugs, and keeps the type immutable). Full worked `SensitivityLevel` example (validity check, ranked comparison): `references/value-objects-and-events.md`.
-
----
-
-## Value vs Pointer (Escape Analysis Awareness)
-
-The blueprint's mechanical-sympathy rule applies in the domain:
-
-| Use a value (`T`) | Use a pointer (`*T`) |
-|---|---|
-| Value Objects (small, immutable) | Aggregate Roots (identity + mutable state + event buffer) |
-| Small structs that don't need mutation | Anything whose methods mutate the receiver |
-| Map keys / set membership | Large structs where copying is measurably costly |
-
-Aggregate Roots are passed by pointer because their methods mutate (record events, change state) and identity matters. Value Objects are passed by value because copying is cheap and immutability is the point. Avoid pointer-to-Value-Object — it invites nil and aliasing for no benefit. (Verify allocation behaviour with `go-performance-optimization` when a domain type is on a hot path.)
+Go's rule is mechanical, not a style preference (Donovan & Kernighan, ch. 6.2): **a method declared with receiver `T` is in the method set of both `T` and `*T`; a method declared with receiver `*T` is in the method set of `*T` only.** This is why a bare `DataAsset` value — not `*DataAsset` — fails to satisfy any interface requiring a pointer-receiver method: the value's method set is missing every mutating method, and the compiler rejects the assignment outright, not at some later call site. Consequence: an Aggregate Root, whose methods mutate, is **always** `*T` — never mix receiver types across one type's method set (Harsanyi, ch. 6 on functions and methods); pick pointer-or-value once, per type, for every method. Value Objects have no mutating methods, so they take value receivers throughout, are passed by value, and are never referenced via a pointer in the domain — `*SensitivityLevel` invites nil checks and aliasing for a type whose entire point is cheap, safe copying. This receiver choice doubles as an escape-analysis decision, not just a mutability one: a small Value Object passed by value has no reason to escape to the heap, while an Aggregate Root's pointer necessarily does the moment it's returned from `New…` — verify actual allocation behaviour with `go-performance-optimization` rather than assuming, whenever a domain type sits on a hot path. Full method-set compile-error example and the sizing rule for when a *value* receiver would still be wrong for a large-but-immutable struct: `references/aggregate-invariant-enforcement.md`.
 
 ---
 
-## Domain Events as Types
+## Value Object Immutability Standard
 
-Domain Events are plain immutable value types implementing a tiny interface (`DomainEvent interface{ EventType() string }`), each with a compile-time `var _ DomainEvent = ...{}` assertion next to its definition so a renamed or re-typed method fails to compile at the type that must satisfy it, not wherever the interface is later used. The serialization contract is owned by `event-schema-design`; the domain only defines the in-memory shape. Full worked `DataAssetClassified` example: `references/value-objects-and-events.md`.
+Unexported fields, no setter methods, equality by value, never a pointer in the domain. **The trap:** a struct containing a slice or map field is not `==`-comparable — Go refuses to compile the comparison at all, not merely evaluate it wrong (Donovan & Kernighan, ch. 4 on slice/map reference semantics) — so a Value Object needing a collection field must either use a fixed-size array field or implement `Equals(other T) bool` explicitly, never `reflect.DeepEqual` on a hot path (`go-performance-optimization`). Full `SensitivityLevel` worked example and the slice-field `Equals` counter-example: `references/value-objects-and-events.md`.
+
+---
+
+## Domain Event Standard
+
+A Domain Event is a plain, immutable value type: `AggregateID`, `TenantID`, business-specific fields, `OccurredAt time.Time` — named in the **past tense of the state change**, always aggregate-qualified (`DataAssetClassified`, never `Classified` or `ClassifyDataAsset`), one type per state transition, never reused across aggregates. It is recorded only inside the Aggregate method whose successful mutation it reports — atomically with that mutation, never on a failed validation path, never constructed by a service outside the Aggregate. Full worked `DataAssetClassified` example, the compile-time `var _ DomainEvent = ...{}` assertion convention, and the emission-completeness checklist: `references/value-objects-and-events.md`.
+
+---
+
+## Invariant-Violation Error Standard
+
+`go-error-handling` owns the general sentinel-vs-typed taxonomy; this skill owns the domain-specific rule built on top of it: **a parameter-free invariant (existence, permission) is a package-level sentinel; any invariant whose violation carries diagnostic data gets its own named error type — never a single generic `errors.New` or a shared `InvariantViolationError{Rule string, Details map[string]any}` bucket that throws away Go's static field access for a stringly-typed lookup.**
+
+```go
+type ErrSensitivityDowngrade struct{ AssetID uuid.UUID; From, To SensitivityLevel }
+func (e *ErrSensitivityDowngrade) Error() string {
+    return fmt.Sprintf("data asset %s: cannot downgrade sensitivity %s → %s without explicit reclassification", e.AssetID, e.From, e.To)
+}
+```
+
+A caller does `var dg *ErrSensitivityDowngrade; errors.As(err, &dg)` and gets `dg.From`/`dg.To` back typed — an HTTP 409 body or audit log can report the exact values without re-deriving state. `errors.New("cannot downgrade sensitivity")` cannot do this: the values are gone the instant the string is built. Full contrast and every invariant currently in the `DataAsset` roster classified sentinel-or-typed: `references/aggregate-invariant-enforcement.md`.
 
 ---
 
 ## Purity Rule
 
-The domain package imports **only** stdlib, `github.com/google/uuid`, and `time`. No pgx, no chi, no OTel, no slog. If a domain method needs the current time, it is **passed in** (`now time.Time`) — the domain does not call `time.Now()` itself, so tests are deterministic. The same applies to ID generation where determinism matters.
+The domain package imports **only** stdlib, `github.com/google/uuid`, and `time`. No pgx, no chi, no OTel, no slog. A domain method never calls `time.Now()` or `uuid.New()` itself — both are **passed in** — so invariant tests are deterministic.
+
+---
+
+## Domain-Model Unit-Test Standard
+
+`go-unit-test` owns the general table-driven/TDD standard; a domain-model test additionally must assert three things specific to this artifact type, for **every** exported mutating method:
+
+1. **Invariant enforcement** — one table case per invariant that can be violated, asserting `errors.Is`/`errors.As` against the exact sentinel or typed error, not just "an error occurred."
+2. **Immutability on the rejected path** — after a failing call, every field is asserted unchanged (byte-for-byte, or via a snapshot-and-compare) — this is what "validate before mutate" is *for*, and a test that skips it doesn't verify the ordering actually holds.
+3. **Event-emission completeness** — a successful call recorded **exactly one** event of the expected type via `PullEvents()`; a rejected call recorded **zero**. Both directions, every method — a passing test that only checks the success path leaves the failure-path emission-completeness claim unverified.
 
 ---
 
 ## Quality Criteria
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Encapsulation | Aggregate fields unexported; mutation only via methods | Exported mutable fields bypassing invariants |
-| Invariants enforced | Illegal states are unrepresentable / rejected at the method | Validation done in handlers, not the Aggregate |
-| Events recorded in domain | State-changing methods record Domain Events | Events constructed in the service/handler layer |
-| Construct ≠ reconstitute | Separate `New…` and `Reconstitute`; only `New…` emits events | Loading from DB re-fires creation events |
-| Value Objects immutable | Value types, by-value, behaviour attached | Mutable VOs or pointer-to-VO |
-| Purity | Domain imports only stdlib + uuid + time; time injected | Domain importing frameworks or calling `time.Now()` |
+| Criterion | Pass | Fail | How to verify |
+|---|---|---|---|
+| Failing constructors typed | Every fallible `New…`/mutating method returns `(*T, error)` / `error` | A constructor returning a zero-value struct with no error path | Read every exported `New…` and mutating method's signature |
+| Encapsulation | Aggregate fields unexported; mutation only via methods | Exported mutable fields | `grep -n "^\s*[A-Z]" internal/domain/*.go` field lists — no hits outside accessor return types |
+| Validate-then-mutate order | Every mutating method's checks precede its first field write | A field written before its guarding check | Read method body top to bottom; first assignment must follow all `if`/`return` guards |
+| Consistent receiver type | One type's methods are all pointer, or all value — never mixed | A type with both `func (a DataAsset)` and `func (a *DataAsset)` methods | `grep -n "func (a .*DataAsset)" internal/domain/*.go` — one receiver spelling only |
+| Value Objects immutable | Value types, by-value, no setters, `==` or explicit `Equals` | Mutable VOs, pointer-to-VO, or a slice/map field with no `Equals` | Read VO type; if it has a slice/map field, an `Equals` method must exist beside it |
+| Events recorded in-method | State-changing methods record their event before returning `nil` | Events constructed in a service/handler layer | Grep `recordEvent(` call sites — all inside `internal/domain` |
+| One error type per invariant | Sentinel for parameter-free conditions; named typed error for anything with data | A generic `errors.New` invariant message, or a shared `Details map[string]any` bucket | Read `errors.go`; every data-carrying invariant has its own named type |
+| Construct ≠ reconstitute | Separate `New…`/`Reconstitute`; only `New…` validates and emits | Loading from DB re-runs validation or re-fires creation events | Read `Reconstitute`'s body for the absence of both |
+| Purity | Domain imports only stdlib + uuid + time; time/IDs injected | Framework import, or `time.Now()`/`uuid.New()` inside domain | `go list -deps ./internal/domain/...` |
+| Unit test asserts all three axes | Every mutating method's table covers invariant-match, immutability-on-reject, event-count-both-ways | A test asserting only "err != nil" or only the success path's event | Read the test table's assertions against the three-item standard above, per method |
 
 ---
 
 ## Anti-Patterns
 
-- **Anemic domain model** — an Aggregate that is a bag of exported fields with getters/setters, while the "rules" live in a service. The invariants become unenforceable; any caller can construct an illegal state.
-- **Aggregate as ORM struct** — `db:` / `json:` tags on domain types couple the model to storage and transport. Mapping lives in the repository and handler layers.
-- **Events built outside the Aggregate** — a service constructing `DataAssetClassified` itself can drift from the state change that supposedly caused it. The method that mutates records the event, atomically with the mutation.
-- **Re-validating (or re-emitting events) on reconstitution** — loading an asset must never fire `DataAssetRegistered` again or reject data that was valid under the rules in force when it was stored.
-- **`time.Now()` / `uuid.New()` inside domain methods** — hidden nondeterminism makes invariant tests flaky and time-dependent rules untestable. Inject `now` (and IDs where identity matters).
-- **Pointer-to-Value-Object** — `*SensitivityLevel` invites nil checks and aliasing for a type whose whole point is cheap immutable copies.
+- **Anemic domain model** — exported fields/getters-setters with rules living in a service; invariants become unenforceable by any caller.
+- **Zero-value construction on failure** — returning `&DataAsset{}, err` instead of `nil, err` leaves a caller one missed nil-check from operating on a half-built Aggregate.
+- **Mixed receiver types on one Aggregate** — one method pointer, another value, "because that one doesn't mutate" — inconsistent method sets are a compile-time interface-satisfaction trap waiting for the next refactor.
+- **A generic `InvariantViolationError{Rule, Details}` bucket** — reused across every invariant, it trades static field access for a map lookup a future caller has to reverse-engineer.
+- **Events built outside the Aggregate, or on the failure path** — an event must correspond 1:1 to a committed mutation; constructing it before validation, or in a calling service, decouples the fact from the state change that supposedly caused it.
+- **`time.Now()` / `uuid.New()` inside domain methods** — hidden nondeterminism makes invariant tests flaky.
+- **Pointer-to-Value-Object** — invites nil checks and aliasing for a type whose whole point is cheap immutable copies.
 
 ---
 
 ## Output Format
 
-Produces Go source plus its test-first unit tests (TDD):
+Go source built exactly to the standards above, plus test-first unit tests (TDD) covering all three axes of the Domain-Model Unit-Test Standard for every mutating method:
 
 ```
-internal/domain/dataasset.go        (Aggregate Root)
-internal/domain/sensitivity.go      (Value Object)
-internal/domain/events.go           (Domain Events)
-internal/domain/errors.go           (sentinel errors)
-internal/domain/dataasset_test.go   (table-driven invariant tests — written first)
+internal/domain/dataasset.go        (Aggregate Root: New…, Reconstitute, mutating methods)
+internal/domain/sensitivity.go      (Value Object: unexported field, IsValid, Equals if needed)
+internal/domain/events.go           (Domain Events: past-tense structs + var _ DomainEvent assertions)
+internal/domain/errors.go           (sentinels for parameter-free conditions; named types for data-carrying invariants)
+internal/domain/dataasset_test.go   (table-driven: invariant match + immutability-on-reject + event count, per method)
 ```
 
-Full Value Object and Domain Event worked examples: `references/value-objects-and-events.md`.
+Full worked examples: `references/aggregate-invariant-enforcement.md` (failing constructors, method sets, error typing) and `references/value-objects-and-events.md` (Value Objects, Domain Events, emission checklist).
