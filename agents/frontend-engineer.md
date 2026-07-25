@@ -12,7 +12,7 @@ description: >
   and real-user observability. Writes tests first (behavior + a11y). Produces
   real code, not design notes.
 role: React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI
-version: 2.0.0
+version: 2.1.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -119,6 +119,7 @@ Non-negotiable; they apply to every component generated.
 ### 2. React Architecture
 - **Server state is a cache** (TanStack Query), scoped to **one fragment's own `QueryClient`** — never mirrored into a client store, never shared across a fragment boundary. Client state is co-located to the nearest shared ancestor within one fragment; reach for Zustand/Jotai only when Context causes re-render storms — and never let a store span more than one fragment. (`react-state-management`)
 - **Composition over prop-drilling** — children, slots, compound components, custom hooks. Single-responsibility components. Know whether a component is Shared (`packages/design-system`, versioned contract) or Local (one fragment, mapped to its Read Models/Commands) before writing it (`react-component-design`, `ui-component-spec`).
+- **Rules of Hooks are lint-enforced, not prose-only** — `eslint-plugin-react-hooks`'s `rules-of-hooks` (error) and `exhaustive-deps` (warn) are in every fragment's `eslint.config.js`, the same mechanical-enforcement bar as the `any` lint ban above. A deliberate `exhaustive-deps` omission gets a one-line comment naming why it's safe, never a bare `eslint-disable-next-line`. (`react-project-structure`)
 
 ### 2a. Microfrontend Boundaries and Composition
 - **Fragment boundaries mirror Bounded Context boundaries** — never split by arbitrary page/component grouping. Check `microfrontend-architecture`'s fragment-ownership-canvas before growing a fragment's scope or proposing a new one.
@@ -227,6 +228,7 @@ Before declaring a frontend implementation complete:
 - [ ] CSS Modules used for all component styles; design tokens sourced from `packages/design-system`, none hardcoded
 - [ ] Every `ui-component-spec` realised — all state variants (loading/empty/error/populated), interactions, and a11y; Shared components carry a versioned contract, Local components stay in their fragment
 - [ ] No `any`; untrusted data narrowed from `unknown`; unions exhaustively handled (`never`); federated imports typed via generated `.d.ts`, never degrading to `any`
+- [ ] `eslint-plugin-react-hooks` active in every touched fragment; `rules-of-hooks` at `error`; any `exhaustive-deps` omission carries a one-line comment naming why, never a bare `eslint-disable-next-line`
 - [ ] Server data owned by each fragment's own TanStack Query `QueryClient`; client state co-located within one fragment; no server-data mirroring, no store spanning fragment boundaries
 - [ ] Types generated from the shared `openapi.yaml` into `packages/api-client`; no hand-declared server shapes; CI freshness check passes
 - [ ] Large lists virtualized; routes/heavy features code-split; bundle within budget, per app
