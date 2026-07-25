@@ -4,11 +4,14 @@ description: >
   Teaches how to build the service composition root (cmd/server/main.go) — wiring
   dependencies, the lifecycle of the process, graceful shutdown driven by
   signal.NotifyContext, the root context that every goroutine descends from,
-  ordered startup and reverse-ordered shutdown, and readiness gating. This is the
-  deterministic-lifecycle backbone the blueprint demands: no orphaned goroutines,
-  no work accepted before dependencies are healthy. Used by the backend-engineer
-  during Implement.
-version: 1.1.0
+  ordered startup and reverse-ordered shutdown, readiness gating, and complete
+  http.Server timeout configuration (ReadTimeout/WriteTimeout/IdleTimeout
+  alongside ReadHeaderTimeout). This is the deterministic-lifecycle backbone
+  the blueprint demands: no orphaned goroutines, no work accepted before
+  dependencies are healthy. The full ordered-startup worked example is in
+  references/composition-root-startup-sequence.md. Used by the
+  backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -56,37 +59,7 @@ func run() error {
 
 ## Ordered Startup
 
-Dependencies start in order, and each startup failure aborts cleanly with wrapped context. Construct outer-to-inner: telemetry first (so everything is observable), then secrets, then stores, then the broker, then the HTTP server.
-
-```go
-    // 1. Telemetry first — so startup itself is traced/logged
-    shutdownTel, err := telemetry.Init(ctx, cfg.OTel)
-    if err != nil { return fmt.Errorf("init telemetry: %w", err) }
-    defer shutdownTel(context.Background()) // flush spans on exit
-
-    // 2. Secrets (Vault Agent file) → DB credentials
-    dbURL, err := secrets.DatabaseURL()
-    if err != nil { return fmt.Errorf("reading db credentials: %w", err) }
-
-    // 3. Database pool — sized deliberately, never left at defaults blindly
-    poolCfg, err := pgxpool.ParseConfig(dbURL)
-    if err != nil { return fmt.Errorf("parsing db config: %w", err) }
-    poolCfg.MaxConns = cfg.DBMaxConns             // this replica's share of Postgres max_connections
-    poolCfg.MaxConnLifetime = time.Hour           // recycle: credential rotation + connection rebalancing
-    poolCfg.MaxConnIdleTime = 5 * time.Minute
-    pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
-    if err != nil { return fmt.Errorf("connecting postgres: %w", err) }
-    defer pool.Close()
-    if err := pool.Ping(ctx); err != nil { return fmt.Errorf("postgres ping: %w", err) }
-
-    // 4. Wire the layers (infrastructure → application → handlers)
-    repo := postgres.NewDataAssetRepo(pool)
-    publisher := messaging.NewOutboxPublisher(pool)
-    classify := commands.NewClassifyDataAssetHandler(repo, publisher, policy)
-    router := httptransport.NewRouter(classify, /* queries, middleware ... */)
-```
-
-**Pool sizing rule:** `MaxConns × replica count` must stay comfortably below Postgres `max_connections` (leave headroom for migrations, the relay, and operators). Too small shows up as request latency while goroutines queue for a connection (`pool.Stat().EmptyAcquireCount` climbing is the tell); too large just moves the queue into Postgres, which degrades *everyone*. Start near `4 × CPU cores of the database` divided across replicas, then tune from acquire-wait metrics — not from folklore.
+Dependencies start in order, and each startup failure aborts cleanly with wrapped context. Construct outer-to-inner: telemetry first (so everything is observable), then secrets, then stores, then the broker, then the HTTP server. **Pool sizing rule:** `MaxConns × replica count` must stay comfortably below Postgres `max_connections`; start near `4 × CPU cores of the database` divided across replicas, then tune from acquire-wait metrics (`pool.Stat().EmptyAcquireCount`), not folklore. Full worked sequence: `references/composition-root-startup-sequence.md`.
 
 ---
 
@@ -100,7 +73,10 @@ When the process runs more than one long-lived component (HTTP server + event co
     srv := &http.Server{
         Addr:              cfg.HTTPAddr,
         Handler:           router,
-        ReadHeaderTimeout: 5 * time.Second, // slowloris protection
+        ReadHeaderTimeout: 5 * time.Second,   // slowloris protection: caps time to send request headers
+        ReadTimeout:       10 * time.Second,  // caps time to send the full request body
+        WriteTimeout:      10 * time.Second,  // caps time to write the response
+        IdleTimeout:       120 * time.Second, // caps idle keep-alive time: bounds connection-pool exhaustion
     }
 
     // HTTP server
@@ -184,6 +160,7 @@ type Config struct {
 | One exit point | `os.Exit` only in `main`; `run()` returns errors | `log.Fatal` scattered through wiring |
 | Readiness gated | Not-ready until healthy; not-ready on shutdown start | Ready reported before dependencies verified |
 | Pool sized deliberately | `MaxConns`/lifetimes set from capacity math | Default pool settings shipped unexamined |
+| Complete server timeouts | `ReadTimeout`/`WriteTimeout`/`IdleTimeout` set alongside `ReadHeaderTimeout` | Only `ReadHeaderTimeout` set; slow body/write/idle connections unbounded |
 
 ---
 
@@ -195,6 +172,7 @@ type Config struct {
 - **Shutdown timeout ≥ pod grace period** — a 30s drain against a 30s grace period means Kubernetes `SIGKILL`s mid-drain; the deadline must leave margin.
 - **Closing the pool before components stop** — `pool.Close()` placed anywhere other than after `g.Wait()` yanks connections out from under an in-flight transaction.
 - **Constructing dependencies inside layers** — a repository creating its own pool, or a handler building its own client, bypasses the composition root and makes lifecycle untrackable. All wiring happens in `main`.
+- **Incomplete `http.Server` timeout configuration** — setting only `ReadHeaderTimeout` closes the slowloris header-send vector but leaves the body-read, response-write, and idle-keep-alive vectors open; a slow or stalled client can still hold a handler goroutine or a pooled connection indefinitely. Set `ReadTimeout`, `WriteTimeout`, and `IdleTimeout` deliberately, not just the one field that happens to be the most famous.
 
 ---
 
@@ -206,3 +184,5 @@ Produces Go source, not a document:
 cmd/server/main.go            (run() lifecycle, errgroup supervision, graceful shutdown)
 internal/config/config.go     (fail-fast config loader)
 ```
+
+Full ordered-startup worked example: `references/composition-root-startup-sequence.md`.

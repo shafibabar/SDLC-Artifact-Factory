@@ -4,10 +4,14 @@ description: >
   Teaches how to implement HTTP handlers with net/http + chi — routing from the
   OpenAPI contract, request DTO decoding and structural validation, mapping the
   application layer's domain errors to HTTP status codes via a single error
-  writer, the standard error envelope, context propagation, and keeping handlers
-  thin (decode → call handler → encode). Implements the enterprise-architect's
-  api-contract-design. Used by the backend-engineer during Implement.
-version: 1.1.0
+  writer, the standard error envelope, the success-response JSON envelope for
+  query handlers, context propagation, and keeping handlers thin (decode → call
+  handler → encode) as an instance of Clean Architecture's Humble Object pattern.
+  Implements the enterprise-architect's api-contract-design. Full worked handler
+  code (mutation, query, error-mapping switch) is in
+  references/worked-handler-examples.md. Used by the backend-engineer during
+  Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -21,6 +25,8 @@ tags: [implement, go, chi, net-http, handler, dto, validation, error-mapping]
 The HTTP handler is the transport edge. Its only job is to translate between HTTP and the application layer: decode the request, validate its structure, call the relevant command/query handler, and encode the result (or map the error). It contains no business logic and no persistence — it is a thin, boring, predictable adapter. Boring transport code is correct transport code.
 
 This implements the routes and contracts from `api-contract-design` using `net/http` + `chi` (chosen for transparency over magic frameworks — see the tech-stack defaults).
+
+**This is Robert C. Martin's Humble Object pattern, applied at the HTTP boundary.** The handler is the humble object: thin, and deliberately not unit-tested in isolation for business behaviour — it is verified only via `httptest` integration-style tests (see Output Format) that exercise it as a real HTTP request/response round trip. The business decisions it delegates to are fully unit-tested in isolation one layer in, in `go-service-layer`'s command/query handlers and `go-domain-model`'s Aggregates. The split is not incidental — it is what makes both halves cheap to test: the handler doesn't need business-rule test cases, and the business rules don't need an HTTP server.
 
 ---
 
@@ -55,56 +61,13 @@ func NewRouter(classify *commands.ClassifyDataAssetHandler, list *queries.ListDa
 
 ## Handler Shape: Decode → Call → Encode
 
-```go
-// internal/handlers/http/classify_data_asset.go
+Every handler follows the same four steps: decode the path/body, run structural validation, call the application layer with `r.Context()`, then encode the result. The `ClassifyDataAsset` mutation handler is the canonical worked example — decode → validate → call `a.classify.Handle` → `204 No Content`, mapping any error through the single `writeDomainError` point. Full code: `references/worked-handler-examples.md`.
 
-type classifyRequest struct {
-    SensitivityLevel string `json:"sensitivityLevel"`
-    ClassifiedBy     string `json:"classifiedBy"`
-}
+---
 
-func (a *API) ClassifyDataAsset(w http.ResponseWriter, r *http.Request) {
-    // 1. Path + body decode
-    id, err := uuid.Parse(chi.URLParam(r, "id"))
-    if err != nil {
-        writeError(w, r, http.StatusBadRequest, "INVALID_ID", "data asset id must be a UUID")
-        return
-    }
-    var req classifyRequest
-    if err := decodeJSON(w, r, &req); err != nil {
-        writeError(w, r, http.StatusBadRequest, "INVALID_BODY", err.Error())
-        return
-    }
+## Success Response: Query Handler
 
-    // 2. Structural validation (all errors at once — see go-error-handling)
-    if verrs := req.validate(); len(verrs) > 0 {
-        writeValidationError(w, r, verrs)
-        return
-    }
-
-    // 3. Call the application layer — pass the request context (carries tenant, span, deadline)
-    // Never uuid.MustParse request data — a panic on untrusted input is a DoS vector.
-    // validate() already shape-checked this field, but the parse here still returns an error.
-    classifiedBy, err := uuid.Parse(req.ClassifiedBy)
-    if err != nil {
-        writeError(w, r, http.StatusBadRequest, "INVALID_BODY", "classifiedBy must be a UUID")
-        return
-    }
-    cmd := commands.ClassifyDataAsset{
-        DataAssetID:    id,
-        Sensitivity:    domain.SensitivityLevel(req.SensitivityLevel),
-        ClassifiedBy:   classifiedBy,
-        IdempotencyKey: r.Header.Get("Idempotency-Key"),
-    }
-    if err := a.classify.Handle(r.Context(), cmd); err != nil {
-        writeDomainError(w, r, err) // single mapping point — see below
-        return
-    }
-
-    // 4. Encode the result
-    w.WriteHeader(http.StatusNoContent)
-}
-```
+The mutation example above returns `204 No Content` — no body, so it says nothing about the JSON shape of a successful response. A query handler does return a body, and it uses the same envelope discipline as `ErrorResponse` below: every response, success or failure, is a single top-level named key, never a bare array or object — so a later addition (pagination metadata, a `next` link) extends the envelope without breaking existing clients that read the named key. `ListDataAssets` is the worked example: decode → call `a.list.Handle` → encode `dataAssetsResponse{DataAssets: [...]}` via `writeJSON`, the success-path counterpart to `writeDomainError`. Full code: `references/worked-handler-examples.md`.
 
 ---
 
@@ -141,28 +104,7 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 
 ## One Error Mapping Point
 
-Domain errors are mapped to HTTP status codes in exactly one place, using `errors.Is`/`errors.As` (see `go-error-handling`). Handlers never build status logic inline — they call `writeDomainError`.
-
-```go
-func writeDomainError(w http.ResponseWriter, r *http.Request, err error) {
-    switch {
-    case errors.Is(err, domain.ErrNotFound):
-        writeError(w, r, http.StatusNotFound, "NOT_FOUND", "resource not found")
-    case errors.Is(err, commands.ErrUnauthenticated):
-        writeError(w, r, http.StatusUnauthorized, "AUTHENTICATION_REQUIRED", "authentication required")
-    case errors.Is(err, domain.ErrForbidden):
-        writeError(w, r, http.StatusForbidden, "FORBIDDEN", "not permitted") // never leak why
-    case errors.Is(err, domain.ErrConcurrentModification):
-        writeError(w, r, http.StatusConflict, "CONFLICT", "resource was modified concurrently")
-    case errors.Is(err, domain.ErrInvalidSensitivity):
-        writeError(w, r, http.StatusUnprocessableEntity, "UNPROCESSABLE", err.Error())
-    default:
-        // Unknown error: log with trace id, return opaque 500 (never echo internals).
-        slog.ErrorContext(r.Context(), "unhandled error", "err", err)
-        writeError(w, r, http.StatusInternalServerError, "INTERNAL", "an unexpected error occurred")
-    }
-}
-```
+Domain errors are mapped to HTTP status codes in exactly one place, using `errors.Is`/`errors.As` (see `go-error-handling`). Handlers never build status logic inline — they call `writeDomainError`, a single `switch` on sentinel errors (`domain.ErrNotFound` → 404, `domain.ErrForbidden` → 403 with no reason leaked, `domain.ErrConcurrentModification` → 409, an unmatched error → opaque 500 logged with the trace id). Full switch: `references/worked-handler-examples.md`.
 
 ---
 
@@ -229,3 +171,5 @@ internal/handlers/http/classify_data_asset.go
 internal/handlers/http/errors.go               (writeError / writeDomainError / envelope)
 internal/handlers/http/classify_data_asset_test.go   (httptest; written first)
 ```
+
+Full worked handler code (mutation, query, error-mapping switch): `references/worked-handler-examples.md`.
