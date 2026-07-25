@@ -35,3 +35,9 @@ Generics (`[T any]`) eliminate duplication in **data-agnostic** containers and t
 - Generic worker-pool/pipeline plumbing (see `go-concurrency-patterns`)
 
 Do **not** use generics to build a `Repository[T any]` god-interface — that re-creates the weak, wide abstraction the minimalist-interface rule forbids. Each Aggregate gets its own small repository port.
+
+---
+
+## Where This Code Lives
+
+Data-agnostic generic plumbing (a `Page[T]`, a `fanIn[T any]`, a generic worker pool) belongs in `internal/pkg/<name>/` — never in `internal/domain`, which imports nothing beyond stdlib/uuid/time and has no reason to depend on generic collection helpers it doesn't itself define. `internal/pkg/` is a narrow, deliberate exception to "no shared `pkg/`": it never crosses a *service* boundary (Go's toolchain already makes `internal/` unimportable outside this module), and it carries zero domain knowledge — the moment a file here would need to import `internal/domain`, it no longer belongs in `internal/pkg/`. Full placement rules and the distinction from the forbidden cross-service "fat `pkg/`" anti-pattern: `references/package-layout-standard.md`.
