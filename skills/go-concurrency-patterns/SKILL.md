@@ -4,11 +4,13 @@ description: >
   Teaches idiomatic, leak-free Go concurrency — goroutine lifecycle discipline
   (every goroutine has a bounded lifetime and an explicit exit tied to a parent
   context), channels (buffered vs unbuffered), the sync primitives (Mutex,
-  RWMutex, Once, Pool), errgroup for parallel pipeline stages with error
-  propagation and cancellation, worker pools, and fan-out/fan-in. The standard
-  this plugin holds for any code that spawns goroutines. Used by the
-  backend-engineer during Implement.
-version: 1.1.0
+  RWMutex, Once, Pool, WaitGroup, atomic), errgroup for parallel pipeline
+  stages with error propagation and cancellation, worker pools, fan-out/fan-in,
+  and the deadlock/livelock/starvation vocabulary with the critical caveat that
+  Go's runtime deadlock detector and the race detector both miss a partial
+  deadlock or a livelock. The standard this plugin holds for any code that
+  spawns goroutines. Used by the backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -99,8 +101,9 @@ case <-ctx.Done():
 | `sync.Once` | One-time lazy init (a cache, a compiled regexp) | The idiomatic singleton-init |
 | `sync.Pool` | Reuse short-lived, frequently-allocated objects on hot paths | See `go-performance-optimization`; profile-justified |
 | `sync.WaitGroup` | Wait for a known set of goroutines with no error return | Prefer `errgroup` when errors matter |
+| `sync/atomic` | Lock-free counters/flags on a single word under high contention | Cheaper than `Mutex` when the guarded state is one numeric/boolean field — not a substitute for `Mutex` on anything larger. Already used this way in `go-chaos-test`'s `faultyPublisher` (`failNext atomic.Bool`) |
 
-Prefer **sharing by communicating** (channels) over **communicating by sharing** (mutexes) when designing data flow — but a `Mutex` around a small in-memory map is simpler and faster than a channel-guarded goroutine, so use judgement, not dogma.
+Prefer **sharing by communicating** (channels) over **communicating by sharing** (mutexes) when designing data flow — but a `Mutex` around a small in-memory map is simpler and faster than a channel-guarded goroutine, so use judgement, not dogma. The sharper two-question heuristic: are you transferring *ownership* of data, or coordinating independent pieces of logic, or signalling an occurrence? → channel. Are you guarding a struct's own internal state, in a small critical section? → `Mutex`/`RWMutex`, or `sync/atomic` if that state is a single counter or flag.
 
 ---
 
@@ -138,29 +141,7 @@ Each worker has all three lifecycle properties: owned by the group, exits on clo
 
 ## Fan-Out / Fan-In
 
-Fan-out: distribute work across goroutines. Fan-in: merge their results into one channel. The merge goroutine closes the output only after all producers finish — coordinated with a `WaitGroup`.
-
-```go
-func fanIn[T any](ctx context.Context, sources ...<-chan T) <-chan T {
-    out := make(chan T)
-    var wg sync.WaitGroup
-    wg.Add(len(sources))
-    for _, src := range sources {
-        go func() {
-            defer wg.Done()
-            for v := range src {
-                select {
-                case out <- v:
-                case <-ctx.Done():
-                    return
-                }
-            }
-        }()
-    }
-    go func() { wg.Wait(); close(out) }() // close exactly once, after all producers done
-    return out
-}
-```
+Fan-out: distribute work across goroutines. Fan-in: merge their results into one channel. The merge goroutine closes the output only after all producers finish — coordinated with a `WaitGroup`. Full generic `fanIn[T any]` implementation: `references/worked-example.md`.
 
 ---
 
@@ -171,6 +152,20 @@ func fanIn[T any](ctx context.Context, sources ...<-chan T) <-chan T {
 - Channels are closed by the sender, exactly once.
 - The race detector passes: `go test -race ./...` (mandatory — see `go-makefile`).
 - Goroutine count is stable under load (verify with pprof goroutine profile — see `go-performance-optimization`).
+
+---
+
+## Deadlock, Livelock, and Starvation
+
+Three distinct failure modes — each different from a goroutine leak (an unbounded goroutine with no exit) and from a data race (concurrent access to unsynchronized memory):
+
+- **Deadlock** — two or more goroutines each wait on a resource the other holds; neither can proceed. A **partial deadlock** (some goroutines stuck, others still running fine) is the common shape in a real service; a **full deadlock** (every goroutine in the process blocked simultaneously) is rarer but is the one case the runtime notices.
+- **Livelock** — goroutines are actively running and scheduled, repeatedly reacting to each other (backing off, retrying, yielding), but making no real progress — CPU stays busy, throughput stays near zero.
+- **Starvation** — a goroutine that *could* proceed is perpetually denied the resource it needs (an unfair lock, a greedy sibling that never backs off), while the rest of the system keeps running normally.
+
+> **The critical caveat — read this before trusting any tool to catch these: Go's runtime deadlock detector (`fatal error: all goroutines are asleep - deadlock!`) only catches *full* deadlock, the case where every single goroutine in the program is simultaneously blocked at once.** It does **not** catch a partial deadlock — the process stays up, one corner of the system just silently stops making progress — and it does **not** catch a livelock, because a livelocked goroutine is actively scheduled and running, not blocked, so the detector has nothing to trigger on. Both failure shapes are also invisible to `go test -race`: the race detector proves the absence of *data races* (concurrent, unsynchronized memory access) — a completely different problem from a goroutine that is simply stuck or spinning uselessly. **No automated tool in this toolchain catches a partial deadlock or a livelock.**
+
+Because neither the deadlock detector nor the race detector catches these, partial deadlock and livelock are found only by **behavioral and load testing**: watch goroutine count and CPU utilization under sustained load (`runtime.ReadMemStats`, pprof's goroutine profile — see `go-performance-optimization`), and run hypothesis-driven chaos experiments that deliberately induce lock contention (see `go-chaos-test`). The signatures differ — a flat goroutine count with zero throughput and *idle* CPU is partial deadlock; a flat goroutine count with zero throughput and *pegged* CPU is livelock — but neither one crashes the process or fails a `-race` run.
 
 ---
 
@@ -185,6 +180,7 @@ func fanIn[T any](ctx context.Context, sources ...<-chan T) <-chan T {
 | Channel discipline | Sender closes once; buffers are deliberate bounds | Receiver closes; arbitrary huge buffers |
 | Race-free | `go test -race` clean | Data races on shared state |
 | Errors propagate | Via errgroup/result channel | Swallowed or logged-and-dropped |
+| Deadlock/livelock awareness | Behavioral/load testing checks goroutine count + CPU under contention (see `go-chaos-test`) | Assuming `-race` or the runtime deadlock detector would have caught a stuck or spinning goroutine |
 
 ---
 
@@ -197,6 +193,7 @@ func fanIn[T any](ctx context.Context, sources ...<-chan T) <-chan T {
 - **`time.Sleep` as synchronisation** — sleeping "long enough" in production code or tests races by construction. Synchronise on a channel, a `WaitGroup`, or a context.
 - **Closing a channel from the receiver** (or from multiple goroutines) — panics on the next send. The sender closes, exactly once.
 - **Huge "safety" buffers** — `make(chan T, 100000)` hides backpressure until memory runs out. A buffer is a measured bound, not a pressure-relief valve.
+- **Trusting `-race` or the deadlock detector to catch a stuck goroutine** — neither does. `go test -race` proves the absence of data races only; the runtime deadlock detector fires only when *every* goroutine in the process is blocked at once. A partial deadlock or a livelock is silent to both and is found only by behavioral/load testing — see "Deadlock, Livelock, and Starvation" above.
 
 ---
 

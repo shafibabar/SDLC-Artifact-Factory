@@ -3,12 +3,14 @@ name: go-error-handling
 description: >
   Teaches the plugin's Go error-handling standard — errors as values (never
   discarded), wrapping with %w to preserve the chain, sentinel and typed errors,
-  inspection with errors.Is and errors.As, where errors are translated between
-  layers, the validation-error aggregation pattern, and the strict boundary on
-  panic/recover (panics only for unrecoverable states, recovered only at runtime
-  boundaries). This is a cross-cutting standard every other backend skill follows.
-  Used by the backend-engineer during Implement.
-version: 1.1.0
+  inspection with errors.Is and errors.As, the nil-concrete-value-in-a-non-nil-
+  error-interface footgun (typed nil returned through an error-typed result),
+  where errors are translated between layers, the validation-error aggregation
+  pattern, and the strict boundary on panic/recover (panics only for
+  unrecoverable states, recovered only at runtime boundaries). This is a
+  cross-cutting standard every other backend skill follows. Used by the
+  backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -111,6 +113,16 @@ Never compare with `==` (`err == domain.ErrNotFound`) — it fails the moment th
 
 ---
 
+## The Nil-Interface Footgun
+
+A **typed nil is not the same as a nil `error`** — one of the most-cited mistakes in Go, and a *different* problem from the `errors.Is`/`errors.As` topic above: those correctly inspect an error that legitimately exists somewhere in a chain, while this footgun is a function incorrectly *reporting* an error that was never assigned.
+
+An `error` value is a two-word interface: a type word and a value word. `err != nil` is true whenever the **type word** is set — even when the value word inside it is nil. A function whose return type is `error` but that returns a nil pointer to a concrete error type (e.g. `var verr *ValidationError; return verr`) sets the type word to that concrete type, so the caller sees a non-nil error even though nothing went wrong.
+
+**Never declare a nil-valued, concrete-typed error variable and return it directly through an `error`-typed result.** Return the bare `nil` literal for the no-error path — either directly, or via an explicit conditional when converting a helper's typed-pointer result. Full wrong/right worked example, verified to compile and to reproduce the bug: `references/worked-example.md`.
+
+---
+
 ## Translating Errors at Layer Boundaries
 
 An error type should not leak across an abstraction boundary. The repository translates infrastructure errors (pgx) into domain sentinels so the application layer never imports pgx (see `go-repository-pattern`):
@@ -186,6 +198,7 @@ A `recover` anywhere other than a boundary is a smell — it usually means a pan
 | Aggregated validation | All field errors returned together | First-error-only validation |
 | Panic discipline | Panics only unrecoverable; recover only at boundaries | Panic as control flow; recover sprinkled around |
 | No sensitive data in errors | Errors carry ids/operations, not PII/secrets | PII or secrets in error strings |
+| No typed-nil footgun | No-error paths return the bare `nil` literal | A nil-valued, concrete-typed error variable (`var e *T`) returned through an `error`-typed result |
 
 ---
 
@@ -198,6 +211,7 @@ A `recover` anywhere other than a boundary is a smell — it usually means a pan
 - **Wrapping with no added context** — `fmt.Errorf("error: %w", err)` at every call site produces `error: error: error: connection reset`. Wrap where you can name the operation and its key identifier.
 - **Panic as control flow** — panicking on bad input or a down dependency, then recovering mid-stack to resume. Panics are for bugs; failures are values.
 - **Leaking infrastructure error types across boundaries** — a handler switching on `pgx.ErrNoRows` couples transport to the driver. Translate at the repository.
+- **The typed-nil footgun** — `var verr *ValidationError; return verr` returns a non-nil `error` interface even when `verr` was never assigned, because the interface's type word (`*ValidationError`) is set independent of its value word (nil). See "The Nil-Interface Footgun" above. Return the bare `nil` literal for the no-error path — never a nil-valued, concrete-typed variable.
 
 ---
 
