@@ -7,7 +7,7 @@ description: >
   presentational/container separation, the Atomic Design taxonomy, and controlled
   vs uncontrolled patterns. Implements the ux-architect’s ui-component-spec in
   React + TypeScript. Used by the frontend-engineer during Implement.
-version: 1.1.0
+version: 1.2.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
@@ -103,7 +103,29 @@ Related components share implicit state via a small, feature-private context —
 ```
 
 ### Render props / function-as-child
-For reusable behaviour with caller-controlled rendering (a virtualiser, a data boundary).
+For most reusable-logic problems, a **custom hook is the more idiomatic default** (see the next section) — it composes more freely (call several hooks side by side; you can't nest several render-props children as cleanly), doesn't add a wrapper level to the component tree, and reads as ordinary function calls rather than JSX indirection. Render props remain the right tool specifically when the caller needs to **control rendering**, not just consume a value or a callback — the reusable part owns behaviour and measurement, the caller owns markup:
+
+```tsx
+// The virtualiser owns scroll-position tracking and range calculation;
+// the caller owns what each visible row actually renders.
+function VirtualizedList<T>({ items, rowHeight, children }: {
+  items: T[]; rowHeight: number; children: (item: T, index: number) => React.ReactNode;
+}) {
+  const { visibleRange, containerProps } = useVirtualRange(items.length, rowHeight);
+  return (
+    <div {...containerProps}>
+      {items.slice(visibleRange.start, visibleRange.end).map((item, i) => children(item, visibleRange.start + i))}
+    </div>
+  );
+}
+
+// Caller controls the row markup; VirtualizedList controls what's mounted at all.
+<VirtualizedList items={dataAssets} rowHeight={48}>
+  {(asset) => <DataAssetRow key={asset.id} asset={asset} />}
+</VirtualizedList>
+```
+
+A custom hook could expose `visibleRange` too, but the caller would then own the `.slice()` and the wrapper `<div>` — fine for one caller, repetitive across many. Render props centralise that repetition once, in exchange for one extra render-prop indirection. If nothing about *what gets mounted* varies by caller, that's a signal that a custom hook fits better — don't reach for render props by default.
 
 **Note on Context:** Context solves prop-drilling for *low-frequency, widely-read* values (theme, current user, tenant). It is **not** a state manager — overusing it causes re-render storms (see `react-state-management` and `react-performance-optimization`).
 
