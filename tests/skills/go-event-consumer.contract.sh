@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "go-event-consumer" \
-  "According to this skill's liveness heartbeat worked example, how many missed heartbeat pulses are treated as noise versus a real signal that the main loop stopped executing?" \
-  "several"
+  "According to this skill's liveness heartbeat worked example, what is the exact name of the atomic field that is updated once per fully-completed Run loop iteration (as opposed to the one updated by the independent ticker)?" \
+  "lastLoopPulse"
 
 smoke_test_summary
