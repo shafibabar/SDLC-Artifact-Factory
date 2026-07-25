@@ -5,10 +5,13 @@ description: >
   the idempotent-consumer pattern (dedup on event id in the same transaction as
   the work), a bounded worker pool for parallel processing, manual offset commits
   after successful processing, retry with backoff, Dead Letter Queue routing,
-  trace-context extraction, and graceful drain on shutdown. Implements a stage of
-  the data-architect's data-pipeline-design. Used by the backend-engineer during
-  Implement.
-version: 1.1.0
+  trace-context extraction, a liveness heartbeat distinguishing a stalled
+  goroutine from healthy idle, rebalance handling, and graceful drain on
+  shutdown. Full rebalance client configuration is in
+  references/rebalance-handling.md; the full heartbeat worked example is in
+  references/liveness-heartbeat.md. Implements a stage of the data-architect's
+  data-pipeline-design. Used by the backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -156,6 +159,14 @@ func (c *Consumer) withRetry(ctx context.Context, fn func() error) error {
         case <-ctx.Done():
             return ctx.Err()
         case <-time.After(sleep):
+            // A fresh time.After per retry iteration is safe here: this repo pins
+            // golang:1.23-bookworm (go-dockerfile), and Go 1.23's runtime made an
+            // unreachable Timer directly GC-eligible even if it never fires and Stop is
+            // never called. Pre-1.23, the timer that lost this select to ctx.Done() would
+            // stay live — a goroutine-adjacent resource held — until it eventually fired,
+            // a real (if minor) per-iteration leak. Do not "simplify" this to
+            // time.NewTimer + manual Stop; that's only needed again if the pinned Go
+            // version ever drops below 1.23.
         }
         backoff *= 2
     }
@@ -163,6 +174,14 @@ func (c *Consumer) withRetry(ctx context.Context, fn func() error) error {
 ```
 
 The DLQ record retains the original payload, the `tenant_id`, and the failure reason, on a `<stage>-dlq` topic. DLQ depth is an alerting metric.
+
+---
+
+## Liveness Heartbeat
+
+Consumer lag and DLQ depth both catch a consumer that is *slow* or *failing* — but neither catches a consumer goroutine that is alive, scheduled, and stuck: blocked indefinitely inside `handleRecord` on a call with no timeout, or wedged in a loop. Zero throughput and flat lag look identical to "no work available" until an operator notices lag is *also* flat and misreads a hang as healthy idle — both metrics only move when a message is actually processed, never merely because the goroutine still exists. Cox-Buday's **heartbeat pattern** closes this blind spot: the main loop emits a periodic liveness pulse on its own dedicated channel, distinct from the processing path, so a supervisor can tell "alive and idle" from "stuck" even when zero records are flowing.
+
+A ticker-driven heartbeat goroutine and the non-blocking channel send it relies on (so a slow or absent reader can never itself stall the consume loop) run as a sibling errgroup member alongside the main loop. Full worked example: `references/liveness-heartbeat.md`.
 
 ---
 
@@ -189,24 +208,10 @@ func (c *Consumer) drain(ctx context.Context) error {
 
 When the consumer group rebalances (a pod scales, deploys, or dies), partitions are revoked and reassigned. Two rules keep redelivery to a minimum and correctness absolute:
 
-- **Commit before revocation.** Register an on-revoked callback so offsets for finished work are committed before the partition moves to another instance:
-
-```go
-kgo.NewClient(
-    kgo.ConsumerGroup(c.group),
-    kgo.Balancers(kgo.CooperativeStickyBalancer()), // incremental rebalance — untouched partitions keep flowing
-    kgo.OnPartitionsRevoked(func(ctx context.Context, cl *kgo.Client, _ map[string][]int32) {
-        if err := cl.CommitUncommittedOffsets(ctx); err != nil {
-            slog.ErrorContext(ctx, "commit on revoke failed", "err", err)
-        }
-    }),
-    kgo.BlockRebalanceOnPoll(), // no rebalance while a polled batch is still being processed
-)
-```
-
+- **Commit before revocation.** Register an on-revoked callback so offsets for finished work are committed before the partition moves to another instance.
 - **Rebalance is not an error path.** A rebalance mid-batch means some records get redelivered to the new owner — the idempotent-consumer dedup makes that a no-op, which is exactly why idempotency is non-negotiable rather than nice-to-have.
 
-Keep per-batch processing time well under the group's session/rebalance timeouts, or the broker will evict the consumer and thrash the group.
+Keep per-batch processing time well under the group's session/rebalance timeouts, or the broker will evict the consumer and thrash the group. Full client configuration (cooperative sticky balancer, on-revoked commit callback, `BlockRebalanceOnPoll`): `references/rebalance-handling.md`.
 
 ---
 
@@ -219,6 +224,7 @@ Keep per-batch processing time well under the group's session/rebalance timeouts
 - **DLQ, never drop.** Exhausted retries route to a monitored DLQ.
 - **Continue the trace.** Extract trace context from headers.
 - **Graceful drain** bounded by a deadline under the pod grace period.
+- **Heartbeat, not just lag/DLQ.** A periodic pulse on a dedicated channel proves the main loop is executing — the signal throughput metrics can't give when zero messages are flowing.
 
 ---
 

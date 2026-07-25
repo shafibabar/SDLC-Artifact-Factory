@@ -8,7 +8,7 @@ description: >
   publication, graceful shutdown, and partition keying by tenant. Implements the
   data-architect's event-schema-design over the outbox from go-repository-pattern.
   Used by the backend-engineer during Implement.
-version: 1.1.0
+version: 1.2.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -84,8 +84,11 @@ func (r *OutboxRelay) drainOnce(ctx context.Context) error {
         return fmt.Errorf("select outbox: %w", err)
     }
 
-    var records []*kgo.Record
-    var ids []uuid.UUID
+    // r.batch (the LIMIT just queried above) is the exact upper bound on rows.Next()
+    // iterations, known before the loop starts — preallocate instead of growing via
+    // bare append (go-performance-optimization's Preallocate Slices and Maps rule).
+    records := make([]*kgo.Record, 0, r.batch)
+    ids := make([]uuid.UUID, 0, r.batch)
     for rows.Next() {
         var m outboxRow
         if err := rows.Scan(&m.id, &m.aggregateID, &m.tenantID, &m.eventType, &m.payload, &m.occurredAt); err != nil {
@@ -112,6 +115,8 @@ func (r *OutboxRelay) drainOnce(ctx context.Context) error {
     return tx.Commit(ctx)
 }
 ```
+
+**Preallocate when the bound is already known.** `records` and `ids` are sized with `make(..., 0, r.batch)` rather than declared as a bare `var` and grown by `append` alone — the query above already bounds the loop to at most `r.batch` rows, so the capacity is known before the first iteration and preallocating costs nothing (see `go-performance-optimization`).
 
 **Ordering of operations is the correctness crux:** publish *then* mark published. If the process crashes after publishing but before marking, the row is re-published next tick — at-least-once. Consumers are idempotent (see `go-event-consumer`), so a duplicate is harmless. The reverse order would risk *losing* an event, which is unacceptable.
 
