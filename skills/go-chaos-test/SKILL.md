@@ -8,7 +8,7 @@ description: >
   Uses toxiproxy and application-level fault injection rather than a chaos platform.
   Covers the hypothesis-driven experiment method and steady-state validation. The
   shift-right proof that the system survives the real world. Used by the test-strategist during Quality.
-version: 1.1.0
+version: 1.2.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -102,8 +102,9 @@ Each built-in resilience pattern gets at least one experiment proving it works:
 | **Graceful shutdown** | SIGTERM mid-request / mid-batch | In-flight work drains; no dropped requests/events |
 | **Broker outage** | Redpanda unavailable | Outbox retains events; publishes on recovery (no loss) |
 | **Backpressure** | Ingestion faster than processing | Lag grows bounded; system degrades, doesn't collapse |
+| **Partial deadlock / livelock** | Artificial lock contention between two goroutines competing for the same resource (e.g. two consumer instances racing to claim the same partition, or a shared cache mutex held across a slow downstream call) | Goroutine count and CPU utilization diverge from steady state within the timeout window: flat count + idle CPU signals deadlock, flat count + pegged CPU signals livelock — either way, the experiment fails loudly instead of the service silently degrading forever |
 
-These map one-to-one to patterns already implemented — chaos testing closes the loop from "we built a circuit breaker" to "we proved the circuit breaker works."
+These map one-to-one to patterns already implemented — chaos testing closes the loop from "we built a circuit breaker" to "we proved the circuit breaker works." The deadlock/livelock row exists because neither failure mode trips Go's own tooling (see `go-concurrency-patterns`' "Deadlock, Livelock, and Starvation" section) — `go test -race` catches data races, not stuck goroutines, and the runtime deadlock detector only fires when *every* goroutine in the process is blocked at once. A partial deadlock or livelock is invisible to both, and this experiment is the only place in the toolchain that would actually notice one.
 
 ---
 
