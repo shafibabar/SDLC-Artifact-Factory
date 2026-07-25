@@ -1,189 +1,174 @@
 ---
 name: go-middleware
 description: >
-  Teaches how to implement chi/net-http middleware — the cross-cutting request
-  chain: request id/correlation, panic recovery (panic isolation, including
-  closing the connection after a panic), telemetry (trace span + RED metrics),
-  structured logging with trace correlation, CORS for cross-origin browser
-  clients, JWT authentication, security headers, and per-user rate limiting.
-  Covers ordering, the context-value key pattern, and keeping each middleware
-  single-purpose. Composes security-implementation and observability
-  instrumentation. Full Telemetry/Authenticate/RateLimit implementations are in
-  references/middleware-stage-implementations.md. Used by the backend-engineer
-  during Implement.
-version: 2.0.0
+  Teaches how to implement chi/net-http middleware — the cross-cutting
+  request pipeline — to a checkable engineering standard: the exact ordering
+  standard (Recoverer outermost, then RequestID, Telemetry, Logging,
+  SecurityHeaders, CORS, Authenticate, RateLimit) with the reasoning for
+  each position and the trade-off Recoverer's position entails; the
+  panic-recovery standard (exact recover() placement, stack trace logged
+  server-side only via debug.Stack(), never in the response, the opaque 500
+  built from go-chi-handler's own ErrorResponse envelope); the statusRecorder
+  ResponseWriter-wrapping standard for capturing status code and bytes
+  written, and the two concrete bugs naive wrapping causes (WriteHeader never
+  called, WriteHeader called twice); the token-bucket rate-limiting standard
+  with exact 429/Retry-After response and idle-entry eviction; and the
+  auth-middleware standard, including the private-context-key-type
+  convention for the authenticated Subject (owned by domain, never a raw
+  string key) and why RequestID must delegate to chi's own middleware rather
+  than mint a bespoke key. Full Telemetry/CORS/Authenticate/RateLimit
+  implementations are in references/middleware-stage-implementations.md; the
+  Recoverer and statusRecorder standards are in
+  references/recoverer-and-response-wrapping.md. Composes
+  security-implementation and observability instrumentation into the chain
+  wired by go-chi-handler. Used by the backend-engineer during Implement.
+version: 3.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, go, middleware, chi, recover, telemetry, jwt, rate-limit]
+tags: [implement, go, middleware, chi, recover, response-writer, telemetry, jwt, rate-limit, context-key]
+related: [go-error-handling, go-chi-handler, go-concurrency-patterns, go-domain-model, security-implementation, opentelemetry-instrumentation, structured-logging-design]
 ---
 
 # Go Middleware
 
 ## Purpose
 
-Middleware handles what every request needs but no handler should repeat: correlation, panic recovery, telemetry, logging, authentication, security headers, rate limiting. Each is a small single-purpose `func(http.Handler) http.Handler`. Composed in the right order, they form the request pipeline so that handlers can stay thin and assume a well-formed, authenticated, observable request.
+Middleware handles what every request needs but no handler should repeat: panic isolation, correlation, telemetry, logging, authentication, security headers, rate limiting. Each is a small single-purpose `func(http.Handler) http.Handler`. Composed in the right order, they form the request pipeline so handlers can stay thin and assume a well-formed, authenticated, observable request.
 
-This composes the security controls from `security-implementation` and the instrumentation from `opentelemetry-instrumentation` / `structured-logging-design` into the chain wired by `go-chi-handler`.
+This is the **one place `recover()` is allowed in the HTTP chain** — `go-error-handling`'s panic/recover discipline names this middleware as the HTTP boundary explicitly; this skill owns the exact mechanics of that boundary. It composes the security controls from `security-implementation` and the instrumentation from `opentelemetry-instrumentation`/`structured-logging-design` into the chain `go-chi-handler` wires up.
 
 ---
 
-## Ordering Matters
-
-Middleware runs outside-in on the way in, inside-out on the way out. The order is deliberate:
+## Middleware Ordering Standard
 
 ```
-RequestID → Recoverer → Telemetry → Logger → SecurityHeaders → CORS → Authenticate → RateLimit → handler
+Recoverer → RequestID → Telemetry → Logging → SecurityHeaders → CORS → Authenticate → RateLimit → handler
 ```
 
-| Position | Why it sits here |
+| Position | Why it sits exactly here |
 |---|---|
-| `RequestID` first | Every later layer (logs, traces, panics) can reference the correlation id |
-| `Recoverer` early | Must wrap everything inside it so any downstream panic is caught |
-| `Telemetry` before `Logger` | The span exists before logging, so logs carry the trace id |
-| `CORS` before `Authenticate` | A browser's preflight `OPTIONS` request carries no `Authorization` header/cookie by design — if it reaches an auth-gated stage first, every cross-origin browser client fails with a confusing 401-on-preflight instead of the real, debuggable cross-origin failure |
-| `Authenticate` before `RateLimit` | Rate limit is per-user, so identity must be resolved first |
-| `RateLimit` last before handler | Reject excess load after cheap checks, before doing real work |
+| `Recoverer` first, outermost | Must wrap **every** later middleware, not just the handler — a panic in `RequestID` or `CORS` is exactly as fatal to the process as one in the handler if nothing wraps it. The named cost: its own `r.Context()` never carries values set by anything inside it (see `references/recoverer-and-response-wrapping.md`). |
+| `RequestID` second | Every later layer (logs, traces, the error envelope's `traceId`) can reference the correlation id from here on. Delegates to chi's own `middleware.RequestID` — see "Context Key Ownership" below. |
+| `Telemetry` before `Logging` | The span exists before logging runs, so log lines carry the trace id; also wraps `w` in the `statusRecorder` that `Logging` reads. |
+| `CORS` before `Authenticate` | A browser's preflight `OPTIONS` request carries no `Authorization` header/cookie by design — reaching an auth-gated stage first turns every cross-origin client's preflight into a confusing 401 instead of the real CORS decision. |
+| `Authenticate` before `RateLimit` | The limiter key is the authenticated subject's id; identity must be resolved first, or the key falls back to IP and punishes everyone behind one NAT. |
+| `RateLimit` last before the handler | Reject excess load after every cheap check, before any real work runs. |
 
 ---
 
-## The Context Key Pattern
+## Context Key Ownership
 
-Values shared from middleware to handlers (subject, tenant, request id) go in the request context under **unexported key types** — so no other package can collide or read them by guessing a string.
+Every context value crossing a package boundary is owned by exactly one package, which alone defines its private key type and exposes type-safe accessors — the pattern the `context` package's own documentation recommends, since an unexported key type can only be constructed by code inside its defining package: two packages independently choosing a string key like `"tenant"` can silently overwrite or misread each other's value; two independently-typed private keys cannot.
 
-```go
-// internal/handlers/http/context.go
-package http
+| Value | Owner | Setter | Getter |
+|---|---|---|---|
+| Request/trace id | chi's own `middleware` package | `middleware.RequestID` (this skill's `RequestID` delegates to it) | `middleware.GetReqID(ctx)` |
+| Authenticated Subject (incl. `TenantID` field) | `domain` (`go-domain-model`) | `domain.ContextWithSubject(ctx, sub)` | `domain.SubjectFromContext(ctx)` |
 
-type ctxKey int
-
-const (
-    ctxKeyRequestID ctxKey = iota
-    ctxKeyToken
-    ctxKeyTenant
-)
-```
-
----
-
-## Panic Recovery (Panic Isolation)
-
-The blueprint's rule: a panic in one request must never crash the process. The recoverer catches it at the request boundary, logs it with the trace id and stack, and returns an opaque 500.
+`RequestID` delegates to chi's built-in middleware — not a bespoke key — specifically because `go-chi-handler`'s `writeError` already calls `middleware.GetReqID(ctx)` to populate `ErrorResponse.TraceID`; a locally-typed key here would leave every error response's `traceId` silently empty, a cross-skill inconsistency a review would only catch by tracing both files at once:
 
 ```go
-func (m Middleware) Recoverer(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        defer func() {
-            if rec := recover(); rec != nil {
-                slog.ErrorContext(r.Context(), "panic recovered",
-                    "panic", rec, "stack", string(debug.Stack()))
-                span := trace.SpanFromContext(r.Context())
-                span.RecordError(fmt.Errorf("panic: %v", rec))
-                span.SetStatus(codes.Error, "panic")
-                // A panic can leave the handler goroutine's state — and any partial
-                // write to w — undefined. Force the server to close this connection
-                // rather than return it to the keep-alive pool for reuse; must be
-                // set before the response is written (Edwards, Let's Go Further).
-                w.Header().Set("Connection", "close")
-                writeError(w, r, http.StatusInternalServerError, "INTERNAL", "an unexpected error occurred")
-            }
-        }()
-        next.ServeHTTP(w, r)
-    })
+func (m Middleware) RequestID(next http.Handler) http.Handler {
+    return middleware.RequestID(next) // chi's key — go-chi-handler's writeError reads it
 }
 ```
 
-`panic` is reserved for genuinely unrecoverable states; `recover` lives only at boundaries like this one and the top of each spawned goroutine (see `go-concurrency-patterns`). Business errors are values, never panics (see `go-error-handling`).
-
 ---
 
-## Telemetry Middleware (span + RED metrics)
+## Panic Recovery: the Recoverer Standard
 
-Starts the server span, records the three RED signals (Rate, Errors, Duration) per route, and makes the span available to everything downstream. **Use the chi route pattern (`/v1/data-assets/{id}/...`), not the raw path**, as the metric/span label — raw paths contain UUIDs and would explode metric cardinality. Full implementation: `references/middleware-stage-implementations.md`.
-
----
-
-## CORS Middleware
-
-Resolves cross-origin requests for the React frontend (tech-stack default) — and short-circuits the browser's preflight `OPTIONS` request — before any auth-gated stage. Allowed origins/methods/headers are environment-dependent: the local dev-server origin in dev, the deployed frontend's real origin(s) in prod.
+The `Recoverer` catches a panic at the request boundary, logs it with `debug.Stack()` **to the log only**, sets `Connection: close` (a panic can leave `w`'s write state or the goroutine's own state undefined — never return that connection to the keep-alive pool), and returns the opaque 500 through `go-chi-handler`'s own `ErrorResponse` envelope — `code: "INTERNAL"`, `message: "an unexpected error occurred"`, never the panic value or a stack trace:
 
 ```go
-func (m Middleware) CORS(next http.Handler) http.Handler {
-    return cors.Handler(cors.Options{
-        AllowedOrigins:   m.cfg.AllowedOrigins,   // dev: http://localhost:5173 (Vite); prod: https://app.example.com
-        AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodDelete, http.MethodOptions},
-        AllowedHeaders:   []string{"Authorization", "Content-Type", "Idempotency-Key"},
-        ExposedHeaders:   []string{"Retry-After"},
-        AllowCredentials: true,           // requires an explicit origin list — never "*" with credentials
-        MaxAge:           300,            // seconds a browser may cache the preflight result
-    })(next)
+defer func() {
+    if rec := recover(); rec != nil {
+        slog.ErrorContext(r.Context(), "panic recovered", "panic", rec, "stack", string(debug.Stack()))
+        w.Header().Set("Connection", "close") // before writeError — header-ordering rule
+        writeError(w, r, http.StatusInternalServerError, "INTERNAL", "an unexpected error occurred")
+    }
+}()
+```
+
+Exact placement, the outermost-position trade-off, and the full worked function: `references/recoverer-and-response-wrapping.md`. `panic` is reserved for genuinely unrecoverable states (`go-error-handling`'s panic/recover table); business errors are values, never panics.
+
+---
+
+## ResponseWriter-Wrapping Standard
+
+`Telemetry` and `Logging` both need the response status and byte count. Wrap `http.ResponseWriter` **exactly once** — in `Telemetry`, the earlier of the two — with a `statusRecorder` that defaults its captured status to what `net/http` itself defaults to (`200`, the instant `Write` runs with no prior `WriteHeader`) and guards against a second `WriteHeader` call silently overwriting an already-sent status:
+
+```go
+func (r *statusRecorder) WriteHeader(status int) {
+    if r.wroteHeader { return } // second call is a no-op — matches what the client actually got
+    r.status, r.wroteHeader = status, true
+    r.ResponseWriter.WriteHeader(status)
 }
 ```
 
-A preflight `OPTIONS` request carries no `Authorization` header or cookie by design — the browser sends it *before* deciding whether to attach credentials to the real request. `cors.Handler` answers the preflight itself (204, no further chain) so it must sit outside (before) `Authenticate`; if it sat inside, every cross-origin browser client would fail preflight with a confusing 401 instead of getting the actual CORS decision. `AllowedOrigins` is never `"*"` when `AllowCredentials` is `true` — the CORS spec forbids the combination and browsers reject it.
+Full struct, the `Write`-defaults-to-200 bug, the double-`WriteHeader` bug, and why a *second* independent wrapper silently reads back zero values instead of the first wrapper's real bookkeeping: `references/recoverer-and-response-wrapping.md`.
 
 ---
 
-## Authentication Middleware
+## Telemetry, CORS, Authentication, Rate Limiting
 
-Validates the JWT (RS256, JWKS) and puts the resolved `Subject` and `tenant_id` into context. The detailed token validation is in `security-implementation`; this places the result for downstream layers. Health/readiness routes are mounted **outside** the authenticated group so probes don't need tokens. Full implementation: `references/middleware-stage-implementations.md`.
-
----
-
-## Rate Limiting
-
-Per-user token-bucket using `golang.org/x/time/rate` (detail in `security-implementation`). Applied after authentication so the limiter key is the user id. Full implementation: `references/middleware-stage-implementations.md`.
+`Telemetry` starts the span and records RED metrics using the chi **route pattern**, never the raw path, as the label (raw paths carry UUIDs and explode cardinality). `CORS` answers preflight `OPTIONS` before `Authenticate` ever runs; `AllowedOrigins` is never `"*"` with `AllowCredentials: true`. `Authenticate` resolves the bearer credential and stores the whole `domain.Subject` (carrying `TenantID` as a field — never a second, independently-set tenant key) via `domain.ContextWithSubject`; health/readiness routes are mounted on a separate, unauthenticated router entirely. `RateLimit` uses a per-subject token bucket (`golang.org/x/time/rate`, default 10 req/s sustained, burst 20) with a background sweep evicting subjects idle past 5 minutes — an unbounded limiter map is the same class of slow leak `go-concurrency-patterns` names for orphan goroutines, applied to a map — and computes the exact `Retry-After` from `rate.Reservation.Delay()`, cancelling the reservation on the rejected path so a denied request doesn't drain a token it never got to spend. Full implementations of all four: `references/middleware-stage-implementations.md`.
 
 ---
 
 ## Rules
 
+- **Recoverer wraps everything, with no exceptions.** It is the first middleware registered — not "early."
 - **One concern per middleware.** Don't merge auth + logging + metrics into one function.
-- **Allocate per-request state minimally.** The `statusRecorder` is a small stack-friendly wrapper; avoid per-request maps/closures on the hot path (see `go-performance-optimization`).
+- **Wrap `http.ResponseWriter` exactly once per request.** Every middleware after the wrapping one reuses it via a type assertion; never wrap a second time.
 - **Low-cardinality labels.** Route patterns, methods, status codes — never raw paths, ids, or user input.
-- **Recover at the boundary only.** The chain has exactly one `Recoverer`; handlers do not recover.
-- **Close the connection after a panic.** `Recoverer` sets `Connection: close` before writing the 500 — a post-panic connection must not return to the keep-alive pool in a potentially inconsistent state.
-- **CORS resolves before authentication.** Preflight `OPTIONS` requests carry no credentials by design; `CORS` sits outside (before) `Authenticate` so preflight gets the real cross-origin decision, not a 401.
+- **Context keys are owned by exactly one package, with type-safe accessors.** No raw string keys; no package reads another's private key type directly.
+- **The rate limiter evicts idle entries.** An unbounded `map[string]*limiterEntry` is a memory leak, not a simplification.
 
 ---
 
 ## Quality Criteria
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Correct ordering | RequestID→Recoverer→Telemetry→Logger→…→CORS→Auth→RateLimit | Logger before telemetry; CORS or rate limit after auth |
-| Panic isolation | One boundary recoverer; logs panic + trace id; 500 | Panics crashing the process |
-| Post-panic connection closed | `Connection: close` set before the 500 is written | Panic response left keep-alive eligible |
-| CORS before auth | Preflight `OPTIONS` resolved outside the auth group | Preflight requests hitting `Authenticate` and getting 401 |
-| Context keys | Unexported key types | String keys / exported keys |
-| Low cardinality | Route pattern as label | Raw path/UUID as a metric label |
-| Single purpose | Each middleware does one thing | A "kitchen-sink" middleware |
-| Probes unauthenticated | Health routes outside the auth group | Probes requiring a JWT |
+| Criterion | Pass | Fail | How to verify |
+|---|---|---|---|
+| Correct ordering | Recoverer→RequestID→Telemetry→Logging→…→CORS→Auth→RateLimit | Any middleware ahead of Recoverer; CORS or RateLimit after Auth | Read `router.go`'s `r.Use(...)` sequence top to bottom |
+| Panic isolation, boundary discipline | Exactly one `recover()` in the whole HTTP chain, at `Recoverer` | A second `recover()` in a handler or another middleware | `grep -rn "recover()" internal/handlers/http` — one hit |
+| Stack trace never in the response | `debug.Stack()` reaches `slog` only; response `message` is the literal opaque sentence | Panic value or stack text in the response body | `grep -n "rec\b" internal/handlers/http/middleware.go` — only inside the `slog` call |
+| Post-panic connection closed | `Connection: close` set before `writeError` | Header set after, or omitted | Read statement order in `Recoverer` |
+| `ResponseWriter` wrapped once | One `*statusRecorder`, reused via type assertion by `Logging` | A second independent wrapper constructed downstream | `grep -rn "statusRecorder{" internal/handlers/http` — one construction site |
+| Default status matches `net/http`'s | `Write` calls `WriteHeader(200)` when unset | `status` field left at zero value for handlers that never call `WriteHeader` | Unit test: handler calls only `Write`; assert recorded `status == 200` |
+| Context keys, no collisions | `middleware.GetReqID` / `domain.SubjectFromContext` only | A local `ctxKey` reused for the subject, or a string key | `grep -rn "context.WithValue" internal/handlers/http` — none outside `Authenticate`'s call into `domain.ContextWithSubject` |
+| CORS before auth | Preflight `OPTIONS` resolved outside the auth group | Preflight hitting `Authenticate` and getting 401 | Integration test: unauthenticated `OPTIONS` returns 204 |
+| Rate limiter bounded | Sweep goroutine evicts idle entries | Limiter map grows unbounded for the process lifetime | Read `newLimiterStore` for the `go s.sweep(...)` call |
+| Exact `Retry-After` | Computed from `Reservation.Delay()`, reservation cancelled on reject | Hardcoded value, or token spent on a rejected request | Read `RateLimit`'s reject branch for `res.Cancel()` |
+| Single purpose, low cardinality | Each middleware does one thing; route pattern as label | Kitchen-sink middleware; raw path/UUID as a metric label | Read each middleware function's body for its one job |
 
 ---
 
 ## Anti-Patterns
 
-- **Kitchen-sink middleware** — one function doing auth, logging, and metrics. Impossible to test, reorder, or reuse; each concern gets its own `func(http.Handler) http.Handler`.
-- **String context keys** — `context.WithValue(ctx, "tenant", …)` collides silently across packages and lets any import read or overwrite the value. Unexported key types only.
-- **Reading `RoutePattern()` before `next.ServeHTTP`** — chi resolves the route inside the handler chain; the pattern is empty until routing completes. Capture it after, or every metric lands on an empty route.
-- **Raw URL path as a span name or metric label** — `/v1/data-assets/6f9a…/classification` mints a new series per UUID. Cardinality explosions take down the metrics backend, not the service.
-- **Rate limiting before authentication** — the limiter key falls back to IP, punishing everyone behind one NAT and leaving per-user abuse uncapped.
-- **A second `recover` inside handlers** — hides bugs from the boundary recoverer and its panic telemetry. One recoverer per chain.
-- **Mutating global state per request** (e.g., `slog.SetDefault` in a middleware) — process-wide side effects from request scope race by definition.
-- **Panic response left keep-alive eligible** — omitting `Connection: close` before the opaque 500 lets the server return a connection that may be mid-write or framing-corrupted to the pool, where the *next* request on it can read a corrupted response.
-- **CORS mounted after auth** — preflight `OPTIONS` requests fail with 401 instead of the real cross-origin failure they're meant to catch.
+- **Any middleware ahead of `Recoverer`** — reopens the exact crash surface panic isolation exists to close, for whatever sits ahead of it.
+- **A second `recover()` inside a handler or another middleware** — hides the panic from the boundary's logging, telemetry, and response mapping. One `Recoverer` per chain.
+- **Stack trace, panic value, or driver text reaching the response body** — `go-chi-handler`'s 5xx message rule exists precisely to prevent this; the 500 message is always the same opaque sentence.
+- **Panic response left keep-alive eligible** — omitting `Connection: close` lets the server return a possibly framing-corrupted connection to the pool.
+- **A second, independent `ResponseWriter` wrapper** — silently reads back zero values instead of the first wrapper's real bookkeeping; wrap once, reuse via assertion.
+- **A `statusRecorder` that doesn't default to 200 on first `Write`** — miscounts every handler that never calls `WriteHeader` explicitly.
+- **String context keys** (`context.WithValue(ctx, "tenant", …)`) — collides silently across packages; every value here uses a private key type with type-safe accessors.
+- **`RequestID` minting its own context key instead of delegating to chi's `middleware.RequestID`** — breaks `go-chi-handler`'s `writeError`, which reads `middleware.GetReqID` directly; every error response's `traceId` goes silently empty.
+- **CORS mounted after auth, or rate limiting before authentication** — preflight fails with a confusing 401; an IP-keyed limiter punishes a shared NAT and leaves per-user abuse uncapped.
+- **An unbounded rate-limiter map with no eviction sweep** — a slow memory leak, one entry per distinct subject ever seen, for the life of the process.
 
 ---
 
 ## Output Format
 
-Produces Go source plus middleware tests (`httptest`):
+Go source built exactly to the standards above, plus middleware tests (`httptest`)
+written first:
 
 ```
-internal/handlers/http/middleware.go
-internal/handlers/http/context.go
-internal/handlers/http/middleware_test.go   (written first)
+internal/handlers/http/middleware.go        (Recoverer, RequestID, Telemetry, Logging, SecurityHeaders, CORS, Authenticate, RateLimit)
+internal/handlers/http/ratelimit.go         (limiterStore, sweep, reserve)
+internal/handlers/http/middleware_test.go   (written first — one case per Quality Criteria row)
 ```
 
-Full Telemetry/Authenticate/RateLimit implementations: `references/middleware-stage-implementations.md`.
+Middleware carries no domain logic and imports no repository — a middleware test never touches a database. `domain.ContextWithSubject`/`domain.SubjectFromContext` live in `go-domain-model`, not here; this skill only calls them. Full standards: `references/recoverer-and-response-wrapping.md`, `references/middleware-stage-implementations.md`.
