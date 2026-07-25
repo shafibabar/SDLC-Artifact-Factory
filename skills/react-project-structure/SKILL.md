@@ -11,7 +11,7 @@ description: >
   design-system/API-client packages every fragment consumes. This is the
   skeleton every frontend is generated into. Used by the frontend-engineer
   during Implement.
-version: 2.0.0
+version: 2.1.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
@@ -105,6 +105,29 @@ rationale: `references/typescript-and-tree-shaking.md`.
 
 ---
 
+## Hooks Correctness Is Lint-Enforced, Not Prose-Only
+
+`react-component-design` states the Rules of Hooks (call only at the top level; call only from a component or a custom hook) and `useEffect`'s exhaustive-dependency discipline as prose conventions — but a convention nobody's tooling checks is a convention that erodes the first time someone's under deadline pressure. `eslint-plugin-react-hooks` is part of every fragment's `eslint.config.js` (same file the Cross-Fragment Boundaries section above already names for `eslint-plugin-boundaries`), mechanically enforcing both rules the same way `any` is lint-banned rather than merely discouraged:
+
+```js
+// eslint.config.js (excerpt)
+import reactHooks from "eslint-plugin-react-hooks";
+
+export default [
+  {
+    plugins: { "react-hooks": reactHooks },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",     // a hook called conditionally/in a loop fails the build
+      "react-hooks/exhaustive-deps": "warn",     // flags a stale-closure risk; not auto-fixed blindly (see below)
+    },
+  },
+];
+```
+
+`exhaustive-deps` is `warn`, not `error` — the rule is a correct-by-default nudge, not infallible. It cannot know that a dependency is intentionally omitted for a genuinely stable reason (e.g., a dispatch function React itself guarantees is stable); silencing the warning with a bare `// eslint-disable-next-line` is itself an anti-pattern (see below) — an omission this deliberate gets a one-line comment naming *why* the dependency is safe to omit, not a silent suppression.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -115,6 +138,7 @@ rationale: `references/typescript-and-tree-shaking.md`.
 | Shared code correctly scoped | Universal sharing in `packages/`; fragment-local sharing in that fragment's `shared/` | Ad-hoc shared code between two specific fragments only |
 | Strict TS across the boundary | Full strict family on; `any` lint-banned; federated imports typed via generated `.d.ts` | Loose `tsconfig`; federated import degrades to `any` |
 | Tree-shakeable | Side-effect-free modules; `sideEffects: false` | Side effects on import; eager barrels |
+| Hooks lint-enforced | `eslint-plugin-react-hooks` in every fragment's config; `rules-of-hooks` at `error` | Rules of Hooks stated in prose only, no mechanical check |
 
 ---
 
@@ -129,6 +153,7 @@ rationale: `references/typescript-and-tree-shaking.md`.
 | Hand-writing types that mirror server responses | Derive from `packages/api-client`'s generated client |
 | Adopting Webpack purely to get Module Federation | `@module-federation/vite` — this repo's build tool is Vite |
 | A new feature added to an existing fragment without checking its Bounded Context still fits | Check `microfrontend-architecture`'s `assets/fragment-ownership-canvas.md` before growing a fragment's scope |
+| Silencing `exhaustive-deps` with a bare `// eslint-disable-next-line` | A one-line comment naming *why* the omitted dependency is safe (e.g. a React-guaranteed-stable `dispatch`) — a silent suppression hides the next, genuinely unsafe omission behind the same pattern |
 
 ---
 
