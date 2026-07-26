@@ -83,6 +83,67 @@ extends to what a fragment federates out.
   first-loaded-wins hazard `microfrontend-architecture` warns about,
   reintroduced by config drift rather than a genuine version conflict.
 
+## The Shared-Dependency Version-Skew Standard
+
+Every app's `shared: { react: {...} }` block is copied from the same
+source when a new remote is scaffolded — but nothing at the source level
+keeps it identical afterward. Each app has its own `package.json`; each
+gets its dependencies bumped on its own release cadence, by whichever
+agent or engineer touches that app that week. Version skew is not an edge
+case this standard defends against hypothetically — it is the default
+outcome of independent deployability unless the convention below is
+followed deliberately every time.
+
+**The convention:** every app's `shared.react` entry declares the
+**identical** `requiredVersion` range, and always pairs `singleton: true`
+with `strictVersion: true`. Never widen, narrow, or drop the range in one
+app "just for this release" — the range is a cross-app contract, bumped
+in lockstep, not a per-app implementation detail.
+
+**Concrete failure scenario — the shell pins `^18.2.0`, a remote ships
+`18.3.0`:** the shell's `vite.config.ts` declares
+`react: { singleton: true, requiredVersion: "^18.2.0", strictVersion: true }`.
+A remote is later rebuilt and independently deployed against React
+`18.3.0` in its own `package.json` — but its federation config's
+`requiredVersion` is left unchanged, or a contributor "fixes" it to
+`^18.3.0` without updating the shell to match. Per the singleton
+negotiation mechanics `microfrontend-architecture`'s
+`references/module-federation-config.md` documents in full, two distinct
+outcomes follow depending on what actually diverged:
+
+1. **The ranges still overlap** (`^18.2.0` is satisfied by `18.3.0`) —
+   negotiation succeeds silently, and one copy wins (the version that
+   satisfies every consumer's range). This is the **safe** case, and it
+   is exactly why `requiredVersion` should be a real semver range, not a
+   pinned exact version — a remote shipping a compatible patch/minor bump
+   ahead of the shell should not break anything.
+2. **The ranges genuinely conflict** (the shell requires `^18.2.0`, a
+   remote requires `^19.0.0`) — with `strictVersion: true` on both sides,
+   Module Federation **fails loudly at runtime**, refusing to load rather
+   than guessing. This is the fix working as intended: a loud failure in
+   staging is strictly preferable to what happens without
+   `strictVersion` — the **first-loaded-wins hazard**, where negotiation
+   non-deterministically picks whichever copy's manifest resolves first
+   (a function of network timing, not intent), and every other app
+   silently runs against a React copy it was never tested with. That
+   silent case is what surfaces in production as an "Invalid hook call"
+   error — two React copies, or one component calling into another
+   copy's dispatcher — which is precisely the failure `singleton: true`
+   exists to prevent, and only actually prevents when paired with a
+   range strict enough to fail instead of guess.
+
+**Detecting drift before it reaches runtime:** nothing at the source
+level forces every app's `shared.react` block to stay identical — this is
+a review-time and CI-time check, not a compiler guarantee. Confirm, on
+every PR that touches any app's `vite.config.ts` or bumps `react`/
+`react-dom` in any `package.json`: every app's `requiredVersion` string is
+identical, `singleton: true` and `strictVersion: true` are both present
+in every app (not just the shell), and the actual installed `react`
+version in every app's lockfile satisfies that one shared range. Treat a
+`vite.config.ts` diff that changes only one app's `shared.react` block
+without a corresponding, deliberate change everywhere else as a rejected
+PR, the same way a config-drift diff on `sourcemap`/`target` above is.
+
 ## What This File Doesn't Cover
 
 Singleton negotiation failure modes, dynamic remote resolution mechanics,
