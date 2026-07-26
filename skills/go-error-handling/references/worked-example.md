@@ -1,6 +1,6 @@
 # Worked Example: The Nil-Interface Footgun
 
-This is the full wrong/right worked example for "The Nil-Interface Footgun" section of `go-error-handling/SKILL.md`. It uses the same `ValidationError` type already introduced in that skill's "Sentinel Errors and Typed Errors" section:
+This is the full wrong/right worked example for "The Nil-Interface Footgun" section of `go-error-handling/SKILL.md`. It uses the same `ValidationError` type introduced in `references/error-taxonomy-and-wrapping.md`'s "Typed Errors" section:
 
 ```go
 type ValidationError struct {
