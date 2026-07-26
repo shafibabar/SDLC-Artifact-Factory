@@ -1,25 +1,29 @@
 ---
 name: react-component-testing
 description: >
-  Teaches behavior-first component testing with Vitest + React Testing Library and
-  MSW — testing what the user experiences (not implementation details), querying by
-  accessible role/label, mocking the network at the boundary with Mock Service
-  Worker, covering every state variant and interaction from the component spec,
-  asserting accessibility with jest-axe, and writing the test before the component
-  (TDD). Realizes the UI acceptance criteria. Used by the frontend-engineer during
-  Implement.
-version: 1.1.0
+  Teaches behavior-first component testing with Vitest + React Testing Library
+  and MSW: the exact query-priority standard (getByRole > getByLabelText >
+  getByText > getByTestId, and why each rung proves a weaker accessibility
+  claim than the last), the user-event-over-fireEvent standard (realistic
+  browser event sequencing vs a single synthetic event), the MSW mock-boundary
+  standard (mock the network, never a component's own hooks or modules),
+  jest-axe accessibility assertions cross-referenced to react-accessibility,
+  when a snapshot test is appropriate versus an anti-pattern, and writing the
+  test before the component (TDD). Realizes the UI acceptance criteria. Used
+  by the frontend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
-tags: [implement, frontend, react, testing, react-testing-library, msw, vitest, tdd]
+tags: [implement, frontend, react, testing, react-testing-library, msw, vitest, tdd, query-priority, user-event, snapshot-testing, jest-axe]
+related: [react-accessibility, react-api-client, go-unit-test]
 ---
 
 # React Component Testing
 
 ## Purpose
 
-A component test proves the component behaves correctly from the **user's** point of view — given these props and this user action, the right thing is shown and the right call is made. Tests that assert internal state, prop names, or implementation details break on every refactor and prove nothing about correctness. This skill tests behaviour, queries the way a user (and a screen reader) perceives the UI, and isolates the network hermetically.
+A component test proves the component behaves correctly from the **user's** point of view — given these props and this user action, the right thing is shown and the right call is made. Tests that assert internal state, prop names, or implementation details break on every refactor and prove nothing about correctness. This skill tests behaviour, queries the way a user (and a screen reader) perceives the UI, isolates the network hermetically, and states exactly what "good" looks like for every mechanical decision that behavior-first philosophy raises — which query to reach for, which interaction API to use, where the mock boundary sits, and when a snapshot is or isn't the right assertion.
 
 These tests realise the UI acceptance criteria (the Gherkin scenarios from `acceptance-criteria`) and are written **before** the component (TDD — enforced by the `tdd-gate` hook).
 
@@ -31,7 +35,7 @@ These tests realise the UI acceptance criteria (the Gherkin scenarios from `acce
 |---|---|
 | **Vitest** | Test runner (fast, Vite-native, jsdom environment) |
 | **React Testing Library** | Render + query components the way users interact |
-| **@testing-library/user-event** | Realistic user interactions (type, click, tab) |
+| **@testing-library/user-event** | Realistic user interactions (type, click, tab) — see standard below |
 | **MSW (Mock Service Worker)** | Intercept network at the boundary — real fetch, mocked responses |
 | **jest-axe** | Automated accessibility assertions |
 
@@ -43,15 +47,9 @@ The guiding principle: **test what the user experiences, not how it's built.**
 
 ```tsx
 // ✅ Behaviour: the user sees the result of their action
-it("classifies an asset and shows the new level", async () => {
-  const user = userEvent.setup();
-  render(<ClassificationModal assetId="a1" assetName="Q3 Report" onClose={vi.fn()} />);
-
-  await user.selectOptions(screen.getByLabelText(/sensitivity level/i), "Confidential");
-  await user.click(screen.getByRole("button", { name: /save/i }));
-
-  expect(await screen.findByText(/classified as confidential/i)).toBeInTheDocument();
-});
+await user.selectOptions(screen.getByLabelText(/sensitivity level/i), "Confidential");
+await user.click(screen.getByRole("button", { name: /save/i }));
+expect(await screen.findByText(/classified as confidential/i)).toBeInTheDocument();
 
 // ❌ Implementation: brittle, proves nothing the user cares about
 // expect(wrapper.state("selectedLevel")).toBe("Confidential");
@@ -61,73 +59,33 @@ Never assert on internal state, instance methods, or CSS classes. If a refactor 
 
 ---
 
-## Query by Role and Label
+## Query-Priority Standard
 
-Queries target the **accessible** UI, in priority order — so a passing test is also evidence of accessibility (see `react-accessibility`):
+Queries are not interchangeable — they form a strict priority order, because each rung proves a weaker accessibility claim than the one above it:
 
-| Priority | Query | Why |
+| Priority | Query | Proves |
 |---|---|---|
-| 1 | `getByRole` (with `name`) | How assistive tech perceives it; the strongest signal |
-| 2 | `getByLabelText` | Form fields by their label |
-| 3 | `getByText` | Non-interactive content |
-| last resort | `getByTestId` | Only when nothing accessible identifies it (a smell) |
+| 1 | `getByRole` (with `name`) | An AT user can find and name this control — the accessibility tree itself |
+| 2 | `getByLabelText` | The field has a real programmatic label, not a placeholder |
+| 3 | `getByPlaceholderText` / `getByText` | The content is present — proves nothing about interactivity |
+| Last resort | `getByTestId` | Only that a string attribute exists in the DOM — proves nothing about accessibility |
 
-```tsx
-screen.getByRole("button", { name: /classify/i });
-screen.getByLabelText(/sensitivity level/i);
-```
-
-If you can't query an element by role or label, a screen-reader user can't find it either — fix the component, don't reach for `getByTestId`.
+`getByTestId` reaching a "pass" while a `<div>` has no role, no keyboard handler, and no accessible name is exactly why it sits last: it validates markup a screen reader cannot use at all. Full rationale per rung and worked examples: `references/query-priority-and-interaction-standard.md`.
 
 ---
 
-## Hermetic Network Isolation with MSW
+## `user-event` Over `fireEvent`
 
-MSW intercepts requests at the network layer (Service Worker / fetch interception), so components run their **real** data-fetching code (`react-api-client`, TanStack Query) against mocked responses — no stubbing of hooks, no brittle module mocks.
-
-```ts
-// src/test/handlers.ts — shared MSW handlers aligned to the OpenAPI contract
-export const handlers = [
-  http.get("/api/v1/data-assets", () => HttpResponse.json({ items: sampleAssets, page: 1 })),
-  http.patch("/api/v1/data-assets/:id/classification", () => new HttpResponse(null, { status: 204 })),
-];
-```
-
-```ts
-// src/test/setup.ts
-const server = setupServer(...handlers);
-beforeAll(() => server.listen({ onUnhandledRequest: "error" })); // unmocked call = test failure
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
-```
-
-`onUnhandledRequest: "error"` means a component that calls an unexpected endpoint fails the test — no silent surprises. Per-test overrides simulate errors, slow responses, and edge cases:
-
-```tsx
-it("shows an error state when the list fails", async () => {
-  server.use(http.get("/api/v1/data-assets", () => new HttpResponse(null, { status: 500 })));
-  render(<DataAssetListPage />, { wrapper: AppProviders });
-  expect(await screen.findByRole("alert")).toHaveTextContent(/something went wrong/i);
-});
-```
-
-Because the mocked shapes come from the **same OpenAPI contract** the client is generated from, the mocks can't drift from reality.
+`@testing-library/user-event` simulates the full sequence of real browser events an interaction produces (typing fires `keydown`/`keypress`/`input`/`keyup` per character, in order); `fireEvent` dispatches only the one event named (`fireEvent.change` fires a single synthetic `change`, nothing else). A component whose behaviour depends on any intermediate event — an `onKeyDown` Enter-to-submit handler, an `onFocus`-triggered combobox — is invisible to `fireEvent` and only exercised by `user-event`; a `fireEvent`-based test can report green while that handling is completely broken. Standard: every interaction goes through `userEvent.setup()`; `fireEvent` is reserved for dispatching an event `user-event` has no method for. Worked comparison: `references/query-priority-and-interaction-standard.md`.
 
 ---
 
-## Cover Every State and Interaction
+## Accessibility: jest-axe Plus Role/Label Queries
 
-The `ui-component-spec` enumerates state variants and interactions — each becomes a test. The spec table *is* the test plan:
+Two layers, both required — owned in full by `react-accessibility`, cross-referenced here for the testing mechanics:
 
-| Spec element | Test |
-|---|---|
-| Loading state | renders skeleton while the query is pending |
-| Empty state | renders the empty CTA when the list is empty |
-| Error state | renders an alert + retry on failure |
-| Populated state | renders rows for the data |
-| Interaction: classify | opens modal, submits, shows result |
-| Interaction: sort | clicking a header updates order + URL |
-| a11y | `axe` finds no violations |
+- **`jest-axe`** catches missing accessible names, invalid ARIA, and text-contrast violations — `react-accessibility` states it covers "~30–40% of issues" and explicitly "does not catch focus management, `prefers-reduced-motion` handling, or non-text (1.4.11) contrast."
+- **Role/label queries are themselves an accessibility assertion**: `react-accessibility` states "if a test can't find an element by its accessible name, neither can a screen reader" — a passing `getByRole`/`getByLabelText` query is direct proof of WCAG 4.1.2 (Name, Role, Value). Focus-trap and focus-return assertions (`user.tab()`, `user.keyboard("{Escape}")`, asserting `document.activeElement`) belong here too — axe cannot verify them.
 
 ```tsx
 it("has no accessibility violations", async () => {
@@ -135,6 +93,39 @@ it("has no accessibility violations", async () => {
   expect(await axe(container)).toHaveNoViolations();
 });
 ```
+
+---
+
+## Mock-Boundary Standard: MSW at the Network, Never Internal Modules
+
+MSW intercepts requests at the network layer, so a component runs its **real** data-fetching code (`react-api-client`, TanStack Query) against a mocked response — never stub the hook or client module under test:
+
+```ts
+export const handlers = [
+  http.get("/api/v1/data-assets", () => HttpResponse.json({ items: sampleAssets, page: 1 })),
+];
+// setup.ts: onUnhandledRequest: "error" — an unmocked call is a test failure, not a silent pass
+```
+
+Mocking `vi.mock("./useDataAssets", ...)` or the API client module directly replaces exactly the code the test exists to verify — a component calling the hook correctly and one calling it wrong both pass. `go-unit-test`'s own isolation rule draws the identical boundary on the backend: it replaces only true external dependencies ("file system, network, database, clock") and requires asserting "behaviour through the public surface, not internal state" — never "a private field or internal call count." Mock the network; run the component's real code. Full standard and the go-unit-test analogue in detail: `references/mocking-and-snapshot-standard.md`.
+
+---
+
+## Snapshot-Testing Standard
+
+Appropriate for a small, stable, semantically-meaningful serialization — a resolved config or theme-token object where the full shape matters and changes are rare. An anti-pattern for an interactive component's rendered markup: a large DOM snapshot diff tells a reviewer nothing actionable about behaviour, gets rubber-stamped with `--update-snapshots` under time pressure, and stops catching real regressions the moment that happens. For interactive UI, write a behaviour assertion (`getByRole`, `toHaveTextContent`) instead — it fails with a specific, actionable message a blind re-record can't satisfy. Criteria and worked examples of both: `references/mocking-and-snapshot-standard.md`.
+
+---
+
+## Cover Every State and Interaction
+
+The `ui-component-spec` enumerates state variants and interactions — each becomes a test:
+
+| Spec element | Test |
+|---|---|
+| Loading / empty / error / populated | One test per state, each asserting its user-visible outcome |
+| Interaction | Opens/submits/updates as specified — via `user-event`, not `fireEvent` |
+| a11y | `axe` finds no violations; every control reachable by role/label |
 
 ---
 
@@ -149,40 +140,33 @@ The test exists before the component — the `tdd-gate` hook verifies the test f
 
 ---
 
-## What Not to Test
-
-- Third-party libraries (TanStack Query, the router) — trust them; test *your* usage.
-- Exact markup/CSS — test behaviour and accessible output, not the DOM structure.
-- Implementation details — internal state, private handlers, hook call counts.
-
-Aim coverage at behaviour and branches (states, error paths), not a line-count number for its own sake.
-
----
-
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
 |---|---|---|
 | Behaviour-focused | Asserts user-visible outcomes | Asserts internal state/CSS/impl details |
-| Role/label queries | `getByRole`/`getByLabelText` first | `getByTestId` as the default |
-| Hermetic network | MSW at the boundary; unhandled = error | Hook/module mocks; real network calls |
+| Query-priority order | `getByRole`/`getByLabelText` first; `getByTestId` a documented last resort | `getByTestId` as the default query |
+| Interaction API | `userEvent.setup()` for every interaction | `fireEvent` as the default interaction mechanism |
+| Hermetic network | MSW at the boundary; unhandled request = error | Hook/module mocks; real network calls |
+| Mock boundary respected | Only the network is mocked; component's own code runs | `vi.mock` on the component's own hook/client module |
 | Contract-aligned mocks | MSW shapes from the OpenAPI contract | Hand-invented response shapes |
 | Full state coverage | Every spec state + interaction tested | Happy-path-only tests |
-| a11y asserted | `jest-axe` + role queries | No accessibility assertions |
+| a11y asserted | `jest-axe` + role/label queries + focus assertions | No accessibility assertions |
+| Snapshot use is scoped | Only stable, non-interactive serializations | Full-component DOM snapshots |
 | Test-first | Test precedes component (tdd-gate) | Tests written after, to fit the code |
 
 ---
 
 ## Anti-Patterns
 
-- **Mocking your own hooks/modules** — `vi.mock("./useDataAssets")` stubs out the very integration under test. Mock the network (MSW), run the real code.
-- **`getByTestId` as the default query** — bypasses the accessibility tree, so the test passes on UI a screen reader can't use. Role/label first; test-id is a documented last resort.
-- **`fireEvent` instead of `user-event`** — `fireEvent.click` dispatches one synthetic event; `userEvent.click` runs the real sequence (hover, focus, keydown, click) users actually produce.
-- **Asserting on markup** — snapshot-diffing the DOM or matching CSS classes couples tests to structure; every restyle becomes a test failure with no behaviour change.
-- **`waitFor` with an empty callback / arbitrary `setTimeout`** — sleeping until things "probably" settle makes tests slow and flaky. Await a concrete outcome: `await screen.findByText(…)`.
-- **Shared mutable fixtures** — one test mutating `sampleAssets` poisons the next. Build fixtures per test (factory functions), reset MSW handlers `afterEach`.
-- **Testing loading states by racing** — asserting the skeleton without controlling the response timing is a race. Use a delayed MSW handler (`await delay(…)`) to hold the pending state deterministically.
-- **Happy-path-only suites** — the spec's error/empty states are where user trust is won or lost; each is a required test, not an optional extra.
+- **Mocking your own hooks/modules** — stubs out the very integration under test. Mock the network (MSW), run the real code.
+- **`getByTestId` as the default query** — bypasses the accessibility tree; role/label first, test-id a documented last resort.
+- **`fireEvent` instead of `user-event`** — dispatches one synthetic event where a real interaction fires a sequence; misses any behaviour keyed to an intermediate event.
+- **Full-component DOM snapshots** — an illegible diff for interactive UI, rubber-stamp-updated instead of reviewed.
+- **`waitFor` with an empty callback / arbitrary `setTimeout`** — await a concrete outcome (`await screen.findByText(…)`) instead of sleeping until things "probably" settle.
+- **Shared mutable fixtures** — build fixtures per test (factory functions); reset MSW handlers `afterEach`.
+- **Testing loading states by racing** — use a delayed MSW handler (`await delay(…)`) to hold the pending state deterministically, not an unguarded assertion against a real timing race.
+- **Happy-path-only suites** — the spec's error/empty states are where user trust is won or lost; each is a required test.
 
 ---
 
