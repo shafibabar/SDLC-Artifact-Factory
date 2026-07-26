@@ -1,144 +1,103 @@
 ---
 name: go-e2e-test
 description: >
-  Teaches end-to-end testing of the full stack — orchestrating critical user
-  journeys from frontend through API to the real storage and event engines,
-  deterministic state seeding, flakiness mitigation (dynamic waits, never arbitrary
-  sleeps), test-trace correlation through OpenTelemetry, the environment strategy
-  (ephemeral stack via Testcontainers/compose), and keeping e2e few and high-value
-  at the top of the pyramid. The shift-right validation of whole-system behaviour.
-  Used by the test-strategist during Quality.
-version: 1.1.0
+  This plugin's end-to-end-test authority for Go — the top of the pyramid
+  above go-integration-test, for journeys that must cross a real service
+  boundary via a real network call (the deployed binary actually running,
+  not a test binary's package import). Covers: the precise e2e-vs-integration
+  scope boundary; the environment-provisioning standard (an ephemeral `kind`
+  cluster per run, the same Helm charts and digest production uses, never
+  docker-compose — references/environment-provisioning-standard.md); the
+  test-data seeding and teardown standard (idempotent seed scripts,
+  guaranteed cleanup on failure or CI timeout via a three-layer trap/
+  always()/janitor defense, never happy-path-only — references/test-data-
+  seeding-and-teardown-standard.md); the flakiness-budget standard (one
+  automatic retry, build-tag quarantine with a tracked issue and deadline —
+  references/flakiness-budget-and-quarantine-standard.md); the CI-placement
+  standard (nightly/pre-release/on-demand triggers for the full suite, the
+  tagged smoke subset cd-pipeline and blue-green-deployment already assume
+  exists, never per-PR — references/ci-placement-and-trigger-standard.md);
+  and the worked API-level journey test with trace correlation
+  (references/journey-test-and-trace-correlation.md). Authored and run by
+  the test-strategist. Used during Quality.
+version: 2.0.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
-tags: [quality, e2e, user-journey, playwright, trace-correlation, flakiness, shift-right]
+tags: [quality, go, e2e, kind, ephemeral-environment, flakiness, quarantine, ci, shift-right]
+related: [go-integration-test, go-unit-test, multi-tenancy-design, environment-config, ci-pipeline, cd-pipeline, helm-chart, react-e2e-testing, test-pyramid, user-journey-mapping, distributed-tracing-design, disaster-recovery-plan]
 ---
 
 # Go End-to-End Test
 
 ## Purpose
 
-End-to-end tests prove the assembled system delivers a user journey — the compliance officer logs in, connects a source, watches assets get classified, reviews the gap report, and exports it — across the frontend, the API, the database, and the event pipeline working together. This is the highest-confidence, highest-cost test layer: it catches integration failures nothing below it can see, but it is slow and the most prone to flakiness, so it is used sparingly for the **critical journeys only**.
-
-E2E sits at the top of the pyramid (`test-pyramid`) — few, high-value, comprehensive. It is the primary **shift-right** verification that the real, whole system behaves as the journeys promised (`user-journey-mapping`).
+E2E tests prove the fully-deployed system delivers a user journey — real Pods, real Services, real network calls — not the test binary calling into its own packages. This is the top of the pyramid above `go-integration-test`: highest confidence, highest cost, most prone to flakiness, reserved for critical journeys only. Authored and run by the test-strategist.
 
 ---
 
-## Few and High-Value
+## Scope Boundary — E2E vs. Integration
 
-Cover the journeys that matter; let the layers below cover the permutations.
+The boundary is which process boundary a test crosses, not which dependency it touches:
 
-| Cover with e2e | Push down to lower layers |
+| | `go-integration-test` | `go-e2e-test` (this skill) |
+|---|---|---|
+| Runs inside | The test binary's own process | No test-binary process at all |
+| Exercises | This service's Go code, `go test`-invoked, against a real dependency (Testcontainers Postgres/Redpanda) | The fully-deployed system: this service's actual compiled image, actually running as a Pod, actually receiving traffic |
+| Crosses | A dependency boundary (real SQL, real broker) | A real service boundary — real network hop, real DNS, real Linkerd mTLS handshake, real ingress |
+| Reached via | Direct Go function/struct calls inside the test | HTTP/gRPC over the network, or a browser (`react-e2e-testing`) |
+| Multi-service? | Never — one service's package under test | Often — a journey spans several Bounded Contexts' deployed services |
+
+A test that imports another service's package to simulate calling it is not e2e regardless of how many real dependencies sit underneath it — no network hop was crossed, so it is at most an elaborate integration test. A test that drives the real API endpoint from outside the process is e2e even for a single service: the deployed binary's HTTP transport, middleware chain, and TLS termination are all genuinely exercised, none of which a package import ever touches.
+
+---
+
+## Coverage Boundary — Few, High-Value, Two Surfaces
+
+Cover the journeys that matter; push permutations to lower layers:
+
+| Cover with e2e | Push down |
 |---|---|
-| P1 user journeys (audit prep, classify, generate report) | Validation rules → unit |
-| Cross-stack happy paths + critical failure paths | Repository SQL → integration |
+| P1 user journeys (audit prep, classify, generate report) | Validation rules → unit (`go-unit-test`) |
+| Cross-service happy paths + critical failure paths | Repository/broker wiring → integration (`go-integration-test`) |
 | Auth → action → persistence → event → projection round-trips | Component states → component tests |
-| A release smoke suite | Edge-case permutations → unit/integration |
+| A release smoke suite (the tagged `smoke` subset, below) | Edge-case permutations → unit/integration |
 
-A handful of well-chosen journeys gives most of the confidence. Resist growing e2e into a slow second copy of the lower suites.
+Two surfaces drive the same journey: **UI e2e** (Playwright, through the browser — `react-e2e-testing`) for genuinely user-facing flows, and **API e2e** (a Go HTTP client against the deployed API) for backend-centric journeys — cheaper, less flaky. The same Gherkin scenario (`bdd-feature-file`) can bind to either. Worked API-level journey test, condition-based waits, and trace correlation: `references/journey-test-and-trace-correlation.md`.
 
 ---
 
-## Two Surfaces, One Journey
+## Environment-Provisioning Standard
 
-A journey can be driven at two levels; choose per test:
+E2E needs the real, deployed system, not a simplified stand-in. **The full journey suite runs in an ephemeral `kind` cluster, created fresh per run and destroyed after** — the same tool and the same "created and destroyed per run" lifecycle `environment-config` already assigns to `kind-local`, extended from `helm-chart`'s single-chart install-test to every service a journey touches, installed via the identical `kind create cluster` / `helm install --wait` idiom, same chart, same digest, a CI values file. Never docker-compose: `environment-config`'s Environment Parity law — every environment runs the same chart at the same digest, differing only in values — forbids the one full-stack layer that most needs to catch real deploy drift from running on a second, divergently-decaying deployment description. Seeded data carries a synthetic `tenant.id: e2e-<run-id>` values-file identity (the identity difference class `environment-config` already permits), not a full OpenTofu-provisioned production tenant stamp. Full provisioning/teardown commands and the rejected-alternatives table: `references/environment-provisioning-standard.md`.
 
-| Surface | Tool | Use for |
+This is distinct from the **tagged `smoke` subset** — a small, non-destructive slice of the same journey test files (`-tags smoke`, the exact convention `cd-pipeline`'s post-deploy verification, `blue-green-deployment`'s pre-cutover gate, and `disaster-recovery-plan`'s restore verification already assume this skill produces) that runs directly against the real, persistent dev/staging/tenant environments on every promotion — a different trigger, covered under CI-Placement below.
+
+---
+
+## Test-Data Seeding and Teardown Standard
+
+Every seed script is idempotent — IDs derived deterministically from the run id, `ON CONFLICT DO UPDATE` never a blind `INSERT` — safe to rerun if only the seed step retries within a run. Cleanup is guaranteed, never happy-path-only: the failure branch calls the identical teardown the success branch calls, backed by three independent layers — an in-runner `trap EXIT` handler, a workflow-level `if: always()` step (the real backstop, since a hard job timeout bypasses a bash trap), and a scheduled orphan-cluster janitor as the final safety net. Full scripts and the failure-path proof: `references/test-data-seeding-and-teardown-standard.md`.
+
+---
+
+## Flakiness-Budget Standard
+
+E2E is inherently flakier than unit/integration — real network hops, real DNS, real mesh handshakes, real async pipeline lag — a cost to budget, not a defect to chase to zero. **Retry:** one automatic retry on failure before a test is marked genuinely failed; failing both the original run and the retry is a real failure. **Quarantine:** a test that fails intermittently across multiple runs moves to a `//go:build quarantine` suite that still runs in CI (`continue-on-error: true`, non-blocking) with a tracked GitHub issue and a two-week deadline — never silently deleted, never permanently skipped with no issue. The quarantine list's steady state is empty; a growing list means the waits, seeding, or environment are wrong, not that the tests are unlucky. Detection mechanics, the build tag, and the issue template: `references/flakiness-budget-and-quarantine-standard.md`.
+
+---
+
+## CI-Placement Standard
+
+The full suite runs less often than unit/integration for two compounding reasons: **cost** (an ephemeral `kind` cluster running every service a journey touches costs real minutes to stand up, unlike a Testcontainers pair's seconds) and **flakiness** (a false-failure rate from real network/timing dependencies that would erode trust in a required PR gate). Three triggers, never `pull_request`:
+
+| Trigger | Cadence | Purpose |
 |---|---|---|
-| **UI e2e** | Playwright (the frontend's `react-e2e-testing`) | True full-stack journeys through the browser |
-| **API e2e** | Go HTTP client against the running stack | Backend-centric journeys, faster, no browser |
+| **Nightly** | `schedule: cron` | The steady-state cadence `ci-pipeline`'s trigger table and `cd-pipeline`'s dev→staging promotion gate already assume exists |
+| **Pre-release** | `release: types: [published]` | A release must not ship on a nightly run from days ago |
+| **On-demand** | `workflow_dispatch` | A developer verifying one journey fix without waiting for the nightly window |
 
-The same Gherkin journey scenario (`bdd-feature-file`) can bind to either. UI e2e for the genuinely user-facing flows; API e2e for backend journey coverage that doesn't need a browser (cheaper, less flaky).
-
-```go
-// API-level e2e: drive the real running stack through its public API.
-func TestJourney_ClassifyThenAppearsInReport(t *testing.T) {
-    stack := startStack(t)                                  // ephemeral full stack (below)
-    token := signInAsSteward(t, stack)
-
-    assetID := connectSourceAndWaitForAsset(t, stack, token) // through the real pipeline
-    classify(t, stack, token, assetID, "Restricted")
-
-    // Eventually-consistent: the projection updates after the event is processed.
-    report := awaitGapReportReflects(t, stack, token, assetID, 10*time.Second)
-    require.Contains(t, report.RestrictedAssets, assetID)
-}
-```
-
----
-
-## Deterministic State Seeding
-
-E2E flakiness most often comes from data assumptions. Each journey **seeds its own world** and asserts only on what it created (the hermetic rule from `test-fixture-design`, applied to the whole stack): a fresh tenant, known users, known sources. No reliance on ambient or shared data; teardown removes the tenant.
-
-```go
-tenant := provisionTestTenant(t, stack)   // isolated; t.Cleanup deprovisions it
-```
-
----
-
-## Flakiness Mitigation — Never Sleep
-
-Arbitrary `time.Sleep` is the cardinal sin of e2e: too short and it's flaky, too long and the suite crawls. **Wait for a condition, not a duration.**
-
-| Instead of | Do |
-|---|---|
-| `time.Sleep(3*time.Second)` | Poll for the expected state with a timeout (`await…`) |
-| Sleeping for the pipeline | Wait until the projection reflects the event (eventual consistency) |
-| Sleeping for the UI | Playwright auto-waiting on the element/network-idle |
-
-```go
-// Condition-based wait with a deadline — deterministic, as fast as the system allows.
-func awaitGapReportReflects(t *testing.T, s *stack, tok string, id uuid.UUID, d time.Duration) Report {
-    deadline := time.Now().Add(d)
-    for time.Now().Before(deadline) {
-        r := getGapReport(t, s, tok)
-        if contains(r.RestrictedAssets, id) { return r }
-        time.Sleep(100 * time.Millisecond)   // a poll interval, not a fixed guess at completion
-    }
-    t.Fatalf("gap report did not reflect %s within %s", id, d)
-    return Report{}
-}
-```
-
-This respects the system's **Eventual Consistency** (the event pipeline is async by design — `data-pipeline-design`) instead of fighting it with fixed sleeps.
-
----
-
-## Flaky-Test Quarantine
-
-A flaky e2e test is worse than no test: it trains you to re-run red builds, which hides real failures. The policy is mechanical, not judgemental:
-
-1. **Detect** — a test that fails then passes on retry with no code change is flaky by definition; CI records it (test name, failure output, trace id).
-2. **Quarantine, don't delete** — move it to a quarantined set (build tag `//go:build quarantine` or a skip list) that still runs in CI but cannot fail the build. The journey's coverage gap is now explicit.
-3. **Time-box** — a quarantined test carries an issue and a deadline (e.g. two weeks). Fix the root cause via its failure trace, or decide the journey belongs at a lower layer and delete it deliberately.
-4. **Never retry-to-green as policy** — automatic retries are a diagnostic aid (retry once, report both outcomes), not a pass criterion.
-
-The quarantine list's steady state is **empty**; a growing list is a suite telling you its waits, seeding, or environment are wrong.
-
----
-
-## Test-Trace Correlation
-
-Inject a unique **test id** that propagates as `traceparent`/a header through the whole stack, so a failing journey's activity is one connected OpenTelemetry trace, browser → API → pipeline (the trace the frontend and backend already wired — `react-observability`, `distributed-tracing-design`). When an e2e test fails, its trace id leads straight to the exact span that broke — root-cause without re-running under a debugger.
-
-```go
-ctx = withTestTrace(ctx, t.Name())   // test id → trace headers on every request the test makes
-```
-
----
-
-## Environment Strategy
-
-E2E needs a real, running stack. Two frugal options:
-
-| Strategy | How | Use |
-|---|---|---|
-| **Ephemeral stack** | Testcontainers / docker-compose spins up API + Postgres + Redpanda (+ UI) per run | CI and local — self-contained, no shared environment to pollute |
-| **Seeded staging** | Run against a deployed staging environment | A small post-deploy smoke suite (CD) |
-
-Default to an **ephemeral stack** for the journey suite (hermetic, portable, parallelisable per tenant), with a tiny real-environment smoke suite in CD to catch deploy/infra drift. The platform-engineer provisions the CD environment; the test-strategist owns the journeys.
+The **tagged `smoke` subset runs separately and more often** — on every promotion, directly against the real environment, as `cd-pipeline`'s post-deploy verification and `blue-green-deployment`'s pre-cutover gate already describe (`go test ./tests/e2e/... -tags smoke -tenant=<id>`, the exact form `disaster-recovery-plan` also uses to verify a restored stamp). `e2e_test_cadence` (`sdlc-config-management`) overrides the nightly schedule for a product that needs it tightened. Full trigger YAML and the cost-model arithmetic: `references/ci-placement-and-trigger-standard.md`.
 
 ---
 
@@ -146,35 +105,42 @@ Default to an **ephemeral stack** for the journey suite (hermetic, portable, par
 
 | Criterion | Pass | Fail |
 |---|---|---|
+| Scope boundary honored | Test crosses a real network hop against the deployed binary | "E2E" that imports another service's package |
 | Few, high-value | Critical journeys only; permutations pushed down | E2E duplicating lower-layer coverage |
-| Real full stack | API + DB + broker (+ UI) running together | "E2E" with mocked backends |
-| Deterministic seeding | Each journey seeds + tears down its own tenant | Reliance on shared/ambient data |
-| No arbitrary sleeps | Condition-based waits with deadlines | `time.Sleep` guesses; flaky timing |
+| Real full stack | Deployed services + real DB + real broker (+ UI) | Mocked backends called "e2e" |
+| Ephemeral, representative env | `kind` cluster, same charts/digest as production | Docker-compose stand-in; hand-built manifests |
+| Guaranteed teardown | Trap + `if: always()` + janitor, three-layered | Happy-path-only cleanup; orphaned clusters accumulate |
+| Idempotent seeding | Deterministic IDs, upsert semantics | Blind `INSERT`; reruns fail or duplicate |
+| No arbitrary sleeps | Condition-based waits with deadlines | `time.Sleep` guesses |
 | Eventual-consistency aware | Polls for the projected state | Asserting immediately after an async action |
 | Trace-correlated | Test id → one trace across the stack | Failures with no trace to follow |
-| Portable env | Ephemeral stack in CI; small staging smoke | Depends on a hand-maintained shared env |
-| Flakiness governed | Quarantine with issue + deadline; list trends to empty | Retry-until-green; flaky tests ignored |
+| Retry policy explicit | One automatic retry, then genuine failure | Ad-hoc reruns; retry-until-green |
+| Flaky tests governed | Quarantine with issue + deadline; list trends to empty | Ignored, deleted, or permanently skipped |
+| Full-suite CI-placed correctly | Nightly + pre-release + on-demand; never `pull_request` | Full e2e suite blocking every PR |
+| Smoke subset present | `-tags smoke` slice runs against real envs on every promotion | No smoke coverage; promotion trusts the nightly run alone |
 
 ---
 
 ## Anti-Patterns
 
-- **E2E as the default layer** — writing a journey test for what a unit or integration test proves inverts the Test Pyramid into an ice-cream cone: slow, flaky, expensive.
-- **`time.Sleep` as synchronization** — the canonical flake generator; every wait must be a condition with a deadline.
-- **Asserting immediately after an async action** — the projection lags the Domain Event by design; a test that ignores Eventual Consistency fails intermittently and teaches nothing.
-- **Shared long-lived test environment as the only target** — ambient data drift makes every failure ambiguous; the ephemeral stack is the source of truth, staging gets only the smoke suite.
-- **Retry-until-green** — masks real intermittent production bugs (races, ordering) that e2e exists to catch.
-- **UI e2e for backend-only behaviour** — driving a browser to test an API path pays the flakiest tax for no extra confidence; use API-level e2e.
+- **E2E as the default layer** — a journey test for what unit/integration already proves inverts the pyramid into an ice-cream cone.
+- **Package-import "e2e"** — importing another service's code to simulate calling it never crosses a network boundary; at most it is integration.
+- **Docker-compose environment** — a second, divergent deployment description breaks Environment Parity for the layer that most needs to catch deploy drift.
+- **Happy-path-only teardown** — a script whose failure path never runs cleanup leaves orphaned clusters that silently burn budget.
+- **`time.Sleep` as synchronization** — the canonical flake generator; every wait is a condition with a deadline.
+- **Retry-until-green** — masks real intermittent production bugs (races, ordering) e2e exists to catch; one retry is a diagnostic, not a pass criterion.
+- **Full suite on every PR** — the cost and flakiness math never closes; nightly plus pre-release plus on-demand, with the smoke subset covering promotions, is the affordable, sufficient placement.
 
 ---
 
 ## Output Format
 
-Produces e2e journey tests and the stack harness:
+Produces e2e journey tests, the ephemeral-environment scripts, and the CI triggers:
 
 ```
-tests/e2e/journeys/*_test.go           (API-level journey tests)
-tests/e2e/*.spec.ts                     (UI journeys — Playwright, see react-e2e-testing)
-tests/e2e/stack.go                      (ephemeral full-stack harness)
-tests/e2e/trace.go                      (test-id → trace correlation helpers)
+tests/e2e/journeys/*_test.go              (API-level journey tests; smoke-tagged subset via -tags smoke)
+tests/e2e/*.spec.ts                        (UI journeys — Playwright, see react-e2e-testing)
+tests/e2e/provision-kind.sh                (kind create, helm install, trap-based teardown)
+tests/e2e/trace.go                         (test-id → trace correlation helpers)
+.github/workflows/e2e-nightly.yml          (nightly/pre-release/on-demand triggers, always() teardown)
 ```
