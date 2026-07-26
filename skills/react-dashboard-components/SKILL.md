@@ -1,68 +1,66 @@
 ---
 name: react-dashboard-components
 description: >
-  Teaches how to build compliance dashboards and reporting UI in React — composing
-  aggregate read models into KPI cards, charts (Recharts/visx), data tables with
-  sorting/filtering/virtualization, the compliance gap report view, data
-  storytelling principles, loading/empty/error states, accessible charts, and
-  export (CSV/PDF). Implements the ux-architect's dashboard specs over the
-  data-architect's aggregate read models. Used by the frontend-engineer during
-  Implement.
-version: 1.1.0
+  Teaches how to build compliance dashboards and reporting UI in React —
+  composing aggregate read models into KPI cards, charts (Recharts/visx)
+  with an exact chart-library-selection and text/table-accessibility
+  standard, data tables with a concrete row-count virtualization
+  threshold (cross-referencing react-component-design's VirtualizedList
+  render-props pattern), the compliance gap report view, a discriminated-
+  union loading/empty/error state standard for every widget, real-time
+  live-data widgets with a re-render/diffing discipline that avoids
+  full-widget re-renders on every tick, and export (CSV/PDF). Implements
+  the ux-architect's dashboard specs over the data-architect's aggregate
+  read models. Used by the frontend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
-tags: [implement, frontend, react, dashboard, charts, recharts, reporting, data-table]
+tags: [implement, frontend, react, dashboard, charts, recharts, reporting, data-table, virtualization, accessibility, real-time]
+related: [react-component-design, react-accessibility, react-performance-optimization, react-state-management, react-api-client, react-observability]
 ---
 
 # React Dashboard Components
 
 ## Purpose
 
-Dashboards turn the estate's aggregate data into decisions: where are the compliance gaps, what's the sensitivity distribution, which sources carry the most risk. A good dashboard answers a question at a glance and lets the user drill into detail. This skill builds the dashboard and reporting UI — KPI cards, charts, and data tables — over the aggregate Read Models the data-architect defined.
+Dashboards turn the estate's aggregate data into decisions: where are the
+compliance gaps, which sources carry the most risk. This skill builds
+the dashboard/reporting UI — KPI cards, charts, data tables — over the
+aggregate Read Models the data-architect defined, implementing the
+ux-architect's `ui-component-spec` and the compliance officer's
+audit-preparation journey (`user-journey-mapping`).
 
-This implements the ux-architect's dashboard component specs (`ui-component-spec`) and serves the compliance officer's journey (the audit-preparation journey from `user-journey-mapping`).
-
----
-
-## Source: Aggregate Read Models
-
-Dashboards read **aggregate Read Models** (`read-model-design` / `data-model-design`), never raw Aggregates — the backend pre-computes the summaries, so the dashboard fetches one optimised payload, not thousands of rows.
+Dashboards read **aggregate Read Models**, never raw Aggregates — the
+backend pre-computes summaries, so a widget fetches one payload, not
+thousands of rows:
 
 ```ts
-function useEstateOverview(tenantId: string) {
-  return useQuery({
-    queryKey: ["estate-overview", tenantId],
-    queryFn: ({ signal }) => api.getEstateOverview(tenantId, signal), // an aggregate Read Model
-    staleTime: 60_000,
-  });
-}
+const useEstateOverview = (tenantId: string) => useQuery({
+  queryKey: ["estate-overview", tenantId],
+  queryFn: ({ signal }) => api.getEstateOverview(tenantId, signal),
+  staleTime: 60_000,
+});
 ```
-
-Each dashboard widget maps to an aggregate Read Model: `EstateOverview`, `ComplianceGapReport`, `SensitivityDistribution`.
 
 ---
 
 ## KPI Cards
 
-A KPI card states one number and its context (trend, target). Keep them scannable and honest.
+One metric per card, labelled in the Ubiquitous Language; a trend arrow
+requires a baseline — never decoration. Colour is reinforced by icon/text,
+never colour alone (`react-accessibility`):
 
 ```tsx
-<KpiCard
-  label="Restricted assets"
-  value={overview.restrictedCount}
-  trend={overview.restrictedTrend}            // ▲/▼ vs last period
-  intent={overview.restrictedCount > 0 ? "warning" : "ok"}
-/>
+<KpiCard label="Restricted assets" value={overview.restrictedCount}
+  trend={overview.restrictedTrend} intent={overview.restrictedCount > 0 ? "warning" : "ok"} />
 ```
-
-Rules: one metric per card; label in the Ubiquitous Language; trend needs a baseline (no trend arrow without a comparison period); colour is reinforced by icon/text (never colour alone — see `react-accessibility`).
 
 ---
 
 ## Charts
 
-Default to **Recharts** (declarative, React-native, accessible-friendly) for standard charts; **visx** when bespoke/custom visuals are needed. Choose the chart type by the question, not by decoration:
+Choose the type by the question, never by decoration:
 
 | Question | Chart |
 |---|---|
@@ -71,80 +69,75 @@ Default to **Recharts** (declarative, React-native, accessible-friendly) for sta
 | Trend over time | Line / area |
 | Gaps by framework + severity | Grouped/stacked bar |
 
-```tsx
-<ResponsiveContainer width="100%" height={280}>
-  <BarChart data={gapsByFramework} aria-label="Compliance gaps by framework">
-    <XAxis dataKey="framework" /><YAxis allowDecimals={false} />
-    <Tooltip /><Legend />
-    <Bar dataKey="open" name="Open gaps" fill="var(--color-warning)" />
-  </BarChart>
-</ResponsiveContainer>
-```
-
-**Data storytelling** (from the analytics discipline): lead with the headline, order categories meaningfully (by value, not alphabetically, unless order has meaning), label directly where possible, and avoid chart junk. The chart should make the point, not just plot the data.
+**Data storytelling:** headline first, order by value (not alphabetically
+unless order is meaningful), no chart junk. Library choice (Recharts
+default vs. visx) and the exact accessibility requirement — every chart,
+no exceptions, ships a real `<table>` alternative carrying the same data
+points plus a content-describing `aria-label` — are a full standard:
+`references/chart-accessibility-standard.md`.
 
 ---
 
-## The Compliance Gap Report
+## Data Tables and Virtualization
 
-The gap report is the centrepiece reporting view — it must be prioritised, drillable, and audit-credible (the compliance officer's core job, `user-journey-mapping`):
-
-- **Severity-scored and sorted** — highest-risk gaps first, not raw order (a friction point identified in the journey map).
-- **Grouped by framework** (SOC 2 CC6/CC7/A1 for the MVP).
-- **Drill-down** — a gap links to the evidence/lineage that produced it (the lineage trail from `data-lineage-design`), so it's defensible to an auditor.
-- **Status** — reviewed/unreviewed, with the review action.
-
----
-
-## Data Tables
-
-Reporting tables support sort, filter, and pagination — all in the **URL** (`react-routing`) so a filtered report is shareable. Large tables are **virtualized** (`react-performance-optimization`).
+Sort, filter, and pagination live in the **URL** (`react-routing`), never
+local state. Semantic `<table>` markup with `<th scope>` and `aria-sort`
+(`react-accessibility`) — never `<div>` grids:
 
 ```tsx
-<DataTable
-  columns={gapColumns}
-  rows={gaps}
-  sort={sort} onSortChange={setSort}      // URL-backed
-  virtualized                              // react-virtuoso for large result sets
-  empty={<NoGapsState />}
-/>
+<DataTable columns={gapColumns} rows={gaps} sort={sort} onSortChange={setSort}
+  virtualized empty={<NoGapsState />} />
 ```
 
-Tables use semantic `<table>` markup with `<th scope>` and `aria-sort` (see `react-accessibility`) — not `<div>` grids.
+`virtualized` follows a concrete threshold: **virtualize once a table's
+realistic unfiltered row count can reach 200 rows** — this skill's anchor
+within `react-performance-optimization`'s and `react-component-design`'s
+"a few hundred rows" guidance; below that, plain pagination is sufficient.
+Default to `react-virtuoso`, or — when the table's header/sort UI needs
+one shared scroll container — `react-component-design`'s `VirtualizedList`
+render-props shape (call it by name; never reimplement it here). Full
+criteria: `references/data-density-and-virtualization-standard.md`.
+
+The centrepiece instance is the **Compliance Gap Report**: severity-scored
+and sorted (highest-risk first), grouped by framework (SOC 2 CC6/CC7/A1),
+drillable to the evidence/lineage behind each gap (`data-lineage-design`),
+and carrying review status (reviewed/unreviewed) with the review action.
 
 ---
 
-## States — Every Widget, Every State
+## Widget States: Loading, Empty, Error
 
-Every widget implements loading/empty/error per its spec — a dashboard full of spinners or blank panels is a failure:
+Every widget models its render state as one **discriminated union** —
+`loading | empty | error | populated`, never independent booleans
+(`react-component-design`'s discriminated-union standard applies here
+too): a sized skeleton (never a bare spinner — prevents CLS), a specific
+empty message with a next action (never the error copy reused), and an
+actionable error — a retry that re-triggers only that widget's query,
+hidden for non-retryable failures (`react-api-client`'s `AppError`
+kinds). Each widget owns its own query and error boundary (`react-
+observability`) so one failure never blanks the dashboard. Full standard:
+`references/widget-state-standard.md`.
 
-| State | Treatment |
-|---|---|
-| Loading | Skeleton **sized to the content** (prevents layout shift — CLS) |
-| Empty | Meaningful empty state with a next action ("No gaps found — run a scan") |
-| Error | Inline error in the widget with retry — one failed widget never blanks the whole dashboard |
-| Partial | Widgets load independently; a slow widget doesn't block the others (parallel queries) |
+---
 
-Widget independence matters: each widget is its own query/error boundary, so the dashboard degrades gracefully (see `react-observability`).
+## Real-Time Updates
+
+A widget subscribing to live data (WebSocket/polling) keeps the
+subscription in a custom hook, and each tick patches **only the changed
+data point** — keyed state, unchanged entries keep the same object
+reference — never a full-dataset replace, which would defeat `React.memo`
+(`react-performance-optimization`) widget-wide. Also throttle bursty
+streams, reconcile via the query cache rather than forking state, and
+surface connection health (reconnecting/stale) as its own signal. Exact
+diffing discipline: `references/realtime-update-standard.md`.
 
 ---
 
 ## Export (CSV / PDF)
 
-Reports are exportable for sharing with auditors (the journey's "closure" stage):
-
-- **CSV** — client-side generation from the loaded data for tabular exports.
-- **PDF** — for formatted audit reports, prefer **server-side rendering** of the report (backend) for fidelity and to keep heavy PDF libraries out of the bundle; the frontend triggers and downloads it. Document the choice; don't ship a multi-hundred-KB PDF lib to every user for an occasional export.
-
----
-
-## Accessible Charts
-
-Charts are not just pixels (see `react-accessibility`):
-- Provide a **text/table alternative** of the chart's data (`<figure>` + visually-hidden data table, or a toggle).
-- `aria-label` describing the chart's content.
-- Never encode meaning in colour alone — use labels, patterns, or direct annotation.
-- Ensure series colours meet contrast and are distinguishable for colour-blind users.
+CSV is client-side generation from already-loaded data. PDF prefers
+**server-side rendering** for audit fidelity — the frontend only triggers
+and downloads it, never shipping a heavy PDF library to every user.
 
 ---
 
@@ -152,37 +145,41 @@ Charts are not just pixels (see `react-accessibility`):
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Aggregate Read Models | Widgets read pre-computed summaries | Dashboards aggregating raw rows client-side |
-| Right chart for the question | Chart type matches the data question | Pie charts for many slices; chart junk |
-| Gap report prioritised | Severity-sorted, drillable to lineage | Unordered gap list with no evidence trail |
-| Every state handled | Loading/empty/error/partial per widget | Spinners-only or blank panels |
-| Widget independence | Per-widget query + error boundary | One failed widget blanks the dashboard |
-| URL-backed tables | Sort/filter/pagination in the URL; virtualized | View state trapped in component state |
-| Accessible charts | Text alternative; not colour-only; contrast | Inaccessible canvas/colour-only charts |
+| Aggregate Read Models | Widgets read pre-computed summaries | Client-side aggregation of raw rows |
+| Right chart, right library, real alternative | Type matches the question; visx only for a bespoke visual Recharts can't express; every chart ships a real `<table>` alternative + content-describing `aria-label`, not colour-alone | Pie for many slices; visx for polish; a generic "unavailable" message or colour-only legend |
+| Virtualization threshold applied | Tables virtualize at the 200-row anchor; KPI/chart widgets exempt | Needless virtualization, or a 2,000-row table left plain |
+| Every widget state modelled | Discriminated union; sized skeleton; actionable error; specific empty | Boolean soup; spinner-only; generic error |
+| Widget independence, URL-backed tables | Per-widget query + error boundary; sort/filter/pagination in the URL | One failure blanks the dashboard; state trapped in `useState` |
+| Real-time diffing | Keyed patch on the changed point; memoized rows actually skip | Full-dataset replace every tick; no cleanup |
 
 ---
 
 ## Anti-Patterns
 
-- **Client-side aggregation** — fetching thousands of DataAsset rows to compute a count the backend's Read Model already holds. The dashboard reads summaries; the Write Model side computes them.
-- **The wall of pies** — pie charts for five-plus slices, or any chart chosen for looks over the question. Distribution → bar; trend → line; composition → stacked bar.
-- **Alphabetical category order** — sorting frameworks A–Z when severity or magnitude is the story buries the headline. Order by the value the user must act on.
-- **One query to rule the dashboard** — a single mega-endpoint means one slow widget stalls everything and one failure blanks the page. Widgets query and fail independently.
-- **Trend arrows without a baseline** — "▲ 12" against nothing is decoration, not information. No comparison period, no trend.
-- **Spinner-only loading** — unsized spinners cause layout shift when content lands (CLS). Skeletons sized to the final content.
-- **Colour-only severity in the gap report** — red/amber/green chips without text fail both accessibility and audit credibility; the SensitivityLevel word always accompanies the colour.
-- **Un-shareable views** — filter/sort state in `useState` means a compliance officer can't send an auditor the exact filtered report. View state lives in the URL.
+- **Client-side aggregation** of raw rows to compute what the Read Model
+  already holds.
+- **The wall of pies / alphabetical order**, or **a chart with no real
+  table alternative** — decoration over the question, or a screen reader
+  that can't reach an `aria-hidden`/generic-message "alternative."
+- **Misapplied virtualization threshold**, or **status as boolean soup**
+  (`isLoading && hasError && data`) instead of one discriminated field.
+- **Spinner-only loading, or a retry on a non-retryable error** — unsized
+  layout shift, or a fix that deterministically won't work.
+- **One query to rule the dashboard**, and **full-dataset replace on
+  every live tick** — defeat per-widget independence and `React.memo`.
+- **Un-shareable views** — filter/sort in `useState` instead of the URL.
 
 ---
 
 ## Output Format
 
-Produces dashboard/report components and their tests:
+Produces dashboard/report components, live-data hooks, and their tests:
 
 ```
 src/features/compliance/ComplianceDashboard.tsx
 src/features/compliance/GapReport.tsx
-src/shared/ui/charts/*.tsx          (accessible chart wrappers)
+src/shared/ui/charts/*.tsx          (accessible chart wrappers + table alternatives)
 src/shared/ui/DataTable.tsx
+src/features/compliance/hooks/useLive*.ts   (live-data widgets only)
 src/features/compliance/*.test.tsx   (states + a11y; written first)
 ```
