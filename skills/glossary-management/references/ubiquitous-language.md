@@ -1,6 +1,6 @@
 # Canonical Ubiquitous Language
 
-**Last updated:** 2026-07-24
+**Last updated:** 2026-07-26
 **Maintained by:** glossary-management skill
 **Rule:** Use every term exactly as defined here. Synonyms are not acceptable substitutes.
 
@@ -72,6 +72,7 @@
 | **Dependency Rule** | Clean Architecture's (Robert Martin) rule that source-code dependencies point only inward, toward higher-level policy — the domain layer knows nothing of HTTP, SQL, or a message broker. Broader than the Dependency Inversion Principle (one mechanism the Dependency Rule uses at a single crossing, not a synonym for the rule itself). Enforced mechanically in this repo via a fitness function (`go-project-structure`, `go-makefile`'s `arch` target). |
 | **Don't Repeat Yourself (DRY)** | Every piece of knowledge must have a single, unambiguous, authoritative representation in the system. |
 | **Field Mask** | A list of field paths identifying which fields a partial update (or partial response) should touch — resolves the ambiguity of what an omitted field in a `PATCH` body means (leave unchanged) versus an explicit `null` (clear the field). |
+| **Fitness Function** | An automated, executable check that runs on every build and guards a specific architectural invariant mechanically, rather than trusting the invariant to reviewer vigilance alone — Neal Ford's term (Building Evolutionary Architectures). `go-project-structure`'s Dependency Rule and `go-makefile`'s `arch` target are this repo's concrete instance: the check runs on every `make ci`, catches transitive-import violations, and states honestly what it does and does not catch, rather than being trusted as a complete substitute for review. |
 | **Humble Object** | Robert Martin's pattern for testing hard-to-test boundary code: keep the boundary wrapper (a repository, a handler) so thin and free of decisions that it barely needs its own tests, and put everything actually worth testing into a fully unit-testable component behind it. Applied throughout this repo's Go skills — a repository is a Humble Object around `pgx`; a handler is a Humble Object around the domain/service layer it delegates to. |
 | **Long-Running Operation (Operation Resource)** | A standard resource shape (`name`, `done`, and once done, either `response` or `error`) for tracking asynchronous work, polled via `GET` until complete — the fully-specified sibling to a bare `202 Accepted` status URL. |
 | **Model-View-Controller (MVC)** | A pattern that separates an application into Model (data and business logic), View (presentation), and Controller (input handling). |
@@ -117,6 +118,7 @@
 | **Data Provenance** | The documented origin of a piece of data — who created it, when, and how — along with the history of its custody and modifications. |
 | **Data Retention Policy** | The rules governing how long data must be kept and when it must be deleted or archived, based on regulatory requirements and business need. |
 | **Data Sovereignty** | The principle that data is subject to the laws and governance structures of the country or jurisdiction in which it is collected or stored. |
+| **Expand/Contract Pattern** | A zero-downtime schema-migration strategy that splits a breaking change into two migrations shipped in two separate deploys, never one: Expand adds the new shape alongside the old (e.g. a new column, nullable) so both the currently-deployed and the incoming application version keep working against the schema; Contract, in a later deploy once the rollout has fully completed, removes or constrains the old shape. The unit that matters is the deploy, not the migration file — a rolling update runs old and new code concurrently against one schema for the whole rollout window. See `go-migration`. |
 | **Soft Delete** | A deletion pattern where records are marked as deleted (e.g. `deleted_at` timestamp) rather than physically removed from the database. Supports audit trails and recovery. |
 
 ---
@@ -125,6 +127,7 @@
 
 | Term | Definition |
 |---|---|
+| **Blast Radius** | The explicit, deliberately narrow scope of a chaos experiment or risky operation — e.g. one canary pod or one tenant's traffic, never the whole fleet on a first attempt — decided and stated before the experiment runs, not discovered by how far the damage actually spreads. Running any experiment's first attempt with an unbounded blast radius converts a test into an incident. See `go-chaos-test`. |
 | **Burn Rate** | The speed at which an Error Budget is being consumed, normalized as `observed error ratio / budget fraction`; a burn rate of 1 exhausts the budget exactly at the SLO window's end. `alerting-rules-design`'s multiwindow multi-burn-rate alerts fire on this quantity. |
 | **Business Continuity** | The capability of an organisation to maintain essential functions during and after a disaster or disruption. |
 | **Capacity Planning** | The process of determining the computing resources required to meet current and future demand at acceptable performance levels. |
@@ -150,6 +153,7 @@
 | **Service Level Agreement (SLA)** | A formal contract between a service provider and a customer specifying the expected service level, including uptime guarantees, penalties for breach, and support commitments. |
 | **Service Level Indicator (SLI)** | A quantitative measure of the level of service being provided (e.g. request success rate, latency at the 99th percentile). |
 | **Service Level Objective (SLO)** | A target value or range for an SLI (e.g. 99.9% of requests succeed within 200ms). SLOs are the internal target; SLAs are the external commitment. |
+| **Steady-State Hypothesis** | The measurable, pulled-from-real-telemetry definition of "the system behaving normally" that a chaos experiment must state before a fault is injected, paired with a falsifiable prediction of what should happen to it under the injected fault (e.g. the circuit breaker opens and requests fail fast rather than time out). Without a stated steady state, an experiment can only produce anecdotes, never a pass/fail verdict. Principles of Chaos Engineering's founding term. See `go-chaos-test`. |
 | **Toil** | Operational work that is manual, repetitive, automatable, tactical, devoid of enduring value, and scales linearly with service growth — distinct from irreducible engineering judgment, which is none of these. |
 | **Vertical Scalability** | Increasing the capacity of a single node (more CPU, RAM) rather than adding more nodes. |
 
@@ -196,6 +200,7 @@
 | **Load Testing** | Tests that verify a system can handle the expected peak volume of traffic without degradation. |
 | **Mutation Testing** | A technique that introduces small deliberate defects (mutations) into source code and verifies that the test suite detects them. Measures the quality of tests, not just coverage. |
 | **Performance Testing** | Tests that verify a system meets its response time, throughput, and resource consumption requirements under defined load conditions. |
+| **Provider State** | In Consumer-Driven Contract testing, a named precondition attached to one recorded interaction in a pact file (the exact string a consumer test passes to Pact's `Given(...)`), which the provider side maps to real setup code run before the Verifier replays that specific interaction's request. Provider State setup requires a real commit — it cannot use `go-integration-test`'s transaction-rollback default, since the Verifier issues its request as a genuine separate call against the provider's real running server. See `go-contract-test`. |
 | **Regression Testing** | The re-execution of existing test suites after a change to verify that previously working functionality has not been broken. |
 | **Scenario** | One concrete example of system behaviour within a Feature File, expressed as a Given/When/Then sequence — the unit both a business reader and an automated test consume identically. |
 | **Security Testing** | Tests that verify a system's resistance to known attack vectors, including injection, authentication bypass, authorisation flaws, and insecure data handling. |
