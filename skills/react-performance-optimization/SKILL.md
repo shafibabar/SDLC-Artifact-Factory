@@ -1,163 +1,101 @@
 ---
 name: react-performance-optimization
 description: >
-  Teaches measure-first React performance work — profiling with React DevTools and
-  browser tooling (flame graphs, heap snapshots, network waterfalls), then applying
-  the right fix: re-render minimization (React.memo/useMemo/useCallback by reference
-  stability, not guesswork), DOM virtualization for large lists/graphs, route- and
-  component-level code-splitting, bundle budgets and tree-shaking, and memory-leak
-  prevention (cleaning effects, listeners, timers). The critical-rendering-path
-  mindset from the blueprint. Used by the frontend-engineer during Implement.
-version: 1.1.0
+  Teaches measure-first React performance work as a hard gate plus four
+  standards: the React DevTools Profiler workflow (record an interaction,
+  read the flame graph and "why did this render" reasons before touching
+  any code); the memoization standard — exact payoff criteria for
+  React.memo/useMemo/useCallback and the shallow-comparison caveat that
+  makes memo a silent no-op; code-splitting, which cross-references
+  react-routing's lazy-loading standard rather than duplicating it;
+  virtualization, which cross-references react-dashboard-components's
+  windowing standard rather than duplicating it; memory-leak prevention
+  (effect cleanup); and concurrent scheduling (useDeferredValue/
+  useTransition) for renders that stay expensive after profiling-justified
+  fixes. No optimization ships without a before/after Profiler or
+  Lighthouse measurement. Used by the frontend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, performance, memoization, virtualization, code-splitting, profiling]
+related: [react-routing, react-dashboard-components, react-state-management, react-api-client, react-observability]
 ---
 
 # React Performance Optimization
 
 ## Purpose
 
-Frontend performance is the discipline of cooperating with the browser's critical rendering path and React's reconciliation model — combined, like its backend counterpart, with measurement. The two are inseparable: you do not memoize code you have not profiled, and you do not claim a speedup you have not measured in React DevTools or a browser profile.
-
-The governing rule, ahead of every technique: **measure first.** Premature `useMemo`/`useCallback` everywhere adds complexity and its own overhead while fixing nothing. Profile to find the actual expensive render or the actual large chunk, then fix that.
+Frontend performance is the discipline of cooperating with the browser's critical rendering path and React's reconciliation model, combined with measurement — the two are inseparable. This skill states four standards plus the hard gate that governs all of them: the **Profiler workflow** (how to find the real bottleneck), the **memoization standard** (exact conditions under which `React.memo`/`useMemo`/`useCallback` earn their complexity cost), **code-splitting** and **virtualization** (each cross-referenced to the skill that owns its worked implementation, not duplicated here), **memory-leak prevention**, and **concurrent scheduling**. Full procedure and worked examples: `references/profiler-workflow-and-memoization-standard.md`, `references/memory-leak-and-concurrent-scheduling.md`.
 
 ---
 
-## Part 1 — Measure First
+## The Measure-First Gate
 
-### React DevTools Profiler
-The primary tool. Record an interaction, read the flame graph:
-- **Which components rendered, and why** ("Why did this render?" shows prop/state/hook changes).
-- **Commit duration** — the expensive commits and the components dominating them.
-- **Stale dependency arrays** — effects/memos re-running because a dependency's reference changes every render.
+**No optimization change ships without a before/after measurement showing the actual improvement.** This mirrors `go-performance-optimization`'s own governing rule ("you do not optimise code you have not profiled, and you do not claim a speedup you have not benchmarked") applied to the frontend's tools: the React DevTools Profiler for render cost, the Performance panel / Lighthouse for page-level metrics. A `memo`, a `lazy()` boundary, or a virtualized list added on intuition — without a profile identifying it as the actual bottleneck, and a re-measurement confirming the fix — is a defect, not a stylistic preference, exactly as an unbenchmarked Go optimization is on the backend.
 
-### Browser DevTools
+---
+
+## Standard 1 — React DevTools Profiler Workflow
+
+Record the exact interaction under investigation, find the commit with the longest bar, open that component's **"Why did this render?"** panel before writing any code. It reports one of four reasons: **props changed**, **state changed**, **parent re-rendered** (the case memoization targets), or **context changed**. Only a repeated, expensive "parent re-rendered" case justifies a memoization decision. Full step-by-step procedure: `references/profiler-workflow-and-memoization-standard.md`.
+
 | Tool | Finds |
 |---|---|
+| React DevTools Profiler | Which components rendered, why, and the commit's expensive component |
 | Performance panel | Long tasks (>50ms), layout thrash, the critical rendering path |
 | Memory → heap snapshots | Leaks: detached DOM nodes, retained closures, growing listener counts |
-| Network waterfall | Render-blocking CSS/JS, slow/oversized API responses, missing compression |
-| Coverage panel | Unused JS/CSS shipped to the user (code-splitting candidates) |
-
-### Bundle analysis
-`rollup-plugin-visualizer` (Vite) shows what's in each chunk and which dependency is heavy — the input to code-splitting decisions and bundle budgets.
-
-Measure, identify the real bottleneck, fix that one thing, **re-measure** to confirm. Don't optimise on intuition.
+| Coverage panel / bundle visualizer | Unused JS shipped on first load — code-splitting candidates |
 
 ---
 
-## Part 2 — Re-Render Minimization
+## Standard 2 — Memoization: Exact Payoff Criteria
 
-React re-renders a component when its state, context, or props change. Wasted renders come from **new references** to props that are semantically equal. Fix them based on profiling, with the right tool:
+Each tool below adds a cost (a comparison or a cache) in exchange for skipping work — apply it **only** where the Profiler shows a real, repeated, expensive re-render it would fix:
 
-| Tool | Stabilises | Use when |
-|---|---|---|
-| `React.memo` | A component (skips render if props are referentially equal) | A pure component re-renders with unchanged props (profiler-confirmed) |
-| `useMemo` | A computed **value**'s reference | An expensive computation, or an object/array passed as a prop to a memo'd child |
-| `useCallback` | A **function**'s reference | A callback passed as a prop to a memo'd child / effect dependency |
+| Tool | Earns its cost only when |
+|---|---|
+| `React.memo` | Component re-renders often with unchanged props (profiler-confirmed) **and** its render is expensive enough that skipping it beats the comparison cost |
+| `useMemo` | The computation is expensive, **or** the value is a prop passed to a `memo`'d child, **or** it appears in another hook's dependency array |
+| `useCallback` | The function is a prop passed to a `memo`'d child, **or** it appears in an effect's/hook's dependency array |
 
-```tsx
-// Profiled: DataAssetRow re-rendered on every parent render because onClassify was a new fn each time.
-const handleClassify = useCallback((id: string) => classify.mutate({ id }), [classify]);
+**The shallow-comparison caveat:** `React.memo` compares props with `Object.is`, one level deep. An inline object/array/function literal created fresh in the parent's render (`style={{ color: "red" }}`, `onClick={() => ...}`) has a new reference every render even when its content is identical — the comparison reports "changed" every time and the memoized child re-renders anyway, silently defeating the `memo`. Fix at the source: hoist the literal to module scope if it never varies, or wrap it in `useMemo`/`useCallback` in the parent if it does. A worked broken-then-fixed example (a `DataAssetRow` wrapped in `memo` that still re-renders on every keystroke in an unrelated search box, then fixed): `references/profiler-workflow-and-memoization-standard.md`.
 
-const columns = useMemo(() => buildColumns(t), [t]); // stable object prop for a memo'd table
-
-const DataAssetRow = memo(function DataAssetRow({ asset, onClassify }: RowProps) {
-  /* now skips re-render when asset & onClassify are referentially stable */
-});
-```
-
-**Do not** wrap everything in `memo`/`useMemo`/`useCallback`. Each has a cost (comparison, cache) and clutters the code. Apply them where the profiler shows a real, repeated wasted render — and prefer the cheaper fixes first: **co-locate state** (so fewer components are in the render path — see `react-state-management`) and **pass JSX as children** (children don't re-render when the parent's state changes).
+**Do not** wrap everything in `memo`/`useMemo`/`useCallback` "for safety" — each has a real cost and clutters the code for zero benefit on a cheap component. Prefer the cheaper fixes first: **state co-location** (fewer components in the re-render path — see `react-state-management`) and **passing JSX as `children`** (children don't re-render when the parent's own state changes).
 
 ---
 
-## Part 3 — Virtualization (Windowing)
+## Standard 3 — Code-Splitting
 
-The estate has thousands of data assets; rendering thousands of DOM rows freezes the main thread. Virtualization renders only the rows in (and near) the viewport — DOM node count stays constant regardless of data size. **Mandatory** for any large list, table, or infinite scroll.
-
-```tsx
-import { Virtuoso } from "react-virtuoso";
-
-<Virtuoso
-  data={assets}                                  // 10,000 rows
-  itemContent={(_i, asset) => <DataAssetRow asset={asset} onClassify={handleClassify} />}
-/>  // only ~visible rows are mounted; DOM footprint is small and bounded
-```
-
-Default to `react-virtuoso` (handles variable heights, infinite loading); `react-window` for simple fixed-height cases. The estate graph has its own large-data strategy (WebGL canvas, not DOM — see `react-graph-visualization`).
+**Owned by `react-routing`'s Standard 2** (lazy-loading and code-splitting): route-level `lazy`/`Suspense` boundaries, component-level splitting for heavy features not always visible, and the distinction between Module Federation's own async-chunk boundary and an in-remote `React.lazy`. This skill does not restate that standard — apply it by name, and verify any split with a bundle visualizer (a new chunk that the initial bundle no longer contains), not by assumption. Set and enforce a bundle-size budget in CI (e.g., initial JS < 200KB gzipped); a PR that blows it fails, forcing a deliberate decision.
 
 ---
 
-## Part 4 — Code-Splitting & Bundle Budgets
+## Standard 4 — Virtualization
 
-The fastest code is the code you don't ship on first load.
-
-- **Route-level splitting** (`lazy` + `Suspense`) — the primary boundary (see `react-routing`). Each page is its own chunk.
-- **Component-level splitting** — for heavy components not always shown: the estate graph, a rich editor, a charting bundle. `lazy()` them so they load on demand.
-- **Tree-shaking** — side-effect-free ES modules and explicit type-only imports (see `react-project-structure`) let the bundler drop unused code. Import named members, not whole namespaces.
-- **Bundle budgets** — set a size budget in CI (e.g., initial JS < 200KB gzipped). A PR that blows the budget fails, forcing a deliberate decision. The bundle visualizer shows the culprit.
-
-```tsx
-const EstateGraph = lazy(() => import("@/features/estate-graph/EstateGraph")); // heavy WebGL chunk, on demand
-```
+**Owned by `react-dashboard-components`'s data-table standard**: virtualize once a table's realistic unfiltered row count can reach roughly 200 rows; below that, plain pagination is sufficient. Default to `react-virtuoso`, or `react-component-design`'s `VirtualizedList` render-props shape when a shared scroll container is needed — call either by name, never reimplement windowing here. The estate graph has its own large-data strategy (WebGL canvas, not DOM windowing — see `react-graph-visualization`).
 
 ---
 
-## Part 5 — Memory-Leak Prevention
+## Standard 5 — Memory-Leak Prevention
 
-The blueprint's §4: orphaned listeners, un-cleared timers, and detached DOM nodes leak memory in a long-lived SPA. Every effect that subscribes must clean up.
-
-```tsx
-useEffect(() => {
-  const ctrl = new AbortController();
-  window.addEventListener("resize", onResize, { signal: ctrl.signal });
-  const id = setInterval(poll, 30_000);
-  return () => { ctrl.abort(); clearInterval(id); }; // cleanup — no orphaned listener/timer
-}, [onResize]);
-```
-
-Rules: every `addEventListener`/`setInterval`/`setTimeout`/subscription has a matching cleanup in the effect's return; abort in-flight fetches on unmount (the API client forwards the signal — see `react-api-client`); verify with a heap snapshot before/after mounting and unmounting a screen repeatedly — live node count must return to baseline.
+Every effect that subscribes to something external (`addEventListener`, `setInterval`/`setTimeout`, a WebSocket, an in-flight `fetch`) returns a cleanup that reverses it — an `AbortController` can cover both a listener and a fetch in one cleanup call. Verify with a heap snapshot before/after mounting and unmounting a screen repeatedly: live node count must return to the same baseline each cycle, not grow monotonically. Full worked cleanup example: `references/memory-leak-and-concurrent-scheduling.md`.
 
 ---
 
-## Part 6 — Keeping Interactions Responsive (Concurrent Features)
+## Standard 6 — Concurrent Scheduling
 
-Some renders are inherently expensive even after memoization — re-filtering thousands of assets as the user types. React 18's concurrent features let urgent updates (the keystroke) interrupt non-urgent ones (the filtered list), so the input never janks:
-
-```tsx
-function AssetSearch({ assets }: { assets: ReadonlyArray<DataAsset> }) {
-  const [query, setQuery] = useState("");
-  const deferredQuery = useDeferredValue(query);          // lags behind during heavy renders
-  const filtered = useMemo(
-    () => assets.filter((a) => a.name.includes(deferredQuery)),
-    [assets, deferredQuery],
-  );
-  return (
-    <>
-      <input value={query} onChange={(e) => setQuery(e.target.value)} /> {/* always instant */}
-      <AssetTable rows={filtered} />                       {/* renders at lower priority */}
-    </>
-  );
-}
-```
-
-- `useDeferredValue` — defer a **value** that drives an expensive render (filter/search results).
-- `startTransition` / `useTransition` — mark a **state update** as non-urgent (tab switch that renders a heavy panel); `isPending` drives a subtle busy indicator.
-
-These complement — not replace — virtualization and memoization: they change *scheduling*, not the amount of work. Profile first, as always.
+Some renders stay expensive even after profiling-justified memoization and virtualization — re-filtering thousands of rows as the user types is real work that has to happen somewhere. `useDeferredValue` defers a **value** driving an expensive render (search/filter results); `startTransition`/`useTransition` mark a **state update** itself as non-urgent (a heavy tab switch), with `isPending` driving a busy indicator. These change **scheduling**, not the amount of work — they complement memoization and virtualization and never substitute for them; reach for them only after profiling confirms the interaction is still blocked once those are applied. Full worked example: `references/memory-leak-and-concurrent-scheduling.md`.
 
 ---
 
 ## Core Web Vitals Connection
 
-These techniques map directly to the user-experienced metrics tracked in `react-observability`:
 - Code-splitting + bundle budgets → **LCP** (faster first paint)
-- Re-render minimization + concurrent features + avoiding long tasks → **INP** (responsive interactions)
+- Memoization + virtualization + concurrent scheduling + avoiding long tasks → **INP** (responsive interactions)
 - Reserved space for async content (skeletons sized to content) → **CLS** (no layout shift)
 
-Optimisation targets the metric, not a vanity number.
+Optimisation targets the metric users feel, not a vanity number.
 
 ---
 
@@ -165,11 +103,14 @@ Optimisation targets the metric, not a vanity number.
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Measure-first | Optimisations backed by a profile/flame graph | Memoization sprinkled on by guesswork |
-| Targeted memoization | `memo`/`useMemo`/`useCallback` where profiled | Everything memoized; or nothing stabilised |
-| Virtualization | Large lists/tables windowed | Thousands of DOM rows rendered |
-| Code-split | Routes + heavy components lazy-loaded; budget enforced | One giant initial bundle; no budget |
-| Leak-free | Every subscription/timer/fetch cleaned up | Orphaned listeners/timers; growing heap |
+| Measure-first gate | Every optimisation backed by a before/after Profiler/Lighthouse measurement | Optimisation shipped on intuition, with no re-measurement |
+| Profiler workflow followed | "Why did this render?" checked before any memoization decision | Memoization applied without reading the reason React re-rendered |
+| Memoization targeted | `memo`/`useMemo`/`useCallback` applied only where profiled-expensive and repeated | Everything memoized; or nothing stabilised where the profiler shows a real cost |
+| Shallow-comparison caveat respected | Inline literals hoisted or memoized at the source before wrapping a child in `memo` | `memo`'d child still re-renders because the parent hands it a fresh literal every render |
+| Code-splitting per `react-routing` | Routes + heavy components lazy-loaded; no redundant re-`lazy()` of a federation boundary; budget enforced | One giant initial bundle; no budget; double-wrapped federation import |
+| Virtualization per `react-dashboard-components` | Tables at/above the ~200-row anchor windowed via `react-virtuoso`/`VirtualizedList` | Thousands of DOM rows rendered; windowing reimplemented ad hoc |
+| Leak-free | Every subscription/timer/fetch cleaned up; heap snapshot confirms baseline returns | Orphaned listeners/timers; growing heap across mount/unmount cycles |
+| Concurrent scheduling justified | `useDeferredValue`/`useTransition` applied only after memoization/virtualization still leave an interaction blocked | Reached for as a first response instead of fixing the underlying expensive render |
 | Vitals-oriented | Work tied to LCP/INP/CLS | Optimising numbers users don't feel |
 
 ---
@@ -178,22 +119,27 @@ Optimisation targets the metric, not a vanity number.
 
 | Anti-pattern | Instead |
 |---|---|
-| `useMemo`/`useCallback` on everything "for safety" | Memoize only what the profiler shows re-rendering wastefully |
-| Memoizing a child but passing a fresh object/array/function prop each render | Stabilise the props too, or the `memo` comparison never passes |
-| Rendering thousands of DOM rows because "it works on my machine" | Virtualize; test with production-scale data (10k assets) |
-| Fixing a slow render by lifting the work into an effect + state | Derive during render; defer with `useDeferredValue` if expensive |
+| `useMemo`/`useCallback` on everything "for safety" | Memoize only what the Profiler shows re-rendering wastefully |
+| Memoizing a child but passing a fresh object/array/function literal each render | Hoist or memoize the literal at the source — the shallow comparison never passes otherwise |
+| Reaching for `memo` before checking "Why did this render?" | Read the reason first; only "Parent re-rendered," repeated and expensive, justifies memoization |
+| Rendering thousands of DOM rows because "it works on my machine" | Virtualize per `react-dashboard-components`'s threshold; test with production-scale data |
+| Re-`lazy()`-wrapping a Module Federation remote already async-chunked | Apply `react-routing`'s Standard 2 as written — one boundary, not two |
+| Reaching for `useDeferredValue`/`useTransition` before memoization/virtualization | Fix the underlying expensive or unvirtualized render first; scheduling APIs don't reduce work |
 | Optimising without a before/after measurement | Profile, fix, **re-measure** — evidence or it didn't happen |
-| Shipping the graph/chart libraries in the initial bundle | Lazy-load heavy features behind their route or interaction |
 | `setInterval`/listener/subscription without cleanup | Every effect that subscribes returns a cleanup |
 
 ---
 
 ## Output Format
 
-Produces optimised React code plus the evidence for non-obvious optimisations:
+Produces optimised React code plus the evidence for non-obvious optimisations, covering both memory and execution-time work:
 
 ```
-src/**/*.tsx                       (virtualized lists, lazy boundaries, justified memoization)
-vite.config.ts                     (manualChunks, visualizer, bundle budget)
-docs/perf/<screen>-profile.md      (DevTools/flame-graph evidence for non-trivial optimisations)
+src/**/*.tsx                       (memoization justified by profile; lazy boundaries and
+                                     virtualized lists applied per react-routing / react-
+                                     dashboard-components rather than reimplemented; cleaned-
+                                     up effects; useDeferredValue/useTransition where profiled)
+vite.config.ts                     (manualChunks, bundle visualizer, bundle-size budget)
+docs/perf/<screen>-profile.md      (before/after Profiler flame graph or Lighthouse score —
+                                     the measure-first gate's evidence, per optimisation)
 ```
