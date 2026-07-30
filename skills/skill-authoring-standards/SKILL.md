@@ -12,11 +12,12 @@ description: >
   is created — the canonical rubric, not a convention imitated from whichever
   skill was refactored most recently. Cross-cutting governance skill alongside
   glossary-management and methodology-review.
-version: 1.0.0
+version: 1.1.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-23
 tags: [skill-authoring, progressive-disclosure, governance, cross-cutting, meta]
+related: [glossary-management, methodology-review]
 ---
 
 # Skill Authoring Standards
@@ -26,6 +27,8 @@ tags: [skill-authoring, progressive-disclosure, governance, cross-cutting, meta]
 Every skill in this plugin is prose consumed by Claude, not code executed by a runtime — which means "does this skill work" can only be verified by triggering it and checking behavior, never by reading it for coherence. At 141 skills and counting, imitating whichever skill was refactored most recently is no longer a reliable way to keep new skills shaped consistently. This skill is the checkable rubric: a skill's shape, its `description`, its version bumps, and its cross-references against a stated standard, not a fresh judgment call every refactor session.
 
 This skill governs *this plugin's own components*. It teaches nothing about a downstream product's domain — that is what every other skill does. It sits beside `glossary-management` (canonical vocabulary) and `methodology-review` (methodology compliance) as the third cross-cutting authority, this one about the shape of a Skill itself.
+
+Six named terms used throughout this skill — Trigger Surface, Resident Content, Skill Collision, Progressive Disclosure, Declared Composability, Self-Contained Reference — are formally defined in `references/vocabulary-and-collision-detection.md`.
 
 ---
 
@@ -74,7 +77,7 @@ A skill that quietly covers two unrelated capabilities produces a `description` 
 
 ## Declared Composability: the Optional `related:` Field
 
-A skill's prose often points at another skill ("see `subdomain-distillation`'s `references/security-sensitive-subdomains.md`"). That pointer is invisible to any script or test — if the referenced skill is renamed, split, or has that file moved, nothing catches it until a human notices during an unrelated refactor. Document an optional `related:` frontmatter field (a short list of skill names this skill's body references in prose) as a lightweight, retrofit-as-you-go convention. It is not part of CLAUDE.md's closed seven-field Component Frontmatter schema and does not change required-field ordering — it is an additional, optional field for skills that choose to declare it, giving a future validation script something concrete to check.
+A skill's prose often points at another skill ("see `subdomain-distillation`'s security-sensitive-subdomains reference file"). That pointer is invisible to any script or test — if the referenced skill is renamed, split, or has that file moved, nothing catches it until a human notices during an unrelated refactor. Document an optional `related:` frontmatter field (a short list of skill names this skill's body references in prose) as a lightweight, retrofit-as-you-go convention. It is not part of CLAUDE.md's closed seven-field Component Frontmatter schema and does not change required-field ordering — it is an additional, optional field for skills that choose to declare it, giving a future validation script something concrete to check.
 
 ---
 
@@ -121,7 +124,7 @@ For a skill with `scripts/`, testing has a second, cheaper layer: the scripts th
 | **Implicit-only composability** — a prose "see `other-skill`" with no `related:` field backing it | Nothing catches a rename, split, or moved file on the referenced side; the pointer silently rots | Add the referenced skill to `related:`, retrofitting as skills come up for refactor rather than all at once |
 | **The reference file that assumes body context** — a `references/*.md` file written as a continuation of the body's train of thought | Breaks the moment it's loaded independently, or pointed to by a different skill | Open every reference file able to stand alone; state the concept it needs before using it |
 | **The script nobody tests** — a `scripts/*.sh` file whose only verification is that the skill's prose describes what it should do | A described behavior is not a verified one; a script can be broken for months if the skill itself is rarely triggered | Every skill-owned script gets a synthetic-input test in `tests/scripts/`, same as repo-root scripts |
-| **The asset that isn't actually copyable** — an `assets/` file that needs substantial editing before it's usable in a real artifact | Defeats the purpose of an asset, which is to save the work of writing an artifact from scratch | If it needs substantial rewriting every time, it was reference material, not an asset — move it to `references/output-format-template.md` instead |
+| **The asset that isn't actually copyable** — an `assets/` file that needs substantial editing before it's usable in a real artifact | Defeats the purpose of an asset, which is to save the work of writing an artifact from scratch | If it needs substantial rewriting every time, it was reference material, not an asset — move it to a `references/` template file instead |
 | **Version bump blindness** — bumping PATCH or MINOR for a `description` change that alters what prompts trigger the skill | Silently changes discovery behavior under a version number that implies nothing meaningful changed | Bump MAJOR whenever `description` changes in a way that could change matching, regardless of how small the body change was |
 
 ---
@@ -129,3 +132,7 @@ For a skill with `scripts/`, testing has a second, cheaper layer: the scripts th
 ## Applying This Skill
 
 When creating a new skill: write the `SKILL.md` body first, decide only afterward whether any content earned a `references/`, `assets/`, or `scripts/` split using the tests above — do not create empty subdirectories speculatively. When refactoring an existing skill: check it against every row of the Quality Criteria table above before treating the refactor as complete, not just against the specific gap that motivated the refactor.
+
+**Starter template:** copy `assets/skill-template.md` from this skill's directory into `skills/<new-skill>/SKILL.md` as a minimal-valid starting point — all seven required frontmatter fields in canonical order, the four-section body structure, and placeholder commentary for the description trigger surface.
+
+**Structure validation:** run `bash scripts/validate-skill-structure.sh skills/<name>/SKILL.md` at any point during authoring or refactoring to verify frontmatter completeness, body line count, and bidirectional reference pointer integrity. The script's tests live in `tests/scripts/validate-skill-structure.test.sh`.
