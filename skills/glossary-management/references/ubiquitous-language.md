@@ -259,6 +259,16 @@
 
 ---
 
+## Frontend Engineering
+
+| Term | Definition |
+|---|---|
+| **ARIA (Accessible Rich Internet Applications)** | A W3C specification defining HTML attributes (`role`, `aria-*`) that expose semantics to assistive technologies when native HTML elements lack them. Governed by the First Rule of ARIA: always prefer a native element with built-in semantics over an ARIA-attributed generic one. `react-accessibility`'s aria-and-semantic-html-standard.md owns the decision table for when ARIA is warranted. |
+| **Core Web Vitals** | Google's three user-experience metrics mandated by `react-observability`'s Standard 4: **LCP** (Largest Contentful Paint — loading, ≤ 2.5s), **INP** (Interaction to Next Paint — responsiveness, ≤ 200ms; replaced the retired FID in March 2024), and **CLS** (Cumulative Layout Shift — visual stability, ≤ 0.1). In this repo, reported as OTel histograms with explicit bucket boundaries into the shared Prometheus/Grafana stack — never via a separate RUM tool. `react-performance-optimization`'s Core Web Vitals Connection section maps each optimization technique to the metric it addresses. |
+| **WCAG (Web Content Accessibility Guidelines)** | The W3C standard defining how to make web content accessible. This repo targets WCAG 2.1 Level AA — the industry-standard compliance floor. `react-accessibility` enforces specific success criteria mechanically (1.3.1, 1.4.1, 1.4.3, 1.4.11, 2.1.1, 2.1.2, 2.4.3, 2.4.7, 3.3.1, 3.3.2, 4.1.2, 4.1.3); `prefers-reduced-motion` handling targets the AA-adjacent practice even though its formal criterion (2.3.3) is AAA. |
+
+---
+
 ## Governance and Traceability
 
 | Term | Definition |

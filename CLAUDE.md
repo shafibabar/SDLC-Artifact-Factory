@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # SDLC Artifact Factory — Always-On Standards
 
 This file is read on every session. It encodes the non-negotiable rules every agent, skill, command, hook, and script in this plugin must follow.
@@ -42,12 +46,15 @@ This repository **is the plugin itself** — component definitions in Markdown p
 .claude-plugin/plugin.json        Plugin manifest — name/version/metadata only (see note above)
 sdlc-context.json                 Factory memory — build checklist, decisions, open questions
 CLAUDE.md                         This file — always-on standards
+INVESTIGATION.md                  GitHub Project field-ID reference — read before editing scripts/github-project/ghp/config.py; re-run the queries inside if the board schema changes
 settings.json                     Permissions and env vars for this repo's own Claude Code session
+.claude/commands/                 Internal session commands for the skill-refactor campaign (plan-start, plan-exit, exec-start, exec-complete, skill-refactor) — NOT the plugin's user-facing commands; backed by scripts/github-project/
 skills/<name>/SKILL.md            One skill per directory, flat — domain is a tag (sdlc-context.json), not a path
 agents/<name>.md                  One flat file per agent — auto-discovered, verified
 commands/<name>.md                One real slash command per file — auto-discovered, verified
 hooks/hooks.json                  All hook bindings in one file — auto-discovered
 scripts/                          Shell scripts backing command-type hooks and command prompts
+scripts/github-project/           Python scripts (plan_start.py, exec_start.py, exec_complete.py, etc.) invoked by .claude/commands/ to manage GitHub Project board state during skill refactors
 schemas/sdlc-config.schema.json   Formalizes sdlc-config-management's shape — Draft 2020-12, tested
 schemas/sdlc-manifest.schema.json Formalizes artifact-manifest's per-product instance shape — tested
 mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
@@ -58,6 +65,7 @@ research/<domain-cluster>/        Book-derived reference material informing futu
 **Build workflow:**
 
 - One chunk = one feature branch = one PR to `main`. Branch names follow `feature/<n>-<chunk-description>` (e.g. `feature/11-test-engineering-skills-and-test-strategist-agent`).
+- **Skill refactors use a different branch pattern**: `issue-NNN-deep-rebuild-<skill-name>` (e.g. `issue-406-deep-rebuild-react-observability`). These are created and managed by the `.claude/commands/` skill-refactor workflow (`/exec-start`, `/exec-complete`), not manually.
 - After a chunk merges, update `build_checklist` status in `sdlc-context.json` and its `_meta.last_updated`/`updated_by` fields in the same piece of work.
 - Add a dated entry to `CHANGELOG.md` under `[Unreleased]` (Added/Changed/etc.) for the chunk, referencing its PR number.
 - A chunk typically delivers one skill domain directory plus its owning agent(s) together.
@@ -82,6 +90,8 @@ python3 tests/schemas/sdlc-config.test.py
 ```
 
 `skills`, `agents`, `commands`, and `hooks` tests load this repo live via `claude --plugin-dir $REPO_ROOT -p ...` (see `tests/lib/harness.sh`) — they need the `claude` CLI on `PATH`, make real model calls, and default to a 90s per-invocation timeout (override with `SMOKE_TEST_TIMEOUT`). `scripts` tests pipe synthetic JSON directly at a `scripts/*.sh` file's stdin — no LLM call. `schemas` tests need `python3` with `jsonschema` installed and validate both known-good and deliberately-invalid instances against the Draft 2020-12 schemas.
+
+Each refactored skill must have a corresponding contract test at `tests/skills/<name>.contract.sh` — a single `smoke_test_skill` call that probes a non-obvious fact grounded in the skill's content (not a generic "does this skill exist?" check). Currently 37 of 142 skills have one; every skill touched during a refactor must add its own before the PR merges.
 
 Under non-interactive `-p` invocation, slash commands only resolve in their namespaced form (`/<plugin-name>:<command>`, e.g. `/sdlc-artifact-factory:sdlc-status`) — the bare form (`/sdlc-status`) that works interactively returns "Unknown command" under `-p`. `smoke_test_command_contains` in the harness auto-namespaces, so individual command test files can keep using the bare form.
 
