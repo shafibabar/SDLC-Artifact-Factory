@@ -65,6 +65,7 @@
 | **API Gateway** | A single entry point that routes, authenticates, rate-limits, and governs access to backend services. Consumers interact with the Gateway, not individual services. |
 | **Backward Compatibility** | A guarantee that newer versions of an API or contract do not break existing consumers. Breaking changes require a major version increment and a migration path. |
 | **Chain of Responsibility** | A design pattern where a request passes through a chain of handlers, each deciding to process it or pass it to the next handler. |
+| **Compound Component** | A React composition pattern where a parent component implicitly shares state with its children via Context, giving a flexible, composable API (e.g. `<Tabs><Tabs.List><Tabs.Panel>`) without prop-drilling the shared state through every level. `react-component-design`'s worked `Tabs` example. |
 | **Consumer-Driven Contract** | A contract testing approach where the consumer of an API defines the expectations (the contract) it holds of the provider. The provider must satisfy all consumer contracts. |
 | **Contract-First Design** | The practice of defining integration contracts (API schemas, event schemas, message schemas) before writing any implementation code. |
 | **CQRS (Command Query Responsibility Segregation)** | An architectural pattern that separates the Write Model (commands that change state) from the Read Model (queries that return state). The two models may use different data stores. |
@@ -74,6 +75,7 @@
 | **Long-Running Operation (Operation Resource)** | A standard resource shape (`name`, `done`, and once done, either `response` or `error`) for tracking asynchronous work, polled via `GET` until complete — the fully-specified sibling to a bare `202 Accepted` status URL. |
 | **Model-View-Controller (MVC)** | A pattern that separates an application into Model (data and business logic), View (presentation), and Controller (input handling). |
 | **Resource Revision (ETag)** | A server-issued opaque identifier of a resource's current state, sent back on a conditional update (`If-Match`) to detect and reject a write based on a stale read. Optimistic concurrency — distinct from a business-rule conflict. |
+| **Rules of Hooks** | React's two invariants for using hooks correctly: call them only at the top level (never inside a loop, condition, or nested function) and only from a React function component or another custom hook. Mechanically enforced in this repo via `eslint-plugin-react-hooks`'s `rules-of-hooks` rule (`react-project-structure`), not left as a prose-only convention. |
 | **Separation of Concerns** | The principle of dividing a program into distinct sections, each addressing a separate concern. Changes to one concern should not require changes to others. |
 | **Single Responsibility Principle (SRP)** | Every module, class, or function should have exactly one reason to change. |
 | **Singleton Sub-resource** | A sub-resource with exactly one instance per parent and no independent create/delete lifecycle (`GET`/`UPDATE` only), addressed at a fixed path under its parent — distinct from nesting depth, which governs how far a sub-resource path can go, not how many instances exist. |
@@ -254,6 +256,16 @@
 | **Product Validation** | The process of testing assumptions about user needs, market fit, and solution viability before full investment in development. Distinct from Customer Validation (above) — Product Validation asks whether the need and market fit exist at all; Customer Validation assumes that and tests whether a repeatable sales/onboarding process exists. |
 | **User Story Mapping** | A product planning technique that organises user stories as a two-dimensional map: a horizontal narrative of the user journey and vertical slices of increasing detail. Used to sequence delivery and identify MVP scope. |
 | **Value Stream Mapping** | A lean technique for visualising the complete flow of steps required to deliver value to a customer, from concept to production. Used to identify and eliminate waste. |
+
+---
+
+## Frontend Engineering
+
+| Term | Definition |
+|---|---|
+| **ARIA (Accessible Rich Internet Applications)** | A W3C specification defining HTML attributes (`role`, `aria-*`) that expose semantics to assistive technologies when native HTML elements lack them. Governed by the First Rule of ARIA: always prefer a native element with built-in semantics over an ARIA-attributed generic one. `react-accessibility`'s aria-and-semantic-html-standard.md owns the decision table for when ARIA is warranted. |
+| **Core Web Vitals** | Google's three user-experience metrics mandated by `react-observability`'s Standard 4: **LCP** (Largest Contentful Paint — loading, ≤ 2.5s), **INP** (Interaction to Next Paint — responsiveness, ≤ 200ms; replaced the retired FID in March 2024), and **CLS** (Cumulative Layout Shift — visual stability, ≤ 0.1). In this repo, reported as OTel histograms with explicit bucket boundaries into the shared Prometheus/Grafana stack — never via a separate RUM tool. `react-performance-optimization`'s Core Web Vitals Connection section maps each optimization technique to the metric it addresses. |
+| **WCAG (Web Content Accessibility Guidelines)** | The W3C standard defining how to make web content accessible. This repo targets WCAG 2.1 Level AA — the industry-standard compliance floor. `react-accessibility` enforces specific success criteria mechanically (1.3.1, 1.4.1, 1.4.3, 1.4.11, 2.1.1, 2.1.2, 2.4.3, 2.4.7, 3.3.1, 3.3.2, 4.1.2, 4.1.3); `prefers-reduced-motion` handling targets the AA-adjacent practice even though its formal criterion (2.3.3) is AAA. |
 
 ---
 
