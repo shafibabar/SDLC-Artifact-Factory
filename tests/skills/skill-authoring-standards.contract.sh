@@ -3,9 +3,12 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
 
+# Probes a Skill Collision symptom that exists only in
+# references/vocabulary-and-collision-detection.md, not in SKILL.md body.
+# A passing result proves the progressive-disclosure split is followed.
 smoke_test_skill \
   "skill-authoring-standards" \
-  "According to this skill, roughly how many lines of body content (below the frontmatter) should prompt a SKILL.md to be treated as a split candidate for references/?" \
-  "200"
+  "Name one symptom that indicates a latent Skill Collision has occurred in a plugin's skill library." \
+  "answers questions it does not own"
 
 smoke_test_summary
