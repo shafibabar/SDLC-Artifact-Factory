@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-30",
-    "updated_by": "D038 — Chunk 45 housekeeping for the react-* deep-rebuild campaign (issue #407): 13 individual skill rebuilds (issues #394-#406, PRs #408-#420) recorded in CHANGELOG and sdlc-context.json, 3 new Frontend Engineering glossary terms (ARIA, Core Web Vitals, WCAG), CLAUDE.md improved with /init-surfaced additions (internal command docs, skill-refactor branch pattern, contract-test requirement)."
+    "updated_by": "Chunk 46 — skill-authoring-standards deep rebuild (issue #422, PR #423): validate-skill-structure.sh governance script, references/vocabulary-and-collision-detection.md (6 defined terms + collision detection), assets/skill-template.md, SKILL.md v1.1.0 with related field and pointers, contract test updated to probe references file."
   },
 
   "project": {
@@ -859,6 +859,19 @@
         "3 new canonical glossary terms added in a new 'Frontend Engineering' section: ARIA (Accessible Rich Internet Applications — the W3C attribute specification, with the First Rule of ARIA and a pointer to react-accessibility's decision table), Core Web Vitals (LCP/INP/CLS with Good thresholds and the FID-retirement note, cross-referenced to react-observability and react-performance-optimization), WCAG — Web Content Accessibility Guidelines (WCAG 2.1 AA target, 10 enforced success criteria, the prefers-reduced-motion/AAA honest scoping note).",
         "CHANGELOG updated with 13 individual skill-rebuild entries (issues #394-#406, PRs #408-#420, dates 2026-07-26 through 2026-07-30) covering each of the 13 react-* skills rebuilt individually per Shafi's corrective feedback after the Chunk 44 grouped campaign — the entries that were missing because the individual rebuilds post-dated the initial campaign's housekeeping sub-issue (#337).",
         "sdlc-context.json updated with D038 (per-skill-sub-issue approach for the react-* individual rebuilds, rationale, and alternatives rejected) and this chunk 45 entry. Meta updated to reflect D038 as the most recent decision."
+      ]
+    },
+    {
+      "chunk": 46,
+      "title": "Deep rebuild: skill-authoring-standards (issue #422, PR #423)",
+      "status": "complete",
+      "date_completed": "2026-07-30",
+      "deliverables": [
+        "scripts/validate-skill-structure.sh — new governance script checking 7 required frontmatter fields in canonical order, body line count ≤200, and bidirectional references/ pointer integrity (body mentions file ↔ file exists on disk). Exit 0 = all pass, exit 1 = failures. 15/15 synthetic tests passing in tests/scripts/validate-skill-structure.test.sh (no live model call).",
+        "skills/skill-authoring-standards/references/vocabulary-and-collision-detection.md — formally defines the six named terms the SKILL.md body uses: Trigger Surface, Resident Content, Skill Collision, Progressive Disclosure, Declared Composability, Self-Contained Reference. Includes Periodic Collision Detection guidance with a known-adjacent skill pairs table (5 pairs identified by grep, sampled 3-5 per batch, judgment check not automated CI).",
+        "skills/skill-authoring-standards/assets/skill-template.md — minimal copyable SKILL.md starter with all 7 required frontmatter fields in canonical order, the four-section body structure (Purpose, Core Section, Quality Criteria, Anti-Patterns), and placeholder commentary for writing the description as a trigger surface rather than a summary.",
+        "skills/skill-authoring-standards/SKILL.md — version 1.0.0 → 1.1.0 (MINOR: new content, description unchanged). Added related: [glossary-management, methodology-review]. Added vocabulary pointer sentence in Purpose section pointing to references/vocabulary-and-collision-detection.md. Added two pointers in Applying section: assets/skill-template.md (starter template) and scripts/validate-skill-structure.sh (structural validation). Fixed two body false-positives that fooled the validator: cross-skill reference example using the exact references/<file>.md grep pattern rephrased to avoid matching, and Anti-Patterns example rephrased similarly.",
+        "tests/skills/skill-authoring-standards.contract.sh — updated from the 200-line threshold question (answerable from body) to a Skill Collision symptom question ('answers questions it does not own') answerable only from references/vocabulary-and-collision-detection.md, proving the progressive-disclosure split is followed."
       ]
     }
   ],
