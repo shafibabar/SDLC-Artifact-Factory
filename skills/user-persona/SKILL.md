@@ -1,187 +1,147 @@
 ---
 name: user-persona
 description: >
-  Teaches how to build research-grounded user personas for a B2B product — covering
-  persona construction, the key attributes that make a persona actionable (not
-  decorative), the difference between a persona and an ICP, and how to connect
-  personas to JTBD analysis and user story writing. Used by the requirements-analyst
-  agent during the Ideate phase before JTBD analysis begins.
-version: 1.1.0
-phase: ideate
+  Teaches the requirements-analyst to create user personas — evidence-based archetypes of real
+  user segments capturing goals, behaviors, pain points, and the jobs they need done — and to
+  distinguish a proto-persona (assumption-based, clearly labeled) from a research-persona (grounded
+  in real interviews). Used during Strategy to give discovery a concrete human anchor; the repo
+  primary personas are the Data Steward and the Compliance Officer. Covers persona fields (segment,
+  goals, behaviors, pains, JTBD link), the honesty rule for labeling assumptions, what to leave out
+  (demographics that do not drive design), and how a persona becomes the "As a <persona>" role in a
+  user story.
+version: 2.0.0
+phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, persona, user-research, jtbd, product-discovery]
+related: [jtbd-analysis, user-story-writing, gtm-strategy, stakeholder-mapping]
+tags: [strategy, requirements, persona, proto-persona, research-persona, user-research, discovery]
 ---
 
 # User Persona
 
 ## Purpose
 
-A user persona is a composite archetype of a real type of user — not a demographic stereotype, and not a fictional character. A good persona answers: **what is this type of person trying to accomplish, what prevents them from doing it today, and what does success look like to them?**
+A user persona is a composite archetype of a real *type* of user — not a demographic stereotype and
+not a fictional character. It gives discovery a concrete human anchor so that requirements stop being
+abstract. "The system must scan files" is ambiguous. "The Data Steward must see a classified inventory
+of every connected source within one working session, so she can answer *where does customer PII live*
+with evidence instead of folklore" is actionable — because it names who, what progress they seek, and
+what blocks them today.
 
-Personas serve one purpose in this process: to make requirements concrete. "The system must scan files" is ambiguous. "Maya Chen, the Compliance Officer, must be able to see a gap report across her entire estate within 30 minutes of connecting a source, so she can brief her CISO before the quarterly board meeting" is actionable.
-
----
-
-## Persona vs ICP
-
-| Concept | Level | Defines |
-|---|---|---|
-| **ICP (Ideal Customer Profile)** | Company | The type of organisation most likely to buy and get value from the product |
-| **User Persona** | Individual | The type of person within that organisation who uses the product |
-| **Buyer Persona** | Individual | The type of person who makes the purchase decision (may differ from the user) |
-
-For B2B products, always model at minimum: the primary user, the buyer/economic decision maker, and the internal champion (if different from both). These have different needs, and the product must serve all three to close and retain deals.
+A persona exists to make requirements concrete and traceable. Every attribute must be *load-bearing*:
+it should shape a requirement, a job story, an onboarding decision, or an NFR. An attribute that could
+not be used that way is decoration — cut it.
 
 ---
 
-## Required Persona Attributes
+## The Honesty Rule: Proto vs Research Persona
 
-A persona that lacks these attributes cannot be used to write requirements or job stories:
+The single most important distinction in this skill. Every persona is one of two kinds, and it must be
+**labeled** as such at the top of the artifact:
 
-### Identity Anchors
-- **Name and role title** — grounded archetype (e.g. "Maya Chen, Compliance Officer")
-- **Company profile** — size, industry, regulatory exposure (consistent with ICP)
-- **Technical literacy** — how comfortable is this person with technology? Self-serves or needs guidance?
-- **Domain expertise** — deep or shallow knowledge of the domain (compliance, data governance, etc.)?
+| Kind | Grounded in | When to use | Label |
+|---|---|---|---|
+| **Proto-persona** | Team assumptions, existing knowledge, informed guesses | Before any customer interviews exist — to start discovery, not to end it | `PROTO — assumption-based` |
+| **Research-persona** | Real interviews (Mom-Test-compliant, specific past behavior) | After design-partner conversations have produced evidence | `RESEARCH — interview-grounded` |
 
-### Motivations and Goals
-- **Primary goal** — the one outcome this person most wants to achieve in their work
-- **Secondary goals** — 2-3 other outcomes they care about
-- **Success metrics** — how does this person measure whether they've succeeded? (What gets them promoted?)
+The honesty rule: **label assumptions as assumptions.** A proto-persona is legitimate and useful — it
+seeds JTBD analysis and gives the team something to test against — but presenting an assumption-based
+archetype as if it were validated fact is the failure this skill exists to prevent. The lifecycle is
+*start proto, validate to research*: draft the proto-persona, then upgrade each attribute to research
+grounding as real conversations confirm or correct it. Never let a proto-persona quietly become the
+team's source of truth without that validation step.
 
-### Frustrations and Blockers
-- **Current approach** — how do they accomplish their goal today (without your product)?
-- **Primary frustration** — the single biggest pain point with the current approach
-- **Secondary frustrations** — 2-3 additional recurring pains
-
-### Behaviours
-- **Decision-making style** — analytical (data-driven) / relational (trusts referrals) / spontaneous (early adopter) / methodical (waits for proof)
-- **Risk tolerance** — how much uncertainty does this persona accept before buying or adopting a new tool?
-- **Information sources** — where does this persona go to learn about new tools? (Analyst reports, peer communities, LinkedIn, vendor webinars)
-
-### Relationship to Product
-- **Trigger** — what event causes this persona to start looking for a solution?
-- **Expected time to first value** — how quickly does this persona need to see value before they lose patience?
-- **Adoption barrier** — what is the most likely reason this persona would abandon the product after trying it?
+Grounding standard: research-persona attributes come from questions that ask about **specific past
+events**, not hypotheticals or compliments (Rob Fitzpatrick, *The Mom Test*). "Walk me through the last
+time you needed to do this" produces a fact; "would you use a tool that…" produces flattery. See
+`references/persona-fields-and-grounding.md` for the full grounding requirement and the elicitation
+question mapped onto each field.
 
 ---
 
-## Persona Anti-Patterns
+## Persona Fields
 
-| Anti-Pattern | Problem |
+Every persona carries these fields. A persona missing goals, pains, or current approach cannot generate
+a job story with real motivation, and is incomplete. Full definitions and the interview question that
+elicits each: `references/persona-fields-and-grounding.md`.
+
+- **Segment / role** — the user *type* and the company profile they sit in (size, industry,
+  regulatory exposure), consistent with the ICP from `gtm-strategy`.
+- **Goals** — the primary outcome this person most wants, plus 2-3 secondary goals and the success
+  metric by which they judge themselves (what gets them recognized).
+- **Behaviors** — how they work today: their current approach (the workaround they use *without* your
+  product), decision-making style, technical literacy, and where they go to learn about tools.
+- **Pain points** — the primary frustration with the current approach plus 2-3 secondary pains. These
+  are the switching motivation; no pains means no reason to adopt.
+- **Jobs to be done** — the link to `jtbd-analysis`: each persona names the core job(s) they are
+  hiring a solution for, so every persona traces to at least one JTBD.
+
+---
+
+## What to Leave Out
+
+Do not invent demographics or biography that do not drive a design decision. Age, gender, hometown, and
+a stock photo do not predict product behavior — goals, pains, and current approach do. This is the
+central anti-pattern: **a demographic-only persona is decoration.** If an attribute cannot be traced to
+a requirement, a job story, an onboarding decision, or an NFR, it does not belong in the persona. The
+full "leave out" list and the reasoning: `references/persona-fields-and-grounding.md`.
+
+---
+
+## Anti-Patterns
+
+| Anti-Pattern | Why it fails |
 |---|---|
-| Demographic-only persona | Age, gender, and location do not predict product behaviour. Goals and frustrations do. |
-| Single persona for a multi-stakeholder product | Missing the buyer means the product never converts. Missing the champion means the buyer never hears about it. |
-| Aspirational persona | "Our ideal user is a visionary data leader" is aspirational marketing, not a persona. Model who the user actually is, not who you wish they were. |
-| No frustrations | A persona with only goals and no frustrations cannot generate job stories with a real motivation. |
-| No current approach | If you don't understand how they do it today, you can't understand why they'd switch. |
+| Inventing demographics that don't drive design | Age/gender/location don't predict behavior; goals and pains do. |
+| Proto-persona presented as validated fact | Breaks the honesty rule — an assumption masquerading as evidence. |
+| No pain points | A persona with only goals generates no job story with a real motive. |
+| No current approach | Without knowing how they cope today you can't explain why they'd switch. |
+| Aspirational persona | "Our ideal user is a visionary data leader" is marketing, not a real user. |
+| Single blended persona for a multi-role product | Needs differ by role (Data Steward vs Compliance Officer); one average hides all of them. |
 
 ---
 
-## How Many Personas?
+## How Personas Connect
 
-- **Primary persona** — 1 per product. This is the user the product is designed for first. If the product can only serve one persona well, it serves the primary.
-- **Secondary personas** — 1-3. These personas must also be served but are not the design anchor.
-- **Anti-persona (excluded user)** — Optional but valuable: explicitly define who the product is NOT designed for. This prevents scope creep and misaligned feature requests.
-
-For the first product (Data Estate Mapping & Compliance Intelligence), minimum three personas:
-1. The Compliance Officer / DPO (primary user — drives the compliance workflow)
-2. The CISO or VP Engineering (buyer — economic decision maker, wants the assurance story)
-3. The IT / DevOps Lead (internal champion and technical implementer — deploys and maintains it)
-
----
-
-## Worked Example (Primary Persona Excerpt)
-
-**Maya Chen, Compliance Officer — PRIMARY**
-
-- **Company:** 180-employee healthtech SMB; SOC 2 Type II required by its two largest customers; data spread across Google Drive and AWS S3
-- **Technical literacy:** 3/5 — fluent in SaaS admin consoles; will not run CLI tools or read API docs
-- **Primary goal:** walk into the quarterly audit-prep meeting knowing exactly what sensitive data exists and which SOC 2 controls are at risk
-- **Success metric:** a clean SOC 2 report with zero surprise findings — that is what gets her recognised
-- **Current approach:** a spreadsheet updated by interviewing team leads twice a year — outdated the day it is finished
-- **Primary frustration:** cannot answer "where does customer PII actually live?" with evidence — only with folklore
-- **Trigger:** a customer's security questionnaire, or an approaching SOC 2 Type II audit window
-- **Expected time to first value:** one working session (under an hour), or she reverts to the spreadsheet
-- **Adoption barrier:** anything that requires her to file an engineering ticket to see her own data
-
-Every line above is load-bearing: the trigger seeds JTBD situations, the current approach explains the switching motivation, the time-to-first-value becomes a usability NFR, and the adoption barrier constrains onboarding design. A persona attribute that could not be used this way is decoration — cut it.
+- **→ `jtbd-analysis`**: the persona's jobs-to-be-done field is the handoff. Each persona names the
+  core job it hires a solution for; JTBD analysis then writes the job stories against that persona.
+  A persona with no linked job cannot feed JTBD.
+- **→ `user-story-writing`**: the persona *is* the role in "**As a** \<persona\>, I want… so that…".
+  A user story whose role is a generic "user" rather than a named persona has lost its human anchor.
+- **← `gtm-strategy`**: the persona lives inside the ICP company profile from GTM strategy — the ICP
+  is the *company* type, the persona is the *person* type within it.
+- **← `stakeholder-mapping`**: "Manage Closely" stakeholders often correspond to the primary user,
+  the economic buyer, or the champion — model each distinct role as its own persona.
 
 ---
 
-## Step-by-Step Production
+## Repo Primary Personas
 
-1. Review the ICP from the GTM strategy — the persona must live within that ICP company profile.
-2. Review the stakeholder map — "Manage Closely" stakeholders often correspond to primary or buyer personas.
-3. For each distinct role type in the target company (user, buyer, champion), draft a persona archetype.
-4. Validate each attribute against the problem statement: does this frustration actually relate to the problem you're solving?
-5. Check for anti-patterns. If the persona has no frustrations, no current approach, or no adoption barrier — it is incomplete.
-6. Present personas to Shafi for review before using them in JTBD analysis.
+For the data-estate / compliance product, model at minimum these two primary personas (worked out in
+full, each traceable to a JTBD, in `references/persona-template-and-examples.md`):
 
----
+1. **The Data Steward** — operates the day-to-day mapping and classification workflow; needs an
+   evidence-backed inventory of where sensitive data actually lives.
+2. **The Compliance Officer** — owns the audit/attestation story; needs a defensible gap report across
+   the estate before a SOC 2 window or a customer security questionnaire.
 
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Groundedness | Persona attributes derive from the problem statement, ICP, and stakeholder map | Persona invented without reference to research inputs |
-| Actionability | Every attribute can be used to write or validate a requirement or job story | Attributes that are decorative but don't constrain the product |
-| Completeness | All required attributes are present | Missing goals, frustrations, or current approach |
-| Coverage | At minimum: primary user, buyer, and technical implementer | Single-persona view of a multi-stakeholder product |
-| Exclusion clarity | Anti-persona defined or scope boundary stated | Open-ended "anyone with data" user target |
+Model the economic buyer and technical champion as secondary personas when a multi-stakeholder deal
+requires it — see the examples reference for how to extend beyond the two primaries.
 
 ---
 
-## Output Format
+## Producing the Artifact
 
-```markdown
----
-name: user-personas
-product: [product name]
-version: 1.0.0
-phase: ideate
-created: [date]
-owner: requirements-analyst
-primary-persona: [name]
----
+1. Decide proto or research for this pass, and label it. If no interviews exist yet, it is proto.
+2. Pull the ICP company profile from `gtm-strategy` and the roles from `stakeholder-mapping`.
+3. Draft each field (segment, goals, behaviors, pains, JTBD link) from the best evidence available.
+4. For a research pass, confirm each attribute came from a specific-past-event question, not a
+   hypothetical or a compliment (grounding standard above).
+5. Check anti-patterns: no pains, no current approach, invented demographics, or an unlabeled
+   assumption all mean the persona is not done.
+6. Confirm every persona links to at least one JTBD and can serve as an "As a \<persona\>" story role.
+7. Present to Shafi for review before the personas feed `jtbd-analysis`.
 
-# User Personas
-
-## Persona 1: [Name], [Role Title] — PRIMARY
-
-### Identity
-- **Company:** [size, industry, regulatory exposure]
-- **Technical literacy:** [1-5 scale with description]
-- **Domain expertise:** [shallow / working / deep]
-
-### Goals
-- **Primary:** [the one outcome they most want]
-- **Secondary:** [2-3 others]
-- **Success metric:** [what gets them promoted or recognised]
-
-### Frustrations
-- **Primary frustration:** [biggest pain with current approach]
-- **Secondary frustrations:** [2-3 others]
-- **Current approach:** [how they do it today]
-
-### Behaviours
-- **Decision-making style:** [analytical / relational / spontaneous / methodical]
-- **Risk tolerance:** [low / medium / high]
-- **Information sources:** [where they learn about tools]
-
-### Relationship to Product
-- **Trigger:** [what causes them to start looking for a solution]
-- **Expected time to first value:** [how quickly they need to see value]
-- **Adoption barrier:** [most likely reason they'd abandon after trying]
-
----
-
-## Persona 2: [Name], [Role Title] — BUYER / SECONDARY
-[Repeat structure]
-
----
-
-## Anti-Persona: Who This Product Is NOT For
-[Description of the user type explicitly excluded from the primary design target]
-```
+Template and two fully worked repo personas: `references/persona-template-and-examples.md`.
+Field definitions, grounding, proto→research lifecycle, and what to leave out:
+`references/persona-fields-and-grounding.md`.
