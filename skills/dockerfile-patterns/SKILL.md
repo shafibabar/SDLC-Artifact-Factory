@@ -9,11 +9,11 @@ description: >
   checklist services are audited against. Per-service Dockerfile contents
   remain with go-dockerfile and react-dockerfile. Used by the
   platform-engineer during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
-tags: [deploy, container, oci, distroless, provenance, image-standards, conformance]
+tags: [deploy, container, oci, distroless, provenance, image-standards, conformance, kind, local-dev]
 ---
 
 # Dockerfile Patterns
@@ -97,6 +97,23 @@ Images carry **no** Dockerfile `HEALTHCHECK`. Kubernetes ignores it entirely and
 
 An image is not "built" until it is Trivy-clean (no HIGH/CRITICAL) and Cosign-signed — both enforced in `ci-pipeline`. Admission in the cluster verifies the signature (`security-architecture`); an unsigned digest cannot run in any environment. Base image CVEs surface here too: a Trivy failure on an unchanged Dockerfile means the pinned base needs a bump PR.
 
+### 10. Local Development Image Workflow (kind-local)
+
+Pushing a dev image to a remote registry and pulling it into a local kind cluster adds 60–90 seconds per iteration. The conforming workflow eliminates that round-trip using `kind load docker-image`:
+
+```
+docker build -t <service>:local .
+kind load docker-image <service>:local --name <kind-cluster-name>
+helm upgrade <release> . \
+  --set image.repository=<service> \
+  --set image.tag=local \
+  --set image.pullPolicy=Never
+```
+
+`pullPolicy: Never` is mandatory — it tells Kubernetes to use the image already present in containerd rather than attempting a registry pull (which would fail since no registry serves the `:local` tag). The full iteration cycle becomes: code change → `docker build` → `kind load` → `helm upgrade` → test — typically 5–15 seconds vs 60–90 seconds with a registry round-trip.
+
+Every service's `go-makefile` (or `react-dockerfile`'s companion Makefile) must expose a `make dev-image` or `make local-up` target that executes this full sequence. See `references/local-dev-workflow.md` for the complete implementation, including the local-registry alternative for cases that require registry pull semantics (e.g., image pull secret testing).
+
 ---
 
 ## Conformance Checklist
@@ -115,6 +132,7 @@ Every service image is audited against this table — at introduction, and re-au
 | 8 | No HEALTHCHECK instruction | `docker inspect --format '{{.Config.Healthcheck}}'` is nil |
 | 9 | Trivy-clean, Cosign-signed | CI gate status for the digest |
 | 10 | Logs to stdout/stderr only | No log-file paths configured; verified in kind |
+| 11 | Makefile has `dev-image` or `local-up` target (kind load + helm upgrade with `pullPolicy=Never`) | `make dev-image` in kind-local env completes without registry push; `helm list` shows updated release |
 
 A failed row is a defect filed against the owning engineer's Dockerfile skill (`go-dockerfile` / `react-dockerfile`) — with the row number, so the fix is unambiguous.
 
@@ -147,6 +165,7 @@ Every image runs under the same pod SecurityContext in every tenant's namespace;
 | Budgets gate | Size failure blocks CI | Budgets documented but unenforced |
 | Health authority | No HEALTHCHECK; probes own health | Dockerfile HEALTHCHECK competing with K8s probes |
 | Audit trail | Conformance table current for every image | Services introduced without an audit row |
+| Local loop | `make dev-image` / `make local-up` target present; no registry push for local iterations | Manual `docker build` without `kind load`; registry round-trip on every iteration |
 
 ---
 
@@ -159,6 +178,8 @@ Every image runs under the same pod SecurityContext in every tenant's namespace;
 - **HEALTHCHECK "for local docker"** — it ships to production where it duplicates and contradicts probe semantics. Local compose files can define healthchecks *outside* the image.
 - **Size budget as a dashboard** — an unenforced budget is a graph nobody looks at until pulls are slow across forty tenant namespaces. Gate it in CI.
 - **Auditing once** — a fleet audited at launch and never re-audited converges on non-conformance one Dockerfile edit at a time. Re-audit on change; the checklist is cheap by design.
+- **Registry round-trip in the local loop** — pushing a dev image to a remote registry (or a localhost registry) for local kind testing adds 60–90 seconds per iteration. Use `kind load docker-image` for local iterations; registry push is only for CI and promotion to shared environments.
+- **Missing `pullPolicy: Never`** — loading an image into kind and then deploying with `pullPolicy: IfNotPresent` or `Always` causes Kubernetes to ignore the loaded image and attempt a registry pull, which fails for `:local` tags. `pullPolicy: Never` is required with `kind load docker-image`.
 
 ---
 
