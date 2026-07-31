@@ -8,11 +8,12 @@ description: >
   multiwindow policy that alerting builds on, and the review cadence that keeps
   targets honest. Turns the NFR specification into measurable, enforceable
   operational targets. Used by the platform-engineer during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
-tags: [deploy, observability, slo, sli, error-budget, burn-rate, reliability]
+tags: [deploy, observability, slo, sli, error-budget, burn-rate, reliability, dora, platform-engineering]
+related: [dora-metrics, nfr-specification, prometheus-metrics-design, alerting-rules-design, go-load-test]
 ---
 
 # SLO Definition
@@ -21,6 +22,8 @@ tags: [deploy, observability, slo, sli, error-budget, burn-rate, reliability]
 
 A Service Level Objective (SLO) is the bridge between what users need and what operations enforces. Without one, "is the service reliable enough?" has no answer — every incident is an argument and every alert threshold is a guess. With one, reliability becomes a budget: measurable, spendable, and defensible to a customer.
 
+Every service that has a defined SLO must also have defined delivery-performance targets (see `dora-metrics`). These are not the same dimension: reliability measures how well the service runs; delivery performance measures how efficiently it improves. Both are mandatory; both are reviewed on the same cadence.
+
 Three terms, used exactly (canonical glossary):
 
 - **Service Level Indicator (SLI)** — a quantitative measure of the level of service being provided (e.g. request success rate, latency at the 99th percentile).
@@ -28,6 +31,19 @@ Three terms, used exactly (canonical glossary):
 - **Service Level Agreement (SLA)** — the formal external contract with a customer, with penalties for breach. The SLA is always *looser* than the SLO, so the internal target trips first and there is room to react before money is owed.
 
 The chain through the factory: `nfr-specification` (Discovery) states the reliability requirements → this skill formalises them as SLIs and SLOs → `prometheus-metrics-design` computes the SLIs as recorded series → `alerting-rules-design` pages on budget burn → `go-load-test` verifies the targets hold under peak load before release.
+
+---
+
+## Two Measurement Axes
+
+Every service SLO document contains two parallel measurement sections, not one:
+
+| Axis | What it measures | Defined by | Source skill |
+|---|---|---|---|
+| **Reliability** | How well the service runs for users | SLI/SLO/error-budget | This skill |
+| **Delivery performance** | How efficiently the service improves | DORA four key metrics | `dora-metrics` |
+
+Reliability measures availability, latency, freshness, and correctness. Delivery performance measures Deployment Frequency, Lead Time for Changes, Time to Restore Service, and Change Failure Rate. Both axes are tracked on the same review cadence and treated with equal weight.
 
 ---
 
@@ -103,14 +119,64 @@ Burn rate is what makes SLOs *enforceable*: a fixed error-rate threshold either 
 
 ---
 
+## Delivery Performance Axis — DORA Four Key Metrics
+
+Every service SLO document includes a delivery-performance companion section. The four DORA metrics are (definitions and cluster thresholds from `dora-metrics`):
+
+| Metric | What it measures | High performer target |
+|---|---|---|
+| **Deployment Frequency** | How often the service deploys to production | On demand (multiple times/day or week) |
+| **Lead Time for Changes** | Commit to running in production | < 1 hour |
+| **Time to Restore Service (MTTR)** | Alert-open to service restored | < 1 hour |
+| **Change Failure Rate** | Deployments requiring rollback / all deployments | < 15% |
+
+These targets are set per service, trended over time, and reviewed on the same monthly/quarterly cadence as reliability SLOs. A regression in any DORA metric is treated with the same weight as an SLO burn alert. The raw instrumentation sources:
+
+- **Deployment Frequency** — GitHub Actions workflow run events on main branch (`ci-pipeline`)
+- **Lead Time** — commit timestamp to deploy-complete timestamp (`cd-pipeline`)
+- **MTTR** — alert-open to alert-closed in Alertmanager (`alerting-rules-design`)
+- **Change Failure Rate** — `git revert` events / total promotion events (`cd-pipeline`)
+
+For the delivery-performance definitions and High/Medium/Low cluster thresholds, see `dora-metrics`.
+
+---
+
+## Principle: Reliability and Delivery Performance Reinforce Each Other
+
+*Accelerate* (Forsgren, Humble, Kim) demonstrates through four years of cross-industry survey data that high delivery performance and high reliability are not in tension — they reinforce each other. A team that achieves high Deployment Frequency and low Change Failure Rate is also more reliable, not less. The assumption that shipping faster costs reliability is refuted empirically.
+
+This has a concrete implication for SLO design: an error budget policy that freezes all deploys during budget exhaustion is sound practice, but the correct response to *chronic* budget exhaustion is to increase deployment automation and reduce batch size — not to slow down permanently. Slowing down does not improve reliability; reducing Change Failure Rate and Lead Time does.
+
+Do not trade off these two axes against each other. A service with a healthy SLO and poor delivery-performance metrics is accumulating change-lead-time debt that will eventually surface as an incident.
+
+---
+
+## Platform-as-Product SLOs
+
+The platform itself is a product with internal customers (the engineering teams). Platform capabilities have their own SLIs and SLOs, tracked by the platform-engineer and reviewed alongside service SLOs. These are not optional: a CI pipeline that takes 45 minutes or an environment that takes two days to provision imposes cognitive load and reduces deployment frequency across every service that runs on it.
+
+**Platform SLO targets** (default; adjust to observed baseline as with service SLOs):
+
+| Platform capability | SLI | Target |
+|---|---|---|
+| CI pipeline | P95 job duration | < 10 minutes |
+| Deployment pipeline | Availability (successful pipeline invocations / all invocations) | > 99.5% |
+| Environment provisioning | Time from PR merge to working environment | < 5 minutes |
+
+These targets belong in a **platform SLO record**, a separate document from the service SLO record, reviewed by the platform-engineer on the same monthly cadence. A violation of a platform SLO is treated the same as a service SLO breach: root cause, corrective action, owner, and date.
+
+For the full platform SLO record template, worked examples, and the delivery-performance companion record format, see `references/slo-output-template.md`.
+
+---
+
 ## Review Cadence
 
 SLOs are living targets, reviewed on a schedule — not set once:
 
 | Cadence | Review |
 |---|---|
-| Monthly | Budget consumption per SLO; incidents that spent it; alert noise from `alerting-rules-design` |
-| Quarterly | Are targets still right? Consistently 100% → consider tightening, or bank the slack as deploy freedom. Chronically breached → fix the service or loosen the target honestly |
+| Monthly | Budget consumption per SLO; incidents that spent it; alert noise from `alerting-rules-design`; platform SLO attainment; DORA metric trends per service |
+| Quarterly | Are targets still right? Consistently 100% → consider tightening, or bank the slack as deploy freedom. Chronically breached → fix the service or loosen the target honestly. DORA cluster position: are we trending toward high performer? |
 | On change | New user journey, new NFR, new tenant tier, or architecture change (e.g. Circuit Breaker or Transactional Outbox altering failure modes) → revisit affected SLIs |
 
 An SLO nobody reviews decays into either a false comfort (always green, protecting nothing) or wallpaper (always red, ignored). Both are recorded failures at review, with an action.
@@ -129,6 +195,8 @@ An SLO nobody reviews decays into either a false comfort (always green, protecti
 | Measurability | Each SLI is a recorded Prometheus series (`prometheus-metrics-design`) | SLI that no existing metric can compute |
 | Enforcement chain | Burn-rate windows declared; wired to `alerting-rules-design`; verified by `go-load-test` | SLO document disconnected from alerts and tests |
 | Review | Cadence with owner and dates | Set-and-forget targets |
+| Delivery performance | DORA four metrics present alongside reliability SLOs; instrumentation sources named | Service SLO document with no delivery-performance section |
+| Platform SLOs | CI P95, pipeline availability, environment provisioning targets defined in platform record | Platform capabilities with no SLO |
 
 ---
 
@@ -141,40 +209,12 @@ An SLO nobody reviews decays into either a false comfort (always green, protecti
 - **Unmeasurable SLIs** — "99% of classifications are accurate" without a defined good/valid event and a series to compute it is a wish, not an SLI.
 - **Averages as SLIs** — mean latency under 300ms can hide a p99 of 8 seconds. SLIs use threshold ratios or percentiles, never means.
 - **Budget as a scoreboard only** — tracking burn without the pre-agreed spend policy (budget out → deploys pause) makes the SLO advisory, and advisory targets lose every scheduling argument.
+- **Reliability SLOs without delivery-performance targets** — a service with a healthy error budget and a 6-week deploy lead time is accumulating the technical debt that will eventually exhaust the error budget. Both axes are mandatory.
 
 ---
 
 ## Output Format
 
-Produces the SLO document — one per product, covering every service:
+Produces two artifacts per product: a **service SLO record** (one per product, covering every service) and a **platform SLO record** (one per platform, covering CI, CD, and environment provisioning). Each service also records its DORA delivery-performance targets in the service SLO record under a separate section.
 
-```markdown
----
-name: slo-definition-<product>
-product: <product-name>
-version: 1.0.0
-phase: deploy
-created: <date>
-owner: platform-engineer
----
-
-# Service Level Objectives — <Product>
-
-## Sources
-[NFR specification reference; user journeys each SLO protects]
-
-## SLOs
-| # | Service / journey | SLI (good / valid events) | Measurement (recorded series) | Target | Window |
-
-## Error Budgets
-| SLO | Budget (time) | Budget (requests/items) | Spend policy when exhausted |
-
-## Burn-Rate Policy
-| SLO | Fast-burn windows / threshold | Slow-burn windows / threshold | → alerting-rules reference |
-
-## SLA Mapping
-| External SLA commitment | Backing SLO | Headroom |
-
-## Review
-| Cadence | Owner | Last reviewed | Actions |
-```
+For the full document templates, field-by-field guidance, and a worked example showing both records together, see `references/slo-output-template.md`.
