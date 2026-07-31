@@ -154,3 +154,18 @@ kubectl logs -f deployment/dataasset-api
 No registry, no credentials, no cloud cost — a complete FastAPI-on-Kubernetes dev loop that runs
 entirely on the developer's machine, with the exact same image shape (multi-stage, slim,
 non-root, lockfile-installed) that ships to production.
+
+## Build-time secrets (BuildKit secret mount)
+
+Never `COPY` a secret or pass one via `ENV`/`ARG` — it leaks into `docker history` and remains
+extractable from the layer. A genuinely needed build-time credential (e.g. a private index token
+for `uv`/`pip`) uses a BuildKit secret mount, which is present only during that `RUN` and never
+persists to a layer:
+
+```dockerfile
+RUN --mount=type=secret,id=uv_index_token \
+    UV_INDEX_TOKEN="$(cat /run/secrets/uv_index_token)" uv sync --frozen
+```
+
+Supply it at build time with `docker build --secret id=uv_index_token,src=./token`. This aligns
+with `secrets-management`'s non-negotiables (secrets never at rest in an artifact).

@@ -173,12 +173,10 @@ and rescan weekly for base-image CVE drift. Full rationale and the digest-pin wo
 
 ## No Secrets in Layers
 
-Layers are append-only and individually extractable — a secret `COPY`'d in and `rm`'d later is
-still recoverable from the earlier layer. Never `COPY` a secret; never set a build-time secret as
-an `ENV`/`ARG` (it leaks into `docker history`). A genuinely needed build-time credential (a
-private index token for `uv`/`pip`) uses a BuildKit secret mount, which never persists —
-`RUN --mount=type=secret,id=uv_index_token ...`. This aligns with `secrets-management`'s
-non-negotiables.
+Layers are append-only and individually extractable, so a secret `COPY`'d in and `rm`'d later is
+still recoverable. Never `COPY` a secret and never pass one via `ENV`/`ARG` (it leaks into
+`docker history`); a build-time credential uses a BuildKit secret mount, which never persists. The
+mount syntax and rationale (aligned with `secrets-management`): `references/local-and-security.md`.
 
 ---
 
@@ -201,35 +199,18 @@ non-negotiables.
 
 ## Anti-Patterns
 
-- **Single-stage `pip install`** — ships `build-essential`, the resolver, and caches; multiplies
-  size and attack surface.
-- **`FROM python:3.12` (full) in production** — ~1GB where slim gets the same runtime in
-  ~120–200MB.
-- **Unpinned / un-hashed install** — a build that resolves differently tomorrow than today; the
-  lockfile exists precisely to prevent this.
-- **`COPY . .` before installing dependencies** — every source edit re-resolves and re-downloads
-  every wheel.
-- **Shell-form `ENTRYPOINT`** — `sh` becomes PID 1; `uvicorn` never receives `SIGTERM`; every
-  deploy hard-kills instead of draining.
-- **`gunicorn`-with-workers as PID 1 expecting clean signals** — either run one `uvicorn`, or add
-  an init; do not assume multi-worker + single-PID signal correctness for free.
-- **A `HEALTHCHECK` instruction in the image** — this platform deliberately omits it; liveness and
-  readiness are Kubernetes probes (`kubernetes-manifest`), not baked into the image
-  (`dockerfile-patterns`).
-- **Copying a `.venv` built on the host** — a host venv may hold wrong-platform wheels; always
-  build the venv inside the `build` stage.
+The full anti-pattern list with rationale (single-stage installs, full base in production,
+unpinned installs, `COPY . .` before deps, shell-form `ENTRYPOINT`, `gunicorn`-as-PID-1, baked-in
+`HEALTHCHECK`, host-built `.venv`): `references/multistage-dockerfile.md`.
 
 ---
 
 ## Output Format
 
-**`Dockerfile`** — must contain, in order: a `build` stage on a pinned `python:3.x-slim` tag;
-`COPY` of the lockfile/manifest + a cache-mounted `uv sync --frozen` (or hash-pinned pip install)
-**before** any source copy; `COPY ./app`; a final stage on a pinned slim/distroless-python base;
-`COPY --from=build /app/.venv`; `ENV PATH` prepending the venv; a numeric-UID `USER`; and an
-exec-form `uvicorn` `ENTRYPOINT`. Full listing (uv and pip variants):
-`references/multistage-dockerfile.md`.
+**`Dockerfile`** — a `build` stage (pinned `python:3.x-slim`) that installs deps from the lockfile
+**before** copying source, then a final pinned slim/distroless stage that `COPY --from=build`s the
+venv, prepends it to `PATH`, sets a numeric-UID `USER`, and runs an exec-form `uvicorn`
+`ENTRYPOINT`. Full listing (uv and pip variants): `references/multistage-dockerfile.md`.
 
-**`.dockerignore`** — excludes `.git`, `.github`, docs, `.venv`, `__pycache__`, `*.pyc`,
-`.pytest_cache`, `.mypy_cache`, `.ruff_cache`, env files, and `tests/`. Full listing:
-`references/multistage-dockerfile.md`.
+**`.dockerignore`** — excludes VCS, docs, `.venv`, Python caches, env files, and `tests/`; full
+listing in `references/multistage-dockerfile.md`.
