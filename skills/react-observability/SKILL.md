@@ -19,7 +19,7 @@ description: >
   privacy rules across all telemetry surfaces, and testing the telemetry layer
   with InMemorySpanExporter without live collectors. Used by the frontend-
   engineer during Implement.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
@@ -36,10 +36,8 @@ browser to the SRE Four Golden Signals: Core Web Vitals cover **latency**
 (LCP/INP) and **saturation** (Long Tasks blocking the main thread);
 GlitchTip events cover **errors**; OTel spans cover **traffic** at the
 interaction level. Five standards govern the implementation, in the order
-they apply during development. Full code for every standard:
-`references/error-boundary-and-reporting-standard.md`,
-`references/tracing-and-web-vitals-standard.md`,
-`references/telemetry-initialization-and-testing.md`.
+they apply during development. Full code for every standard lives in the three
+`references/` files, cited per standard below.
 
 ---
 
@@ -187,20 +185,14 @@ and Sentry context (same). Full `session.ts` implementation and injection points
 
 ## Testing the Telemetry Layer
 
-Telemetry code is production code — test it first.
-
-- **Error boundary:** render a throwing component; assert fallback renders and
-  `reportClientError` is called with the right `kind`/`componentStack`/`trace_id`.
-- **`scrubEvent`:** pass a synthetic Sentry event with `cookies`, `Authorization`,
-  `query_string`, `data` populated; assert all four are absent from the return.
-- **OTel spans:** inject `@opentelemetry/sdk-trace-base`'s `InMemorySpanExporter`
-  as the exporter in test setup; run the code under test; assert on recorded
-  spans without touching a collector.
-- **Web Vitals:** `web-vitals` measurements are not unit-testable (they need a
-  real browser paint); verify the reporting pipeline in a Playwright test or
-  leave the histogram record call shallow and assert on span attributes instead.
-
-Full mock setup, provider test harness, and assertion patterns:
+Telemetry code is production code — test it first, and without a live collector:
+throw inside the boundary and assert the fallback plus the `reportClientError`
+call (`kind`/`componentStack`/`trace_id`); feed `scrubEvent` a populated synthetic
+event and assert every sensitive field is stripped; assert on OTel spans via
+`@opentelemetry/sdk-trace-base`'s `InMemorySpanExporter`; and verify the env gate
+skips init outside prod — the single most important test in the suite. `web-vitals`
+needs a real paint, so verify its pipeline in Playwright, not a unit test. Full
+mock setup, provider test harness, per-surface recipes, and the env-gate test:
 `references/telemetry-initialization-and-testing.md` §4.
 
 ---
@@ -215,41 +207,11 @@ consent for analytics even though RUM performance data is operational.
 
 ---
 
-## Quality Criteria
+## Reviewer Checklist
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Initialization order | Sentry → OTel → render → vitals; env-gated in non-prod | Any init after `React.render`; collectors hit in unit tests |
-| Boundary is a class | `getDerivedStateFromError`/`componentDidCatch`, unaltered | "Hookified" into a nonexistent hook |
-| Two-tier placement | One boundary per remote at shell; one per independently-failing organism inside each remote | One top-level boundary; a remote with no internal boundaries |
-| Error reporting | GlitchTip via `@sentry/react`; `beforeSend` wired; payload contract met; sourcemaps uploaded in CI | No reporting; unscrubbed events; `email`/`username` sent; minified stacks in production |
-| No competing tracers | Sentry's `browserTracingIntegration` disabled; OTel owns tracing | Two span trees for one request |
-| Trace propagation | `traceparent` on API calls; backend extracts before `tracer.Start`; `trace_id` in Sentry tag | Severed trace at browser/server boundary |
-| Per-remote scoped tracers | Remotes call `trace.getTracer(name, version)` from shared provider | Remote calls `provider.register()` — overwrites global, severs in-flight spans |
-| Sampling configured | `TraceIdRatioBasedSampler` in production; always-sample in dev | 100% sampling in production; 0% in dev |
-| Session correlation wired | `session.id` in span attributes and Sentry extra; `user.id`/`tenant_id` set post-auth | No cross-signal anchor; `session.id` on a metric label |
-| Web Vitals captured | LCP/INP/CLS (not FID); OTel histograms; custom bucket boundaries; force-flushed on `hidden` | FID reported; default buckets; no flush — worst sessions missing |
-| Shared observability stack | Frontend metrics in the backend's Prometheus/Grafana | Separate frontend-only RUM dashboard |
-| Privacy-safe | No PII/secrets in any telemetry surface | Emails/tokens/file contents in spans, metrics, or error events |
-
----
-
-## Anti-Patterns
-
-| Anti-pattern | Instead |
-|---|---|
-| Telemetry initialized after `React.render` | Initialize Sentry then OTel then render then vitals — in that order, in `main.tsx` |
-| Hookifying the error boundary | No `useErrorBoundary` exists; the class stays a class |
-| One top-level boundary or a remote with none inside | Two tiers: shell wraps each remote; each remote wraps each independent organism |
-| `browserTracingIntegration` alongside OTel Web | Disable it — two tracers, two `fetch` patches, two uncorrelated span trees |
-| Remote calls `provider.register()` again | Call `trace.getTracer(name, version)` from the shared provider only |
-| 100% sampling in production | `TraceIdRatioBasedSampler(0.1)` or similar; always-on in dev only |
-| `session.id` as a metric attribute | High cardinality — millions of Prometheus series at real session volumes; use span attributes and Sentry extra |
-| No sourcemaps in production | Upload via `@sentry/vite-plugin` in the prod build; minified stacks are useless |
-| PII in error payload or span attributes | `user: { id, tenant_id }` only; `beforeSend` strips cookies, tokens, raw querystrings |
-| Reporting FID or flushing on `unload` | FID is retired; `unload` drops the worst sessions — use INP and flush on `visibilitychange`→`hidden` |
-| Observability active in unit tests | Gate all init on `import.meta.env.PROD` or an explicit opt-in env var |
-| Separate frontend-only RUM tool | OTLP/HTTP to the same collector; one Grafana, one Prometheus |
+The full pass/fail **Quality Criteria** table (one row per standard) and the
+**Anti-Patterns** table (each mistake paired with its replacement) are the
+cross-cutting reviewer checklist: `references/telemetry-initialization-and-testing.md` §5.
 
 ---
 
