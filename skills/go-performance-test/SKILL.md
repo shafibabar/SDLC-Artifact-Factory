@@ -1,123 +1,86 @@
 ---
 name: go-performance-test
 description: >
-  Teaches performance regression testing in Go — using benchmarks as a quality gate
-  (establishing baselines, detecting regressions with benchstat in CI), distinct
-  from the backend-engineer's optimization-time benchmarking. Covers writing stable
-  benchmarks, allocation tracking, baseline management, statistically sound
-  comparison, profiling a regression, and gating per-operation performance against
-  agreed budgets. The shift-right guard that performance does not silently rot.
+  This plugin's CI-gated performance-regression-testing standard for Go — the
+  third and final owner in a three-way benchmark boundary alongside
+  go-performance-optimization (optimization workflow and profiling
+  methodology) and go-makefile (the single-run, dev-time `bench` target).
+  This skill owns the thing those two only cite: the stored `benchstat`
+  baseline, the exact `-count=10` comparison workflow, a reasoned tolerance
+  threshold, and the CI job that fails a build on a statistically significant
+  regression — never a silent auto-accept. Covers table-driven benchmark
+  enrollment matching the unit-test convention
+  (references/benchmark-and-regression-gate-standard.md, alongside the full
+  baseline/CI-gate mechanics) and concrete numeric performance budgets tied to
+  this repo's data-estate-mapping domain — an in-process p99 handler-logic
+  budget and a per-request allocation budget, both derived from
+  slo-definition's 800ms ClassifyDataAsset latency SLO and multi-tenancy-
+  design's physical-isolation model (references/performance-budgets.md).
   Used by the test-strategist during Quality.
-version: 1.1.0
+version: 2.0.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
-tags: [quality, go, performance, benchmark, benchstat, regression, baseline]
+tags: [quality, go, performance, benchmark, benchstat, regression, baseline, ci-gate, performance-budget]
+related: [go-performance-optimization, go-makefile, go-load-test, slo-definition, multi-tenancy-design, test-pyramid]
 ---
 
 # Go Performance Test
 
 ## Purpose
 
-Performance degrades one innocuous commit at a time — a needless allocation here, an N+1 query there — until the system is slow and no one knows which change did it. Performance regression testing prevents that: it establishes a **baseline** for the operations that matter, then fails CI when a change makes them measurably worse. Performance becomes a tested, gated property, not a thing you notice in production.
-
-This is distinct from the backend-engineer's `go-performance-optimization` (which uses benchmarks to *make code faster* during development). Here, the same Go benchmarks are used to **gate against regression** — the test-strategist owns performance as a quality attribute with baselines and CI enforcement.
+Performance degrades one innocuous commit at a time — a needless allocation here, an N+1 query there — until the system is slow and no one knows which change did it. This skill closes that gap with two things neither sibling skill provides: a **committed statistical baseline**, and a **CI job that fails the build** when a change regresses beyond a reasoned tolerance. Performance becomes a tested, gated property, not a thing noticed in production. Authored and run by the test-strategist during Quality.
 
 ---
 
-## Boundary with Backend Optimization
+## The Three-Way Boundary — Read This Before Reaching for Any Reference
 
-| | `go-performance-optimization` (backend-engineer) | `go-performance-test` (test-strategist) |
-|---|---|---|
-| Goal | Make a hot path faster | Stop performance from regressing |
-| When | Dev-time, while optimising | CI, continuously, every change |
-| Output | Optimised code + a one-off profile | Baselines + a regression gate |
-| Question | "Can this be faster?" | "Did this get slower than agreed?" |
+Three skills share the identical `testing.B`/`benchstat` machinery for three deliberately non-overlapping jobs. Getting this wrong means duplicating work another skill already owns:
 
-They share the benchmark *mechanism* (`testing.B`, `ReportAllocs`, pprof) but serve different owners and goals. No duplication: the engineer writes the benchmark to optimise; the strategist enrolls it into the baseline gate.
+| | `go-performance-optimization` | `go-makefile` | `go-performance-test` (this skill) |
+|---|---|---|---|
+| What runs | One hand-run before/after pair while actively optimizing a hot path | `make bench` — a single, unreplicated `-bench=. -benchmem` pass, no `-race` | `-count=10` sweep piped through `benchstat` against a **committed baseline**, its own CI job |
+| Proves | *This specific PR* helped | "Did the number I just changed go down" — directional only | A regression on **every subsequent change** is caught automatically, statistically |
+| Owns | Profiling methodology, algorithmic-complexity reasoning, `testing.B` writing conventions | The single-run dev-time target only | The baseline file, the `-count=10` sweep, the tolerance threshold, the merge-blocking gate |
 
----
-
-## Stable Benchmarks
-
-A benchmark used for gating must be stable, or its noise will cause false regressions. The same discipline as a good test:
-
-```go
-func BenchmarkClassifyHandler(b *testing.B) {
-    h, fixture := setupClassifyBench(b)   // setup OUTSIDE the timed loop
-    b.ReportAllocs()
-    b.ResetTimer()                        // exclude setup from the measurement
-    for i := 0; i < b.N; i++ {
-        if err := h.Handle(fixture.ctx, fixture.cmd); err != nil {
-            b.Fatal(err)
-        }
-    }
-}
-```
-
-Rules: setup outside the loop + `ResetTimer`; no allocation in the harness that isn't part of what you're measuring; deterministic fixtures (no random/network); benchmark a meaningful unit (a handler, a serialization, a query path), not a trivial getter.
+This skill does not restate `testing.B` conventions (`b.ReportAllocs()`, setup outside `b.ResetTimer()`, deterministic fixtures) — that is `go-performance-optimization`'s `references/benchmark-writing-standard.md`. It does not restate profiling — that is `go-performance-optimization`'s `references/profiling-workflow.md`. This skill's unique territory is what happens to a benchmark **after** it exists: enrollment into a tracked baseline, the statistical comparison, and the CI gate itself.
 
 ---
 
-## Baselines and benchstat
+## Table-Driven Benchmark Enrollment
 
-A single benchmark run is noise; performance is compared **statistically** across multiple runs with `benchstat`, which reports the delta and whether it's significant. Read the `p=` value, not just the percentage: a "+8%" with `p=0.451` is noise, a "+8%" with `p=0.000` is a regression. benchstat marks statistically indistinguishable results with `~` — a `~` is never a regression, whatever the raw delta says.
+A benchmark becomes gated by where it lives, not by a separate manifest to maintain: any `func BenchmarkX(b *testing.B)` inside `internal/**/*_bench_test.go` is swept by `-bench=.` and enrolled automatically — the same filename-pattern-as-policy convention `go-makefile`'s coverage filter and `go-mutation-test`'s package targeting already use. Tracked operations use **named sub-benchmarks over a table**, the identical shape `go-unit-test`'s table-driven convention uses for correctness tests, so `benchstat` can compare each case by name independently rather than one undifferentiated average: full worked example, the enrollment rule in detail, the stored-baseline mechanism, the exact `benchstat` workflow, the tolerance threshold and its reasoning, and the CI job in full: `references/benchmark-and-regression-gate-standard.md`.
+
+---
+
+## The Stored Baseline — Deliberate, Never Automatic
+
+`testdata/perf/baseline.txt` is committed and regenerated only two ways: (1) inside the same PR that deliberately trades speed for a feature, visibly reviewed; (2) on a scheduled cadence tied to tagged releases, to keep the baseline honest against gradual drift without becoming a rubber stamp. **The baseline is never regenerated automatically on every merge** — doing so would let a slow regression quietly become the new "normal," defeating the entire point of the gate. Full mechanics: `references/benchmark-and-regression-gate-standard.md`.
+
+---
+
+## benchstat, the Tolerance Threshold, and CI Failure
 
 ```bash
-# Baseline (committed) vs the PR — multiple counts for statistical validity
-go test -run=^$ -bench=. -benchmem -count=10 ./... > new.txt
-benchstat baseline.txt new.txt
+go test -run=^$ -bench=. -benchmem -count=10 ./internal/... > new.txt
+benchstat testdata/perf/baseline.txt new.txt
 ```
 
-```
-name              old time/op    new time/op    delta
-ClassifyHandler   12.4µs ± 2%    18.1µs ± 3%    +46%  (p=0.000 n=10)   ← regression, gate fails
-ClassifyHandler   320 B/op       512 B/op       +60%  (allocs up too)
-```
-
-The baseline is committed and updated deliberately (an intentional change that trades speed for a feature updates the baseline in the same PR, visibly reviewed) — never silently.
+A regression fails the gate only when it clears **both** a stated tolerance (this repo's default: **12%**, reasoned to absorb shared-CI-runner noise without hiding a real regression — see the full reasoning in the reference below) **and** statistical significance (`p < 0.05`); a `~`-marked delta is noise, never a gate failure, whatever the raw percentage claims. On failure the build fails outright — the only two ways forward are a genuine fix, or an explicit, reviewed baseline-update commit; the gate never silently accepts a new, slower baseline on its own. Exact CI job YAML, the noise/threshold reasoning, and allocs-tracked-alongside-time detail: `references/benchmark-and-regression-gate-standard.md`.
 
 ---
 
-## The CI Gate
+## Performance Budgets for the Data-Estate-Mapping Product
 
-A performance gate runs the benchmarks against the baseline and **fails on a significant regression beyond a threshold** (e.g., >10% on a tracked operation). Because full benchmark runs are slower than unit tests, the gate runs on a dedicated job (and can be scoped to the critical operations), not inline with every fast test.
-
-```
-perf-gate:
-  go test -run=^$ -bench=. -benchmem -count=10 ./internal/... > new.txt
-  benchstat baseline.txt new.txt
-  fail if any tracked benchmark regresses > threshold with significance (p < 0.05)
-```
-
-This catches the "innocuous" slow-down at the PR that introduced it — the cheapest possible moment.
-
----
-
-## Tracked Operations and Budgets
-
-Not everything is gated — only the operations whose performance matters to an SLO or a hot path:
-
-| Operation | Why tracked | Budget signal |
-|---|---|---|
-| Command handler (classify) | On the write hot path | time/op + allocs/op baseline |
-| Event serialization / envelope | Runs per event in the pipeline | allocs/op (GC pressure) |
-| Read-model query | On the read hot path | time/op |
-| Outbox drain batch | Throughput-critical | time/op per batch |
-
-Allocations are tracked as first-class, not just time — they drive GC pressure and are often the leading indicator of a regression (the mechanical-sympathy link to the backend skill).
+Tracked benchmarks are judged against concrete numeric budgets, not left to "whatever the baseline happens to be": an in-process p99 handler-logic time budget and a per-request allocation budget, both derived from `slo-definition`'s 800ms ClassifyDataAsset command-API latency SLO and `multi-tenancy-design`'s physical-isolation model (no per-row tenant filtering cost on this stack — the isolation is paid once, at the infrastructure layer; the per-request cost this budget accounts for is tenant-context enrichment for audit traceability). Full budget table, the SLO-to-budget derivation, and the multi-tenancy grounding: `references/performance-budgets.md`.
 
 ---
 
 ## Diagnosing a Regression
 
-When the gate fails, the workflow mirrors the optimisation discipline:
-
-1. **Confirm** it's real (re-run with higher `-count`; rule out a noisy runner).
-2. **Profile** the regressed benchmark (`-cpuprofile`/`-memprofile`; `go tool pprof`) to find what changed.
-3. **Fix** the regression, or — if the slowdown is an accepted trade-off — update the baseline with a reviewed justification.
-
-Relate findings back to `go-performance-optimization` for the actual fix; this skill's job is to *catch and gate*, the backend's is to *optimise*.
+1. **Confirm it's real** — re-run at higher `-count`; rule out a noisy runner before trusting one comparison.
+2. **Profile it** — hand off to `go-performance-optimization`'s `references/profiling-workflow.md`; this skill catches and gates, it does not re-teach diagnosis.
+3. **Fix it, or update the baseline** — a deliberate trade-off rides in the same PR, reviewed, per the Stored Baseline section above.
 
 ---
 
@@ -125,35 +88,34 @@ Relate findings back to `go-performance-optimization` for the actual fix; this s
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Stable benchmarks | Setup outside the loop; deterministic; `ReportAllocs` | Noisy benchmarks causing false regressions |
-| Statistical comparison | `benchstat` over multiple counts | Eyeballing single-run numbers |
-| Committed baseline | Baseline tracked; updated deliberately + reviewed | No baseline; silent drift |
-| Gated in CI | Regression beyond threshold fails the build | Performance measured but never gated |
-| Right operations | Hot-path/SLO operations tracked | Gating trivial code; missing hot paths |
-| Allocs tracked | allocs/op baselined alongside time | Only wall-time tracked |
-| Clear boundary | Gating here; optimisation in the backend skill | Re-deriving optimisation guidance here |
+| Boundary respected | No restated `testing.B`/profiling content; cites `go-performance-optimization` and `go-makefile` | Benchmark-writing or profiling guidance duplicated here |
+| Table-driven enrollment | Tracked benchmarks use named sub-benchmarks in `internal/**/*_bench_test.go` | Ungrouped `BenchmarkX` per case, unnamed and uncomparable by `benchstat` |
+| Baseline committed, deliberate | `testdata/perf/baseline.txt` tracked; regenerated only via reviewed PR or scheduled release cadence | No baseline; regenerated automatically on every merge |
+| Statistical comparison | `-count=10` piped through `benchstat`; both threshold **and** `p<0.05` required to fail | Single-run comparison; percentage-only judgment ignoring significance |
+| Threshold reasoned | 12% stated with CI-noise rationale; overridable via `sdlc-config-management` | Zero-tolerance gate (flaky) or unstated/arbitrary threshold |
+| Dedicated CI job | Runs as its own job, separate from `make ci`, never blocking the fast PR loop | Wired into the fast unit-test loop, or not gated in CI at all |
+| Gate blocks merge | Regression beyond threshold fails the build; only fix or reviewed baseline-update unblocks | Gate measured but advisory; build passes regardless |
+| Allocs tracked | `allocs/op` baselined and gated alongside `time/op` | Only wall-time tracked |
+| Budgets grounded | p99 handler and per-request allocation budgets traced to `slo-definition`/`multi-tenancy-design` | Arbitrary numeric targets with no domain derivation |
+| Right operations tracked | Hot-path/SLO-relevant operations enrolled | Trivial code gated; real hot paths missing |
 
 ---
 
 ## Anti-Patterns
 
-- **Gating on a single run** — run-to-run variance on any machine exceeds most real regressions; only a benchstat comparison over `-count=10`-style samples is evidence.
-- **Treating every delta as a regression** — a delta without significance (`~`, high `p`) is noise; gating on it teaches people to ignore the gate.
-- **Benchmarking work the compiler can delete** — if the result is unused, the optimizer may remove the call and you benchmark an empty loop; keep the result (assign to a package-level sink) or check the error as the sample does.
-- **Setup inside the timed loop** — fixture construction dominates the measurement; setup before `b.ResetTimer()`.
-- **Silently updating the baseline** — a baseline change is a performance decision; it rides in the same PR as the change that caused it, visibly reviewed.
-- **Gating on shared noisy runners without headroom** — a 2% threshold on a busy CI VM is a flake factory; widen the threshold or use a quiet dedicated job.
-- **Tracking time but not allocations** — allocs/op regressions surface as GC pressure later; they are the leading indicator.
+- **Duplicating `testing.B` or profiling content here** — that is `go-performance-optimization`'s domain; this skill cites, never restates.
+- **Gating on a single run** — run-to-run variance exceeds most real regressions; only a `benchstat` comparison over `-count=10` is evidence.
+- **Silently updating the baseline** — a baseline change is a performance decision; it rides in the same PR, visibly reviewed, or on the scheduled cadence — never a script's automatic response to a failed gate.
+- **Zero-tolerance thresholds on shared CI runners** — a flake factory; the reasoned 12% absorbs noise without hiding real regressions.
+- **Treating every delta as a regression** — a `~`-marked or high-`p` delta is noise, not evidence, whatever the raw percentage claims.
+- **Wiring the gate into `make ci`** — a `-count=10` sweep is too slow for the fast PR-loop budget `ci-pipeline` holds every other gate to; it runs as its own dedicated job.
+- **Arbitrary numeric budgets** — a p99 or allocation target invented with no derivation from `slo-definition`'s actual SLOs is unfalsifiable and gets silently loosened the first time it's inconvenient.
 
 ---
 
 ## Output Format
 
-Produces the performance gate and its baselines:
-
-```
-internal/**/*_bench_test.go            (gating benchmarks for tracked operations)
-testdata/perf/baseline.txt              (committed baseline)
-.github/workflows/perf-gate.yml         (benchstat regression gate)
-docs/quality/perf-budgets.md            (tracked operations + thresholds)
-```
+- **`internal/**/*_bench_test.go`** — table-driven, named tracked benchmarks (per the enrollment convention above), `b.ReportAllocs()` always on. Never a bare, unnamed `BenchmarkX` when the operation has more than one meaningful case.
+- **`testdata/perf/baseline.txt`** — the committed statistical baseline, `benchstat`-formatted output of a `-count=10` run. Regenerated only via a reviewed PR or the scheduled release-tagged cadence — never by an automatic script on merge.
+- **`.github/workflows/perf-gate.yml`** — the dedicated CI job: `-count=10` sweep, `benchstat` against the committed baseline, fails on threshold-and-significance, never wired into `make ci`. Exact YAML: `references/benchmark-and-regression-gate-standard.md`.
+- **`docs/quality/perf-budgets.md`** — the tracked-operations table with each budget's numeric target and its SLO/domain derivation, reviewed on the same cadence `slo-definition`'s SLO document already undergoes.

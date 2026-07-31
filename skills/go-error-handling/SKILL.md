@@ -1,177 +1,103 @@
 ---
 name: go-error-handling
 description: >
-  Teaches the plugin's Go error-handling standard — errors as values (never
-  discarded), wrapping with %w to preserve the chain, sentinel and typed errors,
-  inspection with errors.Is and errors.As, where errors are translated between
-  layers, the validation-error aggregation pattern, and the strict boundary on
-  panic/recover (panics only for unrecoverable states, recovered only at runtime
-  boundaries). This is a cross-cutting standard every other backend skill follows.
-  Used by the backend-engineer during Implement.
-version: 1.1.0
+  This plugin's error-handling authority — nearly every other Go skill
+  (go-project-structure, go-domain-model, go-repository-pattern,
+  go-service-layer, go-chi-handler, go-middleware, go-concurrency-patterns)
+  cross-references this skill for general error taxonomy, wrapping, message
+  standards, and panic/recover discipline rather than restating it. Covers:
+  the full error taxonomy (sentinel vs. typed vs. domain vs. infrastructure
+  vs. application errors, with exact selection criteria —
+  references/error-taxonomy-and-wrapping.md); the wrapping/unwrapping
+  standard (fmt.Errorf with %w, errors.Is/errors.As usage rules, and the
+  wrap-chain-depth smell threshold — same reference); the nil-concrete-
+  value-in-a-non-nil-error-interface footgun, independently compiled and
+  verified against Go 1.23.4 (references/worked-example.md); the error
+  MESSAGE standard (actionable, includes relevant IDs, never leaks secrets,
+  a consistent lowercase/no-trailing-punctuation convention, a worked
+  good-vs-bad table — references/error-message-standards.md); the strict
+  two-place panic/recover boundary and the log-once-at-the-boundary
+  anti-pattern, named "log-and-return duplication"
+  (references/panic-recover-and-logging.md); and the error-path testing
+  standard — coverage expectations, asserting wrapped errors correctly with
+  errors.Is/errors.As (references/testing-error-paths.md). Used by the
+  backend-engineer during Implement.
+version: 3.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, go, errors, error-wrapping, errors-is, errors-as, panic, recover]
+tags: [implement, go, errors, error-wrapping, errors-is, errors-as, panic, recover, error-messages, error-taxonomy, logging, testing]
+related: [go-domain-model, go-repository-pattern, go-project-structure, go-service-layer, go-middleware, go-chi-handler, go-unit-test, go-concurrency-patterns]
 ---
 
 # Go Error Handling
 
 ## Purpose
 
-Errors are part of the contract of every function, not an afterthought. This skill is the cross-cutting standard that the domain, repository, application, and handler skills all follow. Done right, an error carries enough context to diagnose a production incident from a single log line, can be inspected programmatically to make decisions, and never silently disappears.
+Errors are part of every function's contract, not an afterthought. This is the cross-cutting standard the domain, repository, application, and handler skills defer to for general taxonomy, wrapping, message quality, and panic/recover discipline — each sibling skill owns only its own layer-specific application of these rules. Done right, an error carries enough context to diagnose an incident from a single log line, is inspectable programmatically, and never silently disappears.
 
-The blueprint's rule is absolute: **never discard an error.** `_ = doThing()` is a defect unless accompanied by a comment justifying exactly why the error is provably irrelevant.
-
----
-
-## Errors Are Values
-
-Go has no exceptions for ordinary failure. A function that can fail returns an `error` as its last value, and the caller handles it explicitly.
-
-```go
-asset, err := repo.FindByID(ctx, id)
-if err != nil {
-    return fmt.Errorf("classifying asset: %w", err) // handle: wrap and return
-}
-```
-
-Handling means one of: return it (usually wrapped), recover from it (retry, fallback), or — rarely, with justification — deliberately ignore it. Logging an error and continuing as if it didn't happen is **not** handling it.
+The rule is absolute: **never discard an error.** `_ = doThing()` is a defect unless a comment justifies exactly why the error is provably irrelevant. Handling means one of: return it (usually wrapped), recover from it, or — rarely, with justification — deliberately ignore it. Logging an error and continuing as if nothing happened is **not** handling it.
 
 ---
 
-## Wrapping with %w
+## The Error Taxonomy
 
-Wrap an error with `fmt.Errorf("...: %w", err)` to add context while preserving the original for inspection. Each layer adds *what it was doing*, building a chain that reads like a stack trace in words.
+Every error is one of five kinds, chosen mechanically, not by style preference:
 
-```go
-// Each wrap adds context; the %w verb keeps the chain inspectable.
-"commit: write outbox DataAssetClassified: connection reset by peer"
-```
-
-Rules:
-- **Add context, don't restate.** `"querying data asset %s: %w"` — say what operation, include the key identifier.
-- **`%w` exactly once per wrap.** Use `%v` if you deliberately want to *break* the chain (rare — e.g., to avoid leaking an internal error type across a public boundary).
-- **Don't wrap at every call** — wrap where you add genuine context (crossing a layer, naming the operation). Over-wrapping produces noise.
-- **No PII or secrets in error text** — errors get logged (see security `privacy-design`).
-
----
-
-## Sentinel Errors and Typed Errors
-
-Two ways to make an error programmatically actionable:
-
-### Sentinel errors — for known, parameter-free conditions
-
-```go
-// internal/domain/errors.go
-package domain
-
-import "errors"
-
-var (
-    ErrNotFound                = errors.New("resource not found")
-    ErrForbidden               = errors.New("forbidden")
-    ErrConcurrentModification  = errors.New("concurrent modification")
-    ErrInvalidSensitivity      = errors.New("invalid sensitivity level")
-    ErrCannotDowngradeSilently = errors.New("sensitivity cannot be downgraded without explicit reclassification")
-)
-```
-
-Callers test with `errors.Is(err, domain.ErrNotFound)` — it walks the wrap chain, so a deeply-wrapped sentinel is still detected.
-
-### Typed errors — when the error carries data
-
-```go
-type ValidationError struct {
-    Field   string
-    Message string
-}
-func (e ValidationError) Error() string { return e.Field + ": " + e.Message }
-
-// Inspect and extract with errors.As:
-var ve ValidationError
-if errors.As(err, &ve) {
-    // use ve.Field, ve.Message
-}
-```
-
-Use a sentinel when the condition is a fact; use a typed error when the caller needs structured detail from it.
-
----
-
-## errors.Is vs errors.As
-
-| Function | Question it answers | Use |
+| Kind | Use when | Declared |
 |---|---|---|
-| `errors.Is(err, target)` | "Is this (anywhere in the chain) that specific error?" | Matching sentinels |
-| `errors.As(err, &target)` | "Is there an error of this type in the chain? Give it to me." | Extracting typed errors |
+| **Sentinel** | Condition is parameter-free — a fact, not data (`ErrNotFound`) | `var ErrX = errors.New(...)` |
+| **Typed** | Caller plausibly needs a specific value out of the failure | `type XError struct{...}` |
+| **Domain** | A business rule or invariant | Aggregate's own package (`go-domain-model`) |
+| **Infrastructure** | Never its own vocabulary — always translated at the boundary | Inline, at the call site (`go-repository-pattern`) |
+| **Application** | Rare — a use-case condition owned by no single Aggregate | `internal/application/*/errors.go`, only when genuinely needed |
 
-Never compare with `==` (`err == domain.ErrNotFound`) — it fails the moment the error is wrapped. Always `errors.Is`.
-
----
-
-## Translating Errors at Layer Boundaries
-
-An error type should not leak across an abstraction boundary. The repository translates infrastructure errors (pgx) into domain sentinels so the application layer never imports pgx (see `go-repository-pattern`):
-
-```go
-case errors.Is(err, pgx.ErrNoRows):
-    return nil, fmt.Errorf("data asset %s: %w", id, domain.ErrNotFound) // pgx → domain
-```
-
-The HTTP handler then translates domain errors into status codes in one place (see `go-chi-handler`). Each layer speaks its own error vocabulary; the boundaries translate.
+Full criteria, code, and the sentinel-vs-typed decision worked out for a real Aggregate's full error roster: `references/error-taxonomy-and-wrapping.md`.
 
 ---
 
-## Aggregating Validation Errors
+## Wrapping and Unwrapping
 
-Structural validation returns **all** problems at once, not the first — a caller fixing a form should see every field error in one round trip (see `go-chi-handler`).
+Wrap with `fmt.Errorf("...: %w", err)` at every layer that adds genuine context — never restate, never wrap with no context added, `%w` exactly once per wrap. Inspect with `errors.Is(err, target)` for a sentinel and `errors.As(err, &target)` to extract a typed error's fields — never `==`, which breaks the instant an error is wrapped.
 
-```go
-func (r classifyRequest) validate() []ValidationError {
-    var errs []ValidationError
-    // append one per invalid field …
-    return errs
-}
-```
-
-For combining independent operational errors (e.g., multiple cleanup failures), use `errors.Join`:
-
-```go
-err = errors.Join(err, fmt.Errorf("rollback: %w", rbErr)) // both inspectable via errors.Is
-```
+A wrap chain deeper than **three to four levels** is a smell: it usually means a layer is leaking internal detail upward instead of translating it into its own vocabulary. Combine independent operational failures with `errors.Join`, not another layer of `%w`. Full rules, the exact `errors.Is`/`errors.As` decision table, and the depth-smell reasoning: `references/error-taxonomy-and-wrapping.md`.
 
 ---
 
-## Panic and Recover — the Strict Boundary
+## The Nil-Interface Footgun
 
-`panic` is reserved for **unrecoverable** states: a programming error or a failed critical initialisation that makes continuing meaningless. It is **never** flow control for ordinary failure.
+A **typed nil is not the same as a nil `error`.** An `error` value is a two-word interface — a type word and a value word — and `err != nil` is true whenever the type word is set, even when the value word is nil. A function that declares a nil-valued, concrete-typed error variable (`var verr *ValidationError`) and returns it directly through an `error`-typed result always produces a non-nil interface, even when nothing went wrong.
 
-| Situation | Mechanism |
-|---|---|
-| User sent bad input | return an error (422/400) — not a panic |
-| Downstream DB is down | return a wrapped error; retry/circuit-break | 
-| Required config missing at startup | acceptable to `panic`/fatal in `main` — the process cannot run |
-| Invariant that "can't happen" violated (e.g., tenant missing after auth) | `panic` — it's a bug; caught at the boundary |
+**Never do this.** Return the bare `nil` literal for the no-error path, either directly or via an explicit conditional when converting a helper's typed-pointer result. Full wrong/right example, independently compiled and verified against Go 1.23.4: `references/worked-example.md`.
 
-`recover` lives only at **runtime boundaries**, so a panic degrades one request instead of crashing the process:
+---
+
+## Error Message Standards
+
+Every message is actionable, includes the relevant ID, never leaks a secret or PII, and follows one casing convention: lower-case start, no trailing punctuation — so wrapped fragments compose cleanly at any depth (`"classifying: loading data asset 7f3e: not found"`, never a capitalized or punctuated fragment mid-chain). Good: `"loading data asset %s: %w"`. Bad: `"Error loading data asset."` (capitalized, punctuated, no ID) or anything containing a raw connection string, token, or full PII. Full good-vs-bad table and the reasoning for each rule: `references/error-message-standards.md`.
+
+---
+
+## Panic and Recover — the Two-Place Boundary
+
+`panic` is reserved for unrecoverable states — a programming error, or a failed critical initialisation that makes continuing meaningless. It is never flow control for an ordinary failure (bad input, a downstream outage): those return errors. `recover` lives in exactly two places in this repo's generated code:
 
 - The HTTP `Recoverer` middleware (one per chain — see `go-middleware`)
 - The top of each spawned goroutine that could panic (so a worker panic doesn't take down the pool)
 
-```go
-g.Go(func() (err error) {
-    defer func() {
-        if r := recover(); r != nil {
-            err = fmt.Errorf("panic in worker: %v", r) // convert panic → error, propagate to owner
-        }
-    }()
-    return work(gctx, job)
-})
-```
+A `recover` anywhere else is a smell — almost always a panic used as control flow, or a failure silently absorbed instead of propagated to its owner. Full placement rules, the worker-goroutine conversion pattern, and why `Recoverer` specifically must be the outermost middleware: `references/panic-recover-and-logging.md` (the `Recoverer`'s own implementation is `go-middleware`'s).
 
-A `recover` anywhere other than a boundary is a smell — it usually means a panic is being used as control flow.
+---
+
+## Log Once at the Boundary
+
+**Named anti-pattern: log-and-return duplication** — logging an error *and* returning it up the call chain, so every layer that does both logs the same underlying failure independently. One incident then produces N near-identical log lines instead of one. The rule: every intermediate layer wraps and returns; exactly one place — the boundary that owns the request (the HTTP handler, the event consumer's message loop, or `main` for a startup failure) — calls `slog`. Full wrong/right example across all three boundary types: `references/panic-recover-and-logging.md`.
+
+---
+
+## Testing Error Paths
+
+Every function with a non-nil `error` return gets at least one test case that actually drives it down an error-returning path — one case per distinct failure mode, in the table-driven shape `go-unit-test` establishes as this repo's default. Assert with `errors.Is`/`errors.As` matching the taxonomy the function under test uses, extracting and checking a typed error's fields, not just that extraction succeeded. A bare `if err == nil { t.Fatal(...) }` with no further assertion passes for **any** error and proves nothing about which one occurred; neither does asserting on the message string, which breaks the moment a message is reworded. Full standard and the worked pattern: `references/testing-error-paths.md`; the fully worked domain-model instance already exists in `go-domain-model`'s `references/aggregate-invariant-enforcement.md`.
 
 ---
 
@@ -180,24 +106,27 @@ A `recover` anywhere other than a boundary is a smell — it usually means a pan
 | Criterion | Pass | Fail |
 |---|---|---|
 | No discarded errors | Every error handled, returned, or justified-ignored with a comment | `_ = f()` or ignored returns |
-| Context preserved | `%w` wrapping with operation context | Bare `return err` everywhere, or `errors.New(err.Error())` |
+| Taxonomy and boundary translation fit | Sentinel for parameter-free facts, typed when a caller needs data, infra translated (not invented) into domain vocabulary | A typed error with no fields; pgx errors reaching the handler |
+| Context preserved, chain bounded | `%w` wrapping with genuine context, ≤3-4 levels deep | Bare `return err`; `errors.New(err.Error())`; deeper chains |
 | Inspection over `==` | `errors.Is`/`errors.As` | `err == Sentinel`; type assertions on errors |
-| Boundary translation | Infra errors → domain sentinels → HTTP codes | pgx errors reaching the handler |
-| Aggregated validation | All field errors returned together | First-error-only validation |
-| Panic discipline | Panics only unrecoverable; recover only at boundaries | Panic as control flow; recover sprinkled around |
-| No sensitive data in errors | Errors carry ids/operations, not PII/secrets | PII or secrets in error strings |
+| Message quality | Actionable, ID included, lower-case, no trailing punctuation, no secrets/PII | Vague, inconsistently punctuated, or leaking a DSN/token/PII |
+| Panic discipline | Panics only unrecoverable; `recover` only at the two named boundaries | Panic as control flow; `recover` sprinkled elsewhere |
+| No typed-nil footgun | No-error paths return the bare `nil` literal | A nil-valued, concrete-typed error variable returned through an `error`-typed result |
+| Log once | Exactly one `slog` call per failure, at the owning boundary | Log-and-return duplication at two or more layers |
+| Error-path tested | One test case per distinct failure mode, asserted via `errors.Is`/`errors.As` | Happy-path-only tests; bare `err == nil` checks; string-matching on `err.Error()` |
 
 ---
 
 ## Anti-Patterns
 
-- **Log-and-continue** — `slog.Error(...)` followed by proceeding as if the call succeeded. An error is handled by returning, recovering, or a justified ignore — never by narration.
-- **Double reporting** — logging an error *and* returning it, so every layer logs the same failure and one incident produces five stack-shaped log entries. Log once, at the layer that handles it.
-- **`err == ErrNotFound`** — identity comparison breaks on the first wrap. `errors.Is` walks the chain; use it everywhere.
-- **`errors.New(err.Error())`** — flattening an error into a new string severs the chain and defeats `errors.Is`/`errors.As` downstream.
-- **Wrapping with no added context** — `fmt.Errorf("error: %w", err)` at every call site produces `error: error: error: connection reset`. Wrap where you can name the operation and its key identifier.
-- **Panic as control flow** — panicking on bad input or a down dependency, then recovering mid-stack to resume. Panics are for bugs; failures are values.
-- **Leaking infrastructure error types across boundaries** — a handler switching on `pgx.ErrNoRows` couples transport to the driver. Translate at the repository.
+- **Log-and-return duplication** — logging an error and also returning it, so every layer that does both produces its own log line for the same failure. Log once, at the boundary.
+- **The typed-nil footgun** — `var verr *ValidationError; return verr` returns a non-nil `error` interface even when `verr` was never assigned.
+- **`err == ErrNotFound`** — identity comparison breaks on the first wrap; `errors.Is` walks the chain.
+- **`errors.New(err.Error())`** — flattening an error into a new string severs the chain, defeating `errors.Is`/`errors.As` downstream.
+- **Wrapping with no added context, or wrapping too deep** — `"error: %w"` at every call site, or a chain past 3-4 levels.
+- **`recover` outside the two named boundaries, or panic used as control flow** — panicking on bad input and recovering mid-stack to resume; both mask a bug as normal operation.
+- **Leaking infrastructure error types across a boundary** — a handler switching on `pgx.ErrNoRows` couples transport to the driver; translate at the repository.
+- **Testing only that `err != nil`, or string-matching `err.Error()`** — proves a function failed, never that it failed for the intended reason; the latter also breaks on any reworded message.
 
 ---
 
@@ -206,7 +135,8 @@ A `recover` anywhere other than a boundary is a smell — it usually means a pan
 Produces Go source (a sentinel-error file per package plus disciplined error handling throughout) and tests asserting error identity:
 
 ```
-internal/domain/errors.go                 (sentinels)
-internal/application/commands/errors.go    (application sentinels)
-*_test.go                                  (assert errors.Is / errors.As behaviour)
+internal/domain/errors.go                 (sentinels + typed domain errors)
+internal/application/commands/errors.go    (application sentinels — rare)
+internal/handlers/http/errors.go           (transport-layer structural error type)
+*_test.go                                  (table-driven, error-path coverage per §"Testing Error Paths")
 ```

@@ -1,206 +1,141 @@
 ---
 name: go-event-publisher
 description: >
-  Teaches how to implement reliable Domain Event publication via the Transactional
-  Outbox — the outbox relay that polls committed outbox rows, publishes them to
-  Redpanda with the standard envelope and trace context, marks them published, and
-  retries with backoff. Covers ordering, at-least-once delivery, idempotent
-  publication, graceful shutdown, and partition keying by tenant. Implements the
-  data-architect's event-schema-design over the outbox from go-repository-pattern.
-  Used by the backend-engineer during Implement.
-version: 1.1.0
+  Teaches how to implement reliable Domain Event publication via the
+  Transactional Outbox to a checkable engineering standard, not just a relay
+  loop shape: the exact outbox table schema and the exact SQL that inserts an
+  outbox row in the same transaction as the aggregate's state change (owned in
+  full by go-repository-pattern; this skill is the relay that drains it), the
+  poller-based relay/drain loop with FOR UPDATE SKIP LOCKED, why this produces
+  at-least-once (never exactly-once) delivery and why that is the correct
+  tradeoff given idempotent consumers, the memory-bounded batching standard
+  (preallocated slices sized to the query's own LIMIT, never unbounded
+  append-growth) and its batch-size/batch-timeout latency tradeoff, the
+  backpressure standard for a slow or unavailable broker (the outbox absorbs
+  it by construction — no queue to overflow, no caller ever blocks on a
+  publish), and the deterministic idempotency-key construction rule a
+  consumer's dedup depends on (the outbox row's own id, stable across
+  re-publication, never a fresh UUID per attempt). Full outbox schema, atomic
+  insert SQL, and relay loop in
+  references/transactional-outbox-standard.md; full batching, backpressure,
+  and idempotency-key depth in
+  references/batching-backpressure-and-idempotency.md. Used by the
+  backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, go, outbox, redpanda, kafka, event-publishing, at-least-once, relay]
+tags: [implement, go, outbox, redpanda, kafka, event-publishing, at-least-once, relay, backpressure, idempotency, batching]
+related: [go-repository-pattern, go-event-consumer, go-concurrency-patterns, go-error-handling, go-service-skeleton, go-performance-optimization, go-migration, event-schema-design, data-pipeline-design, distributed-tracing-design, go-integration-test, multi-tenancy-design]
 ---
 
 # Go Event Publisher
 
 ## Purpose
 
-A service must publish a Domain Event whenever it changes state — reliably, even across crashes. Publishing directly from a handler is unsafe: a crash between the DB commit and the broker publish loses the event. The **Transactional Outbox** solves this — the repository already wrote the event into the `outbox` table in the same transaction as the state change (see `go-repository-pattern`). This skill builds the **relay** that reliably drains the outbox to Redpanda.
+A service must publish a Domain Event whenever it changes state — reliably, even across crashes. Publishing directly from a request handler is unsafe: a crash between the DB commit and the broker publish silently loses the event (the dual-write problem). The **Transactional Outbox** closes this gap by splitting the work in two: `go-repository-pattern`'s `Save` writes the event into an `outbox` table in the *same transaction* as the aggregate's state change, so recording an event is exactly as atomic as the write that caused it; this skill builds the **relay** — a separate, independently-failing process that reliably drains that table to Redpanda. Full schema and atomic-insert SQL: `references/transactional-outbox-standard.md`.
 
-This decouples *recording* an event (transactional, in the repo) from *publishing* it (this relay), giving at-least-once delivery without distributed transactions.
-
----
-
-## The Relay Loop
-
-The relay runs as a supervised component in the errgroup (see `go-service-skeleton`). It polls committed outbox rows, publishes them, and marks them published. Its lifetime is bound to the group context — on shutdown it stops cleanly mid-batch.
-
-```go
-// internal/infrastructure/messaging/outbox_relay.go
-package messaging
-
-type OutboxRelay struct {
-    pool     *pgxpool.Pool
-    producer *kgo.Client      // franz-go Redpanda/Kafka client
-    batch    int
-    interval time.Duration
-    tracer   trace.Tracer
-}
-
-func (r *OutboxRelay) Run(ctx context.Context) error {
-    ticker := time.NewTicker(r.interval)
-    defer ticker.Stop()
-    for {
-        select {
-        case <-ctx.Done():
-            return nil // graceful stop: the in-flight batch already committed or rolled back
-        case <-ticker.C:
-            if err := r.drainOnce(ctx); err != nil {
-                slog.ErrorContext(ctx, "outbox drain failed", "err", err) // log + retry next tick
-            }
-        }
-    }
-}
-```
-
-A failed drain is logged and retried on the next tick — transient broker outages do not lose events; they stay in the outbox until published.
+Decoupling *recording* (transactional, free) from *publishing* (network I/O, can fail, can be slow) is what makes at-least-once delivery achievable without a distributed transaction spanning the database and the broker.
 
 ---
 
-## Draining a Batch
+## The Relay Loop and Draining a Batch
 
-Rows are claimed with `FOR UPDATE SKIP LOCKED` so multiple relay replicas can run concurrently without publishing the same row twice. Ordering is preserved per aggregate by `occurred_at` within a batch — note that running **multiple** relay replicas trades strict cross-batch ordering for throughput (two replicas can publish adjacent batches for the same tenant concurrently). If strict per-tenant order matters more than relay throughput, run one replica; the design supports either.
+The relay runs as a supervised component in the composition root's `errgroup` (`go-service-skeleton`): it starts when the group starts and stops the instant `ctx.Done()` fires, never leaving a transaction open across shutdown — `go-concurrency-patterns`' general goroutine-lifecycle rule, applied to the one goroutine this skill owns. `Run` ticks on a fixed `interval`; each tick calls `drainOnce`, which opens one `pgx.Tx`, claims up to `batch` unpublished rows with `SELECT ... FOR UPDATE SKIP LOCKED` (so concurrent relay *replicas* never double-claim a row), publishes them, marks them published, and commits. A failed drain logs and returns `nil` from `Run` — never fatal, since a transient broker outage must not crash the process; the unpublished rows simply wait for the next tick (the mechanism behind the backpressure standard below). Full `Run`/`drainOnce` listing: `references/transactional-outbox-standard.md`.
 
-```go
-func (r *OutboxRelay) drainOnce(ctx context.Context) error {
-    tx, err := r.pool.Begin(ctx)
-    if err != nil {
-        return fmt.Errorf("begin: %w", err)
-    }
-    defer tx.Rollback(ctx) //nolint:errcheck // no-op after commit
+**`records` and `ids` are preallocated to `r.batch`** (`make([]*kgo.Record, 0, r.batch)`), not grown by bare `append` — the query's own `LIMIT $1` already bounds `rows.Next()` to at most `r.batch` iterations, so the capacity is known before the loop starts (`go-performance-optimization`'s Preallocate Slices and Maps rule). This is the memory-bounded batching fix this skill is built around; the full tradeoff standard it generalizes is in `references/batching-backpressure-and-idempotency.md`.
 
-    rows, err := tx.Query(ctx, `
-        SELECT id, aggregate_id, tenant_id, event_type, payload, occurred_at
-          FROM outbox
-         WHERE published_at IS NULL
-         ORDER BY occurred_at
-         LIMIT $1
-         FOR UPDATE SKIP LOCKED`, r.batch)
-    if err != nil {
-        return fmt.Errorf("select outbox: %w", err)
-    }
-
-    var records []*kgo.Record
-    var ids []uuid.UUID
-    for rows.Next() {
-        var m outboxRow
-        if err := rows.Scan(&m.id, &m.aggregateID, &m.tenantID, &m.eventType, &m.payload, &m.occurredAt); err != nil {
-            rows.Close()
-            return fmt.Errorf("scan: %w", err)
-        }
-        records = append(records, r.toRecord(ctx, m))
-        ids = append(ids, m.id)
-    }
-    rows.Close()
-    if len(records) == 0 {
-        return nil
-    }
-
-    // Publish synchronously; only mark published rows whose publish succeeded.
-    if err := r.producer.ProduceSync(ctx, records...).FirstErr(); err != nil {
-        return fmt.Errorf("produce: %w", err) // do NOT mark published; retry next tick
-    }
-
-    if _, err := tx.Exec(ctx,
-        `UPDATE outbox SET published_at = now() WHERE id = ANY($1)`, ids); err != nil {
-        return fmt.Errorf("mark published: %w", err)
-    }
-    return tx.Commit(ctx)
-}
-```
-
-**Ordering of operations is the correctness crux:** publish *then* mark published. If the process crashes after publishing but before marking, the row is re-published next tick — at-least-once. Consumers are idempotent (see `go-event-consumer`), so a duplicate is harmless. The reverse order would risk *losing* an event, which is unacceptable.
+**Publish, then mark — never the reverse.** `drainOnce` calls `ProduceSync` *before* the `UPDATE outbox SET published_at = now()`. If the process crashes after `ProduceSync` succeeds but before `Commit`, the transaction rolls back, `published_at` stays `NULL`, and the row is re-claimed and re-published next tick: at-least-once, by construction. Marking first and publishing second would risk the opposite failure — a row marked published that the broker never actually received — which is unacceptable. Full at-least-once reasoning and why exactly-once is not attempted: `references/transactional-outbox-standard.md`.
 
 ---
 
-## The Envelope and Partition Key
+## Backpressure: Why a Slow or Down Broker Cannot Overflow Anything
 
-Each outbox row becomes a Redpanda record with the standard envelope (from `domain-event-catalog` / `event-schema-design`) and trace context propagated into headers so the consumer continues the same trace.
+A slow or unavailable broker is ordinary operation, not an incident, for this design: a `ProduceSync` error just means `drainOnce` returns early with nothing marked published, and the rows it read stay exactly where they were — durable rows in a Postgres table, not messages in a fixed-capacity in-memory queue. Nothing upstream of the outbox ever talks to the broker directly (the aggregate save already committed and returned before the relay's next tick runs), so there is no buffer to overflow and no caller blocked on a publish. The outbox *is* the backpressure mechanism: unpublished rows accumulate as backlog until the broker recovers, drained at whatever rate it can sustain. Full standard, including the one caller-visible growth this shifts responsibility to (outbox table size under sustained outage) and how to observe it: `references/batching-backpressure-and-idempotency.md`.
+
+---
+
+## The Envelope, Partition Key, and Idempotency Key
+
+Each outbox row becomes one Redpanda record with the standard envelope (`event-schema-design`) and W3C trace context propagated into headers so the consumer continues the same trace (`distributed-tracing-design`).
 
 ```go
 func (r *OutboxRelay) toRecord(ctx context.Context, m outboxRow) *kgo.Record {
     env := Envelope{
-        EventID:     m.id, // outbox row id — STABLE across re-publication, so consumer dedup recognises a replay
-        EventType:   m.eventType,
+        EventID:       m.id, // idempotency key — see the standard below
+        EventType:     m.eventType,
         SchemaVersion: 1,
-        OccurredAt:  m.occurredAt,
-        AggregateID: m.aggregateID,
-        TenantID:    m.tenantID,
-        Payload:     m.payload, // already-marshalled JSON from the repo
+        OccurredAt:    m.occurredAt,
+        AggregateID:   m.aggregateID,
+        TenantID:      m.tenantID,
+        Payload:       m.payload, // already-marshalled JSON from the repo
     }
     value, err := json.Marshal(env)
     if err != nil {
-        // Envelope fields are all marshal-safe types; reaching here is a bug, not an event.
-        panic(fmt.Sprintf("marshal envelope for outbox row %s: %v", m.id, err))
+        panic(fmt.Sprintf("marshal envelope for outbox row %s: %v", m.id, err)) // marshal-safe fields; reaching here is a bug
     }
-
-    rec := &kgo.Record{
-        Topic: topicFor(m.eventType),
-        Key:   m.tenantID[:], // partition by tenant — ordering per tenant, isolation, parallelism
-        Value: value,
-    }
-    // Propagate W3C trace context into Kafka headers (see distributed-tracing-design)
+    rec := &kgo.Record{Topic: topicFor(m.eventType), Key: m.tenantID[:], Value: value}
     otel.GetTextMapPropagator().Inject(ctx, kafkaHeaderCarrier{rec})
     return rec
 }
 ```
 
-**Partition key = `tenant_id`.** This preserves per-tenant ordering, keeps a tenant's events together, and enables Competing Consumers to scale horizontally (see `data-pipeline-design`).
-
----
-
-## Idempotent Publication
-
-The `eventId` in the envelope is the consumer's dedup key, so it must be **stable across re-publication**: the relay uses the outbox row id as the envelope `eventId` (see `toRecord` above). A crash after publish but before mark re-publishes the row with the *same* `eventId`, the consumer's `processed_events` insert conflicts, and the duplicate is a no-op. Generating a fresh `uuid.New()` per publish attempt would defeat dedup entirely — every replay would look like a new event.
+**Idempotency-key construction rule: the envelope's `EventID` is always the outbox row's own primary-key `id` — never a freshly generated `uuid.New()` at publish time.** This is what makes a crash-replay safe: the same row re-published after a rollback carries the *same* `EventID`, so the consumer's `processed_events` dedup insert (`go-event-consumer`) conflicts and the duplicate is a no-op. A fresh id per attempt would make every replay look like a new event and defeat Idempotency entirely. **Partition key = `tenant_id`** — preserves per-tenant ordering and gives Competing Consumers a natural parallelism boundary (`data-pipeline-design`). Full construction rule and the two things that must never be used as the key instead: `references/batching-backpressure-and-idempotency.md`.
 
 ---
 
 ## Rules
 
-- **Publish before mark.** Never mark published before a successful produce.
-- **`SKIP LOCKED`** so replicas don't double-claim; safe horizontal scaling.
-- **Partition by tenant.** Ordering + isolation + parallelism in one key choice.
-- **Propagate trace context** into record headers — the trace must cross the broker.
-- **Graceful stop** on `ctx.Done()`; never leave a transaction open across shutdown.
-- **Outbox table is the contract** — the relay owns no business logic; it ships rows.
+- **Publish before mark.** Never set `published_at` before `ProduceSync` succeeds.
+- **`SKIP LOCKED`** so replicas never double-claim a row; safe horizontal scaling.
+- **Preallocate the batch buffers.** `make([]T, 0, r.batch)`, never a bare `var` grown by `append` alone.
+- **`EventID` = outbox row id, always.** The one fact the entire idempotency chain depends on.
+- **Partition by `tenant_id`.** Ordering, isolation, and parallelism from one key choice.
+- **Propagate trace context** into record headers — the trace must survive the broker hop.
+- **Graceful stop on `ctx.Done()`.** No transaction ever left open across shutdown.
+- **The relay ships rows; it never decides what to ship.** Filtering/suppressing events here is a defect — the repository already decided what happened.
 
 ---
 
 ## Quality Criteria
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| At-least-once | Publish then mark; crash re-publishes | Mark-then-publish (can lose events) |
-| Concurrent-safe drain | `FOR UPDATE SKIP LOCKED` | Replicas double-publishing rows |
-| Tenant partitioning | Record key = tenant id | Random/no key; cross-tenant ordering loss |
-| Trace continuity | Trace context injected into headers | Broken trace across the broker |
-| Graceful shutdown | Stops on ctx cancel without open tx | Relay killed mid-tx; leaked locks |
-| No business logic | Relay only ships outbox rows | Relay deciding what/whether to emit |
-| Stable dedup identity | Envelope `eventId` = outbox row id | Fresh `uuid.New()` per publish attempt |
+| Criterion | Pass | Fail | How to verify |
+|---|---|---|---|
+| Outbox insert is atomic with the aggregate write | Outbox `INSERT` and aggregate `UPDATE` share one `pgx.Tx` (`go-repository-pattern`'s `Save`) | A publish-adjacent `INSERT INTO outbox` outside that transaction | Read `Save`; confirm the outbox insert uses the same `Querier` as the state-changing statement |
+| At-least-once, never mark-then-publish | `drainOnce` calls `ProduceSync` before `UPDATE ... SET published_at` | `published_at` set, or set inside the same statement as the produce call, before `ProduceSync` returns success | Read `drainOnce` top to bottom; the `UPDATE` must textually follow a checked `ProduceSync` error return |
+| Concurrent-safe drain | `SELECT ... FOR UPDATE SKIP LOCKED` in the claim query | Plain `SELECT` with no locking clause | Read the claim query for `FOR UPDATE SKIP LOCKED` |
+| Memory-bounded batching | `records`/`ids` preallocated `make(..., 0, r.batch)` | Bare `var records []*kgo.Record` grown by `append` alone, or `r.batch` unbounded | `grep -n "make(\[\]" internal/infrastructure/messaging/outbox_relay.go` shows the capacity argument |
+| Backpressure requires no new code path | A failed `ProduceSync` returns an error from `drainOnce` and nothing else | A retry loop, buffer, or circuit breaker bolted onto the relay to "handle" broker slowness | Read `drainOnce`'s produce-error branch — it must be a single `return fmt.Errorf(...)`, nothing more |
+| Stable idempotency key | Envelope `EventID` = outbox row `id`, read from the same row it's attached to | `uuid.New()` (or any other fresh id) called inside `toRecord` | `grep -n "uuid.New()" internal/infrastructure/messaging/outbox_relay.go` — no hits |
+| Tenant partitioning | Record `Key` = `tenant_id` | Random, absent, or event-id partition key | Read `toRecord`'s `kgo.Record{Key: ...}` field |
+| Trace continuity | `otel.GetTextMapPropagator().Inject` called on every record | No header injection, or injection skipped on any path | Read `toRecord` for the `Inject` call on every return |
+| Graceful shutdown | `Run` returns `nil` on `ctx.Done()` with no transaction left open | A path where `ctx.Done()` fires mid-`drainOnce` with the `tx` neither committed nor rolled back | Read `Run`'s `select` — `ctx.Done()` only fires between ticks, never inside `drainOnce`, and `drainOnce`'s `defer tx.Rollback` covers every return |
+| No business logic in the relay | `drainOnce`/`toRecord` only read, serialize, and publish rows | Any conditional that decides *whether* a row gets published based on its content | Read the full file for an `if` branch that skips a row without an error |
+| One goroutine, one owner | `Run` is the only goroutine this package starts; no bare `go func()` inside `drainOnce` or `toRecord` | A per-record or per-batch goroutine spawned to "parallelize" publishing | `grep -n "go func" internal/infrastructure/messaging/*.go` — no hits |
 
 ---
 
 ## Anti-Patterns
 
 - **Publishing directly from the request handler** — the dual-write problem the Transactional Outbox exists to solve: a crash between DB commit and broker publish silently loses the Domain Event.
-- **Mark-then-publish** — updating `published_at` before the produce succeeds converts a crash into a *lost* event. At-least-once requires publish-then-mark, always.
-- **Fresh `eventId` per publish attempt** — makes every crash-replay look like a new event to consumers and defeats Idempotency downstream.
-- **Random or absent partition key** — scatters one tenant's events across partitions, destroying per-tenant ordering and tenant isolation in one stroke.
-- **Deleting outbox rows instead of marking them** — loses the audit trail and the ability to replay; sweep old *published* rows with a retention job instead.
+- **Mark-then-publish** — updating `published_at` before `ProduceSync` succeeds converts a crash into a *lost* event, not a harmless duplicate.
+- **A fresh `uuid.New()` per publish attempt** — makes every crash-replay look like a new event to consumers and defeats Idempotency downstream (`go-event-consumer`).
+- **Random or absent partition key** — scatters one tenant's events across partitions, destroying per-tenant ordering and isolation in one stroke.
+- **Deleting outbox rows instead of marking them published** — loses the audit trail and replay capability; sweep old *published* rows with a retention job instead.
+- **Bolting retry/circuit-breaker logic onto the relay to "handle" broker slowness** — the outbox already is the backpressure mechanism; added machinery here duplicates what the next tick already does for free.
+- **Bare `var records []*kgo.Record` grown by `append`** — reintroduces the unbounded growth-and-copy the batching standard exists to prevent, even though the query already bounds the loop.
 - **Business decisions in the relay** — filtering, transforming, or suppressing events at publish time. The repository decided what happened; the relay only ships it.
 
 ---
 
 ## Output Format
 
-Produces Go source plus integration tests (against Redpanda + PostgreSQL via testcontainers):
+Go source built exactly to the standards above, plus integration tests run against real PostgreSQL and Redpanda via Testcontainers (`go-integration-test` owns the harness mechanics):
 
 ```
-internal/infrastructure/messaging/outbox_relay.go
-internal/infrastructure/messaging/envelope.go
-internal/infrastructure/messaging/outbox_relay_test.go   (written first)
+internal/infrastructure/messaging/outbox_relay.go        (OutboxRelay, Run, drainOnce, toRecord)
+internal/infrastructure/messaging/envelope.go             (Envelope struct — event-schema-design's shape)
+internal/infrastructure/messaging/outbox_relay_test.go    (written first — TDD)
 ```
+
+Full standards: `references/transactional-outbox-standard.md` (outbox schema, atomic insert SQL, relay/poller loop, at-least-once reasoning) and `references/batching-backpressure-and-idempotency.md` (batch-size/timeout tradeoff, backpressure depth, idempotency-key construction rule).

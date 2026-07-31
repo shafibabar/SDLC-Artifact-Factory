@@ -1,94 +1,89 @@
 ---
 name: go-openapi-codegen
 description: >
-  Teaches contract-first development in Go — generating server types, request/
-  response models, and route stubs from the OpenAPI 3.1 contract with oapi-codegen,
-  so the hand-written code can never drift from the published API. Covers the
-  generated-vs-handwritten boundary, validating requests against the spec,
-  regeneration in CI, and keeping the contract (owned by the enterprise-architect)
-  as the single source of truth. Used by the backend-engineer during Implement.
-version: 1.1.0
+  Teaches contract-first Go development — generating server types, the strict
+  ServerInterface, request/response models, and a typed client from the
+  OpenAPI 3.1 contract with oapi-codegen, so hand-written code can never drift
+  from the published API. Covers the exact codegen configuration and why each
+  option is chosen, the generated-vs-hand-written boundary and its CI
+  freshness check, the OpenAPI-to-Go type-mapping standard — including how
+  oapi-codegen represents api-contract-design's Field Mask, Long-Running
+  Operation (Operation resource), and Resource Revision (ETag) patterns as
+  generated Go types — the kin-openapi request-validation middleware wired
+  into go-chi-handler's/go-middleware's chain, and the versioning standard for
+  what happens to generated code on an additive versus a breaking contract
+  change. Full config and type-mapping detail in
+  references/codegen-configuration-and-type-mapping.md; validation-middleware
+  wiring and versioning consequences in
+  references/validation-middleware-and-versioning.md. Used by the
+  backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, go, openapi, codegen, oapi-codegen, contract-first, chi]
+tags: [implement, go, openapi, codegen, oapi-codegen, contract-first, chi, kin-openapi, versioning]
+related: [api-contract-design, go-chi-handler, go-project-structure, go-middleware, go-makefile]
 ---
 
 # Go OpenAPI Codegen
 
 ## Purpose
 
-The API contract is designed before the code (contract-first — see `api-contract-design`). The OpenAPI 3.1 document is the single source of truth for routes, request/response shapes, and error envelopes. Code generation makes that truth enforceable: the server types and route interfaces are *generated from* the spec, so a handler that doesn't match the contract fails to compile. Drift between the documented API and the running API becomes impossible.
-
-This skill generates the typed boundary; the hand-written application/domain logic plugs into it.
-
----
-
-## Tooling
-
-Default to **`oapi-codegen`** (`github.com/oapi-codegen/oapi-codegen`) targeting `net/http` + `chi` — consistent with the tech-stack defaults and the `go-chi-handler` skill. It generates:
-
-- **Models** — Go structs for every schema in the spec (requests, responses, the error envelope).
-- **Server interface** — a `ServerInterface` with one method per operation; the router binds it to chi.
-- **Request binding** — path/query/body parsing wired to the generated types.
-
-The contract (`api/openapi.yaml`) is authored by the enterprise-architect; the backend-engineer generates against it and does not edit it to fit the implementation — if the contract is wrong, it changes upstream first.
+The API contract is designed before the code (contract-first — `api-contract-design`). The
+OpenAPI 3.1 document is the single source of truth for routes, request/response shapes, and
+error envelopes. Code generation makes that truth enforceable: server types and route interfaces
+are *generated from* the spec, so a handler that doesn't match the contract fails to compile.
+This skill owns the Go-implementation side of that contract only — resource design, versioning
+*policy*, and the Field Mask/Long-Running-Operation/Resource-Revision patterns themselves are
+`api-contract-design`'s; this skill owns how `oapi-codegen` represents each as generated Go.
 
 ---
 
-## Generation Setup
+## Tooling and Configuration
 
-A `//go:generate` directive plus a pinned config keeps generation reproducible and visible in-repo.
-
-```go
-// internal/handlers/http/gen.go
-//go:generate go run github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen -config cfg.yaml ../../../api/openapi.yaml
-package http
-```
+Default to **`oapi-codegen`** (`github.com/oapi-codegen/oapi-codegen`) targeting `net/http` +
+`chi`, generating models, a strict `chi-server`, and a typed `client` from one config against
+`api/openapi.yaml`:
 
 ```yaml
-# cfg.yaml
+# internal/handlers/http/cfg.yaml
 package: http
 output: openapi_gen.go
-generate:
-  models: true
-  chi-server: true
-  strict-server: true   # handlers return typed responses; framework handles encoding
+generate: { models: true, chi-server: true, strict-server: true, client: true, embedded-spec: true }
+output-options: { nullable-type: true }   # nullable: true properties → nullable.Nullable[T], not *T
 ```
 
-`strict-server: true` generates an interface where each handler **returns a typed response object** instead of writing to `http.ResponseWriter` directly — the generated layer handles status codes and encoding, eliminating a class of "wrong status / forgot to return" bugs.
+`embedded-spec: true` compiles the exact spec used for codegen into the binary (`GetSwagger()`) so
+the runtime request validator (below) can never load a stale copy from disk. `nullable-type: true`
+is required for the Field Mask representation (see the type-mapping reference). `strict-server:
+true` generates handlers that return typed response objects instead of writing to
+`http.ResponseWriter`, eliminating "wrong status / forgot to return" bugs — see the reference for
+the full response-variant pattern. Full annotated config and per-option rationale:
+`references/codegen-configuration-and-type-mapping.md`.
+
+The contract is authored by the enterprise-architect; the backend-engineer generates against it
+and never edits it to fit the implementation — a wrong contract changes upstream first.
 
 ---
 
 ## The Generated / Hand-Written Boundary
 
 ```
-api/openapi.yaml                 ← source of truth (enterprise-architect)
-        │  oapi-codegen
-        ▼
-internal/handlers/http/openapi_gen.go   ← GENERATED: models, ServerInterface, router binding
-        │  implemented by
-        ▼
-internal/handlers/http/*.go              ← HAND-WRITTEN: implements ServerInterface,
-                                            calls application-layer command/query handlers
+api/openapi.yaml (source of truth) → oapi-codegen → internal/handlers/http/openapi_gen.go (GENERATED)
+                                                            ↓ implemented by
+                                      internal/handlers/http/*.go (HAND-WRITTEN)
 ```
 
-| Layer | Generated? | Owner |
-|---|---|---|
-| Models, server interface, routing | Generated — never edited by hand | oapi-codegen |
-| Handler method bodies | Hand-written | backend-engineer |
-| Application/domain logic | Hand-written | backend-engineer |
-
-**Generated files are never edited.** They carry a "DO NOT EDIT" header and are regenerated, not patched. Editing them is overwritten on the next `go generate`.
+Naming, co-location, and the mechanical freshness check (`go generate ./...` +
+`git diff --exit-code`) are `go-project-structure`'s authoritative standard
+(`references/package-layout-standard.md`'s "Generated-vs-Hand-Written Boundary") and
+`go-makefile`'s `ci` target — not restated here. **Generated files are never edited**; they carry
+a `DO NOT EDIT` header and are regenerated, not patched.
 
 ```go
 // Hand-written: implement the generated strict interface; translate to the application layer.
 func (a *API) ClassifyDataAsset(ctx context.Context, req ClassifyDataAssetRequestObject) (ClassifyDataAssetResponseObject, error) {
-    cmd := commands.ClassifyDataAsset{
-        DataAssetID: req.Id,
-        Sensitivity: domain.SensitivityLevel(req.Body.SensitivityLevel),
-        IdempotencyKey: req.Params.IdempotencyKey,
-    }
+    cmd := commands.ClassifyDataAsset{DataAssetID: req.Id, Sensitivity: domain.SensitivityLevel(req.Body.SensitivityLevel)}
     if err := a.classify.Handle(ctx, cmd); err != nil {
         return classifyErrorResponse(err), nil // map domain error → typed response
     }
@@ -98,28 +93,67 @@ func (a *API) ClassifyDataAsset(ctx context.Context, req ClassifyDataAssetReques
 
 ---
 
-## Validation Against the Spec
+## Type-Mapping Standard
 
-Beyond typed binding, requests are validated against the OpenAPI schema at runtime using `kin-openapi`'s request validator as middleware — so constraints expressed in the spec (enums, formats, required, lengths) are enforced without restating them by hand. This complements (does not replace) the domain's business validation (two-layer validation — see `go-chi-handler`).
+Core scalar mapping: `string`→`string`, `format: uuid`→`uuid.UUID` via `x-go-type` (matching
+`internal/domain`'s own ID type, not oapi-codegen's default wrapper), `format: date-time`→
+`time.Time`, `integer`/`number`→sized Go numerics per an explicit `format`, `object`-with-no-
+properties→`map[string]interface{}`. Full table: `references/codegen-configuration-and-type-mapping.md`.
+
+Three `api-contract-design` patterns get specific generated shapes:
+
+- **Field Mask** — an ordinary optional field marked `nullable: true` generates
+  `nullable.Nullable[T]`, giving the omitted/explicit-null/value distinction real type-level teeth
+  (a bare `*T` cannot make it — both omitted and null decode to `nil`). The `updateMask` query
+  parameter is a plain `type: string`, generating as `*string`; splitting it into field paths is
+  hand-written.
+- **Long-Running Operation** — `Operation.response` generates as `map[string]interface{}`
+  (the schema is deliberately freeform); `Operation.error` generates as the same named `Error`
+  struct every other `ErrorResponse.error` `$ref` site produces, deduplicated, not redefined.
+- **Resource Revision** — `ETag`/`If-Match` generate as plain `string`/`*string` header fields,
+  never a numeric or timestamp type, preserving the opacity `api-contract-design` requires.
+
+Full reasoning and generated struct listings: `references/codegen-configuration-and-type-mapping.md`.
 
 ---
 
-## Codegen in CI
+## Request Validation at the Boundary
 
-Generation is verified in CI so a stale generated file (spec changed, code not regenerated) fails the build:
+Beyond typed binding, requests are validated against the OpenAPI schema at runtime by
+`kin-openapi`'s validator (`github.com/oapi-codegen/nethttp-middleware`), mounted as the **last
+middleware before the handler** in `go-middleware`'s chain — immediately after `RateLimit` — so a
+spec violation is rejected fully observable (traced, logged, correlated) but before it ever reaches
+`decodeJSON` or a handler. Its `AuthenticationFunc` is a deliberate no-op:
+`go-chi-handler`'s `Authenticate` already validated the JWT earlier in the same chain, so this
+validator documents the `security` requirement without re-checking it. Its `ErrorHandler` routes
+into `go-chi-handler`'s `ErrorResponse` envelope under a distinct `SPEC_VALIDATION_FAILED` code —
+never left as the middleware's own default plain-text response, and never confused with
+`go-chi-handler`'s own `VALIDATION_FAILED` (its hand-written `validate()`, for structural rules
+OpenAPI's schema vocabulary can't express). Neither validation layer replaces the other. Full
+wiring code and the `Options` construction: `references/validation-middleware-and-versioning.md`.
 
-```bash
-go generate ./...
-git diff --exit-code   # fails if generated output differs from what's committed
-```
+---
 
-This guarantees the committed generated code always matches the committed spec — the contract and the code can never silently diverge.
+## Versioning Standard
+
+`api-contract-design`'s additive/breaking classification (new optional field or endpoint =
+no version bump; removed/renamed field, changed type, or removed endpoint = bump to `/v2/`) has a
+distinct generated-code consequence on each side: an additive field addition compiles unchanged;
+an additive *endpoint* addition still forces a hand-written change (a new `StrictServerInterface`
+method breaks the build until implemented — a build break, not a contract break); every breaking
+case fails the build loudly (a removed/changed field no longer compiles where it's used). During
+the mandatory six-month parallel-run sunset, `/v1/` and `/v2/` generate into version-suffixed
+sibling subpackages (`internal/handlers/http/v1/`, `.../v2/`), each with its own spec, generated
+file, and CI freshness check — collapsing back to the flat, unversioned layout the moment `/v1/`
+is retired. Full table and directory listing: `references/validation-middleware-and-versioning.md`.
 
 ---
 
 ## Client Generation (for Consumers)
 
-The same spec generates **typed clients** for internal consumers and for Consumer-Driven Contract tests (see `integration-design` / test-engineering). A consuming service imports a generated client rather than hand-rolling HTTP calls — the contract binds both sides.
+The same config's `client: true` generates a typed client for internal consumers and Consumer-
+Driven Contract tests (`go-contract-test`) from the identical schema objects the server uses —
+never a second, independently hand-rolled client that can drift from the server's own types.
 
 ---
 
@@ -128,31 +162,38 @@ The same spec generates **typed clients** for internal consumers and for Consume
 | Criterion | Pass | Fail |
 |---|---|---|
 | Contract-first | Spec authored before code; code generated from it | Spec written after, or by hand to match code |
-| Generated not edited | Generated files carry DO-NOT-EDIT; regenerated only | Hand-edits to generated files |
+| Generated code integrity | DO-NOT-EDIT, regenerated only; `go generate` + `git diff --exit-code` clean in CI | Hand-edits, or committed generated code stale relative to the spec |
 | Strict server | Handlers return typed responses | Raw `ResponseWriter` writes bypassing the contract |
-| Spec validation | Requests validated against the OpenAPI schema | Schema constraints re-implemented by hand or skipped |
-| CI freshness check | `go generate` + `git diff --exit-code` in CI | Generated code allowed to drift from the spec |
+| Type-safety at the boundary | `format: uuid`/`date-time` map to `uuid.UUID`/`time.Time`, never bare `string` | A UUID or timestamp field left as `string`, pushing parsing into every consumer |
+| Field Mask fidelity | `nullable: true` fields generate `nullable.Nullable[T]`; omitted/null/value all distinguishable | A bare `*T` used where omitted-vs-null must be told apart |
+| Spec validation wired, no duplicate auth | `nethttpmiddleware` mounted last-before-handler, `ErrorHandler` routes to `ErrorResponse`, `AuthenticationFunc` a no-op | Middleware absent/default error output, or a second independent JWT check inside it |
+| Validation-coverage check | Every schema constraint (enum, format, required, length) is enforced by the spec validator, not re-typed by hand | Enum/format/required checks re-implemented ad hoc in a handler `validate()` |
+| Versioning consequence honored | Breaking changes bump `/v2/` and generate into a version-suffixed subpackage; `/v1/` stays frozen and gated | A breaking change regenerated in place over `/v1/`'s existing generated code |
 | Single source of truth | One spec drives server + clients + contract tests | Divergent hand-written client/server shapes |
 
 ---
 
 ## Anti-Patterns
 
-- **Editing generated files** — the fix evaporates on the next `go generate`, and until then the committed code lies about what the spec produces. Change the spec or the config, then regenerate.
-- **Code-first "contract"** — writing handlers, then annotating or reverse-engineering a spec from them. The contract becomes a description of accidents rather than a designed interface.
-- **Bending the spec to fit the implementation** — the contract is the enterprise-architect's artifact; if it's wrong, it changes upstream with review, never by a quiet local edit to unblock a build.
-- **Restating spec constraints by hand** — re-implementing enum/format/required checks in Go duplicates the schema and guarantees drift; the spec validator middleware enforces them from the source.
-- **Bypassing the strict interface** — grabbing `http.ResponseWriter` inside a strict handler to write an ad-hoc response reintroduces the untyped-status bugs strict mode exists to eliminate.
-- **Generated code in `.gitignore`** — hiding generation from review breaks the CI freshness check and makes builds depend on the generator's presence. Commit the generated file.
+- **Editing generated files** — the fix evaporates on the next `go generate`; the committed code lies about what the spec produces until then. Same failure mode as **generated code in `.gitignore`**, which hides drift from review and the CI freshness check entirely.
+- **Code-first "contract"** — writing handlers, then reverse-engineering a spec from them.
+- **Bending the spec to fit the implementation** — a wrong contract changes upstream, never by a quiet local edit.
+- **Restating spec constraints by hand** — re-implementing enum/format/required checks duplicates the schema and guarantees drift; the spec validator middleware enforces them from the source.
+- **A `*T` field where the schema needs `nullable.Nullable[T]`** — silently collapses "omitted" and "explicit null" into the same `nil`, breaking Field Mask semantics.
+- **A second JWT check inside the spec validator's `AuthenticationFunc`** — two independent code paths that can disagree about what counts as a valid token.
+- **Regenerating a breaking change in place over `/v1/`'s package** — destroys the frozen version's generated code mid-sunset, breaking every consumer still calling it.
 
 ---
 
 ## Output Format
 
-Produces generated Go plus the hand-written implementations:
+```
+internal/handlers/http/gen.go             (//go:generate directive; config: references/codegen-configuration-and-type-mapping.md)
+internal/handlers/http/cfg.yaml            (oapi-codegen config)
+internal/handlers/http/openapi_gen.go      (GENERATED — models, StrictServerInterface, client, routing)
+internal/handlers/http/router.go           (mounts the kin-openapi validator; wiring in references/validation-middleware-and-versioning.md)
+internal/handlers/http/*.go                 (hand-written ServerInterface implementations)
+```
 
-```
-internal/handlers/http/gen.go            (//go:generate directive + config)
-internal/handlers/http/openapi_gen.go    (GENERATED — models, interface, routing)
-internal/handlers/http/*.go              (hand-written ServerInterface implementations)
-```
+During a parallel-version sunset, `v1/` and `v2/` sibling subpackages replace the flat layout —
+full directory listing: `references/validation-middleware-and-versioning.md`.

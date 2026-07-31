@@ -1,210 +1,210 @@
 ---
 name: go-service-layer
 description: >
-  Teaches how to implement the application layer — the command and query handlers
-  that orchestrate use cases (CQRS write/read separation). Covers the handler
-  shape, transaction/consistency boundaries, ABAC policy enforcement before
-  mutation, idempotency, parallel orchestration with errgroup, and the rule that
-  the application layer coordinates but never contains domain rules. Implements
-  the enterprise-architect's CQRS design. Used by the backend-engineer during
-  Implement.
-version: 1.1.0
+  Teaches how to implement the application layer — CQRS command and query
+  handlers — to a checkable engineering standard: the exact
+  Handle(ctx, cmd) (Result, error) signature, the transaction-boundary
+  standard (this layer, never the repository, opens and commits the pgx.Tx —
+  go-repository-pattern's Querier/WithTx contract — with the command_log
+  idempotency insert sharing that same transaction, mirroring
+  go-event-consumer's processed_events pattern), the query-handler standard
+  (queries read a denormalised CQRS Read Model directly, bypassing the
+  domain layer and repository entirely), the cache-aside standard for
+  cache-eligible query handlers (shared cache-key construction, TTL policy
+  with its staleness rationale, invalidate-on-write after commit, never a
+  separate step), and the three-tier validation boundary dividing structural
+  validation (go-chi-handler), this layer's own orchestration-level checks
+  (does a Command-referenced id exist), and business-invariant validation
+  (go-domain-model's Aggregate) — plus parallel query orchestration with
+  errgroup and ad hoc goroutine confinement (Cox-Buday). Full worked
+  examples in references/command-handler-transaction-and-idempotency.md,
+  references/cache-aside.md, references/three-tier-validation-boundary.md,
+  and references/parallel-query-orchestration.md. Implements the
+  enterprise-architect's CQRS design and command-catalog's idempotency
+  contract in Go. Used by the backend-engineer during Implement.
+version: 3.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, go, cqrs, application-layer, command-handler, query-handler, abac, errgroup]
+tags: [implement, go, cqrs, application-layer, command-handler, query-handler, transaction-boundary, idempotency, cache-aside, validation-boundary, errgroup, confinement]
+related: [go-repository-pattern, go-domain-model, go-chi-handler, go-error-handling, go-event-consumer, command-catalog, read-model-design, go-concurrency-patterns, multi-tenancy-design]
 ---
 
 # Go Service Layer (Application Layer)
 
 ## Purpose
 
-The application layer expresses use cases: "classify a data asset," "list compliance gaps." Each use case is a handler that orchestrates the domain and infrastructure — load the Aggregate, check the policy, call the domain method, save — but contains **no business rules itself**. Those rules live in the Aggregate. The application layer is thin glue with one job: run the use case correctly, once.
-
-This implements the `cqrs-pattern` from the enterprise-architect: commands (writes) and queries (reads) are separate handlers in separate packages.
+The application layer expresses use cases as Commands (writes) and Queries (reads) —
+CQRS's Write Model / Read Model split, named precisely in the canonical glossary. A
+handler orchestrates: load, authorise, call the domain, save. It contains **no
+business rules itself** — those live in the Aggregate (`go-domain-model`). Campbell's
+*Designing Backend Systems with Go* teaches one undifferentiated `services` layer for
+both reads and writes; this repo deliberately diverges, the same shape of justified
+departure `go-repository-pattern` documents for pgx over `database/sql` — the CQRS
+split lets the read side be optimised (denormalised, cached, scaled independently)
+without dragging invariant machinery into every list screen.
 
 ---
 
-## Command Handler (Write Side)
+## Command Handler Standard
 
-One handler per Command, one file, one `Handle` method. Dependencies are the small consumer-defined ports, injected at construction.
+Every command handler exposes exactly one method: **`Handle(ctx context.Context, cmd Command) (Result, error)`.**
+`Result` is the command's own DTO — `struct{}` for a command with no meaningful return
+value, a small value type for one that does. No handler returns a bare `error`; the
+uniform two-value return keeps every call site symmetrical.
+
+**Transaction-boundary ownership: this layer — never the repository — opens the
+`pgx.Tx`,** the caller's side of `go-repository-pattern`'s Transaction-Boundary
+Standard (a repository method never calls `pool.Begin`). A handler with a multi-call
+atomicity requirement holds `pool *pgxpool.Pool` and a **concrete** repository type
+for `.WithTx(tx)` — a narrow, named exception to consumer-defined-port-only wiring,
+scoped to that one field; every other dependency stays on the narrow port.
+
+Fixed step order: **begin tx → idempotency insert-or-replay (`command_log`, same tx,
+first statement) → load → authorise → domain call → save + record result → commit.**
+Same shape as `go-event-consumer`'s `processed_events` placement: one transaction, so
+a crash between the ledger write and the domain write is impossible by construction.
 
 ```go
-// internal/application/commands/classify_data_asset.go
-package commands
-
-type ClassifyDataAsset struct {                 // the Command (input DTO)
-    DataAssetID  uuid.UUID
-    Sensitivity  domain.SensitivityLevel
-    ClassifiedBy uuid.UUID
-    IdempotencyKey string
+ct, _ := tx.Exec(ctx, `INSERT INTO command_log (idempotency_key, command_type)
+    VALUES ($1,$2) ON CONFLICT (idempotency_key) DO NOTHING`, cmd.IdempotencyKey, "ClassifyDataAsset")
+if ct.RowsAffected() == 0 {
+    return replayStoredResult(ctx, tx, cmd.IdempotencyKey) // duplicate delivery
 }
-
-type ClassifyDataAssetHandler struct {
-    repo   domain.DataAssetRepository
-    policy domain.AccessPolicy
-    idem   IdempotencyStore
-    clock  func() time.Time          // injected for deterministic tests
-}
-
-func NewClassifyDataAssetHandler(r domain.DataAssetRepository, p domain.AccessPolicy, i IdempotencyStore) *ClassifyDataAssetHandler {
-    return &ClassifyDataAssetHandler{repo: r, policy: p, idem: i, clock: time.Now}
-}
-
-func (h *ClassifyDataAssetHandler) Handle(ctx context.Context, cmd ClassifyDataAsset) error {
-    // 1. Idempotency: a retried command must not classify twice.
-    if done, err := h.idem.Seen(ctx, cmd.IdempotencyKey); err != nil {
-        return fmt.Errorf("idempotency check: %w", err)
-    } else if done {
-        return nil // already applied — return success, do nothing
-    }
-
-    // 2. Load the Aggregate.
-    asset, err := h.repo.FindByID(ctx, cmd.DataAssetID)
-    if err != nil {
-        return err // already a wrapped domain error from the repo
-    }
-
-    // 3. Authorise BEFORE mutating (ABAC — enforced here, in the application layer).
-    sub, err := domain.SubjectFromContext(ctx)
-    if err != nil {
-        return ErrUnauthenticated
-    }
-    res := domain.Resource{Type: "data-asset", ID: asset.ID(), TenantID: asset.TenantID()}
-    if err := h.policy.Evaluate(ctx, sub, res, domain.ActionClassify); err != nil {
-        return err // ErrForbidden — do not reveal why (see access-control-model)
-    }
-
-    // 4. Execute the domain rule (the business logic lives in the Aggregate).
-    if err := asset.Classify(cmd.Sensitivity, cmd.ClassifiedBy, h.clock()); err != nil {
-        return err
-    }
-
-    // 5. Persist (state + events atomically — see go-repository-pattern).
-    if err := h.repo.Save(ctx, asset); err != nil {
-        return err
-    }
-    return h.idem.Record(ctx, cmd.IdempotencyKey)
-}
+repo := h.assets.WithTx(tx) // caller-supplied transaction — repo never opened one
 ```
 
-The five steps are always in this order: **idempotency → load → authorise → domain call → save**. Authorisation precedes mutation; persistence is last.
+Full handler body (idempotency, load, ABAC, domain call, save, result recording,
+commit) and the `command_log` schema: `references/command-handler-transaction-and-idempotency.md`.
 
-Note the check-then-record shape leaves a small window where two concurrent retries both pass `Seen`. That is acceptable **only** because the repository's compare-and-swap on `version` is the backstop — the second save fails with `ErrConcurrentModification`. Where even that is too weak (e.g., non-versioned side effects), record the idempotency key inside the same transaction as the save, exactly as the consumer does with `processed_events` (see `go-event-consumer`).
+A command handler changes **exactly one Aggregate per transaction** (`aggregate-design`).
+A use case that appears to need two changed atomically is a signal to reconsider the
+boundary, or use eventual consistency via Domain Events / a Saga
+(`event-driven-patterns`) — never a transaction spanning two Aggregates.
 
 ---
 
-## Query Handler (Read Side)
+## Query Handler Standard
 
-Queries never load Aggregates and never go through the domain. They read projections / Read Models directly (see `read-model-design`) and return read DTOs. This is the CQRS separation: the read side is optimised for reading.
+Queries never load Aggregates and never call a repository. CQRS's Read Model is a
+distinct, often denormalised projection (`read-model-design`), read through a narrow
+read-model port scoped to the tenant and permission:
 
 ```go
-// internal/application/queries/list_data_assets.go
-package queries
-
-type ListDataAssets struct {
-    Sensitivity *domain.SensitivityLevel // optional filter
-    Page        Pagination
-}
-
-type ListDataAssetsHandler struct {
-    view DataAssetView // a read-model port; reads the *_view table, not data_assets
-}
-
 func (h *ListDataAssetsHandler) Handle(ctx context.Context, q ListDataAssets) (Page[DataAssetDTO], error) {
     sub, err := domain.SubjectFromContext(ctx)
-    if err != nil {
-        return Page[DataAssetDTO]{}, ErrUnauthenticated
-    }
-    // Read queries still enforce the tenant boundary and read permission.
-    if !sub.HasPermission("data-assets:read") {
-        return Page[DataAssetDTO]{}, ErrForbidden
-    }
+    if err != nil { return Page[DataAssetDTO]{}, ErrUnauthenticated }
+    if !sub.HasPermission("data-assets:read") { return Page[DataAssetDTO]{}, ErrForbidden }
     return h.view.List(ctx, sub.TenantID, q.Sensitivity, q.Page)
 }
 ```
 
+Bypassing the domain layer for reads is deliberate: an Aggregate enforces invariants
+on a *mutation*; a read has none to enforce, and loading one to answer a list screen
+drags invariant machinery and N+1 loads into a path that needs one `SELECT` against an
+already-shaped view.
+
 ---
 
-## Consistency Boundary
+## Cache-Aside Standard
 
-A command handler changes **exactly one Aggregate per transaction** (the aggregate-design rule). If a use case appears to need two Aggregates changed atomically, that is a signal to either (a) reconsider the Aggregate boundaries, or (b) use eventual consistency via Domain Events / a Saga (see `event-driven-patterns`). The application layer never opens a transaction spanning two Aggregates.
+Opt-in, only for a query handler fronting a view `read-model-design` has already
+flagged cache-eligible — never speculatively. Check cache → on miss, query the view →
+populate with a bounded TTL. The cache key (`fmt.Sprintf("dataasset:%s:%s", tenantID,
+id)`) is constructed by **one shared function**, called from both the query handler
+that populates it and the command handler that invalidates it — two independently
+formatted key strings silently drift and break invalidation with no symptom. The
+command handler that wrote the change deletes that key itself, **after** `tx.Commit()`
+succeeds, never before (a rolled-back write must not evict a valid entry) and never as
+a separate deferred step (that gap is exactly the staleness window the TTL already
+bounds). Full key-construction rule, TTL policy table, and the invalidate-on-write
+worked example: `references/cache-aside.md`.
 
 ---
 
-## Parallel Orchestration with errgroup
+## Three-Tier Validation Boundary
 
-When a query must gather independent data from several sources, fan out with `errgroup` so the slowest source bounds latency — not the sum. Every goroutine uses the group context, so a failure or client cancellation stops all of them.
+`command-catalog`'s two design-level layers (structural, business-rule) leave a gap: a
+check needing I/O (so it cannot be Tier 1) that is not an invariant of the *target*
+Aggregate (so it does not belong inside that Aggregate's method). This layer owns that
+middle tier.
 
-```go
-func (h *DashboardHandler) Handle(ctx context.Context, q Dashboard) (DashboardDTO, error) {
-    g, gctx := errgroup.WithContext(ctx)
-    var assets AssetSummary
-    var gaps   GapSummary
+| Tier | Owner | Checks | I/O | Example |
+|---|---|---|---|---|
+| 1 — Structural | `go-chi-handler` | Shape only, from request bytes alone | Never | Sensitivity string not one of four valid values |
+| 2 — Orchestration | `go-service-layer` (here) | Does a referenced id/Aggregate exist — facts about *other* things the Command references | Narrow reads only, never writes | An `OwnerUserID` a Command names does not resolve to a real user |
+| 3 — Business invariant | `go-domain-model` | Rules about the *target* Aggregate's own current state, using state already loaded | No — the Aggregate is pure | A sensitivity downgrade rejected by the Aggregate's own current field |
 
-    g.Go(func() error {
-        var err error
-        assets, err = h.assetView.Summary(gctx, q.TenantID)
-        return err
-    })
-    g.Go(func() error {
-        var err error
-        gaps, err = h.gapView.Summary(gctx, q.TenantID)
-        return err
-    })
-    if err := g.Wait(); err != nil {
-        return DashboardDTO{}, fmt.Errorf("loading dashboard: %w", err)
-    }
-    return DashboardDTO{Assets: assets, Gaps: gaps}, nil
-}
-```
+The distinguishing question is not "does this need the database" — Tiers 2 and 3 both
+can — it is **whose state is being examined**: Tier 2 checks other referenced
+entities; Tier 3 checks the one Aggregate this Command targets, already in memory.
+Full worked orchestration-check example: `references/three-tier-validation-boundary.md`.
 
-Each goroutine writes to its own variable (no shared mutable state, no race); `g.Wait()` is the join point. (Patterns: `go-concurrency-patterns`.)
+---
+
+## Parallel Query Orchestration and Confinement
+
+When a query gathers independent data from several sources, fan out with `errgroup` so
+the slowest source bounds latency, not the sum — each goroutine writes only its own
+destination variable, Cox-Buday's **ad hoc confinement**: data reachable by exactly one
+goroutine by construction needs no mutex or channel, because the race synchronisation
+would prevent cannot occur. `g.Wait()` is the join point. Full worked
+`DashboardHandler` fan-out example: `references/parallel-query-orchestration.md`.
+(General concurrency patterns beyond this one use: `go-concurrency-patterns`.)
 
 ---
 
 ## Rules
 
 - **No business logic in handlers.** Decisions live in the Aggregate; handlers orchestrate.
-- **No HTTP/SQL/broker types.** Handlers take Commands/Queries and ports — never `*http.Request`, never pgx.
+- **This layer opens transactions, never the repository** — the `pgx.Tx` boundary lives in `Handle`, per `go-repository-pattern`'s Transaction-Boundary Standard. `pgx`/concrete-repository access is a narrow, named exception scoped to handlers with a multi-call atomicity requirement; every other dependency stays on the consumer-defined port. No HTTP types, ever.
 - **Authorise before mutate.** Policy check precedes the domain call, always.
-- **Idempotent commands.** Every state-changing command honours an idempotency key.
-- **`ctx` first, propagated everywhere.** Carries deadline, cancellation, tenant, and trace span.
+- **Idempotent commands, same transaction** — `command_log` insert-or-replay is the first statement, sharing the domain write's `tx`.
+- **`ctx` first, propagated everywhere.**
 
 ---
 
 ## Quality Criteria
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Thin handlers | Orchestration only; no business rules | Domain logic implemented in the handler |
-| Write/read separation | Commands mutate Aggregates; queries read projections | Queries loading Aggregates; commands reading views |
-| Authorise before mutate | Policy evaluated before the domain call | Mutation then check, or no check |
-| One Aggregate per tx | Each command touches one Aggregate | Transactions spanning multiple Aggregates |
-| Idempotency | State-changing commands honour an idempotency key | Retries causing duplicate effects |
-| Framework-free | No HTTP/SQL/broker types in the application layer | `*http.Request` or pgx leaking in |
+| Criterion | Pass | Fail | How to verify |
+|---|---|---|---|
+| Thin handlers, uniform signature | Orchestration only; every `Handle` returns `(Result, error)` | Business logic in the handler, or a bare-`error` return | Read the body against the fixed step order; `grep -n "func (h \*.*Handler) Handle" internal/application` |
+| Transaction boundary, idempotency same-tx | `pool.Begin`/`tx.Commit` only inside `Handle`; repository never calls `.Begin`; `command_log` insert is the first statement in that same `tx` | A repository opens its own tx; insert-or-domain-write split across transactions | `grep -rn "\.Begin(ctx" internal/infrastructure/postgres` — empty; read `Handle` for one `tx.Begin`...`tx.Commit` spanning both |
+| Write/read separation | Commands mutate Aggregates; queries read Read Model views | Queries loading Aggregates; commands reading views | Grep query handler files for `domain.Reconstitute`/`FindByID` — none |
+| One Aggregate per tx | Each command touches one Aggregate | A transaction spanning multiple Aggregates | Read every `Save`/`WithTx` call site inside one `Handle` |
+| Cache-key parity, invalidate post-commit | Populate/invalidate share one key function; `cache.Delete` runs after `tx.Commit()` succeeds | Two differently formatted key strings, or delete before/without a commit | Grep the key function's call sites; read statement order after `Commit` |
+| Validation tier discipline | Tier 2 checks only referenced-entity existence; Tier 3 stays inside the Aggregate | A repository call inside the Aggregate, or a target-Aggregate re-check in the handler | Read handler I/O calls against the target Aggregate's own fields — none outside `FindByID`'s load |
+| Authorise before mutate, framework-free | Policy precedes the domain call; only transaction-owning fields touch pgx, nothing touches `*http.Request` | Mutation before check; `*http.Request` in the application layer, or pgx in a no-atomicity handler | Read step order; read imports of every `internal/application/**` file |
+| No shared mutable state in fan-out | Each `errgroup` goroutine writes one private destination variable | Two goroutines writing one slice/map | Read every `g.Go(func() error {...})` body for its write target |
 
 ---
 
 ## Anti-Patterns
 
-- **The "service" that is really the domain** — sensitivity-downgrade rules, invariant checks, or state math written in the handler. The moment a rule lives here, the Aggregate can no longer guarantee it.
-- **Authorise-after-mutate** — calling `asset.Classify` and only then evaluating policy means a forbidden caller already changed in-memory state (and one missed early return away from persisting it).
-- **Queries through the write model** — loading Aggregates to answer a list screen drags invariant machinery and N+1 loads into a path that needed one `SELECT` from a Read Model.
-- **Transactions spanning Aggregates** — "just this once" atomically updating two Aggregates dissolves the consistency boundary; use Domain Events and eventual consistency instead.
-- **A god `Service` struct** — `DataAssetService` with twelve methods and eight dependencies. One use case, one handler, one file; dependencies stay honest.
-- **Returning `nil` on unauthenticated/unauthorised** — silently succeeding on a failed policy check is a security defect, not graceful degradation. `ErrUnauthenticated`/`ErrForbidden`, mapped at the edge.
-- **Shared mutable state across errgroup goroutines** — two goroutines appending to one slice or map in a fan-out query is a race; one destination variable per goroutine.
+- **The "service" that is really the domain** — invariant checks or state math written in the handler; the Aggregate can no longer guarantee them.
+- **A repository opening its own transaction, or an idempotency insert in a separate tx from the domain write** — both reopen the dual-write race the Transaction-Boundary Standard exists to close.
+- **Authorise-after-mutate** — a forbidden caller's in-memory mutation already happened before the check runs.
+- **Queries through the write model** — loading Aggregates to answer a list screen.
+- **Cache invalidation before commit, as a separate deferred step, or via a second independently formatted key string** — evicts a valid entry for a rolled-back write, reopens the staleness window the TTL already bounds, or silently stops matching.
+- **A Tier 2 orchestration check that re-derives a Tier 3 Aggregate invariant**, or vice versa — drift between the two tiers means two places can disagree about the same rule.
+- **Transactions spanning Aggregates, or shared mutable state across `errgroup` goroutines** — dissolves the consistency boundary; one Aggregate per tx, one destination variable per goroutine.
 
 ---
 
 ## Output Format
 
-Produces Go source plus test-first unit tests (handlers tested with mocked ports):
+Go source built exactly to the standards above, plus tests written first (TDD):
+handlers with no multi-call atomicity requirement get unit tests against mocked
+ports; handlers holding `pool`/`WithTx` get integration tests against a real
+PostgreSQL (`go-integration-test` owns the harness) — a mocked port cannot verify a
+transaction boundary that is itself the thing under test.
 
 ```
 internal/application/commands/classify_data_asset.go
-internal/application/commands/classify_data_asset_test.go   (written first; mocked ports)
+internal/application/commands/classify_data_asset_test.go   (integration — owns pool/tx)
 internal/application/queries/list_data_assets.go
-internal/application/queries/list_data_assets_test.go
+internal/application/queries/list_data_assets_test.go       (unit — mocked read-model port)
 ```
+
+Full standards: `references/command-handler-transaction-and-idempotency.md`,
+`references/cache-aside.md`, `references/three-tier-validation-boundary.md`.

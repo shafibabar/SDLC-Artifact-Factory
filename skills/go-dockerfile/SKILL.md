@@ -1,112 +1,180 @@
 ---
 name: go-dockerfile
 description: >
-  Teaches how to containerise a Go service for production — a multi-stage build
-  producing a minimal, non-root, distroless (or scratch) image, static linking,
-  build-cache-friendly layer ordering, reproducible builds with pinned versions,
-  no secrets in layers, and image hardening for the Zero Trust workload layer.
-  Implements the security-architecture workload controls. Used by the
-  backend-engineer during Implement.
-version: 1.1.0
+  Teaches the standard for containerising a Go service for production: the
+  exact multi-stage build (full-toolchain builder stage, minimal
+  distroless/scratch final stage), the CGO_ENABLED=0 static-binary build and
+  why it is required for the final stage to run at all, the layer-caching
+  order (go.mod/go.sum resolved before source, so a source-only change never
+  re-downloads dependencies), the non-root numeric-UID standard (never a named
+  user that doesn't resolve in a distroless/scratch image), the PID-1 /
+  exec-form ENTRYPOINT rule that lets a container's SIGTERM actually reach the
+  Go binary's own signal.NotifyContext handler, concrete image-size numbers
+  (~15-40MB distroless vs. ~800MB-1GB single-stage) and BuildKit cache-mount
+  build-time optimization, and the Trivy image-vulnerability-scanning gate
+  that complements (not duplicates) go-makefile's govulncheck target. Full
+  Dockerfile listing and layer-order/UID/PID-1 detail in
+  references/multi-stage-build-standard.md; size numbers, cache-mount
+  mechanics, and the scanning gate in
+  references/image-size-and-security-standard.md. Used by the backend-engineer
+  during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, go, docker, multi-stage, distroless, non-root, security, container]
+tags: [implement, go, docker, multi-stage, distroless, non-root, security, container, image-size, buildkit]
+related: [go-service-skeleton, go-makefile, kubernetes-manifest, security-architecture, secrets-management]
 ---
 
 # Go Dockerfile
 
 ## Purpose
 
-The container image is the deployable unit. For a Go service it should be tiny, contain only the static binary and its certificates, run as a non-root user, and carry no build tools, no shell, and no secrets. A minimal image has a minimal attack surface — it is the first of the workload-layer controls from the security `security-architecture` skill.
+The container image is the deployable unit. For a Go service it must be tiny, contain only the
+static binary and its certificates, run as a non-root numeric UID, forward `SIGTERM` correctly to
+the process actually running as PID 1, carry no build tools or shell, and minimize both its own
+footprint (memory/disk/pull time) and the time it takes to build. A minimal image is also a
+minimal attack surface — the first workload-layer control from `security-architecture`.
 
-This skill produces the production Dockerfile. The deployment manifests that run it are the platform-engineer's domain.
+This skill produces the production `Dockerfile` and `.dockerignore`. Deployment manifests are
+`kubernetes-manifest`'s domain; the `make docker`/`make vuln` targets that invoke this build are
+`go-makefile`'s domain.
 
 ---
 
-## Multi-Stage Build
+## Multi-Stage Build Standard
 
-Two stages: a builder with the Go toolchain, and a final image with only the binary. The toolchain never ships to production.
+Two stages, always: a `build` stage with the full Go toolchain, and a final stage containing
+only the compiled binary. The toolchain, module cache, and source tree never reach the shipped
+image. Full annotated Dockerfile: `references/multi-stage-build-standard.md`.
 
 ```dockerfile
-# syntax=docker/dockerfile:1
-
-# ---- Build stage ----
-FROM golang:1.23-bookworm AS build
-ARG VERSION=dev
-WORKDIR /src
-
-# Cache deps separately from source so dependency layers reuse across builds.
-COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod go mod download
-
-# Now copy source and build.
-COPY . .
-# Static, stripped, reproducible binary. CGO off ⇒ no libc dependency ⇒ runs on scratch/distroless.
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOOS=linux go build \
-      -trimpath \
-      -ldflags="-s -w -X main.version=${VERSION}" \
-      -o /out/server ./cmd/server
-
-# ---- Final stage ----
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM golang:1.23-bookworm AS build            # full toolchain — this stage only
+# ...(deps, then source, then build — see Layer-Caching Order below)...
+FROM gcr.io/distroless/static-debian12:nonroot   # final stage — binary only
 COPY --from=build /out/server /server
-# distroless:nonroot already runs as uid 65532 and includes CA certs + tzdata.
 USER nonroot:nonroot
-EXPOSE 8080
 ENTRYPOINT ["/server"]
 ```
 
-| Choice | Why |
-|---|---|
-| `distroless/static:nonroot` | No shell, no package manager, runs non-root by default — minimal attack surface |
-| `CGO_ENABLED=0` | Fully static binary; no glibc → works on distroless/scratch; reproducible |
-| `-trimpath` | Removes local filesystem paths from the binary — reproducible, no info leak |
-| `-ldflags="-s -w"` | Strips debug symbols → smaller image (keep symbols out of prod; profile in staging) |
-| `--mount=type=cache` | BuildKit caches modules and build output → fast incremental CI builds |
-| Layer ordering | `go.mod`/`go.sum` before source → dependency layer reused when only source changes |
+`distroless/static:nonroot` (or bare `scratch`) is the default final base: no shell, no package
+manager, no dynamic linker. `scratch` saves distroless's last ~2MB (CA certs + the `nonroot`
+user entry) — prefer `distroless/static:nonroot` unless the service makes no outbound TLS calls.
 
 ---
 
-## Non-Root and Read-Only
+## Static Binary Build Standard
 
-The image runs as a non-root user (`nonroot`, uid 65532). At deploy time the platform-engineer sets the matching pod SecurityContext (`runAsNonRoot`, `readOnlyRootFilesystem`, `allowPrivilegeEscalation: false`) — the image is built to be compatible: it writes nothing to the filesystem at runtime (secrets are read from a mounted in-memory volume — see `secrets-management`; logs go to stdout).
-
----
-
-## No Secrets in Layers
-
-Every layer of an image is extractable. Therefore:
-
-- **No secrets copied in** — not even temporarily; a deleted file in a later layer is still present in the earlier layer.
-- **No build-time secret env vars** — they leak into image history (`docker history`).
-- Build-time secrets that are genuinely needed (e.g., a private module token) use BuildKit secret mounts, which never persist in a layer:
+`CGO_ENABLED=0` is a **hard requirement**, not an optimization: neither `scratch` nor
+`distroless/static` ships a dynamic linker or `libc.so`, so a cgo-linked binary fails to start
+on either at all. Pair it with `-trimpath` (no build-host paths leak into panics; reproducible
+across build hosts) and `-ldflags="-s -w"` (strips debug symbols, typically 20-30% smaller —
+debug a symbol-complete build in staging, never in the shipped image):
 
 ```dockerfile
-# .netrc with the module token is mounted for this one RUN only — it never lands in a layer.
-RUN --mount=type=secret,id=netrc,target=/root/.netrc \
-    GOPRIVATE=git.example.com go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/server ./cmd/server
 ```
 
-This aligns with the security `secrets-management` non-negotiables (no secrets in images, no build-time env var secrets).
+Verify statically: `file /out/server` must read `statically linked`, never `dynamically
+linked`. Full explanation and the failure modes of getting this wrong:
+`references/multi-stage-build-standard.md`.
 
 ---
 
-## Reproducibility and Provenance
+## Layer-Caching Order Standard
 
-- **Pin base images** by tag and ideally digest (`@sha256:...`) so a build is reproducible and not silently changed by an upstream re-tag.
-- **`-trimpath` + pinned Go version** make the binary reproducible.
-- The image is **signed with Cosign** in CI and verified at admission (see `security-architecture`) — only signed images run in production.
-- A **vulnerability scan (Trivy)** gates the build: no HIGH/CRITICAL CVEs ship (CI gate; see platform CI pipeline).
+`go.mod`/`go.sum` are copied and `go mod download`'d **before** the rest of the source is
+copied. Docker's layer cache keys each instruction on its inputs; reordering so the
+rarely-changing input (dependencies) precedes the frequently-changing one (application code)
+means a source-only change reuses the dependency layer untouched instead of re-downloading every
+module:
+
+```dockerfile
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download   # cached unless go.mod/go.sum change
+COPY . .                                                     # only this busts on a code edit
+```
+
+Before/after comparison and the exact caching mechanics: `references/multi-stage-build-standard.md`.
 
 ---
 
-## Health and Observability Compatibility
+## Non-Root Numeric UID Standard
 
-- The binary exposes liveness/readiness endpoints (see observability `health-check-design`); the platform-engineer wires the probes.
-- Logs go to **stdout/stderr** as JSON (see `structured-logging-design`) — the container never writes log files.
-- The pprof admin endpoint, if enabled, binds to a separate internal port (see `go-performance-optimization`) — never exposed in the service's published port.
+`USER` must be a **numeric UID**, never a named user that doesn't resolve in the exact
+final-stage image. `scratch` has no `/etc/passwd` at all — `USER appuser` fails outright.
+`distroless/static:nonroot` provisions exactly one entry (`nonroot`, uid/gid `65532:65532`),
+resolvable only in that specific tag. The numeric form (`USER 65532:65532`) is portable across
+any final-stage image and is the form to prefer whenever the base might ever change. This is
+defense in depth alongside — never a substitute for — the platform-layer
+`runAsNonRoot`/`runAsUser` `securityContext` `kubernetes-manifest` sets. Full rule and failure
+modes: `references/multi-stage-build-standard.md`.
+
+---
+
+## PID 1 and Signal Forwarding (exec-form `ENTRYPOINT`)
+
+`ENTRYPOINT`/`CMD` must use **exec form** (`ENTRYPOINT ["/server"]`), never shell form
+(`ENTRYPOINT /server`). Shell form runs `/bin/sh -c "/server"`, making `sh` — not the Go
+binary — PID 1; `sh` does not forward `SIGTERM` to its child by default, so Kubernetes' pod
+termination signal is silently ignored until `terminationGracePeriodSeconds` expires and
+Kubernetes escalates to `SIGKILL`, on **every** rolling deploy and pod eviction. Exec form makes
+the Go binary itself PID 1, so `go-service-skeleton`'s
+`signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)` handler actually
+receives the signal it's written to catch — this Dockerfile rule is the container-side half of
+that skill's shutdown contract; neither works without the other. Full explanation:
+`references/multi-stage-build-standard.md`.
+
+---
+
+## Image-Size and Build-Time Optimization
+
+A single-stage `golang:1.23` image runs **~800MB-1GB+**; a multi-stage `distroless/static` image
+with a stripped static binary runs **~15-40MB** — roughly one to two orders of magnitude
+smaller, the concrete target "minimal" means here. `-ldflags="-s -w"` alone typically cuts
+20-30% off the binary. BuildKit `--mount=type=cache` mounts for the module and build caches
+(`/go/pkg/mod`, `/root/.cache/go-build`) persist outside the image entirely — never counted in
+size, never shipped — and make repeated builds fast by skipping re-downloads and recompiles of
+unchanged dependencies; wire `cache-from`/`cache-to: type=gha` in CI so the cache survives across
+GitHub Actions runs, not just locally. Full numbers table and cache-mount CI wiring:
+`references/image-size-and-security-standard.md`.
+
+---
+
+## Security Scanning Gate
+
+**Trivy** (open-source, no license cost — the frugal choice) scans the **built image's
+filesystem** for known-vulnerable OS packages and embedded files — a different, complementary
+surface from `go-makefile`'s `make vuln` (`govulncheck`, which scans reachable Go source only
+and never inspects the OS layer). Both run; neither replaces the other:
+
+```bash
+make docker                                                    # go-makefile builds $(IMAGE)
+trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed "$IMAGE"
+```
+
+`--exit-code 1` makes this a merge-blocking gate, not an ignored report; `--ignore-unfixed`
+avoids gating permanently on a CVE with no available fix. Rebuild and rescan on a schedule
+(weekly) even absent a code change — base-image CVEs are disclosed against unchanged layers.
+Full rationale and base-image-drift handling: `references/image-size-and-security-standard.md`.
+
+---
+
+## No Secrets in Layers, Reproducibility, and Provenance
+
+Every layer is extractable, including one a later layer deletes from — layers are append-only.
+No secrets are ever `COPY`'d in, even temporarily, and no build-time secret env vars (they leak
+into `docker history`). A genuinely needed build-time secret (e.g., a private module token) uses
+a BuildKit secret mount, which never persists in a layer:
+
+```dockerfile
+RUN --mount=type=secret,id=netrc,target=/root/.netrc GOPRIVATE=git.example.com go mod download
+```
+
+This aligns with `secrets-management`'s non-negotiables. Separately: pin base images by tag and
+digest (`@sha256:...`) so a build cannot be silently changed by an upstream re-tag — `-trimpath`
+plus a pinned Go version make the binary itself reproducible. The image is signed with Cosign in
+CI and verified at admission (`security-architecture`) — only signed images run in production.
 
 ---
 
@@ -114,32 +182,48 @@ This aligns with the security `secrets-management` non-negotiables (no secrets i
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Multi-stage | Toolchain stays in the build stage | Go toolchain shipped in the final image |
-| Minimal base | distroless/scratch; no shell or package manager | `ubuntu`/`alpine` with extra tooling in prod |
-| Non-root | Runs as non-root uid; FS-write-free at runtime | Runs as root; writes to root filesystem |
-| Static binary | `CGO_ENABLED=0`, `-trimpath` | Dynamically linked / non-reproducible build |
+| Multi-stage | Toolchain confined to the `build` stage | Go toolchain shipped in the final image |
+| Minimal base | `distroless`/`scratch`; ~15-40MB shipped | `ubuntu`/`alpine` in prod; image in the hundreds of MB |
+| Static binary | `CGO_ENABLED=0`; `file` reports statically linked | Dynamically linked binary on scratch/distroless |
+| `-trimpath` + `-ldflags="-s -w"` | Build-host paths absent; symbols stripped | Local paths in panics; unstripped binary shipped |
+| Layer-caching order | `go.mod`/`go.sum` + `go mod download` before `COPY . .` | Single `COPY . .` busting the dep cache every build |
+| Cache mounts | `--mount=type=cache` on module + build cache, `id=` set | No cache mount; every build re-downloads/recompiles |
+| Non-root numeric UID | `USER <uid>:<gid>`, resolves in the exact final image | Named user absent from that image's `/etc/passwd`, or root |
+| Exec-form `ENTRYPOINT` | `ENTRYPOINT ["/server"]` — binary is PID 1 | Shell-form `ENTRYPOINT`/`CMD` swallows `SIGTERM` |
 | No secrets in layers | No copied secrets; BuildKit secret mounts only | Secrets in layers or build-time env vars |
-| Cache-friendly layers | deps layer before source | Single `COPY . .` busting the dep cache every build |
-| Pinned & signed | Base pinned by digest; image Cosign-signed; Trivy-clean | Floating `latest` base; unsigned; unscanned |
+| Vulnerability-scanned | `trivy image` HIGH/CRITICAL-clean, wired as a CI gate | Unscanned image, or scan result not gating |
+| Pinned & signed | Base pinned by digest; image Cosign-signed | Floating `latest` base; unsigned image |
 
 ---
 
 ## Anti-Patterns
 
-- **Single-stage image** — shipping the Go toolchain, source tree, and git history to production multiplies the attack surface and the image size by an order of magnitude.
-- **`FROM golang:latest`** — an unpinned base means yesterday's green build and today's broken one built "the same" Dockerfile. Pin by tag, prefer digest.
-- **Deleting a secret in a later layer** — `COPY key.pem` + `RUN rm key.pem` still leaves the key extractable from the earlier layer. Layers are append-only.
-- **`apk add` / `apt-get install` debugging tools in the final stage** — a shell and curl in production is a gift to an attacker who lands in the container. Debug with ephemeral containers at the platform layer instead.
-- **Baking configuration or environment into the image** — one image per environment breaks provenance. Build once, sign once, promote the same digest; configuration comes from the platform.
-- **`COPY . .` before `go mod download`** — every source edit busts the dependency cache and re-downloads all modules in CI.
+- **Single-stage image** — shipping the toolchain, source tree, and module cache multiplies
+  both attack surface and image size by an order of magnitude over multi-stage.
+- **`FROM golang:latest`** — an unpinned base means yesterday's green build and today's broken
+  one built "the same" Dockerfile. Pin by tag, prefer digest.
+- **Shell-form `ENTRYPOINT`/`CMD`** — makes `sh` PID 1 instead of the binary; `SIGTERM` never
+  reaches `go-service-skeleton`'s handler; every deploy hard-kills instead of draining.
+- **A named `USER` that doesn't resolve in the final image** — silently runs as root, or fails
+  the build, depending on the Docker version; use the numeric UID form.
+- **`COPY . .` before `go mod download`** — every source edit re-downloads every module in CI.
+- **Deleting a secret in a later layer** — `COPY key.pem` + `RUN rm key.pem` still leaves the
+  key extractable from the earlier layer.
+- **Skipping the image scan, or not gating on it** — a report nobody reads gates nothing;
+  `--exit-code 1` must actually fail the build.
+- **Adding `tini`/`dumb-init` to a service with no child processes** — unnecessary final-stage
+  weight solving a zombie-reaping problem this service doesn't have.
 
 ---
 
 ## Output Format
 
-Produces the Dockerfile and a `.dockerignore`:
+**`Dockerfile`** — must contain, in order: a `build` stage on a pinned `golang` tag; `COPY
+go.mod go.sum ./` + cache-mounted `go mod download` before any other `COPY`; `COPY . .`; a
+cache-mounted, `CGO_ENABLED=0`, `-trimpath`, `-ldflags="-s -w"` build; a final stage on a pinned
+`distroless`/`scratch` tag; `COPY --from=build` of only the binary; a numeric-UID `USER`; and an
+exec-form `ENTRYPOINT`. Full listing: `references/multi-stage-build-standard.md`.
 
-```
-Dockerfile
-.dockerignore        (excludes tests, .git, local artifacts from the build context)
-```
+**`.dockerignore`** — excludes `.git`, `.github`, docs, `Makefile`, local build output
+(`bin/`, `coverage.out`), env files, and `**/*_test.go`. Full listing:
+`references/multi-stage-build-standard.md`.
