@@ -8,7 +8,7 @@ description: >
   Service Mesh injection, a ServiceAccount per service, HPA guidance, and
   graceful shutdown aligned with the Go server's drain ordering. Used by the
   platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -106,58 +106,17 @@ Full YAML (migration init container, native sidecar OTel Collector, and Vault se
 
 ## Availability — PDB and Topology Spread
 
-Replicas only help if they don't disrupt together:
+Replicas only help if they don't disrupt together. Every multi-replica service carries **both** a `PodDisruptionBudget` (`maxUnavailable: 1`, so node drains/upgrades take one replica at a time) and a `topologySpreadConstraints` entry (`maxSkew: 1` over `kubernetes.io/hostname`, so replicas don't co-schedule onto one node). `minAvailable`/`maxUnavailable` must leave enough capacity for the SLO (`slo-definition`) during a rolling node upgrade.
 
-```yaml
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata: { name: estate-scanner }
-spec:
-  maxUnavailable: 1                # node drains/upgrades take one replica at a time
-  selector: { matchLabels: { app.kubernetes.io/name: estate-scanner } }
----
-topologySpreadConstraints:
-  - maxSkew: 1
-    topologyKey: kubernetes.io/hostname
-    whenUnsatisfiable: ScheduleAnyway   # DoNotSchedule only where node count guarantees satisfiability
-    labelSelector: { matchLabels: { app.kubernetes.io/name: estate-scanner } }
-```
-
-`minAvailable`/`maxUnavailable` must leave enough capacity for the SLO (`slo-definition`) during a rolling node upgrade.
+Full PDB + topology spread YAML: `references/manifest-reference.md`.
 
 ---
 
 ## Network — Default-Deny, Explicit Allows
 
-Every tenant namespace starts closed; every flow is an explicit, reviewable allow (Zero Trust inside the boundary — the *cross*-tenant boundary is already physical):
+Every tenant namespace starts closed with a `default-deny` policy (empty `podSelector`, `policyTypes: [Ingress, Egress]`); every flow is then an explicit, reviewable allow that mirrors the Container Diagram (Zero Trust inside the boundary — the *cross*-tenant boundary is already physical). A per-service allow opens exactly the ingress (from the ingress-gateway) and egress (Postgres, Redpanda, DNS, external APIs) that service needs. A new architecture arrow is a new NetworkPolicy rule in a reviewed PR.
 
-```yaml
-# default-deny — applied to every namespace:
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata: { name: default-deny }
-spec: { podSelector: {}, policyTypes: [Ingress, Egress] }
----
-# per-service allow — mirrors the Container Diagram:
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata: { name: estate-scanner }
-spec:
-  podSelector: { matchLabels: { app.kubernetes.io/name: estate-scanner } }
-  policyTypes: [Ingress, Egress]
-  ingress:
-    - from: [{ podSelector: { matchLabels: { app.kubernetes.io/name: ingress-gateway } } }]
-      ports: [{ port: 8080 }]
-  egress:
-    - to: [{ podSelector: { matchLabels: { app.kubernetes.io/name: postgres } } }]
-      ports: [{ port: 5432 }]
-    - to: [{ podSelector: { matchLabels: { app.kubernetes.io/name: redpanda } } }]
-      ports: [{ port: 9092 }]
-    - ports: [{ port: 53, protocol: UDP }]   # DNS
-    - ports: [{ port: 443 }]                 # external APIs
-```
-
-A new architecture arrow is a new NetworkPolicy rule in a reviewed PR.
+Full default-deny + per-service allow YAML: `references/manifest-reference.md`.
 
 ---
 
