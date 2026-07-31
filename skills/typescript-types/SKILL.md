@@ -1,199 +1,87 @@
 ---
 name: typescript-types
 description: >
-  Teaches enterprise-grade TypeScript type modeling — discriminated unions for
-  state and domain variants, template literal types, advanced utility types
-  (Pick/Omit/ReturnType/Record), readonly and mapped types for compile-time
-  immutability, exhaustiveness checking with never, and the unknown-over-any rule
-  with narrow type guards for untrusted runtime data. Sound types make whole
-  classes of UI bugs unrepresentable. Used by the frontend-engineer during Implement.
-version: 1.1.0
+  Model TypeScript types so invalid UI and domain states are unrepresentable —
+  choose discriminated unions over boolean flags for loading/success/error and
+  domain variants, decide when to reach for generics versus concrete types,
+  apply parse-don't-validate at the fetch/postMessage/localStorage boundary,
+  ban any in favour of unknown plus narrow type guards, brand IDs so tenant and
+  asset ids cannot be swapped, and set tsconfig strictness. Covers exhaustiveness
+  with never, utility types (Pick/Omit/Record/ReturnType), satisfies, template
+  literal types, and when a cross-fragment shared type becomes a versioned
+  federated contract rather than a local type. Used by frontend-engineer in Implement.
+version: 2.0.0
 phase: implement
 owner: frontend-engineer
 created: 2026-06-25
-tags: [implement, frontend, typescript, types, discriminated-union, immutability, exhaustiveness]
+tags: [implement, frontend, typescript, types, discriminated-union, generics, parse-dont-validate]
+related: [react-api-client, react-state-management, react-performance-optimization, ui-component-spec, microfrontend-architecture, glossary-management, methodology-review]
 ---
 
 # TypeScript Types
 
 ## Purpose
 
-Types are the frontend's first line of defence. A precise type model makes illegal states unrepresentable — a component literally cannot be given a contradictory combination of props, and a network shape cannot be used before it is validated. The compiler catches the bug before the browser ever runs. This skill is the type standard every other frontend skill follows.
+Types are the frontend's first line of defence. A precise type model makes illegal states unrepresentable — a component cannot be given a contradictory combination of props, and a network shape cannot be used before it is validated. The compiler catches the bug before the browser runs it. This skill is the type standard every other frontend skill follows.
 
-The governing rule, from the blueprint: **avoid `any` at all costs.** `any` switches off the compiler exactly where you most need it. Use `unknown` plus a narrow type guard when runtime data is unpredictable.
+## Three Governing Principles
 
----
+1. **Make invalid states unrepresentable.** If two fields only ever exist together, model them together (a discriminated union), never as independent optionals or boolean flags that can drift into an impossible combination. The goal is that the *wrong* code fails to compile, not that the right code passes review.
+2. **Parse, don't validate — at the boundary.** Data crossing a runtime edge (network, `localStorage`, `postMessage`, URL params) is `unknown` until proven. Validate it **once**, at the boundary, into a fully typed domain model; everything inside the app trusts the type. Never `as`-cast an external shape into your type — that is a lie the compiler believes.
+3. **Prefer failures at compile time over runtime.** Exhaustiveness checks, branded IDs, `readonly`, and narrow string unions all convert a class of production bug into a build error. Reach for the construct that moves the failure earliest.
 
-## Discriminated Unions — Model State by Its Shape
+The hard rule under all three, from the frontend blueprint: **avoid `any` at all costs.** `any` switches off the compiler exactly where you most need it. Use `unknown` plus a narrow type guard when runtime data is unpredictable. `any` is lint-banned in this repo.
 
-A discriminated union encodes "these fields only exist together" so impossible combinations cannot be constructed. This is the single most valuable pattern for UI state.
+## Discriminated Unions First — For State and Domain Variants
 
-```ts
-// A remote resource is EXACTLY one of these — never "loading AND has data AND has error".
-type RemoteData<T> =
-  | { readonly status: "idle" }
-  | { readonly status: "loading" }
-  | { readonly status: "success"; readonly data: T }
-  | { readonly status: "error"; readonly error: AppError };
+A discriminated union encodes "these fields only exist together" so impossible combinations cannot be constructed. It is the single most valuable pattern for UI state and the default reach for:
 
-// The compiler forces handling every case and narrows the type inside each branch:
-function render(state: RemoteData<DataAsset[]>) {
-  switch (state.status) {
-    case "idle":    return <Empty />;
-    case "loading": return <Skeleton />;
-    case "success": return <Table rows={state.data} />; // state.data exists ONLY here
-    case "error":   return <ErrorBanner error={state.error} />; // state.error exists ONLY here
-  }
-}
-```
+- **Remote data** — one of `idle | loading | success | error`, never `isLoading && hasData && hasError` boolean soup.
+- **Domain variants** — a `DataSource` that is `{ kind: "google-drive"; folderId } | { kind: "s3"; bucket }`, so S3-only fields can't be read on a Drive source.
+- **Prop variants** — a button that is `{ variant: "link"; href } | { variant: "button"; onClick }`, so impossible prop combinations don't type-check.
 
-Model domain variants the same way — e.g., a `DataSource` that is `{ kind: "google-drive"; folderId: string } | { kind: "s3"; bucket: string }`, so S3-only fields can't be accessed on a Drive source.
+Every union carries a literal **tag** field (`status`, `kind`, `variant`) the compiler narrows on. Pair every `switch` over a union with an `assertNever(x: never)` default so adding a variant breaks the build until it is handled — this turns "we added a sensitivity level and forgot the badge" from a production bug into a compile error. The tag rule, the exhaustiveness pattern, and worked examples are in **`references/type-patterns.md`**.
 
----
+## Generics vs Concrete Types — When to Reach for Each
 
-## Exhaustiveness Checking with `never`
+Generics buy reuse; they cost readability and inference clarity. Choose deliberately:
 
-When a new variant is added to a union, every `switch` over it should fail to compile until it's handled. The `never` type makes that happen — it is the compile-time guarantee that you didn't forget a case.
+| Reach for a **generic** when… | Prefer a **concrete type** when… |
+|---|---|
+| The type genuinely varies by caller — `RemoteData<T>`, a `useQuery<T>` hook, a `Table<Row>` | The shape is fixed and domain-specific — a `DataAsset`, a `ComplianceGap` |
+| Two or more call sites parameterise the same structure over different payloads | You are tempted to add a type parameter "for flexibility" no caller uses |
+| A container/hook must return the caller's own type back to them | A single concrete union already expresses every case |
 
-```ts
-function assertNever(x: never): never {
-  throw new Error(`unhandled variant: ${JSON.stringify(x)}`);
-}
+A type parameter used exactly once, or one with an unconstrained `<T>` that never flows through a return, is usually a concrete type wearing a costume. Constrain parameters (`<T extends { id: string }>`) so the generic states its own contract. Full component-generic and hook-generic examples, plus the utility-type catalogue (`Pick`/`Omit`/`Partial`/`Record`/`ReturnType`), `satisfies`, template literal types, and branded/nominal types, are in **`references/type-patterns.md`**.
 
-function label(level: SensitivityLevel): string {
-  switch (level) {
-    case "Public":       return "Public";
-    case "Internal":     return "Internal";
-    case "Confidential": return "Confidential";
-    case "Restricted":   return "Restricted";
-    default:             return assertNever(level); // adding a 5th level breaks the build HERE
-  }
-}
-```
+## Deriving Types — Restate Nothing You Can Compute
 
-This turns "we added a sensitivity level and forgot to update the badge" from a production bug into a compile error.
+Derive related types from one source so they cannot drift: `Pick`/`Omit` for row and payload subsets, `ReturnType` for a hook's result, `Record<SensitivityLevel, …>` for keyed maps. Use `satisfies` to check a config/theme/route map against a contract **without** widening its literal types away. Template literal types (`` `${Resource}:${Action}` ``) encode string patterns the compiler checks — but their unions **multiply**, so keep the operands small. Catalogue and worked examples: **`references/type-patterns.md`**.
 
----
+## Branded IDs — Nominal Distinctions the Compiler Enforces
 
-## `unknown` over `any` for Untrusted Data
-
-Data crossing a runtime boundary (network, `localStorage`, `postMessage`, URL params) is not yet the type you hope it is. Type it `unknown` and **narrow with a guard** before use. The generated API client validates server responses (see `react-api-client`); for everything else, write the guard.
-
-```ts
-// A user-defined type guard: proves the shape at runtime, narrows it at compile time.
-function isAppError(v: unknown): v is AppError {
-  return typeof v === "object" && v !== null
-    && "code" in v && typeof (v as Record<string, unknown>).code === "string";
-}
-
-function handle(raw: unknown) {
-  if (isAppError(raw)) {
-    // raw is AppError here — safe to use raw.code
-  }
-}
-```
-
-For complex external schemas, a runtime validator (e.g., Zod) generates both the guard and the type from one schema — preferred over hand-written guards when the shape is large.
-
----
+Every ID is a `string` at runtime, so nothing stops `fetchAsset(assetId, tenantId)` with the arguments swapped — in a physically multi-tenant product, that bug class is a **data leak**. A brand (`type TenantId = string & { readonly __brand: "TenantId" }`) makes structurally identical types nominally distinct at zero runtime cost. Cast into a brand only at trust boundaries (the API client, a validated route param); the branded type flows everywhere else. Pattern and the single-sanctioned-cast rule: **`references/type-patterns.md`**.
 
 ## Compile-Time Immutability
 
-State should be immutable by type, not just by discipline — so an accidental mutation is a compile error.
+State should be immutable by type, not by discipline: `readonly` fields, `ReadonlyArray`, and a `DeepReadonly<T>` mapped type for nested structures, so an accidental mutation is a compile error. Props are `readonly` by default; updates produce **new** objects, aligning with React's referential-equality model (see `react-performance-optimization`). The `DeepReadonly` example lives in **`references/type-patterns.md`**.
 
-```ts
-// readonly fields + ReadonlyArray
-interface DataAsset {
-  readonly id: string;
-  readonly tenantId: string;
-  readonly sensitivity: SensitivityLevel;
-  readonly tags: ReadonlyArray<string>;
-}
+## The Boundary and Strictness
 
-// Deeply readonly via a mapped type for nested structures:
-type DeepReadonly<T> = {
-  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
-};
+Untrusted data is `unknown` and narrowed with a **user-defined type guard** (`function isX(v: unknown): v is X`) before use. For anything larger than a couple of fields, a runtime validator (Zod) generates both the guard and the type from one schema — the parse-don't-validate mechanism the generated API client already applies to server responses (see `react-api-client`). This is not optional strictness; it is the only place raw shapes are allowed to exist.
 
-const asset: DeepReadonly<DataAsset> = load();
-// asset.sensitivity = "Public"; // ❌ compile error — cannot assign to readonly
-```
+`tsconfig` strictness is what makes the whole model bite. `strict: true` is the floor; several additional flags each close a specific hole (unchecked index access, unused locals, implicit override, exact optional properties). The full boundary walkthrough (guard vs Zod, validate-once-into-a-typed-model), the strictness settings table with *why each matters*, and the cross-fragment shared-type contract discipline are in **`references/boundary-and-strictness.md`**.
 
-Props are `readonly` by default; state updates produce **new** objects (aligning with React's referential-equality model — see `react-performance-optimization`).
+## Microfrontend Note — Local Type vs Federated Contract
 
----
-
-## Advanced Utility Types — Derive, Don't Duplicate
-
-Derive related types from one source so they cannot drift. Restate nothing you can compute.
-
-| Utility | Use | Example |
-|---|---|---|
-| `Pick<T, K>` | A subset of fields | `type AssetRow = Pick<DataAsset, "id" \| "sensitivity">` |
-| `Omit<T, K>` | All but some fields | `type NewAsset = Omit<DataAsset, "id" \| "version">` |
-| `Partial<T>` / `Required<T>` | Loosen / tighten optionality | form drafts vs validated payloads |
-| `Record<K, V>` | Keyed maps | `Record<SensitivityLevel, string>` (badge colours) |
-| `ReturnType<F>` | A function's result type | derive a hook's return type once |
-
-### Template literal types
-
-Encode string patterns the compiler can check — permissions, routes, event names:
-
-```ts
-type Resource = "data-assets" | "compliance-gaps" | "reports";
-type Action   = "read" | "classify" | "generate";
-type Permission = `${Resource}:${Action}`;   // "data-assets:classify" etc. — typo-proof
-```
-
-This mirrors the backend's `[resource-type]:[action]` permission convention from the security `access-control-model` — the same vocabulary, now compile-checked in the UI.
-
-One edge to know: template literal unions **multiply** (`Resource × Action` above is 9 members) — keep the operand unions small, or the compiler slows and error messages become unreadable. If a pattern is open-ended (`asset-${string}`), you get pattern-checking but lose exhaustiveness — choose deliberately.
-
-### `satisfies` — check without widening
-
-`satisfies` verifies a value against a type **without** losing its inferred literal types — the fix for the classic "annotate and lose precision / don't annotate and lose checking" dilemma:
-
-```ts
-const badgeColor = {
-  Public: "gray",
-  Internal: "blue",
-  Confidential: "amber",
-  Restricted: "red",
-} satisfies Record<SensitivityLevel, string>;
-// Completeness is checked (a 5th SensitivityLevel fails to compile here too),
-// yet badgeColor.Restricted is still the literal "red" — not widened to string.
-```
-
-Use it for config maps, route tables, and theme tokens — anywhere a value must conform to a contract but callers want the precise literals.
-
----
-
-## Branded Types — IDs That Cannot Be Mixed
-
-Every ID is a `string` at runtime, so nothing stops `fetchAsset(assetId, tenantId)` with the arguments swapped — in a physically multi-tenant product, that bug class is a data leak. A **brand** makes structurally identical types nominally distinct:
-
-```ts
-type AssetId  = string & { readonly __brand: "AssetId" };
-type TenantId = string & { readonly __brand: "TenantId" };
-
-const asAssetId = (v: string): AssetId => v as AssetId;   // the ONE sanctioned cast, at the boundary
-
-declare function fetchAsset(tenant: TenantId, id: AssetId): Promise<DataAsset>;
-// fetchAsset(assetId, tenantId);  // ❌ compile error — swapped arguments cannot type-check
-```
-
-The brand is erased at compile time — zero runtime cost. Cast into the brand only at trust boundaries (the API client, a validated route param); everywhere else the branded type flows through.
-
----
+Most types are **local**: defined in one fragment, changed freely, seen by no one else. A type that crosses a Module Federation seam — a prop shape a shell passes into a remote, an event payload published on a shared bus, a type re-exported through the shared dependency layer — is a **versioned contract**, not a local type. It is governed the way an API schema is: additive changes are a minor version, a removed or narrowed field is a breaking change that both sides must be released for, and it aligns with the component contract in `ui-component-spec` and the seams defined in `microfrontend-architecture`. Keep the shared surface small: export the narrowest type the seam actually needs, derived (via `Pick`/`Omit`) from the fuller local type rather than exposing the whole thing. Versioning rules and a worked shared-contract example: **`references/boundary-and-strictness.md`**.
 
 ## Typing Component Props
 
 - Props interfaces are `readonly`, named `…Props`, and use the narrowest types (unions over `string` where values are known).
-- Discriminate prop variants so impossible prop combinations don't type-check (e.g., a button that is `{ variant: "link"; href: string } | { variant: "button"; onClick: () => void }`).
+- Discriminate prop variants so impossible combinations don't type-check.
 - Derive props from domain/API types with `Pick`/`Omit` rather than re-typing fields.
 - No `React.FC` (it implies `children` and weakens inference) — type props explicitly: `function Badge(props: BadgeProps)`.
-
----
 
 ## Quality Criteria
 
@@ -202,11 +90,11 @@ The brand is erased at compile time — zero runtime cost. Cast into the brand o
 | No `any` | `unknown` + guards for untrusted data; `any` lint-banned | `any` anywhere |
 | Discriminated unions | State/variants modeled as tagged unions | Boolean soup (`isLoading && hasData && …`) |
 | Exhaustiveness | `assertNever` on union switches | `default` that silently swallows new variants |
-| Immutability typed | `readonly` props/fields; ReadonlyArray | Mutable props/state mutated in place |
+| Boundary parsing | External data validated once into a typed model | `data as DataAsset[]` casts |
+| Immutability typed | `readonly` props/fields; `ReadonlyArray` | Mutable props/state mutated in place |
 | Derived types | `Pick`/`Omit`/`ReturnType` derive from one source | Duplicated, drift-prone shape declarations |
 | Narrow string types | Unions / template-literal types | Bare `string` where values are known |
-
----
+| Shared types versioned | Cross-fragment types treated as contracts | A federated type changed like a local one |
 
 ## Anti-Patterns
 
@@ -216,12 +104,11 @@ The brand is erased at compile time — zero runtime cost. Cast into the brand o
 | Boolean flags for state (`isLoading`, `hasError`, `hasData`) | One discriminated union — impossible combinations unrepresentable |
 | `default:` branch that silently handles "everything else" | `assertNever` so new variants break the build |
 | Casting API responses (`data as DataAsset[]`) | Generated client types + runtime validation at the boundary |
+| A generic with one unconstrained parameter no caller varies | A concrete type — generics only where the type truly varies |
 | Re-declaring a shape that exists elsewhere | `Pick`/`Omit`/`ReturnType` — one source, derived views |
 | `React.FC<Props>` | Explicitly typed props: `function Badge(props: BadgeProps)` |
 | Annotating a config object and losing its literals | `satisfies` — contract checked, inference kept |
-| Optional-everything interfaces (`field?:` sprawl) to dodge errors | Model which fields exist together; separate draft vs validated types |
-
----
+| Changing a federated type like a local one | Version it as a contract — additive is minor, narrowing is breaking |
 
 ## Output Format
 
@@ -230,5 +117,5 @@ Produces TypeScript type modules and guards (with type-level tests where useful)
 ```
 src/shared/lib/types.ts          (shared domain types, utility types, guards)
 src/features/*/types.ts          (feature-local derived types)
-*.test-d.ts                       (optional: type-level assertions, e.g. expectTypeOf)
+*.test-d.ts                      (optional: type-level assertions, e.g. expectTypeOf)
 ```
