@@ -9,11 +9,12 @@ description: >
   only via Vault Agent), and the promotion invariance check that proves the
   artifact never changed between environments. Used by the platform-engineer
   during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, environments, parity, configuration-as-code, values, promotion, tenants]
+related: [cd-pipeline, helm-chart, multi-tenancy-design, feature-flag-design, disaster-recovery-plan, gitops-workflow, platform-engineering]
 ---
 
 # Environment Config
@@ -118,94 +119,95 @@ A digest may not enter any production stamp unless it is the digest staging soak
 
 ---
 
-## Worked Example — tenant-acme Values for estate-scanner
+## Local Environment — kind and `make local-up`
 
-Everything tenant-specific for one service, in one reviewable file — and *only* legitimate difference classes appear:
+`kind-local` is not a docker-compose substitute — it is a real, multi-node Kubernetes cluster running inside Docker containers on the developer's laptop. The tool is **kind** (Kubernetes IN Docker). docker-compose environments, locally-installed binaries, and mocks all break parity before CI begins and are not compliant.
+
+`make local-up` is the golden path for local setup. It executes three steps in order:
+
+1. `kind create cluster --name <service>` — boots the kind cluster
+2. `helm upgrade --install <service> ./charts/<service> -f values/local-values.yaml` — installs the service's Helm chart with local overrides (reduced sizing, local endpoints)
+3. `kind load docker-image <image>:<digest>` — loads the locally-built image directly into the kind cluster without a registry round-trip
+
+A new engineer runs `make local-up` on day one and gets a working Kubernetes environment with the real chart and the real locally-built image — no documentation to read, no platform engineer to ask (Thinnest Viable Platform principle from `platform-engineering`). If `make local-up` requires more than one command or requires reading a setup guide first, the golden path has failed.
+
+CI also runs `kind` for the chart-install gate in `helm-chart`: the same `make local-up` target (or its CI equivalent) that engineers use is the same gate that blocks a merge — one tested path, not two.
+
+---
+
+## Identical Provisioning Process
+
+Environment parity is not only about what runs — it is about *how* environments are built. Dev and staging must be provisioned by **the same automated OpenTofu + Helm process** as production tenant stamps, not merely styled to resemble production. "Mirrors production topology" is not enough if the mirror was assembled by hand.
+
+| Environment | Must be provisioned by | A hand-built environment is |
+|---|---|---|
+| kind-local | `make local-up` (automated, one command) | A defect — breaks golden path; fails the TVP test |
+| dev | CI auto-commit → GitOps reconciler (same OpenTofu + Helm path) | A defect — cannot verify the provisioning process itself |
+| staging | PR to env repo → Flux reconciler (same OpenTofu + Helm path) | A defect — staging cannot rehearse production provisioning |
+| tenant-* prod | PR per fleet wave → Flux reconciler | A defect — production diverges from what staging proved |
+
+A dev environment built by hand cannot demonstrate that the automated provisioning path works. That is the purpose of dev: the first real-cluster convergence after a merge verifies not just the image but the automated pipeline that will build staging and every production tenant stamp.
+
+---
+
+## Environment-Repo Directory Conventions
+
+The environment repo tree maps 1:1 to clusters and namespaces. The GitOps agent's source is a path in this tree — the tree structure is the environment inventory, not a CI variable or a runtime query:
+
+```
+clusters/
+  <cluster-name>/
+    namespaces/
+      <namespace>/
+        <service>-helmrelease.yaml    # Flux HelmRelease — per-service chart delivery
+        <service>-kustomization.yaml  # Flux Kustomization — raw or overlay manifests
+```
+
+Each leaf file is a Flux CRD: a `HelmRelease` for chart-based services (the standard path for this repo) or a `Kustomization` for raw or kustomize-processed manifests. Navigating the filesystem answers "what is deployed where" without querying any cluster or reading any pipeline log.
+
+Per-tenant production stamps follow the same layout:
+
+```
+clusters/
+  tenant-acme/
+    namespaces/
+      tenant-acme/
+        estate-scanner-helmrelease.yaml
+  tenant-globex/
+    namespaces/
+      tenant-globex/
+        estate-scanner-helmrelease.yaml
+```
+
+Adding a new tenant is adding a new `clusters/tenant-<id>/` directory and applying a root Kustomization or HelmRelease — not installing or configuring a new GitOps agent. Diffing two tenant directories is the tenant comparison report.
+
+---
+
+## Projected Volume Pattern
+
+Instead of separate `volumeMounts` for the ConfigMap, the Vault-injected secret, and the serviceAccountToken, use a **projected volume** that combines them into one filesystem path. This reduces the number of `volumeMount` entries per pod and the number of RBAC grants required:
 
 ```yaml
-# deploy/clusters/tenants/tenant-acme/estate-scanner-values.yaml
-tenant:
-  id: acme                                      # identity — labels, metrics, alert routing
-replicaCount: 3                                 # replicas — acme's volume tier
-resources:
-  requests: { cpu: 250m, memory: 256Mi }        # sizing — above the chart's base defaults
-  limits:   { memory: 512Mi }
-ingress:
-  host: acme.app.example.com                    # endpoint — tenant's own host
-postgres:
-  host: estate-scanner-db.tenant-acme.svc.cluster.local   # endpoint — physically isolated DB
-redpanda:
-  brokers: redpanda.tenant-acme.svc.cluster.local:9092    # endpoint — tenant's own broker
-flags:
-  extractor.v2.enabled: false                   # flag — not yet in acme's wave (feature-flag-design)
-env:
-  LOG_LEVEL: info
-  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.tenant-acme:4317
+volumes:
+  - name: config
+    projected:
+      sources:
+        - configMap:
+            name: estate-scanner-config
+        - secret:
+            name: estate-scanner-vault-secret   # written by Vault Agent sidecar
+        - serviceAccountToken:
+            path: token
+            expirationSeconds: 3600
+            audience: estate-scanner
+volumeMounts:
+  - name: config
+    mountPath: /etc/service
+    readOnly: true
 ```
 
-No image digest override beyond the promotion pointer, no template fork, no secret. The Vault Agent annotation and the chart version are fleet-uniform; `tenant-globex`'s file differs from this one only in the same five classes. Diffing two tenants' directories *is* the tenant comparison report — PM-readable by construction.
+The application reads `/etc/service/config.yaml`, `/etc/service/db-password`, and `/etc/service/token` from a single mount path. RBAC grants are scoped to the one `ServiceAccount` that the projected `serviceAccountToken` source already identifies — no separate grant per secret-volume source is needed. The Vault Agent sidecar writes its injected credentials into the same projected volume directory.
 
 ---
 
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Environment set | kind-local/dev/staging/tenant stamps, each with a stated purpose | Ad-hoc environments; "test2" nobody can explain |
-| Parity | Same chart version + same digest fleet-wide (within skew window) | Per-environment builds, forked charts, env-conditional code |
-| Difference classes | Every env/tenant diff is sizing, replicas, endpoints, flags, or identity | Behavioural differences hidden in values; env checks in code |
-| Configuration as Code | Every setting reaches clusters via the environment repo | `kubectl edit`, `--set` flags, console changes |
-| Taxonomy applied | Each setting filed build/deploy/runtime with the decision table | Everything a live flag; or flags requiring redeploys |
-| Secret split | Zero credentials in any values layer; Vault Agent only | Passwords in ConfigMaps or values files |
-| Invariance checked | Digest-parity script gates every production promotion PR | Parity asserted in prose, unverified |
-| Rebuildability | dev reproducible from Git alone, demonstrated | Environments that exist only as accumulated state |
-
----
-
-## Anti-Patterns
-
-- **The environment if-statement** — `if os.Getenv("ENV") == "prod"` means production runs code no other environment ever executed. The binary is environment-blind; only its inputs vary.
-- **Staging as a museum** — staging pinned to an old chart "because the demo works" no longer rehearses anything. Staging tracks the promotion path or it is dead weight.
-- **Config in two homes** — half the settings in values, half in a ConfigMap someone edits by hand. One home: the environment repo. The reconciler owns cluster writes.
-- **The snowflake tenant** — "acme needed one small template tweak" forks the fleet; that tenant now misses every future fix. Tenant needs are values; template changes are fleet changes (`multi-tenancy-design`).
-- **Per-tenant staging fleets** — testing forty staging environments to prove one chart. Parity means one staging suffices; the canary tenant wave (`cd-pipeline`) is the production-side safety net.
-- **Secrets promoted through Git "temporarily"** — Git never forgets; one committed credential is a rotation, a history rewrite, and an incident. The Vault boundary is absolute.
-- **Unverified parity** — a policy without the invariance check decays the first time someone hotfixes a tenant directly. Checks, not intentions.
-
----
-
-## Output Format
-
-Produces the environment configuration record for a product:
-
-```markdown
----
-name: environment-config-[product]
-version: 1.0.0
-phase: deploy
-owner: platform-engineer
-created: [date]
----
-
-# Environment Configuration — [product]
-
-## Environment Set
-| Environment | Purpose | Sizing tier | Promotion trigger |
-
-## Values Layout
-deploy/clusters/{dev,staging}/…
-deploy/clusters/tenants/[tenant-id]/…
-[Per service: which keys are set at which layer]
-
-## Difference Register
-| Setting | Class (sizing/replicas/endpoints/flags/identity) | dev | staging | prod default |
-
-## Configuration Taxonomy Decisions
-| Setting | Kind (build/deploy/runtime) | Rationale |
-
-## Invariance Gate
-[Path to the promotion-parity check; CI job that runs it]
-
-## Traceability
-[multi-tenancy-design stamp model; NFR IDs behind sizing tiers]
-```
+Full worked example (tenant-acme), quality criteria, anti-patterns, and output template: `references/environment-config-reference.md`.
