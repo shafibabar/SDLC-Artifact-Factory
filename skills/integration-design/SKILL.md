@@ -1,204 +1,154 @@
 ---
 name: integration-design
 description: >
-  Teaches how to design service integrations — covering synchronous (HTTP/gRPC)
-  and asynchronous (event-driven) integration patterns, when to use each, the
-  Circuit Breaker and Retry/Backoff patterns for resilient sync calls, Consumer-
-  Driven Contract testing for all integrations, and how the Anti-Corruption Layer
-  isolates the domain model from external service models. Used by the enterprise-
-  architect agent when designing how services communicate, after the Context Map
-  is complete.
-version: 1.1.0
+  Teaches the enterprise-architect to design the integration contract between
+  services — the synchronous-vs-asynchronous decision, the resilience patterns
+  that make a synchronous dependency safe (Circuit Breaker, Timeout, Retry with
+  Backoff, Bulkhead, Fallback), the Anti-Corruption Layer for model translation
+  across a boundary, and Change Data Capture as a non-invasive integration
+  mechanism — with explicit selection criteria, failure-mode analysis, and the
+  Go implementation on this platform. Used during Design when two Bounded
+  Contexts or an external system must communicate.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, integration, circuit-breaker, retry, consumer-driven-contracts, acl]
+tags: [design, architecture, integration, synchronous, asynchronous, circuit-breaker, resilience, anti-corruption-layer, bulkhead, timeout]
+related: [context-map-patterns, event-driven-patterns, event-schema-design, api-contract-design, go-contract-test, data-model-design]
 ---
 
 # Integration Design
 
 ## Purpose
 
-Integration design defines how services communicate — which communication style (synchronous or asynchronous) is appropriate for each interaction, how failures are handled, and how the domain model is protected from external service models.
+Every integration is a dependency, and every undesigned dependency becomes
+implicit coupling that surfaces as a production incident. This skill makes each
+service-to-service and service-to-external-system interaction an explicit,
+deliberate, resilient design decision — with a declared communication style, a
+resilience stack sized to its failure blast radius, and a translation boundary
+that keeps a foreign model out of the domain.
 
-Every integration is a dependency. Undesigned integrations become implicit coupling. This skill makes every integration explicit, deliberate, and resilient by design.
+Integration design runs during Design, **after the Context Map is complete**
+(`context-map-patterns`): the Context Map decides *which* Bounded Contexts talk
+and in what relationship; this skill decides *how* each of those relationships is
+wired, made safe, and translated.
 
 ---
 
-## Synchronous vs Asynchronous Integration
+## The First Decision: Synchronous vs Asynchronous
 
-The fundamental choice for every service-to-service interaction:
+For every interaction, choose the communication style before anything else. Four
+criteria drive the choice:
 
-| Dimension | Synchronous (HTTP/gRPC) | Asynchronous (Events/Messages) |
+| Criterion | Points to **synchronous** | Points to **asynchronous** |
 |---|---|---|
-| **Coupling** | Temporal — caller must wait for response; both must be available | Decoupled — caller continues; consumer processes at its own pace |
-| **Latency** | Low — immediate response | Higher — processing lag before consumer reacts |
-| **Failure propagation** | Cascades — downstream failure causes upstream failure | Isolated — downstream failure doesn't block upstream |
-| **Data consistency** | Strong — response confirms outcome | Eventual — state propagates asynchronously |
-| **Use for** | Queries (need data now), time-sensitive Commands, user-facing requests | Domain Events, notifications, background processing, cross-context state propagation |
+| **Need for immediate response** | Caller cannot proceed without the result (a query feeding the current request) | Caller only needs the work to *eventually* happen |
+| **Temporal coupling tolerance** | Both services acceptably co-available; short call chain | Producer must not depend on consumer being up right now |
+| **Failure blast radius** | A single downstream, low fan-out, failure is containable | Downstream failure must not cascade upstream |
+| **Data volume / fan-out** | One caller, one callee, small payload | One event, many independent consumers |
 
-**Default rule:** Use asynchronous (events) for cross-Bounded-Context communication. Use synchronous only when a response is required in the current request's flow.
+**Default rule:** asynchronous Domain Events are the default *across* Bounded
+Contexts; synchronous is the justified exception, used only when a response is
+required inside the current request's flow. Availability multiplies down a
+synchronous call chain — three 99.9% dependencies in series is 99.7% — so every
+added synchronous hop lowers the ceiling on the whole flow's availability.
 
----
-
-## Synchronous Integration Patterns
-
-### HTTP (REST)
-
-Use for: cross-context queries where the caller needs data before proceeding; user-facing read requests through the API Gateway.
-
-**Pattern:**
-```
-Service A  ──HTTP GET──▶  Service B API
-           ◀──200 JSON──
-```
-
-**Resilience requirements for every HTTP call to another service:**
-1. **Timeout** — every HTTP call has an explicit timeout. No call blocks indefinitely.
-2. **Retry with Backoff** — transient failures (503, 504) are retried with exponential backoff and jitter.
-3. **Circuit Breaker** — after N consecutive failures, the circuit opens. Calls fail fast (no waiting for timeout) until the circuit resets.
-4. **Bulkhead** — HTTP clients to different services use separate connection pools. One slow downstream doesn't exhaust the connection pool for all others.
-5. **Retry only what is safe to repeat** — GETs are always retryable; mutating calls are retried only when they carry an `Idempotency-Key`. Retrying a non-idempotent POST turns one timeout into a duplicate side effect.
-6. **Deadline propagation** — the incoming request's deadline flows down through `context.Context`. Each caller's timeout must exceed its downstream's full retry envelope (all attempts plus backoff), or the caller gives up while the downstream is still working — and then retries on top of it.
-
-### Retry and Backoff
-
-```go
-type RetryConfig struct {
-    MaxAttempts     int
-    InitialDelay    time.Duration
-    MaxDelay        time.Duration
-    Multiplier      float64
-    JitterFactor    float64
-}
-
-// Default: 3 attempts, 100ms initial, 5s max, 2x multiplier, 20% jitter
-var DefaultRetry = RetryConfig{
-    MaxAttempts:  3,
-    InitialDelay: 100 * time.Millisecond,
-    MaxDelay:     5 * time.Second,
-    Multiplier:   2.0,
-    JitterFactor: 0.2,
-}
-```
-
-Jitter is mandatory — without jitter, all callers retry simultaneously after a failure, causing a thundering herd that overwhelms the recovering service.
-
-### Circuit Breaker
-
-States: `Closed` (normal operation) → `Open` (failing fast) → `Half-Open` (testing recovery).
-
-```
-Closed: requests pass through
-  │ N failures in window
-  ▼
-Open: requests fail immediately (no call to downstream)
-  │ timeout elapsed
-  ▼
-Half-Open: one request allowed through
-  │ success → Closed
-  │ failure → Open
-```
-
-Use the `sony/gobreaker` library or equivalent. Configure per downstream service: different services have different failure thresholds.
+Communication style is one axis, not the whole decision. **Consistency (atomic
+vs. eventual) is a separate question** from sync-vs-async, and **coordination
+(orchestrated vs. choreographed)** is a third. A flow can be async *and* need a
+coordinator. The full three-axis framing, the request/response vs.
+request/acknowledge vs. event-driven interaction shapes, their failure
+semantics, and the worked decision for this repo's cross-BC calls are in
+**`references/sync-vs-async-decision.md`**.
 
 ---
 
-## Asynchronous Integration Patterns
+## Making a Synchronous Dependency Safe: Resilience Patterns
 
-### Event-Driven (Redpanda)
+A synchronous call to another service is a shared-fate link unless every one of
+these is in place. Each is required, not optional, for every remote sync call:
 
-Use for: Domain Event publication, cross-context state propagation, background processing, and any interaction that does not require a response in the current request flow.
+- **Timeout** — every remote call has an explicit deadline; none blocks
+  indefinitely. Timeouts nest: a caller's budget must exceed its downstream's
+  full retry envelope, propagated through `context.Context`.
+- **Retry with Backoff and jitter** — transient failures (503/504, connection
+  reset) retried with exponential backoff *and jitter* (to avoid a thundering
+  herd), capped attempts. Only idempotent calls, or calls carrying an
+  `Idempotency-Key`, may be retried — a timeout is an *unknown* outcome, and
+  retrying a non-idempotent write duplicates the side effect.
+- **Circuit Breaker** — after a failure threshold the circuit *opens* and calls
+  fail fast instead of piling up on timeouts; it later *half-opens* to probe
+  recovery. One breaker **per downstream**, never one global breaker.
+- **Bulkhead** — each downstream gets its own connection pool / concurrency
+  limit, so one slow dependency cannot exhaust the resources every other call
+  needs.
+- **Fallback / graceful degradation** — when the breaker is open or the call
+  fails, a defined degraded response (cached value, empty default, queued-for-
+  later) rather than propagating the failure upward.
 
-**Producer pattern:**
-```
-Aggregate emits event
-     ↓
-Event written to outbox_events (same transaction as aggregate update)
-     ↓
-Outbox Relay reads and publishes to Redpanda topic
-```
-
-**Consumer pattern:**
-```
-Redpanda topic: [bounded-context].[event-name]
-     ↓
-Consumer Group: [service].[consumer-group-name]
-     ↓
-Message deserialized
-     ↓
-Idempotency check (has this eventId been processed?)
-     ↓
-Event handler processes
-     ↓
-Dead Letter Queue if processing fails after max retries
-```
-
-**Consumer group design:**
-- Each consumer service has its own consumer group — independent offset management
-- Consumer groups enable replay: reset the offset to replay all events from the beginning
-- Never share a consumer group between two different services
-
-### Retry Policy for Consumers
-
-```
-Attempt 1: immediate
-Attempt 2: delay 1s
-Attempt 3: delay 5s
-Attempt 4: delay 30s
-Attempt 5: delay 2m
-→ DLQ after 5 failures
-```
+These **compose in a fixed order**: timeout *inside* retry *inside* circuit
+breaker *inside* bulkhead, with fallback outermost. The circuit-breaker state
+machine (closed/open/half-open) with concrete thresholds and reset timeouts, the
+timeout-budget calculation, the idempotency requirement, and the Go
+implementation (hand-rolled and via `sony/gobreaker`) are all in
+**`references/resilience-patterns.md`**.
 
 ---
 
-## Anti-Corruption Layer for External Systems
+## Anti-Corruption Layer: Never Let a Foreign Model Leak In
 
-Every integration with an external system (Google Drive, AWS S3, any third-party API) uses an Anti-Corruption Layer (ACL):
+Every integration with an external system (Google Drive, AWS S3, a third-party
+Source Catalog) — and any cross-BC call whose model differs from ours — goes
+through an **Anti-Corruption Layer (ACL)**. The ACL is a translation adapter: a
+`client.go` that speaks the foreign API's types and a `translator.go` that
+converts foreign types to domain types and back. The domain depends only on a
+port interface the ACL implements; it never imports the client.
 
-```
-External API            ACL Package                    Domain
-┌──────────┐    ┌─────────────────────────┐    ┌──────────────┐
-│ Google   │    │ adapters/googledrive/   │    │              │
-│ Drive    │───▶│   client.go             │───▶│  Domain      │
-│ API      │    │   translator.go         │    │  Interfaces  │
-│          │◀───│                         │◀───│              │
-└──────────┘    └─────────────────────────┘    └──────────────┘
-```
-
-`client.go` — calls the external API using the external API's types and conventions.
-`translator.go` — converts external types to domain types (and vice versa for writes).
-
-The domain never imports from `client.go`. It depends only on the domain port interface, which the ACL implements. This means:
-- The external API can change its model without touching the domain
-- The ACL can be tested independently (stub the external API, test the translation)
-- The domain can be tested without any external API dependency
+The principle is absolute: **another Bounded Context's model, or a vendor's
+model, must never appear in our domain layer.** The ACL is the single, named
+place that boundary is enforced — this is `context-map-patterns`' ACL
+relationship made concrete in Go. Boundary DTO vs. domain model separation, the
+translation-adapter structure, and how to test the ACL in isolation are in
+**`references/integration-patterns.md`**.
 
 ---
 
-## Consumer-Driven Contract Testing
+## Change Data Capture: Non-Invasive Read Integration
 
-Every integration — sync or async — requires Consumer-Driven Contract tests:
-
-| Integration type | Contract mechanism |
-|---|---|
-| HTTP (REST) | Pact or HTTP-level contract tests: Consumer writes expected request/response; Provider runs the contract in CI |
-| Event-driven | Event schema validation: Consumer declares the event fields it reads; Publisher validates it still emits those fields |
-
-**Rule:** A service's deployment pipeline cannot succeed if any Consumer's contract test fails. The Supplier owns the obligation to its Consumers.
+When a consuming context needs another context's data and the owning service
+cannot (or should not) be modified to publish events, **Change Data Capture
+(CDC)** reads the owner's PostgreSQL write-ahead log (via Debezium) and emits row
+changes as events — integration without touching the source service's code. CDC
+is the non-invasive alternative to two other cross-service data patterns: **API
+composition** (call the owner live per read) and **data replication** (the owner
+publishes events you project locally). The tradeoff between the three, the CDC-
+via-Debezium mechanics on this stack, and why the **shared-database anti-pattern
+is forbidden here** are in **`references/integration-patterns.md`**.
 
 ---
 
-## Integration Inventory
+## Contracts Gate Every Integration
 
-The enterprise-architect maintains an Integration Inventory for each product — a complete list of every service-to-service dependency:
+Sync or async, every integration has a **Consumer-Driven Contract**: the consumer
+declares the request/response or event fields it depends on, and the provider's
+CI fails if it stops honoring them (`go-contract-test`, `event-schema-design`).
+"Smart endpoints, dumb pipes" — no routing or business logic leaks into the
+broker, gateway, or a topic; all logic lives in the owning service's handlers.
 
-| From Service | To Service | Style | Protocol | Contract | Resilience pattern |
+---
+
+## The Integration Inventory
+
+The enterprise-architect maintains an Integration Inventory per product — every
+service-to-service and external dependency, each row declaring style, protocol,
+contract mechanism, and resilience stack:
+
+| From | To | Style | Protocol | Contract | Resilience |
 |---|---|---|---|---|---|
-| API Gateway | Classification Service | Sync | HTTP/JSON | Consumer-Driven Contract | Retry + Circuit Breaker |
-| Storage Integration | Redpanda | Async | Kafka protocol | Schema validation | At-least-once + DLQ |
-| Classification Service | Graph Service | Async | Kafka protocol | Schema validation | At-least-once + DLQ |
-| Storage Integration | Google Drive API | Sync (external) | HTTP/JSON | ACL | Retry + Circuit Breaker |
+| API Gateway | Classification Service | Sync | HTTP/JSON | Consumer-Driven Contract | Timeout + Retry + Breaker + Bulkhead |
+| DataAsset Mgmt | Source Catalog (external) | Sync | HTTP/JSON | ACL | Timeout + Retry + Breaker + Fallback |
+| DataAsset Mgmt | Redpanda | Async | Kafka protocol | Event schema | Transactional Outbox + DLQ |
+| Compliance | `dataasset.classified` topic | Async | Kafka protocol | Event schema | Idempotent consumer + DLQ |
 
 ---
 
@@ -206,12 +156,13 @@ The enterprise-architect maintains an Integration Inventory for each product —
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Style declared | Every integration states sync or async and the justification | Integrations with no documented style |
-| Resilience designed | Every sync call has timeout + Retry and Backoff + Circuit Breaker | HTTP calls with no timeout or retry |
-| ACL for external systems | Every external system integration uses ACL | External API types in domain layer |
-| Consumer-Driven Contracts | Every integration has a defined contract test plan | Verbal-only integration agreements |
-| DLQ defined | Every Redpanda consumer has a DLQ topic | Events silently dropped on consumer failure |
-| Idempotent consumers | All async consumers are designed to be idempotent | Consumers that cannot handle duplicate events |
+| Style declared | Every integration states sync/async **and** its consistency need, with justification | Style undocumented or conflated with consistency |
+| Resilience complete | Every sync call has timeout + retry + breaker + bulkhead + fallback | Any sync call missing a layer |
+| Per-downstream isolation | One breaker and one pool per downstream | A global breaker or shared pool |
+| ACL for foreign models | Every external / cross-model integration uses an ACL | Foreign types in the domain layer |
+| CDC vs. composition chosen | Cross-context read path names its pattern and why | Implicit "just call the API" |
+| Contract defined | Every integration has a CDC/schema test plan gating CI | Verbal-only integration agreement |
+| Idempotent consumers + DLQ | Every async consumer is idempotent with a DLQ | Duplicate-unsafe consumer or silent drop |
 
 ---
 
@@ -219,16 +170,23 @@ The enterprise-architect maintains an Integration Inventory for each product —
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **Sync by default** — HTTP calls for cross-context flows because "it's easier to reason about" | Availability multiplies down the call chain; every downstream incident becomes a platform incident | Asynchronous Domain Events are the default across Bounded Contexts; sync is the justified exception |
-| **Retry without jitter or budget** — aggressive synchronized retries against a struggling service | The retry storm finishes off the recovering downstream (thundering herd) | Exponential backoff with jitter, capped attempts, and Circuit Breaker in front |
-| **Retrying non-idempotent calls** — re-sending a mutating request after a timeout | A timeout is an *unknown* outcome; the retry duplicates the side effect | Mutating calls carry an `Idempotency-Key`, or are not retried automatically |
-| **One shared Circuit Breaker (or none)** — a global breaker across all downstreams | One failing dependency opens the circuit for healthy ones; or without a breaker, threads pile up on timeouts | One Circuit Breaker and one connection pool (Bulkhead) per downstream service |
-| **Synchronous call inside an event consumer's critical path** — consumer blocks on a third-party API per event | Broker lag balloons behind the slowest external dependency; redeliveries amplify the load | Do external calls behind their own resilience stack, and consider splitting into a separate step with its own topic |
-| **Request/reply over the broker** — publishing an "event" and waiting for a response event | Recreates temporal coupling with worse latency and no backpressure semantics | If a response is needed in-flow, use HTTP/gRPC with resilience patterns; events are fire-and-forget facts |
-| **Contract by observation** — consumers coupling to whatever the provider currently returns | The provider cannot change anything safely; every deploy is a gamble | Consumer-Driven Contract tests in the provider's CI, gating deployment |
-| **ACL bypass "just this once"** — calling the vendor SDK directly from a handler | The vendor model leaks into the domain; the exception becomes the norm within weeks | All external calls go through the ACL's `client.go`/`translator.go`; the domain sees only ports |
+| **Sync by default across contexts** | Availability multiplies down the chain; every downstream incident becomes a platform incident | Async Domain Events default; sync is the justified exception |
+| **Retry without jitter or budget** | Synchronized retries finish off the recovering downstream (thundering herd) | Exponential backoff + jitter, capped attempts, breaker in front |
+| **Retrying non-idempotent calls** | A timeout is unknown; the retry duplicates the write | `Idempotency-Key`, or do not auto-retry |
+| **One global Circuit Breaker (or none)** | One failing dependency opens the circuit for healthy ones; or threads pile on timeouts | One breaker + one pool (Bulkhead) per downstream |
+| **Sync external call in an event consumer's critical path** | Broker lag balloons behind the slowest third party; redeliveries amplify load | External calls behind their own resilience stack; split into a separate step/topic |
+| **Request/reply over the broker** | Recreates temporal coupling with worse latency and no backpressure | Use HTTP/gRPC + resilience for in-flow responses; events are fire-and-forget facts |
+| **ACL bypass "just this once"** | The vendor model leaks in; the exception becomes the norm | All foreign calls go through `client.go`/`translator.go`; the domain sees only ports |
+| **Shared database across services** | Both services couple to a schema neither owns; no independent deploy | CDC, API composition, or event replication — never a shared table |
 
 ---
+
+## References
+
+- **`references/sync-vs-async-decision.md`** — the full decision framework: interaction shapes, the three coupling axes, failure semantics, worked cross-BC decision.
+- **`references/resilience-patterns.md`** — Circuit Breaker state machine with concrete thresholds, timeout budgeting, retry/backoff/jitter, Bulkhead, Fallback, Go implementation, pattern composition order.
+- **`references/integration-patterns.md`** — ACL implementation in Go, CDC via Debezium, API composition vs. replication tradeoff, the forbidden shared-database anti-pattern.
+- **`references/worked-example.md`** — a complete integration design for this repo (DataAsset Management → external Source Catalog via ACL + resilience; Compliance consuming DataAsset events async) with the full decision trail.
 
 ## Output Format
 
@@ -245,22 +203,19 @@ owner: enterprise-architect
 # Integration Design
 
 ## Integration Inventory
-| From | To | Style | Protocol | Contract | Resilience |
-|---|---|---|---|---|---|
+| From | To | Style | Consistency | Protocol | Contract | Resilience |
 
 ## Synchronous Integration Details
-[Per-integration: timeout, retry config, Circuit Breaker config]
+[Per-integration: timeout budget, retry config, Circuit Breaker config, fallback]
 
 ## Asynchronous Integration Details
-[Per-topic: producer, consumer groups, retry policy, DLQ]
+[Per-topic: producer/outbox, consumer groups, retry policy, DLQ, idempotency key]
 
 ## Anti-Corruption Layers
-| External System | ACL location | Domain port interface | Translation notes |
-|---|---|---|---|
+| External System | ACL location | Domain port | Translation notes |
 
 ## Consumer-Driven Contract Plan
 | Consumer | Provider | Contract type | Test location | CI gate |
-|---|---|---|---|---|
 
 ## Related ADRs
 [ADR IDs for integration decisions]
