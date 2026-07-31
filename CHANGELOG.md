@@ -8,6 +8,9 @@ Format: [Semantic Version] — Date — Description
 
 ## [Unreleased]
 
+### Added
+- 2026-07-31 — **Tech-stack gap closure** (epic #678, research-first): closes coverage gaps for a target product stack (MongoDB, RabbitMQ, Netflix Conductor, gRPC, Kong). **Phase 1** (#679–#683): 5 research files — MongoDB: The Definitive Guide, RabbitMQ in Depth, Microservices Patterns (Richardson), gRPC: Up and Running, Kong/API-gateway patterns. **Phase 2** (#684–#693): 10 new skills, all v1.0.0 under skill-authoring-standards — `document-data-modeling`, `go-mongodb-repository`, `message-broker-selection`, `go-amqp-publisher`, `go-amqp-consumer`, `workflow-orchestration`, `conductor-workflow-authoring`, `grpc-contract-design`, `go-grpc-handler`, `api-gateway-design`. The AMQP skills mirror the Kafka-API `go-event-*` pair; `go-grpc-handler` mirrors `go-chi-handler`; `grpc-contract-design` mirrors `api-contract-design`. Repo grew 148→158 skills, 148→158 contract tests. Epic follow-ons #694 (multi-cloud OpenTofu refactor) and #695 (Python skill-suite spike) remain open.
+
 ### Changed
 - 2026-07-31 — **Body-length polish** (GitHub issue #661, sub-issues #662–#669): second-split pass bringing the 8 skills over the ~200-line soft guideline down to ≤200. Content-move MINOR bumps: `alerting-rules-design` (280→200), `api-contract-design` (265→199), `react-observability` (238→200), `kubernetes-manifest` (237→196), `access-control-model` (215→185, decision tables preserved per the Chunk 35 rationale), `beta-program-design` (215→184), `helm-chart` (214→184). Full split: `zero-trust-design` (258→100, v2.0.0) — it had a contract test but no references/, so references/ was created (zero-trust-principles.md + enforcement-and-mesh.md), the description rewritten as a trigger surface, and the test updated to probe references/-only content. 9 skills remain in the 201–210 band (all with references/ + tests, within the "roughly 200" guideline) — optional future trim, not a defect.
 
