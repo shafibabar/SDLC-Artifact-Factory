@@ -8,7 +8,7 @@ description: >
   and how the endpoints map to Kubernetes probes. Health checks are what let the
   platform route traffic only to healthy instances. Used by the backend-engineer
   during Implement; probes are wired by the platform-engineer.
-version: 1.1.0
+version: 1.2.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -54,45 +54,7 @@ Keep it cheap, dependency-free, and fast. The only thing it proves is that the e
 
 ## Readiness — Check Dependencies, with Timeouts
 
-Readiness reflects whether the instance can serve a request *now*, which means its critical dependencies are reachable. Each check is bounded by a short timeout so a slow dependency can't hang the probe itself.
-
-```go
-type Readiness struct {
-    mu     sync.RWMutex
-    ready  bool
-    checks map[string]CheckFunc
-}
-type CheckFunc func(context.Context) error
-
-func (rd *Readiness) Handler(w http.ResponseWriter, r *http.Request) {
-    rd.mu.RLock()
-    accepting := rd.ready
-    rd.mu.RUnlock()
-    if !accepting {
-        writeJSON(w, http.StatusServiceUnavailable, status{Status: "draining"}) // shutting down
-        return
-    }
-
-    ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second) // bound the whole probe
-    defer cancel()
-
-    results := make(map[string]string, len(rd.checks))
-    healthy := true
-    for name, check := range rd.checks {
-        if err := check(ctx); err != nil {
-            results[name] = "down"
-            healthy = false
-        } else {
-            results[name] = "up"
-        }
-    }
-    code, st := http.StatusOK, "ready"
-    if !healthy {
-        code, st = http.StatusServiceUnavailable, "not_ready"
-    }
-    writeJSON(w, code, status{Status: st, Checks: results})
-}
-```
+Readiness reflects whether the instance can serve a request *now*, which means its critical dependencies are reachable. Each check is bounded by a 2-second context timeout so a slow dependency cannot hang the probe itself. The `Readiness` struct holds a `ready` flag (toggled to false on shutdown) and a map of `CheckFunc` values. When `ready` is false the handler returns 503 with `"draining"` immediately without running dependency checks.
 
 Dependency checks are cheap liveness pings, not deep queries:
 
@@ -101,7 +63,7 @@ ready.AddCheck("postgres", func(ctx context.Context) error { return pool.Ping(ct
 ready.AddCheck("broker",   func(ctx context.Context) error { return broker.Ping(ctx) })
 ```
 
-Check only **critical** dependencies — the ones without which the service genuinely cannot serve. A non-critical dependency being down should degrade a feature, not pull the whole instance from rotation.
+Check only **critical** dependencies — the ones without which the service genuinely cannot serve. A non-critical dependency being down should degrade a feature, not pull the whole instance from rotation. Full `Readiness` struct and `Handler` implementation: `references/go-implementation.md`.
 
 ---
 
@@ -131,6 +93,70 @@ The startup endpoint reports OK once initialisation has completed; until then, l
 
 ---
 
+## Managed Lifecycle — terminationGracePeriodSeconds
+
+**Critical correctness rule (Kubernetes Patterns — Managed Lifecycle pattern):** The pod spec's `terminationGracePeriodSeconds` MUST be greater than or equal to the application's drain timeout. The formula is:
+
+```
+terminationGracePeriodSeconds = app_drain_timeout_seconds + 5
+```
+
+The Go server's drain timeout is the `context.WithTimeout` deadline passed to `http.Server.Shutdown` — the `cfg.ShutdownTimeout` value in the service's config. If the app drain takes 30 seconds and `terminationGracePeriodSeconds` is the Kubernetes default of 30 seconds, SIGKILL fires before the drain completes — in-flight requests are dropped. The +5 second buffer absorbs jitter between when SIGTERM arrives and when `Shutdown` begins.
+
+**Who sets what:**
+- The backend-engineer sets `cfg.ShutdownTimeout` (e.g., `30s`) in the service's Go config. This is the source value.
+- The platform-engineer reads that value from `values.yaml` and sets `terminationGracePeriodSeconds = cfg.ShutdownTimeout + 5` in the pod spec.
+
+```yaml
+# In the pod spec (set by platform-engineer):
+spec:
+  terminationGracePeriodSeconds: 35   # = 30s drain timeout + 5s buffer
+  containers:
+    - name: my-service
+```
+
+Without this alignment, rolling deploys that show a clean `helm upgrade` output still drop in-flight requests.
+
+---
+
+## preStop Hook — Buffering Slow SIGTERM Handlers
+
+When the application cannot detect and react to SIGTERM fast enough (e.g., goroutine scheduling delay means it takes 1–2 seconds before drain begins), add a `preStop` lifecycle hook. The kubelet runs `preStop` before sending SIGTERM, giving the application a guaranteed head start before the termination countdown begins.
+
+```yaml
+containers:
+  - name: my-service
+    lifecycle:
+      preStop:
+        exec:
+          command: ["/bin/sleep", "2"]
+```
+
+When the sleep is added, increase `terminationGracePeriodSeconds` by the same number of seconds to preserve the total drain window:
+
+```
+terminationGracePeriodSeconds = app_drain_timeout_seconds + preStop_sleep_seconds + 5
+```
+
+**When to use:** add `preStop` only when load tests or drain-time measurements confirm that in-flight requests are still being dropped on shutdown despite correct `terminationGracePeriodSeconds`. Do not add it universally — every rolling deploy pays the sleep cost during pod termination.
+
+---
+
+## Deploy-then-Verify (Post-Deploy Smoke Test)
+
+The health endpoints this skill specifies serve a second role: they are the targets of the post-deploy verification gate. After every `helm upgrade` (or after Flux/Argo CD applies a new revision), run:
+
+```bash
+kubectl rollout status deployment/<name> --timeout=120s \
+  && curl -f http://<service>/healthz/ready
+```
+
+If either command exits non-zero, trigger `helm rollback` (push-model CI) or a GitOps revert. A deploy that passes `helm upgrade` without this gate is not confirmed — `helm upgrade` exits 0 when the API server accepts the new spec, not when the new pods are healthy.
+
+See `references/deploy-verification.md` for the complete verification script, GitOps (Flux/Argo CD) variant, SLO burn rate extension, and integration with `cd-pipeline`.
+
+---
+
 ## Mapping to Kubernetes (handed to platform-engineer)
 
 The endpoints are designed to map cleanly to probe definitions the platform-engineer authors:
@@ -156,6 +182,8 @@ Health routes are mounted **outside** the authenticated middleware group (see `g
 | Critical deps only | Only must-have dependencies fail readiness | Non-critical dep downing the whole instance |
 | Startup protected | Slow start covered by a startup probe | Slow start restart-looping on liveness |
 | Probes unauthenticated | Health routes outside the auth group | Probes requiring a token |
+| Grace period aligned | terminationGracePeriodSeconds = drain_timeout + 5 | SIGKILL fires before drain completes |
+| Post-deploy verified | rollout status + /readyz checked after every deploy | Deploy declared done without health verification |
 
 ---
 
@@ -168,14 +196,21 @@ Health routes are mounted **outside** the authenticated middleware group (see `g
 - **Closing the listener before going not-ready** — the load balancer keeps routing to a closed socket for one probe period; connection-refused errors on every deploy are the signature.
 - **Non-critical dependencies failing readiness** — the analytics sidecar being down should degrade a feature flag, not remove the instance from rotation.
 - **Caching "ready" forever** — readiness computed once at startup can never reflect a dependency that failed later; checks run per probe, cheaply.
+- **terminationGracePeriodSeconds at the Kubernetes default (30s) with a 30s drain timeout** — SIGKILL fires exactly when drain would finish; the +5 buffer is always required.
+- **No post-deploy smoke test** — `helm upgrade` exiting 0 means the API server accepted the new spec, not that the new pods are healthy; a failing probe for the new version does not block the Helm operation without a post-deploy gate.
 
 ---
 
 ## Output Format
 
-Produces Go source plus tests for each probe state:
+Produces Go source, tests, and platform configuration:
 
 ```
 internal/handlers/http/health.go          (live/ready/startup handlers, Readiness type)
 internal/handlers/http/health_test.go      (ready/not-ready/dep-down/draining cases)
+# values.yaml: terminationGracePeriodSeconds = cfg.ShutdownTimeout + 5
+# post-deploy: rollout status + /readyz gate per references/deploy-verification.md
 ```
+
+Full Go implementation: `references/go-implementation.md`
+Post-deploy verification: `references/deploy-verification.md`
