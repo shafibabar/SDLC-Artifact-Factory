@@ -75,7 +75,8 @@ London (mockist) school. The distinction governs how much to isolate:
 The classical school is chosen because London-school over-mocking zeros out the
 Resistance to Refactoring pillar: any internal restructuring that preserves
 external behaviour still turns the suite red. See `go-unit-test`'s
-`references/mocking-philosophy.md` for the full four-pillars rationale.
+`references/mocking-philosophy.md` for the full four-pillars rationale; see
+`references/test-double-taxonomy.md` for the Classical vs. London school table.
 
 ---
 
