@@ -14,7 +14,7 @@ description: >
   frontmatter and that the Domain Primitives/Policies/Trust-Boundary tables
   actually have data, not just headers). Used by the security-architect
   agent during the Design phase.
-version: 2.1.0
+version: 2.2.0
 phase: design
 owner: security-architect
 created: 2026-06-25
@@ -96,46 +96,16 @@ This is the same Domain Primitive concept `subdomain-distillation`'s `references
 
 ## Policy Design
 
-Policies are expressed as rules that combine attributes to reach an `allow` or `deny` decision. Write policies in natural language first, then translate to code.
+Policies combine attributes to reach an `allow`/`deny` decision. Write each in natural language first, then translate to code. The four baseline policies, **evaluated in this order**:
 
-### Policy 1: Tenant Isolation (mandatory on all resources)
+| # | Policy | Rule (summary) |
+|---|---|---|
+| 1 | **Tenant Isolation** (mandatory, always first) | Allow only if `subject.tenant_id == resource.tenant_id`; deny otherwise regardless of any other attribute — no other attribute matters if the tenant IDs don't match. |
+| 2 | Role-Based Permission | Allow action A if `action.operation` is in `subject.permissions` (e.g. `classify-data-asset` requires `data-assets:write`; `generate-report` requires `reports:generate`). |
+| 3 | Sensitivity-Based Access | Allow read if `resource.sensitivity` is in the subject's accessible levels (Compliance Officer → Public/Internal/Confidential/Restricted; read-only analyst → excludes Restricted). |
+| 4 | Resource Ownership (personal resources) | Allow modification if `subject.id == resource.owner_id` OR the subject has `admin`. |
 
-```
-Allow access to resource R if:
-  subject.tenant_id == resource.tenant_id
-
-Deny otherwise — regardless of any other attributes.
-```
-
-This is the first check, always. No other attribute matters if the tenant IDs don't match.
-
-### Policy 2: Role-Based Permission Check
-
-```
-Allow action A on resource type T if:
-  action.operation is in subject.permissions
-
-Example:
-  Allow "classify-data-asset" if "data-assets:write" in subject.permissions
-  Allow "generate-report" if "reports:generate" in subject.permissions
-```
-
-### Policy 3: Sensitivity-Based Access
-
-```
-Allow read of resource R if:
-  resource.sensitivity is in subject.accessible_sensitivity_levels
-  (defined per role: Compliance Officer → [Public, Internal, Confidential, Restricted])
-  (read-only analyst → [Public, Internal, Confidential])
-```
-
-### Policy 4: Resource Ownership (for personal resources)
-
-```
-Allow modification of resource R if:
-  subject.id == resource.owner_id
-  OR subject has "admin" permission
-```
+Full natural-language rule block and pseudo-code for each policy: `references/policy-design.md`.
 
 ---
 
