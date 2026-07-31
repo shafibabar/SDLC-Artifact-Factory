@@ -7,7 +7,7 @@ description: >
   allocation on the hot path, and the strict no-secrets/no-PII rule. Logs are the
   third observability signal and must correlate with traces and metrics. Used by
   the backend-engineer during Implement.
-version: 1.1.0
+version: 1.2.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -46,37 +46,15 @@ func InitLogging(cfg Config) *slog.Logger {
 }
 ```
 
-**JSON in production, always.** JSON is what the log pipeline (Fluent Bit → Elasticsearch — see the platform observability stack) parses and indexes. Text logs in production are a dead end.
+**JSON in production, always.** JSON is what the log pipeline (stdout → Fluent Bit DaemonSet → Loki) parses and indexes. Text logs in production are a dead end. See Kubernetes Logging Pipeline section below for why stdout is the only compliant output target.
 
 ---
 
 ## Trace Correlation — Every Line Carries TraceID/SpanID
 
-This is the link that turns three separate signals into one. A custom handler pulls the active span's `TraceID` and `SpanID` from the context and adds them to every record, so any log line can be pivoted to its full trace.
+This is the link that turns three separate signals into one. A `traceHandler` struct wraps any `slog.Handler` and pulls the active OTel span's `TraceID` and `SpanID` from the context, adding them to every record so any log line can be pivoted to its full trace.
 
-```go
-type traceHandler struct{ slog.Handler }
-
-func (h *traceHandler) Handle(ctx context.Context, r slog.Record) error {
-    if sc := trace.SpanContextFromContext(ctx); sc.IsValid() {
-        r.AddAttrs(
-            slog.String("trace_id", sc.TraceID().String()),
-            slog.String("span_id", sc.SpanID().String()),
-        )
-    }
-    return h.Handler.Handle(ctx, r)
-}
-
-// WithAttrs/WithGroup MUST re-wrap. The embedded handler's versions return the INNER
-// handler, so a logger derived via slog.With(...) would silently stop injecting trace ids
-// — the classic slog-wrapper bug.
-func (h *traceHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-    return &traceHandler{Handler: h.Handler.WithAttrs(attrs)}
-}
-func (h *traceHandler) WithGroup(name string) slog.Handler {
-    return &traceHandler{Handler: h.Handler.WithGroup(name)}
-}
-```
+**Critical wrapper rule:** `WithAttrs` and `WithGroup` must re-wrap the outer handler — not return the inner handler. If they don't, a logger derived via `slog.With(...)` silently bypasses the wrapper and loses trace correlation on exactly the pre-bound loggers that log the most. Full implementation and regression test: `references/kubernetes-logging-pipeline.md`.
 
 Because correlation comes from context, **always use the context-aware logging methods** so the active span is in scope:
 
@@ -150,6 +128,44 @@ A single logged JWT or SSN is a reportable incident — redaction is designed in
 
 ---
 
+## Kubernetes Logging Pipeline
+
+Logs written to stdout do not disappear into a void — they flow through a platform-managed
+pipeline the service never needs to configure:
+
+```
+stdout → kubelet (captures + rotates /var/log/containers/*.log)
+       → Fluent Bit DaemonSet (reads files, parses JSON, enriches with K8s labels)
+       → Loki (indexed by pod / namespace / service / env / tenant labels)
+       → Grafana (LogQL queries; correlated with Prometheus metrics and Tempo traces)
+```
+
+**Why stdout-only is mandatory — not a convention, a compliance requirement:**
+
+| Alternative | Why it fails |
+|---|---|
+| Log file + sidecar shipper | Adds a container to every pod, multiplies CPU/memory requests across all replicas; sidecar crash is invisible to liveness probes |
+| Log file + shared `emptyDir` volume | Volume is ephemeral — pod eviction deletes it; the logs from a crashing pod (the ones you need most) are gone |
+| Log file in container filesystem | Not at `/var/log/containers/`; invisible to Fluent Bit; logs exist only until the container restarts |
+
+A service that writes logs to a file instead of stdout is non-compliant: its logs are
+invisible to the platform's log aggregator and will not appear in Loki.
+
+**Fluent Bit reads from** `/var/log/containers/*_<namespace>_*.log` — the kubelet's
+standard container log path convention. Because the service writes structured JSON,
+`Merge_Log: On` in the Fluent Bit config expands the JSON fields into top-level Loki
+record attributes, making `trace_id`, `tenant_id`, and `data_asset_id` queryable via
+LogQL's `| json` pipe. The service never needs to know about Loki.
+
+**LOG_LEVEL must be injected as an env var from `values.yaml`**, never baked into the
+image. Defaults: `info` in production and staging, `debug` in kind-local. This allows
+debug-level escalation in a live environment via `helm upgrade` with no image rebuild.
+
+Full Fluent Bit YAML, Loki label design, LOG_LEVEL Helm wiring, and Go implementation:
+`references/kubernetes-logging-pipeline.md`.
+
+---
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -161,6 +177,7 @@ A single logged JWT or SSN is a reportable incident — redaction is designed in
 | Low allocation | Typed attrs; guarded debug; bound common fields | `slog.Any` everywhere; building disabled debug strings |
 | No secrets/PII | Redacted via LogValuer; ids not values | Secrets/PII/file content in logs |
 | Logged once | Each event logged at one meaningful layer | Same error re-logged at every wrap |
+| Kubernetes-compliant | stdout only; LOG_LEVEL from env var | File-based logging; baked-in log level |
 
 ---
 
