@@ -1,132 +1,115 @@
 ---
 name: ubiquitous-language
 description: >
-  Teaches how to build, maintain, and enforce a Ubiquitous Language for a
-  Bounded Context — including term discovery, definition format, homonym and
-  synonym detection, term ownership rules, and how the language evolves as
-  domain understanding deepens. Ubiquitous Language is the foundation of all
-  DDD work; every other domain-modeling artifact depends on it. Used by the
-  domain-modeler agent at the start of every Design phase domain session.
-version: 1.1.0
+  Build and enforce the Ubiquitous Language of a Bounded Context — the single
+  shared vocabulary used identically in conversation, Go type and method names,
+  Gherkin scenarios, API fields, and docs. Covers term discovery from domain
+  experts, Event Storming cards, and Domain Storytelling; the same-language-in-code
+  rule (class/method names ARE the language, per Evans' Intention-Revealing
+  Interfaces and Model-Driven Design); one-language-per-Bounded-Context and what
+  happens at context boundaries (translation, Anti-Corruption Layer); homonyms
+  vs synonyms; terminology drift (code names diverging from spoken names) and its
+  correction. Distinct from glossary-management: this is the modeling PRACTICE,
+  the glossary is the artifact. Used by domain-modeler at the start of every
+  Design-phase domain session.
+version: 2.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: [design, ddd, ubiquitous-language, bounded-context, glossary]
+related: [glossary-management, aggregate-design, bounded-context-mapping, context-map-patterns, event-storming, domain-storytelling]
+tags: [design, domain-modeling, ubiquitous-language, ddd, glossary, terminology-drift]
 ---
 
 # Ubiquitous Language
 
 ## Purpose
 
-Ubiquitous Language (Eric Evans, *Domain-Driven Design*) is the shared, precise vocabulary used by everyone working in a Bounded Context — engineers, product managers, and domain experts — in all communication: conversations, code, tests, documentation, and APIs.
+Ubiquitous Language (Eric Evans, *Domain-Driven Design*) is the shared, precise vocabulary used by everyone working in a Bounded Context — engineers, product managers, and domain experts — in **all** communication: conversations, code, tests, documentation, and APIs.
 
-The word "ubiquitous" means the language must be used everywhere, without translation. A term used differently in code than in conversation, or differently between two engineers, is a defect in the language — not a stylistic difference.
+"Ubiquitous" means the language is used everywhere, **without translation**. A term used differently in code than in conversation, or differently between two engineers, is a defect in the language — not a stylistic difference. Every boundary crossing (engineer ↔ domain expert, service ↔ service, spec ↔ test) that requires translation introduces cost and the opportunity for subtle semantic errors that ship as bugs.
 
-Without a Ubiquitous Language, every boundary crossing (engineer ↔ domain expert, service ↔ service, spec ↔ test) introduces translation cost and the opportunity for subtle semantic errors that cause real bugs.
+This skill is the **practice** of building and keeping that language alive. It is distinct from `glossary-management`, which owns the **artifact** — the written glossary file, its frontmatter, its versioning. This skill decides what the words are and enforces their use in code; that skill records and publishes them. Do not conflate the two: a glossary with no living practice behind it is shelfware; a practice with no recorded glossary is un-reviewable.
+
+---
+
+## The Language Lives in the Code
+
+Evans' sharpest, most-missed claim: the Ubiquitous Language is not documentation *about* the model — the code **is** the model (Model-Driven Design). A class named `DataAsset`, a method named `Classify(level, classifiedBy)`, a Gherkin step "Given a Restricted DataAsset" — these are not translations of the language, they *are* the language in another medium.
+
+The corollary rule: **the canonical term appears verbatim** in Go type names, struct field names, table names, API field names, and Gherkin scenario text. When code says `FileRecord` but the team says "DataAsset", the translation layer lives in engineers' heads and re-introduces drift at every hand-off. This is Evans' **Intention-Revealing Interface** discipline: a domain expert should predict what `Classify(...)` does from its name alone, with zero knowledge of the implementation. If they cannot, rename before implementing — not after.
+
+Consequence for review: renaming a term is not "just" a glossary edit. A synonym ban is complete only when code, tests, APIs, and docs are all renamed. Until then the codebase and the glossary disagree, and the codebase wins.
 
 ---
 
 ## One Language Per Bounded Context
 
-Ubiquitous Language is **scoped to a Bounded Context**. The same word can legitimately mean different things in different Bounded Contexts:
+The Ubiquitous Language is **scoped to a single Bounded Context**. The same word can legitimately mean different things in different contexts — this is intentional DDD design, not a defect:
 
-| Term | Bounded Context A | Bounded Context B |
+| Term | In Data Discovery context | In Compliance/Audit context |
 |---|---|---|
-| `File` | A document in the customer's storage estate — has a path, type, sensitivity classification | A compliance evidence file submitted to an auditor |
-| `User` | A person who logs into the platform | A data subject whose personal data is in a discovered file |
+| `File` | a document in the customer's storage estate — has a path, type, sensitivity | a compliance evidence file submitted to an auditor |
+| `User` | a person who logs into the platform | a data subject whose personal data was discovered |
 
-This is not a problem — it is intentional DDD design. The Bounded Context boundary is precisely where the meaning changes. What is a defect is using both meanings in the same context without distinguishing them.
+A Bounded Context boundary is *precisely where the meaning changes*. Khononov's framing sharpens why: a Bounded Context boundary is a **linguistic/model-consistency** boundary (it exists where a term's meaning changes), which is a *different force* from an Aggregate boundary (transactional consistency). When the same word crosses a context boundary with a different meaning, the crossing is handled by **translation** — a Context Map relationship, typically an Anti-Corruption Layer. The defect is using both meanings *inside the same context* without distinguishing them.
+
+Full one-language-per-context rules, the term-definition format, the per-source discovery procedure, and the term lifecycle (how a term enters, changes, and retires) are in **`references/ul-discovery-and-curation.md`**.
 
 ---
 
-## Term Discovery
+## Discovering Terms
 
-Terms for the Ubiquitous Language are discovered through Event Storming, domain storytelling, and direct conversation with domain experts. The following sources reliably surface terms:
+Terms are discovered, not invented. They surface most reliably from three sources:
 
-| Source | Terms discovered |
+| Source | What it surfaces |
 |---|---|
-| Event Storming orange cards (Domain Events) | Verbs and nouns that describe what happens in the domain |
-| Event Storming blue cards (Commands) | Action verbs — what actors tell the system to do |
-| Event Storming yellow cards (Aggregates) | Nouns — the things that receive commands and emit events |
-| Domain storytelling | The natural language domain experts use when narrating their workflow |
-| User stories and job stories | Nouns and verbs from the "As a / I want to / so that" structure |
-| Acceptance criteria | Edge-case terms that often reveal missing domain concepts |
+| **Direct conversation with domain experts** | The natural words experts already use — the primary well; every other source is a structured way to fish it |
+| **Event Storming** | Orange cards (Domain Events) → verbs/nouns for what happens; blue cards (Commands) → action verbs; yellow cards (Aggregates) → the nouns that receive commands and emit events |
+| **Domain Storytelling** | The natural-language narration experts give when walking through a workflow — reveals connective terms and roles the card exercise misses |
+
+User stories, job stories, and acceptance criteria are secondary sources — edge-case terms in acceptance criteria often reveal a domain concept the language has no word for yet. When an unnamed concept keeps recurring as scattered conditional logic or a repeated parameter combination, that is Evans' "make implicit concepts explicit" signal: name it, add it, align the team *before* it appears in code.
+
+The step-by-step procedure for harvesting terms from each source — and the exact term-definition format (Term / Definition / Type / Synonyms / Homonyms / Invariants / Example) — is in **`references/ul-discovery-and-curation.md`**.
 
 ---
 
-## Term Definition Format
+## Homonyms and Synonyms
 
-Every term in the Ubiquitous Language must be defined using this format:
+Two failure shapes, opposite corrections:
 
-```
-Term:        [Exact term as used in this Bounded Context — PascalCase for types, sentence case for concepts]
-Definition:  [What this term means in this Bounded Context — one or two sentences, no jargon]
-Type:        [Entity | Value Object | Aggregate Root | Domain Event | Command | Read Model | Policy | Concept]
-Synonyms:    [Terms that mean the same thing — these synonyms are BANNED; only the canonical term may be used]
-Homonyms:    [The same word used in another Bounded Context with a different meaning — note the other context]
-Invariants:  [Rules that are always true about this term — what must never be violated]
-Example:     [One concrete example that makes the definition unambiguous]
-```
-
-### Example Term Definition
-
-```
-Term:        DataAsset
-Definition:  A file discovered in a connected storage source that has been classified by
-             the system. A DataAsset has a path, a storage source, a sensitivity
-             classification, and one or more extracted entity types.
-Type:        Aggregate Root
-Synonyms:    file, document, record — BANNED in this context; use DataAsset exclusively
-Homonyms:    In the Audit context, "asset" means a compliance evidence item, not a
-             discovered file.
-Invariants:  A DataAsset always has a sensitivity classification (it may be Unclassified
-             if the classification engine has not yet run, but the field always exists).
-             A DataAsset always belongs to exactly one StorageSource.
-Example:     A PDF at gs://acme-drive/HR/contracts/smith_offer_letter.pdf, classified
-             as Restricted, containing PersonallyIdentifiableInformation and
-             ContractualObligation entity types.
-```
+- **Synonyms** (two words, one meaning — "file", "document", "record" all meaning `DataAsset`) are the most common source of drift. Two engineers using two words for one concept have two mental models that will diverge in code. **Correction:** choose one canonical term, document the rest as *banned*, enforce the canonical term everywhere.
+- **Homonyms** (one word, two meanings in two contexts — `asset` meaning a discovered file here, a compliance evidence item there) are *not* errors; they are boundaries. **Correction:** document them explicitly with each context's meaning and the Anti-Corruption Layer that handles the crossing. A homonym flattened into a single "global" definition produces a vague lowest-common-denominator term that fits nobody.
 
 ---
 
-## Synonym Elimination
+## Detecting and Correcting Drift
 
-Synonyms are the most common source of language drift. When two engineers use two different words for the same concept, their mental models diverge — and the code eventually diverges with them.
+A Ubiquitous Language decays the moment it stops being enforced. **Drift** is the gap between the words the team speaks and the words the code, tests, and docs actually use — most often a synonym creeping into a field name, or a code identifier silently diverging from the spoken term.
 
-**Rule:** Choose one term. Document the synonyms as banned. Enforce the canonical term in all code, tests, APIs, and documentation.
+Enforcement is wired into the delivery flow, not left to goodwill:
 
-**Enforcement mechanisms:**
-- Code review checklist: any synonym in a type name, field name, or variable name is a rejection reason
-- API contract review: field names in OpenAPI specs must use the canonical term
-- Test file review: scenario descriptions in Gherkin feature files must use the canonical term
-- Terminology drift detector hook flags synonyms in artifact prose
+- **Code review** — any synonym in a type, field, or variable name is a rejection reason.
+- **API contract review** — OpenAPI field names must use the canonical term.
+- **Gherkin review** — scenario text must use the canonical term.
+- **The `terminology-drift-detector` hook** — flags synonyms and unknown terms in artifact prose automatically.
 
----
-
-## Homonym Documentation
-
-Homonyms (same word, different meaning in a different Bounded Context) must be documented to prevent confusion as the system grows. They are not errors — they are boundaries. But they must be explicit.
-
-Every homonym must be listed with:
-- The term
-- Its meaning in this Bounded Context
-- The other Bounded Context(s) where it appears
-- The different meaning there
-- The Anti-Corruption Layer or translation mechanism that handles the boundary crossing
+How drift actually appears (the specific patterns), how to detect it across code/specs/docs, and the full correction workflow — including the loop back to `glossary-management` and the `terminology-drift-detector` hook — are in **`references/drift-detection.md`**.
 
 ---
 
 ## Language Evolution
 
-A Ubiquitous Language is not static. As the team's understanding of the domain deepens, the language must evolve:
+The language is never static; it evolves as domain understanding deepens. Common triggers and their actions:
 
 | Trigger | Action |
 |---|---|
-| Domain expert uses a term the team hasn't defined | Add the term using the discovery process above |
-| A term's definition is consistently misunderstood | Rewrite the definition; run a domain storytelling session to validate the new definition |
-| Two terms are discovered to mean the same thing | Choose one; document the other as a banned synonym; rename in code |
-| A term means different things in different sub-domains | Consider a Bounded Context split; or introduce a qualifier to disambiguate |
-| A concept the language has no word for keeps appearing | Name it; add it to the glossary; align the team before it appears in code |
+| Expert uses a term the team hasn't defined | Add it via the discovery process |
+| A definition is consistently misunderstood | Rewrite it; validate with a Domain Storytelling session |
+| Two terms turn out to mean the same thing | Choose one; ban the other; rename in code |
+| A term means different things in different sub-domains | Consider a Bounded Context split, or add a qualifier |
+| A concept keeps appearing with no name | Name it; add it; align the team before it reaches code |
+
+Version-suffixed dodges (`DataAssetV2`, `RealDataAsset`) are never the answer — they mean two models are competing inside one context. Resolve the conflict by evolving the single definition or splitting the context.
 
 ---
 
@@ -134,12 +117,11 @@ A Ubiquitous Language is not static. As the team's understanding of the domain d
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| One term, one meaning | Every term has exactly one definition per Bounded Context | Terms with multiple definitions, or definitions that hedge |
-| No synonyms in use | All synonyms are documented as banned; code and docs use only canonical terms | Any synonym appearing in code, API names, or documentation |
-| Type assigned | Every term has a DDD type (Entity, Value Object, Aggregate Root, etc.) | Terms with no type — these are underspecified |
-| Invariants documented | Every Aggregate Root and Entity has at least one invariant | Aggregate Roots with no invariants — they have no rules |
-| Concrete example | Every term has a concrete example using real-world data | Abstract definitions that leave room for interpretation |
-| Context-scoped | The language is explicitly linked to a named Bounded Context | A "global" glossary with no context boundaries |
+| One term, one meaning | Exactly one definition per Bounded Context | Multiple definitions, or hedged ones ("usually", "generally") |
+| No synonyms in use | Synonyms documented as banned; code/docs use only the canonical term | Any synonym in code, API names, or docs |
+| Language in the code | Canonical term appears verbatim in types, tables, API fields, Gherkin | Code dialect differs from spoken language |
+| Type assigned | Every term has a DDD type (Entity, Value Object, Aggregate Root, Event, Command…) | Untyped terms — underspecified |
+| Context-scoped | Language explicitly linked to a named Bounded Context | A "global" glossary with no boundaries |
 
 ---
 
@@ -147,53 +129,14 @@ A Ubiquitous Language is not static. As the team's understanding of the domain d
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **The global glossary** — one enterprise-wide vocabulary forced on every context | Homonyms are legitimate at context boundaries; flattening them produces vague, lowest-common-denominator definitions that fit nobody | One language per Bounded Context; document homonyms and their boundary mechanisms |
-| **Developer dialect** — code uses `FileRecord`, conversation uses "DataAsset" | The translation layer lives in engineers' heads; every hand-off re-introduces semantic drift | The canonical term appears verbatim in type names, table names, API fields, and Gherkin scenarios |
-| **Definition by implementation** — "A DataAsset is a row in the `data_assets` table" | Ties the concept to today's storage; says nothing about meaning, rules, or boundary | Define in domain terms with invariants; the table is a consequence, not a definition |
-| **Hedged definitions** — "usually", "generally", "in most cases" | A hedge marks an undiscovered rule or a hidden second concept; ambiguity ships as bugs | Chase the hedge: name the exception explicitly or split the term in two |
-| **Glossary shelfware** — terms defined once, never enforced | The language decays immediately; six months later the glossary describes a system that no longer exists | Wire enforcement into code review, API review, and the terminology drift detector; evolve terms via the Language Evolution triggers |
-| **Qualifier inflation** — `DataAssetV2`, `RealDataAsset`, `NewScan` to dodge a naming conflict | Version-suffixed names mean two models are competing inside one context | Resolve the conflict: evolve the single definition, or split the Bounded Context where the meaning genuinely diverges |
-| **Banning synonyms without renaming code** — the glossary bans "file" while `File` types remain | The glossary and the codebase disagree; the codebase wins and the glossary loses authority | A synonym ban is complete only when code, tests, APIs, and docs are renamed |
+| **Global glossary** — one enterprise vocabulary forced on every context | Flattens legitimate homonyms into vague definitions that fit nobody | One language per Bounded Context; document homonyms + their boundary mechanisms |
+| **Developer dialect** — code says `FileRecord`, people say "DataAsset" | Translation lives in engineers' heads; every hand-off re-drifts | Canonical term verbatim in types, tables, API fields, Gherkin |
+| **Definition by implementation** — "a DataAsset is a row in `data_assets`" | Ties the concept to today's storage; says nothing about meaning or rules | Define in domain terms with invariants; the table is a consequence |
+| **Glossary shelfware** — terms defined once, never enforced | The language decays; six months on the glossary describes a dead system | Wire enforcement into code/API/Gherkin review and the drift-detector hook |
+| **Banning synonyms without renaming code** — glossary bans "file" while `File` types remain | Glossary and codebase disagree; the codebase wins | A synonym ban is complete only when code, tests, APIs, docs are all renamed |
 
 ---
 
 ## Output Format
 
-```markdown
----
-name: ubiquitous-language
-product: [product name]
-bounded-context: [Bounded Context name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: domain-modeler
----
-
-# Ubiquitous Language: [Bounded Context Name]
-
-## Context Boundary
-[One paragraph describing what this Bounded Context is responsible for and where its boundary lies]
-
-## Terms
-
-### [Term]
-| Field | Value |
-|---|---|
-| **Definition** | [definition] |
-| **Type** | [DDD type] |
-| **Synonyms (banned)** | [list] |
-| **Homonyms** | [term in other contexts and their meanings] |
-| **Invariants** | [rules that are always true] |
-| **Example** | [concrete example] |
-
-[Repeat for each term]
-
-## Banned Synonyms Reference
-| Banned term | Canonical term |
-|---|---|
-
-## Homonym Map
-| Term | This context meaning | Other context | Other meaning | Boundary mechanism |
-|---|---|---|---|---|
-```
+Produce a per-Bounded-Context Ubiquitous Language document. The full copy-ready template — frontmatter, context-boundary paragraph, per-term table, banned-synonyms reference, and homonym map — is in **`references/ul-discovery-and-curation.md`**.
