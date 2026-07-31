@@ -1,198 +1,78 @@
 ---
 name: multi-tenancy-design
 description: >
-  Teaches how to design physical multi-tenancy for a private-deployment SaaS
-  product — covering the three tenancy models (shared, schema-per-tenant,
-  database-per-tenant / infrastructure-per-tenant), when to use each, how
-  physical isolation is enforced at the infrastructure, database, event stream,
-  and API levels, and how tenant context is propagated across service boundaries.
-  Physical multi-tenancy is the default model for this plugin's first product.
-  Used by the enterprise-architect agent during the Design phase.
-version: 1.1.0
+  Teaches the enterprise-architect to design tenant isolation for a
+  multi-tenant system — selecting among the three isolation models
+  (shared-everything with a tenant_id column, shared-schema-per-tenant, and
+  physically-isolated stamp-per-tenant), and enforcing the chosen model
+  consistently across every layer (infrastructure/cluster, database, message
+  broker/event, and API). Covers the model decision table with its compliance
+  and cost tradeoffs, the per-layer enforcement rules, and the per-tenant
+  provisioning/stamp model — grounded in this repo's SOC 2 physical-isolation
+  product context. Used during Design for any tenant-facing system.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, multi-tenancy, isolation, security, compliance]
+tags: [design, architecture, multi-tenancy, tenant-isolation, data-isolation, physical-isolation, soc2, provisioning]
+related:
+  - data-model-design
+  - data-pipeline-design
+  - opentofu-module
+  - gitops-workflow
+  - environment-config
+  - event-driven-patterns
+  - zero-trust-architecture
 ---
 
 # Multi-Tenancy Design
 
-## Purpose
+Multi-tenancy design defines how a single product serves multiple customers (tenants) while keeping their data, processing, and infrastructure separate. **The isolation model is a security and compliance decision first, and an architecture decision second** — you pick the model the tenants' data classification and the compliance framework demand, then pay the cost that model implies, not the other way around.
 
-Multi-tenancy design defines how a single product deployment serves multiple customers (tenants) while keeping their data, processing, and infrastructure separate. The isolation model is a security and compliance decision first, and an architecture decision second.
-
-For the first product (Data Estate Mapping & Compliance Intelligence), physical multi-tenancy is mandatory — the product processes customers' most sensitive data, and no tenant data may ever be accessible to or commingled with another tenant's data, even at the infrastructure level.
+This skill provides the criteria for that decision and the rules for enforcing it. Applying the criteria to a specific product — reading its NFRs, its compliance obligations, its expected tenant count — is the enterprise-architect's reasoning, not stored here.
 
 ---
 
-## The Three Tenancy Models
+## The Three Isolation Models
 
-### Model 1: Shared Everything (Logical Multi-Tenancy)
+Pick one primary criterion and let it drive: **blast radius** (what a breach or bug in one tenant's boundary can reach), **compliance requirement** (does the framework mandate physical separation or accept logical?), **cost per tenant** (does the footprint multiply by tenant count?), and **noisy-neighbor tolerance** (can one tenant's load degrade another's?).
 
-All tenants share the same infrastructure, database, and application instances. Tenant isolation is enforced only by application-level filtering (a `tenant_id` column on every table).
-
-| | |
-|---|---|
-| **Isolation level** | Logical — enforced by application code |
-| **Cost** | Lowest — single infrastructure footprint |
-| **Risk** | Highest — a query missing a `tenant_id` filter leaks data across tenants; a bug in application code breaks isolation |
-| **Compliance fit** | Unsuitable for SOC 2, GDPR, or any compliance framework requiring physical isolation |
-| **Use when** | Non-sensitive data; commodity SaaS; cost is the primary constraint |
-
-**Not suitable for this plugin's first product.**
-
----
-
-### Model 2: Schema-Per-Tenant (Logical Isolation, Single Database)
-
-All tenants share the same database instance but have separate schemas. Application code connects to the tenant's schema. No `tenant_id` column needed — schema separation provides the isolation.
-
-| | |
-|---|---|
-| **Isolation level** | Schema-level — enforced by database schema separation |
-| **Cost** | Low-medium — single database instance; separate schemas |
-| **Risk** | Medium — schema separation prevents accidental cross-tenant queries; but the database process is shared, and a database-level breach affects all tenants |
-| **Compliance fit** | Acceptable for some compliance frameworks; not for frameworks requiring physical infrastructure isolation |
-| **Use when** | Moderate isolation requirements; regulatory frameworks that accept schema-level separation |
-
----
-
-### Model 3: Infrastructure-Per-Tenant (Physical Multi-Tenancy)
-
-Each tenant has dedicated infrastructure: their own Kubernetes namespace (or cluster), their own database instance, their own message broker topics (or cluster), and their own service instances.
-
-| | |
-|---|---|
-| **Isolation level** | Physical — separate processes, separate storage, separate network |
-| **Cost** | Highest — infrastructure footprint multiplies by tenant count |
-| **Risk** | Lowest — a breach in one tenant's infrastructure does not affect others |
-| **Compliance fit** | Required for SOC 2 physical isolation controls, GDPR data residency, financial services, healthcare |
-| **Use when** | Sensitive data; regulated industries; customer-controlled deployment; Zero Trust architecture |
-
-**This is the required model for this plugin's first product.**
-
----
-
-## Physical Multi-Tenancy Architecture
-
-### Deployment Topology
-
-Each tenant gets a dedicated deployment:
-
-```
-Customer A                           Customer B
-┌─────────────────────────┐         ┌─────────────────────────┐
-│ Kubernetes Namespace:   │         │ Kubernetes Namespace:   │
-│ tenant-customer-a       │         │ tenant-customer-b       │
-│                         │         │                         │
-│  [All services]         │         │  [All services]         │
-│  [PostgreSQL instance]  │         │  [PostgreSQL instance]  │
-│  [Redpanda namespace]   │         │  [Redpanda namespace]   │
-│                         │         │                         │
-│  Customer A's own VPC   │         │  Customer B's own VPC   │
-│  or dedicated cloud     │         │  or dedicated cloud     │
-│  account                │         │  account                │
-└─────────────────────────┘         └─────────────────────────┘
-         │                                    │
-         │ No network path between tenants    │
-         └──────────────── ✗ ────────────────┘
-```
-
-### Tenant Context Propagation
-
-In physical multi-tenancy, the `tenant_id` is not needed on every database row — the database instance itself is tenant-scoped. However, `tenant_id` is still included in:
-- All Domain Events (for audit and replay purposes)
-- All JWT claims (for identity continuity)
-- All audit log entries
-- All API request logs
-
-The `tenant_id` in these contexts is not for filtering — it is for traceability and audit.
-
-### Database Isolation
-
-| Layer | Isolation mechanism |
-|---|---|
-| Database instance | Separate PostgreSQL instance per tenant |
-| Database credentials | Separate service account per tenant database |
-| Connection pooling | Separate connection pool per tenant |
-| Backup | Separate backup schedule and encryption key per tenant |
-| Encryption keys | Tenant-managed keys (BYOK) where required |
-
-### Network Isolation
-
-- No network path between tenant namespaces
-- Linkerd service mesh enforces mTLS within the tenant namespace
-- No shared load balancer across tenants — each tenant has a dedicated ingress
-- Tenant-specific subdomain routing: `[tenant-id].app.example.com` or customer-controlled domain
-
-### Event Stream Isolation
-
-- Separate Redpanda namespace (or cluster) per tenant — no shared topics
-- Topic names include tenant prefix: `[tenant-id].[bounded-context].[event-name]`
-- Consumer groups are tenant-scoped: `[tenant-id].[service].[consumer-group]`
-
----
-
-## Tenant Provisioning
-
-New tenant provisioning is automated via Infrastructure as Code (OpenTofu):
-
-```
-Tenant onboarding request
-        ↓
-OpenTofu module: create-tenant
-  1. Create Kubernetes namespace: tenant-[id]
-  2. Apply Helm chart: all services with tenant-specific values.yaml
-  3. Create PostgreSQL instance: run migrations
-  4. Create Redpanda namespace: create topics
-  5. Create service accounts and credentials (stored in secrets manager)
-  6. Configure Linkerd policies for namespace
-  7. Create ingress with tenant subdomain
-  8. Register tenant in tenant registry service
-        ↓
-Health check: confirm all services ready
-        ↓
-Notify: tenant ready for onboarding
-```
-
----
-
-## Control Plane vs Data Plane
-
-Physical multi-tenancy requires a separation between the control plane (manages tenants) and the data plane (processes tenant data):
-
-| Plane | Responsibility | Isolation |
+| Model | One-line description | Primary criterion it wins on |
 |---|---|---|
-| **Control Plane** | Tenant provisioning, billing, auth federation, global config | Shared — this is the operator's infrastructure |
-| **Data Plane** | All tenant data processing, storage, event streaming | Physically isolated per tenant |
+| **Shared-everything** | All tenants share infra, database, and app instances; isolation is a `tenant_id` discriminator column on every table, ideally backed by Row-Level Security. | Lowest cost per tenant; acceptable only when data is non-sensitive and no framework mandates separation. |
+| **Shared-schema-per-tenant** | One database instance, a separate schema per tenant; the app routes each connection to the tenant's schema. | Middle ground — cheaper than physical, stronger accidental-query isolation than a shared column, but a shared DB process. |
+| **Physical isolation (stamp)** | A dedicated, complete per-tenant instance of the platform: own cluster/namespace, own database, own broker, own service instances. | Smallest blast radius; the only model that satisfies SOC 2 physical-isolation controls and data-residency requirements. |
 
-The Control Plane never has access to tenant data. It only manages metadata: which tenants exist, their configuration, their subscription status. The data plane is entirely within the tenant's infrastructure boundary.
+**This repo's default is physical isolation (the stamp model).** The first product (Data Estate Mapping & Compliance Intelligence) processes customers' most sensitive data under a SOC 2 physical-isolation commitment, so no tenant data may be commingled even at the infrastructure level. But **teach the decision, not the default** — a lower-sensitivity product with hundreds of small tenants and a cost ceiling may correctly choose shared-schema, and the decision table in `references/tenancy-models.md` is how you defend that choice with NFR and compliance evidence, not house style.
 
----
-
-## Fleet Operations
-
-Infrastructure-per-tenant turns one deployment into a fleet. The design must state how the fleet is operated, or the isolation model collapses under its own weight:
-
-- **Single source of desired state.** Every tenant deployment is rendered from the same Helm Chart and OpenTofu Module versions, differing only in a per-tenant values file. Hand-edited tenant environments are configuration drift — detect drift with GitOps reconciliation and treat it as an incident, not a customisation channel.
-- **Version skew is bounded.** Upgrades roll out in waves: one designated canary tenant (an internal or consenting tenant) → small wave → fleet. The tenant registry records each tenant's deployed version; the maximum supported skew (e.g. N and N−1) is declared, because event schemas and API contracts must stay compatible across the skew window.
-- **Per-tenant rollback.** A failed upgrade rolls back one tenant without touching the rest of the fleet — this is a benefit of the model; preserve it by keeping migrations backward-compatible within the skew window.
-- **Cost attribution is built in.** Each tenant namespace/account is tagged for cost reporting from day one; physical isolation makes per-tenant cost visible — use it to price and to spot anomalies.
-- **Tenant deprovisioning is designed up front.** Offboarding = destroy the tenant's infrastructure, verify backups are expired or handed over per contract, and produce a destruction attestation. A model that can only create tenants fails its first churn event and its first GDPR erasure request.
+Full decision table — isolation strength, blast radius, cost curve, operational complexity, compliance fit (SOC 2 / data residency), and noisy-neighbor behaviour for each model, with Kleppmann's partitioning framing and Ford's *Hard Parts* granularity-disintegrator argument for why security and fault-tolerance forces push toward the stamp: **`references/tenancy-models.md`**.
 
 ---
 
-## Tenant-Aware API Design
+## The Cross-Layer Consistency Principle
 
-For physical multi-tenancy with dedicated deployments, the tenant context is resolved at the routing layer, not the application layer:
+**The isolation model must be enforced at every layer — infrastructure, database, event/broker, and API. A single leaky layer breaks the guarantee for the whole system.**
 
-```
-[tenant-id].api.example.com → Ingress → correct tenant's services
-```
+Physical deployments with a shared "reporting" database is isolation theatre: the strongest boundary is only as strong as its weakest side channel. Choosing the stamp model at the infrastructure layer but running one shared Redpanda cluster "just for efficiency" reintroduces the exact cross-tenant path you paid to remove. The model is a property of the whole system, not of any one tier.
 
-The services themselves do not need to resolve "which tenant is this?" — the routing guarantees they are always talking to their own tenant's infrastructure.
+| Layer | Enforcement in the stamp model | The leaky-layer failure mode |
+|---|---|---|
+| **Infrastructure** | Namespace or cluster per tenant; a default-deny NetworkPolicy so no network path exists between tenants. | Shared ingress or a flat network lets one tenant's pod reach another's. |
+| **Database** | Separate PostgreSQL instance per tenant; separate credentials and connection pool; the connection is routed by tenant, never a shared pool filtered by `tenant_id`. | A shared instance means one DB-level breach or one missing `WHERE` clause exposes every tenant. |
+| **Event / Broker** | Dedicated Redpanda namespace or cluster per tenant; tenant context travels on every event for audit, never as the isolation mechanism. | Tenant-prefixed topics on one shared cluster: one ACL misconfiguration or compromised consumer crosses the boundary. |
+| **API** | Tenant resolved from the authenticated request context (routing + JWT claim), **never** from a client-supplied parameter; a tenant-scoping middleware rejects any mismatch. | Trusting a `?tenant=` query param or request-body field is a direct cross-tenant read primitive. |
 
-The JWT still carries tenant context for audit purposes. Services validate that the JWT `tenant_id` claim matches the expected tenant (a defence-in-depth check).
+Per-layer enforcement rules, the exact tenant-resolution rule, the connection-routing mechanism, `chi` middleware and `pgx` examples, and the specific leaky-layer failure mode for each layer: **`references/enforcement-layers.md`**.
+
+---
+
+## Provisioning and the Stamp Model
+
+For physical isolation, "add a tenant" means "stamp a new complete instance of the platform." A tenant is provisioned by rendering the same versioned OpenTofu Module and Helm Chart against a per-tenant values file, wired up under a per-tenant GitOps App-of-Apps root — never by hand-editing a live environment. **Provisioning is code, not a runbook**, so it is idempotent, versioned, and auditable; a model that can only *create* tenants fails its first churn event and its first GDPR erasure request, so the lifecycle (provision → suspend → deprovision → data export) is designed up front.
+
+Key defaults that live in the body: one GitOps agent per tenant (so a reconciliation fault has a one-tenant blast radius); one canary tenant then waves for fleet upgrades (never big-bang); bounded version skew (N and N−1) because event schemas must stay compatible across the skew window; and a Control Plane that manages tenants but **never reads tenant data** (a Delegate-pattern boundary).
+
+The full stamp anatomy, the step-by-step provisioning flow, the tenant lifecycle state machine, the one-agent-per-tenant blast-radius argument, drift/upgrade-wave fleet operations, and the ties to `opentofu-module`, `gitops-workflow`, and `environment-config`: **`references/provisioning-and-stamps.md`**.
 
 ---
 
@@ -200,13 +80,13 @@ The JWT still carries tenant context for audit purposes. Services validate that 
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Isolation level documented | Isolation model (physical/schema/shared) is explicitly stated with justification | Isolation assumed without documentation |
-| No cross-tenant network paths | Architecture diagram shows no network path between tenant namespaces | Shared load balancers, shared databases, or shared message broker topics |
-| Tenant provisioning automated | IaC module defined for tenant provisioning | Manual provisioning steps |
-| Control/data plane separated | Control plane cannot access tenant data | Control plane has read access to tenant databases |
-| Encryption per tenant | Separate encryption keys per tenant documented | Shared encryption keys |
-| Tenant ID in events and logs | All events and audit logs carry `tenant_id` | Events or logs with no tenant attribution |
-| Fleet operations defined | Upgrade waves, drift detection, and deprovisioning are designed | Per-tenant deployments with no fleet upgrade or offboarding strategy |
+| Isolation model documented | Model stated with NFR/compliance justification, not assumed | Isolation implied without a decision record |
+| Model enforced at every layer | Infra, DB, event, and API all enforce the same model | Any one layer leaks (shared broker, shared reporting DB, client-supplied tenant id) |
+| No cross-tenant network path | Default-deny NetworkPolicy; per-tenant ingress | Shared load balancer or flat network across tenants |
+| Tenant resolved server-side | Tenant from auth/routing context; middleware rejects mismatch | Tenant read from a client-supplied parameter |
+| Provisioning automated | OpenTofu Module + Helm release, idempotent and versioned | Manual provisioning steps |
+| Lifecycle designed | Provision, suspend, deprovision, and data export all defined | Create-only tenancy with no offboarding or erasure path |
+| Control/data plane separated | Control Plane cannot read tenant data | Operator tooling can query tenant databases |
 
 ---
 
@@ -214,13 +94,13 @@ The JWT still carries tenant context for audit purposes. Services validate that 
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **Isolation theatre** — physical deployments but a shared "reporting" database aggregating tenant data | The strongest isolation is only as strong as the weakest side channel; one shared store voids the model | Cross-tenant analytics happen on anonymised, contractually-permitted metadata in the Control Plane, never raw tenant data |
-| **Control Plane with tenant-data reach** — operator tooling that can query tenant databases "for support" | A single compromised operator credential exposes every tenant; contradicts the compliance story sold to customers | Support access is per-tenant, time-boxed, customer-approved, and fully audited (break-glass procedure) |
-| **`tenant_id` filtering as the isolation model** — logical filtering presented as multi-tenancy for sensitive data | One missing `WHERE` clause is a cross-tenant breach; app-level discipline is not an isolation boundary | For sensitive-data products, isolation is enforced by infrastructure (Model 3), with `tenant_id` kept for audit only |
-| **Snowflake tenants** — per-tenant manual tweaks accumulating in production | Every tenant becomes a unique deployment nobody can upgrade confidently; the fleet fragments | All variation lives in the per-tenant values file, rendered from shared chart/module versions; drift is reconciled away |
-| **Big-bang fleet upgrades** — deploying a new version to all tenants simultaneously | A bad release becomes an every-customer incident; the blast-radius benefit of isolation is thrown away | Canary tenant, then waves; per-tenant rollback; bounded version skew |
-| **Shared broker "just for efficiency"** — one Redpanda cluster with tenant-prefixed topics for a physical-isolation product | Broker-level bugs, misconfigured ACLs, or a compromised consumer cross the tenant boundary | Broker isolation matches the declared model: dedicated namespace or cluster per tenant |
-| **Provisioning as a runbook** — tenant creation documented as manual steps | Manual steps drift, get skipped, and cannot be audited; onboarding time grows with the fleet | Provisioning and deprovisioning are OpenTofu Modules invoked by the Control Plane, idempotent and versioned |
+| **Isolation theatre** — physical stamps but a shared reporting database aggregating tenant data | One shared store voids the model; the weakest side channel defines the boundary | Cross-tenant analytics use anonymised, contractually-permitted metadata in the Control Plane, never raw tenant data |
+| **`tenant_id` filtering sold as isolation for sensitive data** | One missing `WHERE` clause is a cross-tenant breach; app discipline is not a boundary | For sensitive data, enforce isolation in infrastructure; keep `tenant_id` for audit only |
+| **Client-supplied tenant identity** | A `?tenant=` param the server trusts is a direct cross-tenant read primitive | Resolve tenant from routing + JWT; middleware rejects any claim/route mismatch |
+| **Shared broker "just for efficiency"** for a physical-isolation product | Broker bugs or a bad ACL cross the tenant boundary | Dedicated Redpanda namespace or cluster per tenant, matching the declared model |
+| **Snowflake tenants** — per-tenant manual production tweaks | The fleet fragments; nobody can upgrade confidently | All variation lives in the per-tenant values file, rendered from shared chart/module versions |
+| **Big-bang fleet upgrades** | A bad release becomes an every-customer incident | Canary tenant → waves; per-tenant rollback; bounded version skew |
+| **Provisioning as a runbook** | Manual steps drift, get skipped, cannot be audited | Provisioning and deprovisioning are OpenTofu Modules invoked by the Control Plane |
 
 ---
 
@@ -230,7 +110,7 @@ The JWT still carries tenant context for audit purposes. Services validate that 
 ---
 name: multi-tenancy-design
 product: [product name]
-tenancy-model: [physical | schema | shared]
+tenancy-model: [physical | shared-schema | shared-everything]
 version: 1.0.0
 phase: design
 created: [date]
@@ -239,24 +119,28 @@ owner: enterprise-architect
 
 # Multi-Tenancy Design
 
-## Tenancy Model
-[Model selected and justification — reference NFR IDs that drove the decision]
+## Isolation Model
+[Model selected and justification — reference the NFR IDs and compliance
+framework controls that drove the decision]
 
 ## Deployment Topology
-[ASCII diagram showing per-tenant isolation]
+[Diagram showing per-tenant isolation and the absence of cross-tenant paths]
 
 ## Isolation Enforcement
 | Layer | Mechanism | Configuration location |
 |---|---|---|
 
 ## Tenant Provisioning
-[Step-by-step provisioning flow with IaC references]
+[Provisioning flow with OpenTofu Module / Helm / GitOps references]
+
+## Tenant Lifecycle
+[Provision, suspend, deprovision, data-export states]
 
 ## Control Plane vs Data Plane Boundary
-[What the control plane can and cannot access]
+[What the Control Plane can and cannot access]
 
 ## Tenant Context Propagation
-[How tenant_id flows through JWT, events, logs, and audit records]
+[How tenant identity flows through routing, JWT, events, logs, audit]
 
 ## Related ADRs
 [ADR IDs for decisions made during multi-tenancy design]
