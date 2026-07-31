@@ -1,0 +1,57 @@
+# Infrastructure Request — Golden Path Template
+#
+# Fill in this file, commit it to infra-requests/<your-service>.yaml,
+# and open a PR to the environment repo. You do NOT need to write any
+# OpenTofu HCL. The platform's CI automation will:
+#   1. Validate this file against the InfrastructureRequest schema.
+#   2. Generate the corresponding OpenTofu module call.
+#   3. Run an OPA-gated plan and post it to this PR for platform review.
+#   4. On merge, apply the plan and return the Vault credential path.
+#
+# Questions? Ask in #platform-eng-help — do not write HCL yourself.
+#
+# DX SLO: provisioning completes within 5 min (dev), 15 min (staging),
+#         30 min (production) of PR merge.
+
+---
+kind: InfrastructureRequest
+
+# service: The name of YOUR service (not the infrastructure resource).
+#   Must match the Kubernetes service naming convention: lowercase, hyphens only.
+#   Example: "document-ingestion", "tenant-api", "audit-log-consumer"
+service: <your-service-name>
+
+# resource: The type of infrastructure to provision.
+#   Allowed values: postgresql | redpanda | object-storage
+#   One request = one resource. Open separate PRs for multiple resources.
+resource: postgresql
+
+config:
+  # name: A descriptive name for this resource instance.
+  #   Lowercase alphanumeric + hyphens, 3–32 chars.
+  #   Convention: <service>-<purpose>  e.g. "tenant-api-main", "audit-log-events"
+  name: <resource-name>
+
+  # size: Capacity tier. The platform maps this to machine class — you do not pick machines.
+  #   small  — development, low-traffic staging (2 vCPU / 7.5 GB)
+  #   medium — production single-tenant, standard load (4 vCPU / 15 GB)
+  #   large  — production high-throughput, data-intensive workloads (8 vCPU / 30 GB)
+  #   When in doubt, start with "small" for dev and "medium" for production.
+  #   Resizing later requires a separate InfrastructureRequest PR.
+  size: small | medium | large
+
+  # environment: Which environment this resource belongs to.
+  #   dev        — ephemeral or long-lived development; lowest cost; no backup SLA
+  #   staging    — pre-production; mirrors production settings; 7-day backup retention
+  #   production — production; full backup, encryption, monitoring; 30-day retention
+  environment: dev | staging | production
+
+  # tenant: The tenant whose isolated data plane this resource lives in.
+  #   Must match an existing tenant directory in deploy/tenants/.
+  #   Contact #platform-eng-help if you need a new tenant provisioned first.
+  tenant: <tenant-id>
+
+# owner: GitHub team or individual login responsible for this resource.
+#   Used for tagging and for routing Vault access grants.
+#   Format: @org/team-name or @github-username
+owner: <@team-or-engineer>
