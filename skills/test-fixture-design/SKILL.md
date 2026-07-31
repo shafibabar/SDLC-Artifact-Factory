@@ -1,17 +1,26 @@
 ---
 name: test-fixture-design
 description: >
-  Teaches how to design hermetic test fixtures and data — the builder pattern for
-  readable test data, deterministic seeding, per-test setup and teardown that
-  prevents test pollution, golden files for complex outputs, the t.Cleanup pattern,
-  parallel-safe data isolation (unique tenants/ids per test), and keeping fixtures
-  DRY without coupling tests. Hermetic fixtures are what make integration and e2e
-  tests reliable. Used by the test-strategist during Implement.
-version: 1.1.0
+  Used by the test-strategist during Implement to design hermetic test fixtures
+  and test data for Go services. Covers the Test Data Builder pattern (fluent
+  builder with sensible defaults, override only what the test cares about — the
+  foundation go-unit-test and go-integration-test assume when they mention
+  fixtures), the Object Mother pattern (named pre-configured objects for
+  recurring test scenarios, distinct from the fluent builder), the hermetic
+  fixture principle (each test creates, owns, and cleans exactly its data),
+  t.Cleanup for guaranteed teardown regardless of pass or fail, deterministic
+  data (fixed clock, explicit IDs, seeded randomness), golden files for complex
+  outputs, parallel-safe isolation via unique tenant IDs or transaction rollback
+  (cross-references go-integration-test's test-isolation-standard.md for the
+  rollback-vs-tenant tradeoff), and the unit-vs-integration fixture strategy
+  (inline struct literals for unit-layer tests, builders and t.Cleanup helpers
+  for integration and e2e layers). Full Go code examples and the Object Mother
+  pattern catalogue: references/fixture-patterns-catalogue.md.
+version: 2.0.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
-tags: [implement, go, fixtures, test-data, hermetic, builder, seeding, cleanup]
+tags: [implement, go, fixtures, test-data, hermetic, builder, object-mother, test-data-builder, seeding, cleanup, testcontainers]
 related: [go-unit-test, go-integration-test, go-e2e-test, mock-generation]
 ---
 
@@ -19,127 +28,155 @@ related: [go-unit-test, go-integration-test, go-e2e-test, mock-generation]
 
 ## Purpose
 
-Most test flakiness traces back to data: a test that depends on data another test created, state left behind from a previous run, or non-deterministic values. Hermetic fixtures eliminate this — every test sets up exactly the data it needs, owns it exclusively, and cleans up after itself, so tests are independent, repeatable, and safe to run in parallel and in any order.
+Most test flakiness traces back to data: a test that depends on data another
+test created, state left behind from a previous run, or non-deterministic
+values. Hermetic fixtures eliminate this — every test sets up exactly the data
+it needs, owns it exclusively, and cleans up after itself, so tests are
+independent, repeatable, and safe to run in parallel and in any order.
 
-This skill underpins `go-unit-test` (in-memory fixtures), `go-integration-test`, and `go-e2e-test` (real-data seeding). Reliable higher-layer tests are impossible without disciplined fixtures.
+This skill underpins `go-unit-test` (inline fixtures), `go-integration-test`
+(real-data seeding with Testcontainers), and `go-e2e-test` (ephemeral
+environment seeding). Reliable higher-layer tests are impossible without
+disciplined fixtures.
 
 ---
 
 ## Hermetic Principle
 
 A hermetic test:
-1. **Creates** the state it needs (no reliance on pre-existing data).
-2. **Owns** that state exclusively (no sharing with other tests).
-3. **Cleans up** afterward (no residue for the next test).
+1. **Creates** the state it needs — no reliance on pre-existing or ambient data.
+2. **Owns** that state exclusively — no sharing with other tests.
+3. **Cleans up** afterward — no residue for the next test or the next run.
 
-The result: the test passes or fails based only on the code under test — never on execution order, leftover data, or a neighbour's side effects. Order-independence is the litmus test: `go test -shuffle=on` must stay green.
+The order-independence litmus test: `go test -shuffle=on` must stay green.
+A test that passes in isolation but fails in sequence has a hermetic violation.
 
 ---
 
-## The Builder Pattern for Test Data
+## Unit vs. Integration Fixture Strategy
 
-Test data should be readable and express only what matters to the test. The builder pattern provides sensible defaults and lets each test override just the relevant field — so the test's intent is obvious and a new field doesn't break every fixture.
+The right fixture shape depends on the test layer:
 
-```go
-// internal/test/builders/dataasset.go
-type DataAssetBuilder struct{ a assetFields }
+| Layer | Fixture shape | Pattern |
+|---|---|---|
+| Unit (`go-unit-test`) | Inline struct literals, one per table row | No builders needed — small, readable, zero shared state |
+| Integration/E2E (`go-integration-test`, `go-e2e-test`) | Builders + `t.Cleanup` helpers | Test Data Builder or Object Mother + `freshTenant` for parallel safety |
 
-func NewDataAsset() *DataAssetBuilder {
-    return &DataAssetBuilder{a: assetFields{           // sensible defaults
-        id: uuid.New(), tenantID: uuid.New(),
-        sensitivity: domain.SensitivityUnclassified, version: 1,
-    }}
-}
-func (b *DataAssetBuilder) WithTenant(id uuid.UUID) *DataAssetBuilder { b.a.tenantID = id; return b }
-func (b *DataAssetBuilder) Classified(l domain.SensitivityLevel) *DataAssetBuilder { b.a.sensitivity = l; return b }
-func (b *DataAssetBuilder) Build() *domain.DataAsset { return domain.Reconstitute(b.a.id, b.a.tenantID, b.a.sourceID, b.a.sensitivity, b.a.version) }
+Unit fixtures are deliberately small and inline — see `go-unit-test`'s
+assertion-and-fixture-standard for the unit-layer rule. Builders and `t.Cleanup`
+helpers belong to the integration and e2e layers, where setting up a real
+database record (Testcontainers) requires more structure.
 
-// In a test — only the relevant detail is stated:
-asset := NewDataAsset().WithTenant(tenantID).Classified(domain.SensitivityRestricted).Build()
-```
+---
 
-Defaults absorb irrelevant detail; overrides spotlight what the test is actually about.
+## Test Data Builder
+
+The builder pattern makes test data readable by expressing only what the test
+cares about. A builder provides sensible defaults for every field so a test
+that only cares about one field only has to state that one field. All other
+fields absorb into the builder's defaults, invisible to the reader.
+
+**Use when:** the same type is constructed across many tests with different
+fields overridden each time, or when a type has many fields and you want tests
+to state only what matters to them.
+
+**Maintainability rationale** (from Khorikov's four pillars): when a new field
+is added to a domain type, it breaks exactly one place — the builder's default
+— rather than every test that constructs that type inline. This is the
+maintainability pillar applied to test data.
+
+Full Go implementation: `references/fixture-patterns-catalogue.md#test-data-builder`.
+
+---
+
+## Object Mother
+
+The Object Mother pattern creates named, pre-configured complete objects for
+recurring test scenarios. Where a builder provides a fluent API for targeted
+overrides, an Object Mother provides factory functions that return a complete,
+named fixture without requiring the caller to specify any fields.
+
+**Use when:** the same complete configuration recurs across many tests
+(for example, `MakeClassifiedAsset()` or `MakeRestrictedTenant()`) and
+the specifics of that configuration are not the subject of any individual test.
+
+**Object Mother vs. builder:** builders are for one-off tests that need a
+specific field override; Object Mothers are for recurring configurations that
+multiple tests share. A codebase may use both — builders for fine-grained
+control, Object Mothers for named, stable reference configurations.
+
+Full Go implementation: `references/fixture-patterns-catalogue.md#object-mother`.
 
 ---
 
 ## Deterministic Data
 
-Tests must be reproducible, so randomness is controlled:
+Tests must be reproducible, so randomness and time are controlled:
 
-- **Seed PRNGs** with a fixed value when randomness is needed, or use fixed values.
-- **Inject time** — never `time.Now()` in the code under test; pass a fixed clock (the domain takes `now time.Time`). Fixtures use a fixed `testTime`.
-- **Generate ids explicitly** — a builder assigns a known UUID, or a fixed one when the test asserts on it.
+- **Inject time** — never `time.Now()` in the code under test; accept a
+  `now time.Time` parameter. Fixtures use a fixed `testTime`.
+- **Generate IDs explicitly** — a builder assigns a known UUID, or a fixed
+  one when the test asserts on it.
+- **Seed PRNGs** with a fixed value if randomness is required at all.
 
-```go
-var testTime = time.Date(2026, 1, 15, 12, 0, 0, 0, time.UTC) // fixed clock for assertions
-```
-
-A test that sometimes fails because of a random value or the wall clock is a flaky test by construction.
+Full Go examples for fixed clock and explicit ID usage:
+`references/fixture-patterns-catalogue.md#deterministic-data`.
 
 ---
 
 ## Setup and Teardown with t.Cleanup
 
-`t.Cleanup` registers teardown next to setup, runs in reverse order, and fires even if the test fails — the cleanest way to guarantee no residue.
+`t.Cleanup` registers teardown next to setup, runs in reverse order, and fires
+even if the test fails — the cleanest way to guarantee no residue.
 
-```go
-func setupTestDB(t *testing.T) *pgxpool.Pool {
-    t.Helper()
-    pool := connectTestPool(t)
-    t.Cleanup(func() { truncateAll(pool); pool.Close() }) // always runs, even on failure
-    return pool
-}
-```
+Prefer `t.Cleanup` over `defer` in helpers: `defer` in a helper fires when the
+*helper* returns (while the test still needs the resource), not when the test
+ends. Prefer `t.Cleanup` over `TestMain` teardown (too coarse).
 
-Prefer `t.Cleanup` over `defer` in helpers (defer in a helper fires when the *helper* returns, not the test) and over `TestMain` teardown (too coarse). Setup and its matching cleanup live together, so neither is forgotten.
+Full Go code for `setupTestDB` and `freshTenant` with `t.Cleanup`:
+`references/fixture-patterns-catalogue.md#tcleanup-teardown`.
 
 ---
 
 ## Parallel-Safe Isolation
 
-Parallel tests sharing a database must not collide. Isolate by **scoping each test to a unique tenant** (the physical multi-tenancy model makes this natural) — each test creates its own `tenant_id`, so its data never intersects another's.
+For integration tests sharing a real database, isolate each test by scoping it
+to a unique `tenant_id` (the `freshTenant` helper). Each test creates its own
+tenant, so its data never intersects another test's.
 
-```go
-func freshTenant(t *testing.T) uuid.UUID {
-    id := uuid.New()                              // unique per test
-    t.Cleanup(func() { deleteTenantData(id) })     // scoped cleanup
-    return id
-}
-```
+Where stronger isolation is needed (for example, testing commit behavior itself
+where a wrapping transaction would hide the effect), use transaction rollback
+per test instead. See `go-integration-test`'s `test-isolation-standard.md` for
+the rollback-vs-tenant tradeoff and when each applies.
 
-This lets integration tests run in parallel against one shared database without a transaction-per-test or order dependence. (Where stronger isolation is needed, run each test in a transaction rolled back at cleanup.)
+Full Go code for `freshTenant` and parallel-safety:
+`references/fixture-patterns-catalogue.md#parallel-safe-isolation`.
 
 ---
 
 ## Golden Files for Complex Output
 
-When asserting on a large, stable output (a generated report, a serialized event, an API response body), compare against a **golden file** rather than a giant inline literal. An `-update` flag regenerates them on intentional change.
+When asserting on a large, stable output (a generated report, a serialized
+event, an API response body), compare against a **golden file** rather than a
+giant inline expected literal. An `-update` flag regenerates them on intentional
+change.
 
-```go
-var update = flag.Bool("update", false, "rewrite golden files")
+Two disciplines keep golden files honest: **normalize before comparing** — strip
+non-deterministic fields (timestamps, generated IDs) before writing or asserting;
+and **never run `-update` to silence a failure you don't understand** — updating
+a golden file is approving a behavior change, and the diff must be read.
 
-func assertGolden(t *testing.T, name string, got []byte) {
-    t.Helper()
-    path := filepath.Join("testdata", name+".golden")
-    if *update {
-        require.NoError(t, os.WriteFile(path, got, 0o644))  // go test -update on intended changes
-        return
-    }
-    want, err := os.ReadFile(path)
-    require.NoError(t, err, "missing golden file — run: go test -update")
-    require.Equal(t, string(want), string(got))
-}
-```
-
-Golden files live in `testdata/` (ignored by the Go toolchain) and are reviewed in PRs — a diff in a golden file is a visible, reviewable behaviour change.
-
-Two disciplines keep golden files honest: **normalize before comparing** — strip or fix nondeterministic fields (timestamps, generated ids) before writing/asserting, or the files churn on every run; and **never run `-update` to silence a failure you don't understand** — regenerating a golden file *is* approving a behaviour change, so the diff must be read like a code review.
+Full Go code for `assertGolden` and the `testdata/` convention:
+`references/fixture-patterns-catalogue.md#golden-files`.
 
 ---
 
 ## DRY Without Coupling
 
-Fixtures are shared (builders, helpers) but tests stay independent: a shared *builder* is good (reuse construction); a shared *mutable fixture instance* across tests is bad (couples them). Share the means of creating data, never a live data object two tests both touch.
+Share the *means* of creating data (builders, Object Mothers, helpers) — never
+a live data object two tests both touch. A shared builder is good (reuse of
+construction); a shared mutable fixture instance across tests is bad (couples
+their outcomes).
 
 ---
 
@@ -147,25 +184,38 @@ Fixtures are shared (builders, helpers) but tests stay independent: a shared *bu
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Hermetic | Each test creates/owns/cleans its data | Tests depending on shared/leftover data |
+| Hermetic | Each test creates, owns, and cleans its data | Tests depending on shared or leftover data |
 | Order-independent | `go test -shuffle=on` stays green | Failures when test order changes |
-| Builders | Readable builders with defaults + overrides | Giant inline literals; brittle fixtures |
-| Deterministic | Fixed clock/ids/seed | Wall-clock or random values in assertions |
+| Layer-appropriate fixture | Inline literals for unit; builders + t.Cleanup for integration/e2e | Builder pattern forced onto unit-layer table-driven tests |
+| Builders | Readable builders with defaults + targeted overrides | Giant inline literals; brittle fixtures |
+| Object Mother where appropriate | Named pre-configured objects for recurring configurations | Builder called with 20 identical arguments across many tests |
+| Deterministic | Fixed clock, explicit IDs, seeded PRNG | Wall-clock or random values in assertions |
 | Cleanup guaranteed | `t.Cleanup` fires on success and failure | Leaked data; teardown skipped on failure |
-| Parallel-safe | Per-test tenant/tx isolation | Parallel tests colliding on shared rows |
+| Parallel-safe | Per-test tenant or transaction-rollback isolation | Parallel tests colliding on shared rows |
 | Golden for big output | `testdata/*.golden` + `-update` | Massive inline expected blobs |
 
 ---
 
 ## Anti-Patterns
 
-- **Shared seed data all tests rely on** — "the test database has tenant 1 with 5 assets" couples every test to ambient state; one test mutates it and three others fail mysteriously.
-- **A mutable fixture object passed between tests** — share builders (construction), never live instances (state).
-- **`time.Now()` or unseeded randomness in assertions** — flaky by construction; fix the clock and the ids.
-- **Teardown via `defer` inside a helper** — fires when the helper returns, while the test still needs the resource; `t.Cleanup` scopes teardown to the test.
-- **Cleanup only on the happy path** — teardown guarded by "if the test passed" leaks residue exactly when you are debugging; `t.Cleanup` runs regardless.
-- **Golden files updated reflexively** — `-update` as a "make CI green" button converts a behaviour gate into a rubber stamp.
-- **Fixture builders that mirror every production field** — a Test Fixture states what the test cares about; a 20-argument builder call is an inline literal wearing a costume.
+- **Shared seed data all tests rely on** — "the test database has tenant 1 with
+  5 assets" couples every test to ambient state; one mutation breaks three others
+  mysteriously.
+- **A mutable fixture object passed between tests** — share builders (construction),
+  never live instances (state).
+- **`time.Now()` or unseeded randomness in assertions** — flaky by construction;
+  fix the clock and the IDs.
+- **`defer` inside a helper** — fires when the helper returns, while the test
+  still needs the resource; `t.Cleanup` scopes teardown to the test.
+- **Cleanup only on the happy path** — teardown guarded by "if the test passed"
+  leaks residue exactly when you are debugging; `t.Cleanup` runs regardless.
+- **Golden files updated reflexively** — `-update` as a "make CI green" button
+  converts a behavior gate into a rubber stamp.
+- **Builder that mirrors every production field** — a 20-argument builder call
+  is an inline literal wearing a costume; a builder's value is that tests state
+  only what they care about.
+- **Unit-layer test using a builder when an inline literal suffices** — adds
+  indirection to a small, self-contained table-driven test that doesn't need it.
 
 ---
 
@@ -174,7 +224,11 @@ Fixtures are shared (builders, helpers) but tests stay independent: a shared *bu
 Produces fixtures, builders, and test data:
 
 ```
-internal/test/builders/*.go            (data builders)
-internal/test/fixtures.go               (setup/cleanup helpers: setupTestDB, freshTenant)
+internal/test/builders/*.go            (Test Data Builder implementations)
+internal/test/mothers/*.go             (Object Mother factory functions)
+internal/test/fixtures.go              (setup/cleanup helpers: setupTestDB, freshTenant)
 **/testdata/*.golden                    (golden files for complex outputs)
 ```
+
+Full Go code examples for every pattern above:
+`references/fixture-patterns-catalogue.md`
