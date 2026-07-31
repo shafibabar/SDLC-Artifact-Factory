@@ -8,11 +8,12 @@ description: >
   probe/resource/securityContext blocks, chart testing with helm lint and a
   kind install in CI, and chart versioning with image digest pinning. Used by
   the platform-engineer during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
-tags: [deploy, helm, chart, values-layering, kind, templating, versioning]
+tags: [deploy, helm, chart, values-layering, kind, templating, versioning, workload-type, init-container]
+related: [kubernetes-workload-patterns, kubernetes-manifest, cd-pipeline, multi-tenancy-design]
 ---
 
 # Helm Chart
@@ -34,7 +35,7 @@ charts/estate-scanner/
 ├── values.schema.json          # the contract — install fails on invalid values
 ├── templates/
 │   ├── _helpers.tpl            # names, labels, selector labels — the only place they're defined
-│   ├── deployment.yaml
+│   ├── workload.yaml           # renders Deployment, StatefulSet, DaemonSet, or Rollout
 │   ├── service.yaml
 │   ├── serviceaccount.yaml
 │   ├── networkpolicy.yaml
@@ -52,56 +53,21 @@ Environment and tenant values live **outside** the chart, in the environment rep
 
 Three layers, merged in order (later wins), mirroring the fleet model from `multi-tenancy-design`:
 
-| Layer | Lives in | Contains | Example |
-|---|---|---|---|
-| **Base** (`values.yaml` in chart) | The chart | Safe defaults, every key documented | probe paths, port 8080, 2 replicas |
-| **Per-environment** | `deploy/clusters/<env>/` | What differs by environment | staging resource sizes, log level, OTLP endpoint |
-| **Per-tenant** | `deploy/clusters/tenants/<tenant-id>/` | The *only* place tenants differ | tenant id, ingress host, sizing tier, DB endpoint |
+| Layer | Lives in | Contains |
+|---|---|---|
+| **Base** (`values.yaml` in chart) | The chart | Safe defaults, every key documented |
+| **Per-environment** | `deploy/clusters/<env>/` | What differs by environment (resource sizes, endpoints) |
+| **Per-tenant** | `deploy/clusters/tenants/<tenant-id>/` | The *only* place tenants differ (tenant id, ingress host, DB endpoint) |
 
-```yaml
-# deploy/clusters/tenants/tenant-acme/estate-scanner-values.yaml
-tenant:
-  id: acme                       # traceability: propagated into labels and env
-replicaCount: 3
-ingress:
-  host: acme.app.example.com
-postgres:
-  host: estate-scanner-db.tenant-acme.svc.cluster.local
-```
-
-The rule that keeps forty tenants upgradeable: **all tenant variation is values; chart version is fleet-uniform** (within the declared skew window). A tenant needing a template change is a chart change for everyone, reviewed once — never a forked chart. Secrets appear in **no** layer — the Vault Agent boundary from `cd-pipeline` holds here too.
+The rule that keeps forty tenants upgradeable: **all tenant variation is values; chart version is fleet-uniform** within the declared skew window. Secrets appear in **no** layer — the Vault Agent boundary from `cd-pipeline` holds here too.
 
 ---
 
 ## The Values Schema Is a Contract
 
-`values.schema.json` makes invalid values a **install-time failure**, not a runtime surprise. Required keys have no defaults precisely so forgetting them fails loudly:
+`values.schema.json` makes invalid values an **install-time failure**, not a runtime surprise. Two enforcement moves are non-negotiable: `image.digest` must match `^sha256:[a-f0-9]{64}$`, and `image.tag` is schema-forbidden (`"not": {}`) — a values file deploying by mutable tag cannot install.
 
-```json
-{
-  "$schema": "https://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "required": ["image", "resources"],
-  "properties": {
-    "image": {
-      "type": "object",
-      "required": ["repository", "digest"],
-      "properties": {
-        "repository": { "type": "string" },
-        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
-        "tag": { "not": {} }
-      }
-    },
-    "replicaCount": { "type": "integer", "minimum": 1 },
-    "resources": {
-      "type": "object",
-      "required": ["requests", "limits"]
-    }
-  }
-}
-```
-
-Note the two enforcement moves: `digest` must match `^sha256:…` (promotion by digest, `ci-pipeline`), and `tag` is *schema-forbidden* (`"not": {}`) — a values file that tries to deploy by mutable tag cannot install.
+Required keys have no defaults precisely so forgetting them fails loudly. See `references/chart-templates.md` for the full annotated schema.
 
 ---
 
@@ -109,58 +75,82 @@ Note the two enforcement moves: `digest` must match `^sha256:…` (promotion by 
 
 Templates render; they do not think:
 
-- **Flow control only** — `if`/`range`/`with` to include or repeat blocks. No computed policy: a template never decides replica counts, derives resource sizes, or infers environment from a name. Decisions live in values, made by humans in reviewed PRs.
+- **Flow control only** — `if`/`range`/`with` to include or repeat blocks. No computed policy: a template never decides replica counts, derives resource sizes, or infers environment from a name.
 - **Helpers own identity** — names, labels, and selector labels are defined once in `_helpers.tpl` and included everywhere. A label typed by hand in a template is a future selector mismatch.
-- **Standard labels on every object**, from the helper:
+- **Standard `app.kubernetes.io/*` labels** on every object, emitted from the helper: `name`, `instance`, `version`, `part-of`, `managed-by`, and (when set) `tenant`.
+- **Required blocks are unconditional.** Probes, resources, and securityContext render in every workload — there is no `if .Values.probes.enabled` escape hatch. Their *contents* come from values; their *presence* is the chart's guarantee.
+
+See `references/chart-templates.md` for the full `_helpers.tpl`, a complete deployment template with all required blocks, and the multi-workload type template.
+
+---
+
+## Workload Type Selection
+
+A chart's workload template renders a specific Kubernetes controller. The workload type is set by `workloadType` in `values.yaml` (default: `Deployment`). The `platform-engineer` sets this value per service; the decision of *which* type to use belongs to `kubernetes-workload-patterns`.
+
+| `workloadType` value | Kubernetes resource | Use when |
+|---|---|---|
+| `Deployment` (default) | `apps/v1 Deployment` | Stateless services — the common case for all microservices |
+| `StatefulSet` | `apps/v1 StatefulSet` | Services with stable storage or network identity (databases, Redpanda brokers) |
+| `DaemonSet` | `apps/v1 DaemonSet` | Node-scoped agents — OTel Collector, Fluent Bit; one pod per node guaranteed |
+| `Rollout` | `argoproj.io/v1alpha1 Rollout` | Progressive-delivery services (canary or blue-green via Argo Rollouts) |
+
+The template uses `if`/`else if` branches to render the correct resource kind:
 
 ```yaml
-{{- define "estate-scanner.labels" -}}
-app.kubernetes.io/name: {{ .Chart.Name }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-app.kubernetes.io/part-of: data-estate-platform
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- if .Values.tenant }}tenant: {{ .Values.tenant.id }}{{ end }}
+{{- if eq .Values.workloadType "StatefulSet" }}
+apiVersion: apps/v1
+kind: StatefulSet
+{{- else if eq .Values.workloadType "DaemonSet" }}
+apiVersion: apps/v1
+kind: DaemonSet
+{{- else if eq .Values.workloadType "Rollout" }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+{{- else }}
+apiVersion: apps/v1
+kind: Deployment
 {{- end }}
 ```
 
-- **Required blocks are unconditional.** Probes, resources, and securityContext render in every Deployment — there is no `if .Values.probes.enabled` escape hatch. Their *contents* come from values (validated by the schema); their *presence* is the chart's guarantee, and `kubernetes-manifest` defines what they must contain.
+`helm-chart` owns the *mechanism* (the template branch and the `workloadType` values key). `kubernetes-workload-patterns` owns the *decision* (which branch to choose for a given service). See `references/chart-templates.md` for the full multi-workload template including `StatefulSet` `volumeClaimTemplates` and `DaemonSet` tolerations.
+
+---
+
+## Init Container Support
+
+Init containers run to completion before any app container starts. The chart supports an optional `initContainers[]` block in `values.yaml`. When populated, it renders under `spec.initContainers` in the pod spec.
 
 ```yaml
-# templates/deployment.yaml (extract — full workload standard in kubernetes-manifest)
-containers:
-  - name: {{ .Chart.Name }}
-    image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
-    securityContext: {{- toYaml .Values.containerSecurityContext | nindent 10 }}
-    resources: {{- toYaml .Values.resources | nindent 10 }}
-    livenessProbe:  { httpGet: { path: /healthz,  port: http } }
-    readinessProbe: { httpGet: { path: /readyz,   port: http } }
-    startupProbe:   { httpGet: { path: /startupz, port: http }, failureThreshold: 30 }
+# values.yaml — empty by default; populate when the service needs per-pod setup
+initContainers: []
 ```
+
+Template rendering (in the pod spec):
+
+```yaml
+{{- if .Values.initContainers }}
+initContainers:
+  {{- toYaml .Values.initContainers | nindent 2 }}
+{{- end }}
+```
+
+Common init container uses: waiting for a database or dependency health endpoint to respond, pulling a secret from Vault into a shared `emptyDir` volume, running schema migrations before the service starts. The decision of *when* an init container is the right mechanism vs. an entrypoint script is in `kubernetes-workload-patterns` (the Init Container pattern from Ibryam & Huß).
+
+See `references/chart-templates.md` for a worked init container values block and the full pod spec template with initContainers placement.
 
 ---
 
 ## Chart Testing — the Platform's Red-Green
 
-Per the agent's TDD row: a chart proves itself by execution before merge. The CI job (part of `ci-pipeline`'s PR gates when `charts/**` changes):
+Per the agent's TDD row: a chart proves itself by execution before merge. The CI job (part of `ci-pipeline`'s PR gates when `charts/**` changes) runs four steps in order:
 
-```yaml
-- run: helm lint charts/estate-scanner --strict
-- run: |
-    helm template charts/estate-scanner -f test/values-ci.yaml \
-      | kubeconform -strict -summary          # schema-valid Kubernetes objects
-- name: Install into kind
-  run: |
-    kind create cluster --wait 120s
-    helm install estate-scanner charts/estate-scanner \
-      -f test/values-ci.yaml --wait --timeout 180s
-    kubectl rollout status deploy/estate-scanner
-- name: Negative test — invalid values must fail
-  run: |
-    ! helm template charts/estate-scanner --set image.tag=latest   # schema rejects tags
-```
+1. `helm lint charts/<service> --strict` — clean lint
+2. `helm template ... | kubeconform -strict` — schema-valid Kubernetes objects
+3. `helm install ... --wait` into `kind` — installs and becomes Ready in a real cluster
+4. Negative test: `! helm template ... --set image.tag=latest` — schema rejects mutable tags
 
-Green means: lints clean, renders valid objects, installs and becomes Ready in a real (kind) cluster, and *rejects* what it must reject. The negative test is the red half — a schema nobody has seen fail is untested.
+Green means all four pass. The negative test is the red half — a schema nobody has seen fail is untested. See `references/chart-templates.md` for the full annotated CI YAML.
 
 ---
 
@@ -172,38 +162,7 @@ Green means: lints clean, renders valid objects, installs and becomes Ready in a
 | `Chart.yaml: appVersion` | The service version the chart defaults to describing | Informational; the *running* version is always the values digest |
 | `values: image.digest` | What actually runs | Every promotion (`cd-pipeline`) |
 
-Chart version and image digest move independently: a probe-timing fix bumps the chart across the fleet without touching digests; a service release moves digests without touching the chart. Both are diffs in Git, both reviewed, both revertable.
-
----
-
-## Worked Example — estate-scanner Chart Skeleton
-
-The estate-scanner service (scans Google Drive/S3 sources, publishes `DocumentDiscovered` events to Redpanda) gets the structure above with these base values:
-
-```yaml
-# charts/estate-scanner/values.yaml
-replicaCount: 2
-image:
-  repository: ghcr.io/acme/data-estate/estate-scanner
-  # digest: — no default; schema-required, supplied per environment by cd-pipeline
-service: { port: 8080 }
-containerSecurityContext:
-  runAsNonRoot: true
-  readOnlyRootFilesystem: true
-  allowPrivilegeEscalation: false
-  capabilities: { drop: ["ALL"] }
-resources:
-  requests: { cpu: 100m, memory: 128Mi }
-  limits:   { memory: 256Mi }
-terminationGracePeriodSeconds: 30      # > the Go server's 25s drain (go-service-skeleton)
-podAnnotations:
-  linkerd.io/inject: enabled           # Service Mesh mTLS (kubernetes-manifest)
-env:
-  configMapName: estate-scanner-env    # per-env config (environment-config)
-autoscaling: { enabled: false }
-```
-
-Per-tenant values add only `tenant.id`, ingress host, replica sizing, and the tenant's PostgreSQL/Redpanda endpoints. The chart installs identically into `tenant-acme` and `tenant-globex` namespaces — physical isolation comes from *where* it installs and which endpoints its values point at, exactly as `multi-tenancy-design` prescribes.
+Chart version and image digest move independently: a probe-timing fix bumps the chart across the fleet without touching digests; a service release moves digests without touching the chart.
 
 ---
 
@@ -211,12 +170,14 @@ Per-tenant values add only `tenant.id`, ingress host, replica sizing, and the te
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| One chart per service | Chart maps 1:1 to a Bounded Context's service | God-chart, or one chart parameterised into two services |
+| One chart per service | Chart maps 1:1 to a Bounded Context's service | God-chart, or one chart shared between services |
 | Schema enforced | `values.schema.json` present; invalid values fail install | Free-form values; typos surface at runtime |
 | Digest-only images | Schema requires digest, forbids tag | Tag-based image references installable |
 | Layering clean | Base/env/tenant layers; tenant diffs are values-only | Env logic in templates, or forked per-tenant charts |
 | Labels via helper | All objects labelled from `_helpers.tpl` | Hand-typed labels; selector drift possible |
-| Required blocks | Probes/resources/securityContext unconditional | Any of them omittable via values |
+| Required blocks | Probes/resources/securityContext unconditional | Any omittable via values |
+| Workload type supported | `workloadType` value selects Deployment/StatefulSet/DaemonSet/Rollout | Chart always renders Deployment regardless of service shape |
+| Init containers optional | `initContainers: []` default; renders when populated | Init container logic hard-coded in Dockerfile entrypoint |
 | Tested by execution | lint + kubeconform + kind install + negative test in CI | Chart merged that has never installed anywhere |
 | Versioned | Chart semver independent of image digest | Chart mutated without a version bump |
 
@@ -224,13 +185,15 @@ Per-tenant values add only `tenant.id`, ingress host, replica sizing, and the te
 
 ## Anti-Patterns
 
-- **The umbrella god-chart** — one chart deploying all services couples every release to every other and makes per-service rollback impossible. Composition happens in the environment repo, not in `dependencies:`.
+- **The umbrella god-chart** — one chart deploying all services couples every release to every other. Composition happens in the environment repo, not in `dependencies:`.
 - **Logic in templates** — `{{ if eq .Release.Namespace "prod" }}replicas: 10{{ end }}` hides a production decision where no reviewer looks. Values decide; templates render.
-- **`--set` as configuration** — flags on an install command live in shell history, not Git; GitOps cannot reconcile what it cannot see. Every value is a file in the environment repo.
+- **`--set` as configuration** — flags on an install command live in shell history, not Git; GitOps cannot reconcile what it cannot see.
 - **Optional securityContext** — a `.Values.securityContext.enabled` toggle exists only to be turned off under deadline. Presence is non-negotiable; only contents are values.
-- **Copy-paste tenant charts** — forking the chart for a tenant "just this once" creates the snowflake fleet `multi-tenancy-design` forbids; that tenant misses every future fix.
+- **Hardcoded `Deployment` when a `DaemonSet` is needed** — deploying an OTel Collector as a `Deployment` with high replica count does not guarantee one-per-node; use `workloadType: DaemonSet`.
+- **Init logic in entrypoint scripts** — shell loops polling for database readiness in the main container's entrypoint couple the app image to infrastructure knowledge; move to `initContainers`.
+- **Copy-paste tenant charts** — forking the chart for a tenant creates the snowflake fleet `multi-tenancy-design` forbids.
 - **`latest`/tag references** — reintroduces mutable deploys the whole digest pipeline exists to prevent; the schema forbids it for a reason.
-- **Untested schema** — a schema with no failing negative test in CI may be silently accepting everything (`additionalProperties`, wrong nesting). Test the red path.
+- **Untested schema** — a schema with no failing negative test in CI may be silently accepting everything. Test the red path.
 
 ---
 
@@ -253,11 +216,12 @@ created: [date]
 charts/[service]/Chart.yaml
 charts/[service]/values.yaml
 charts/[service]/values.schema.json
-charts/[service]/templates/{_helpers.tpl,deployment,service,serviceaccount,networkpolicy,pdb,hpa}.yaml
+charts/[service]/templates/{_helpers.tpl,workload,service,serviceaccount,networkpolicy,pdb,hpa}.yaml
 charts/[service]/test/values-ci.yaml
 
 ## Values Reference
 [Table: key → type → required → layer where typically set → description]
+[Include: workloadType, initContainers]
 
 ## Test Evidence
 [CI run: lint, kubeconform, kind install, negative test — link/status]
