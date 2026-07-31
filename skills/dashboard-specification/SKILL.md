@@ -1,238 +1,143 @@
 ---
 name: dashboard-specification
 description: >
-  Teaches how to write a dashboard's data content specification — per-widget metric
-  definition, aggregation logic, source Read Model, drill-down semantics, and
-  refresh/staleness contract. This is explicitly the DATA half of a dashboard, not
-  the UI: layout, visual design, and component behaviour belong to the ux-architect's
-  `ui-component-spec`, and the React implementation to `react-dashboard-components`.
-  Builds on `analytics-requirements` and hands off to both. Used by the data-engineer
-  during Data.
-version: 1.0.0
+  Teaches the data-engineer to specify a dashboard — per-widget metric definitions
+  (formula, grain, source Read Model), the chart-type selection for each metric
+  question (Knaflic), aggregation and filter semantics, refresh cadence, and the
+  dashboard specification artifact. Distinguishes an exploratory dashboard from an
+  explanatory one. Used during the Data phase when a stakeholder needs an
+  at-a-glance operational or analytics view.
+version: 2.0.0
 phase: data
 owner: data-engineer
 created: 2026-07-20
-tags: [data, analytics, dashboard, metrics, aggregation, read-model, drill-down, handoff]
+related:
+  - analytics-requirements
+  - read-model-design
+  - data-storytelling
+  - metrics-instrumentation-plan
+  - react-dashboard-components
+  - ui-component-spec
+  - data-pipeline-implementation
+tags: [data, analytics, dashboard, visualization, chart-selection, read-model, metrics]
 ---
 
 # Dashboard Specification
 
-## Purpose
+A dashboard specification defines what each widget **says** and **which chart form
+best says it** — the exact metric behind the widget, how it is computed, where it
+comes from, how fresh it is, and the chart type that makes its answer easiest to
+read. It does not define pixel layout, colour palette, typography, or component
+states — those remain the ux-architect's `ui-component-spec` and the frontend's
+`react-dashboard-components`. This skill owns the *data-and-form* contract: the
+number, and the shape that shows it; the downstream roles own styling and placement.
 
-A dashboard specification defines what a dashboard **says** — the exact metric behind each widget, how it is computed, where it comes from, and how fresh it is guaranteed to be. It does not define what the dashboard **looks like**. That distinction is the whole point of this skill: layout, visual hierarchy, component states, and interaction affordances are the ux-architect's `ui-component-spec`; the resulting React implementation over Read Models is the frontend-engineer's `react-dashboard-components`. A dashboard-specification with a grid layout or a colour palette in it has wandered out of scope.
-
-This skill takes the elicited requirements from `analytics-requirements` and turns each one into a precise, buildable widget-level data contract — the thing a data-engineer can implement unambiguously and a ux-architect can lay out without having to guess what the number means.
+It consumes elicited requirements from `analytics-requirements` and turns each into
+a buildable widget-level contract a data-engineer can implement and a ux-architect
+can lay out without guessing what a number means or which chart carries it.
 
 ---
 
-## What Belongs Here vs. What Doesn't
+## Exploratory vs. Explanatory — Decide First
 
-| In scope (this skill) | Out of scope (elsewhere) |
+Knaflic's load-bearing distinction (`research/data-and-analytics/storytelling-with-data-knaflic.md`)
+frames every downstream choice. A **standing dashboard is exploratory-leaning**: the
+user filters and browses on their own schedule, so most widgets monitor rather than
+argue a single point. A widget that exists specifically to **prompt a decision** is
+explanatory and needs an explicit **Intended takeaway** — the on-screen "so what."
+
+| | Exploratory widget | Explanatory widget |
+|---|---|---|
+| Purpose | Monitor / let the user find the story | Make one specific point / prompt a decision |
+| Takeaway | User-derived via filtering | Stated on screen (annotation, target line) |
+| Density | May show several cuts | Curated to the single point |
+
+Do not ship exploratory density (every cut, every filter) where an explanatory point
+is intended, nor bolt an argumentative annotation onto a pure monitoring tile.
+
+---
+
+## Per-Widget Specification — the fields
+
+Every widget carries these fields (full template + worked example in
+`references/dashboard-spec-template.md`; precise definition rules and a repo widget
+set in `references/widget-metric-definitions.md`):
+
+- **Metric definition** — reproducible enough that two engineers get the same number:
+  source Read Model + field(s), every filter (status, sensitivity, tenant scope),
+  grouping, time window (rolling vs fixed), and unit (count / rate / ratio).
+- **Grain** — the one row the metric counts (per DataAsset? per tenant-day snapshot?).
+  Grain confusion is the top defect; state it explicitly.
+- **Formula / aggregation** — SQL against the pre-aggregated Read Model (preferred),
+  or pseudocode when application logic is genuinely required.
+- **Source Read Model** — named Read Model / table + owning Bounded Context +
+  populating pipeline stage/events (traced through `read-model-design` and
+  `data-pipeline-implementation`). Aggregate in the Read Model, never in the browser.
+- **Chart type** — the form that best answers the metric's question (see below).
+- **Filters** — which filters the widget honours and their default state.
+- **Refresh / staleness contract** — source recompute cadence AND client staleness
+  tolerance (two independent numbers), plus whether an "as of" indicator is required.
+- **Empty-state data condition** — the exact query condition that counts as empty,
+  distinct from query error and from "pipeline never ran" (onboarding-empty).
+- **Intended takeaway** — required for explanatory widgets, omitted for monitoring.
+
+---
+
+## Match the Chart to the Question (Knaflic)
+
+The chart type is a **data decision**, not a styling one: pick the form that makes the
+metric's answer easiest to see, before the ux-architect touches colour or layout.
+The core rule — from Knaflic — is *does this chart make the point easy to see*, not
+*does it look impressive*. Quick guide:
+
+| The metric's question is… | Use |
 |---|---|
-| The metric's exact definition and formula | Widget size, position, grid layout (`ui-component-spec`) |
-| Aggregation logic (SQL/pseudocode) | Chart type, colour, typography (`ui-component-spec`, `react-dashboard-components`) |
-| Which Read Model / table the data comes from | The React component and its props (`react-dashboard-components`) |
-| Drill-down semantics — what deeper data a click reveals | Click animation, modal styling |
-| Refresh/staleness contract | Polling implementation detail (frontend concern once the contract is set) |
-| Empty-state **data** condition (when there is genuinely no data) | Empty-state illustration and copy (`ui-component-spec`) |
+| One number that stands alone | Single number / big text |
+| Change over time | Line chart |
+| Categorical comparison | Bar chart (length beats angle/area) |
+| Ranked categories, long labels | Horizontal bar, sorted by value |
+| Precise values, many dimensions | Table |
 
-If a question is "what should this widget contain and when is it correct," it belongs here. If the question is "how should this widget look or animate," redirect to `ui-component-spec`.
-
----
-
-## Per-Widget Specification Format
-
-Every widget on a dashboard gets this structure:
-
-```
-Widget: [name]
-Answers requirement: [reference to the analytics-requirements entry]
-
-Metric definition:
-  [Precise, unambiguous statement of what number(s) this widget shows]
-
-Aggregation logic:
-  [SQL or pseudocode — the exact computation]
-
-Data source:
-  [Read Model / table / event stream, with the Bounded Context it belongs to]
-
-Drill-down:
-  [What a click/expand reveals, and where that data comes from]
-
-Refresh / staleness contract:
-  [How often the underlying data is recomputed; how stale a rendered
-   value is allowed to be before it must be marked stale or refetched]
-
-Empty-state data condition:
-  [The precise data condition that counts as "empty" — not the visual
-   treatment, just when it applies]
-```
+Full selection logic — including two-time-point comparisons, decluttering,
+preattentive-attribute emphasis, and the charts to **never** specify — is in
+`references/chart-selection-guide.md`. Specify the chart *type* and its emphasis
+intent here; leave the exact hex colour, font, and grid position to `ui-component-spec`.
 
 ---
 
-## Metric Definition — Precision Rules
+## The Metric Must Be Actionable, Not Vanity (Lean Analytics)
 
-A metric definition is not "compliance gap count." It states, unambiguously enough to reimplement from scratch and get the same number:
+Before a widget earns a place, run Croll & Yoskovitz's four-part good-metric test
+(`research/data-and-analytics/lean-analytics-croll-yoskovitz.md`): a metric should be
+**comparative** (against a period, cohort, or target — a bare number is not enough),
+**understandable** (a non-analyst can remember and argue about it), **a ratio or
+rate** (a denominator resists gaming — "classification coverage %" beats a raw
+"assets classified" count), and it should **change behaviour** (if no value would
+change what the viewer does, it is vanity — cut it). For any retention/stickiness
+widget, validate with a **cohort comparison** (segment by start date, compare
+like-elapsed time) before building — a rising cumulative count can hide declining
+per-cohort retention. Worked application to this repo's widgets:
+`references/widget-metric-definitions.md`.
 
-- The exact source table/Read Model and field(s)
-- Every filter applied (status, sensitivity, tenant scope)
-- The grouping/bucketing, if any
-- The time window, if any, and whether it is rolling or fixed
-- The unit and whether it is a count, a rate, or a ratio
-
-```
-Bad:  "Number of compliance gaps"
-
-Good: "Count of rows in the compliance_gap_summary Read Model where
-       status = 'open' AND tenant_id = :tenant, grouped by
-       framework_control. Not time-windowed — reflects current state."
-```
-
-The "Good" version can be implemented identically by two different engineers on two different days. That reproducibility is the test of whether a metric definition is complete.
+Every widget also traces to an `analytics-requirements` entry. A widget that "seemed
+useful" with no originating requirement is un-traced — trace it or cut it.
 
 ---
 
-## Aggregation Logic
+## Scope Boundary
 
-State the aggregation as SQL against the Read Model (preferred — Read Models are pre-aggregated so this is usually a simple `SELECT`) or as pseudocode when the aggregation genuinely requires application-layer logic (e.g., a weighted severity score).
+| This skill owns | `ui-component-spec` / `react-dashboard-components` own |
+|---|---|
+| Metric definition, formula, grain | Grid position, widget size |
+| Source Read Model + Bounded Context | The React component and its props |
+| Chart *type* + emphasis intent | Exact colour, typography, animation |
+| Filter + drill-down *data* semantics | Modal/accordion styling, click animation |
+| Refresh/staleness contract (the numbers) | Polling implementation detail |
+| Empty-state *data* condition | Empty-state illustration and copy |
 
-```sql
--- Widget: Open Gaps by Framework Control
-SELECT framework_control,
-       severity,
-       count(*) AS open_gap_count
-  FROM compliance_gap_summary
- WHERE tenant_id = $1
-   AND status = 'open'
- GROUP BY framework_control, severity
- ORDER BY
-   CASE severity WHEN 'critical' THEN 1 WHEN 'high' THEN 2
-                 WHEN 'medium' THEN 3 ELSE 4 END,
-   open_gap_count DESC;
-```
-
-**Aggregate in the Read Model, not in the browser.** If a widget's SQL would need to scan raw `data_assets` or `extracted_entities` rows to compute a count, that computation belongs in a Read Model projection (`read-model-design`, maintained by the data-architect's design and the data-engineer's pipeline — see `data-pipeline-implementation`), not as a client-side reduction over a large fetched payload. `react-dashboard-components` reads pre-computed summaries; this skill is where "pre-computed" gets defined.
-
----
-
-## Data Source
-
-Every widget names its Read Model or table explicitly, and the Bounded Context that owns it. This is what lets the frontend-engineer generate a typed API client and the data-engineer know which pipeline stage's output the widget depends on (traced back through `data-pipeline-design`'s stage contracts).
-
-```
-Data source: compliance_gap_summary (Read Model)
-Bounded Context: Compliance
-Populated by: Compliance Rule Engine pipeline stage (see data-pipeline-implementation)
-Underlying events: ComplianceGapOpened, ComplianceGapClosed, DataAssetReclassified
-```
-
----
-
-## Drill-Down Semantics
-
-A dashboard summary invites the next question — "which specific assets?" Drill-down semantics define what data answers that question, not how the UI reveals it (accordion, modal, navigation — `ui-component-spec`'s call).
-
-```
-Drill-down: click a framework_control row
-  → reveals: individual ComplianceGap rows for that framework_control,
-    each showing data_asset_id, opened_at, and a link to its lineage
-    trail (data-lineage-design) for audit defensibility
-  → data source: compliance_gap_detail (Read Model), filtered by
-    framework_control = [selected]
-```
-
-Every drill-down in a compliance product should terminate at something an auditor can be shown — a specific record, timestamp, and (where relevant) the lineage trail proving where the finding came from. A drill-down that bottoms out in "trust us" fails the compliance officer's actual job.
-
----
-
-## Refresh / Staleness Contract
-
-State two numbers: how often the underlying Read Model is recomputed, and how stale a value on screen is allowed to become before the UI must indicate staleness or refetch. These are independent — a Read Model updated every 15 minutes can still be shown with a 60-second client staleness tolerance (`staleTime` in the frontend's query cache).
-
-| Field | Meaning | Example |
-|---|---|---|
-| Source recompute cadence | How often the pipeline/Read Model updates | Every 15 min (matches Compliance Rule Engine stage cadence) |
-| Client staleness tolerance | How long a cached value may be shown before refetch | 60 s |
-| Staleness indicator required? | Whether the UI must show "as of [time]" when data could be stale | Yes — compliance data always carries an as-of timestamp |
-
-A widget with no staleness contract silently becomes "whatever the last successful fetch happened to return" — indistinguishable, to the compliance officer, from current truth.
-
----
-
-## Empty-State Data Condition
-
-State precisely what data condition counts as empty — not "no gaps found" as prose, but the condition a query returns:
-
-```
-Empty-state data condition: zero rows where
-  tenant_id = :tenant AND status = 'open'
-(Distinct from: query error, or "no scan has ever run" —
- those are error and onboarding-empty states respectively,
- handled per ui-component-spec's state variants.)
-```
-
-Conflating "genuinely zero results" with "no data has ever been computed" is a common defect — the first is good news (no open gaps), the second means the pipeline hasn't run yet. They need different empty-state treatments, and this skill's job is only to state which data condition triggers which case; the visual treatment is `ui-component-spec`'s.
-
----
-
-## Handoff Format
-
-The completed dashboard-specification hands off to two different roles for two different purposes:
-
-| To | Consumes | For |
-|---|---|---|
-| **ux-architect** (`ui-component-spec`) | The widget list, metric labels (in Ubiquitous Language), drill-down existence (not its data), and the staleness-indicator requirement | Designing layout, states, and interaction |
-| **frontend-engineer** (`react-dashboard-components`) | The Read Model/API contract, the staleness numbers, and the empty-state data conditions | Implementing the data-fetching and rendering logic |
-
-Neither downstream role should need to re-derive a metric's meaning — if the ux-architect has to ask "wait, what exactly does this number count?", the specification was incomplete.
-
----
-
-## Worked Example — Sensitivity Distribution Widget
-
-From `analytics-requirements`' compliance officer audit-prep dashboard, a widget answering "what is the sensitivity mix of my estate, and is it trending toward more Restricted content?"
-
-```
-Widget: Sensitivity Distribution
-Answers requirement: "What is my estate's sensitivity mix, and is Restricted
-  content growing faster than I'm reviewing it?" (analytics-requirements)
-
-Metric definition:
-  Count of DataAsset rows per SensitivityLevel (Public, Internal, Confidential,
-  Restricted), as of now, scoped to the current tenant. A second series shows
-  the same breakdown 30 days prior for trend comparison.
-
-Aggregation logic:
-  SELECT sensitivity_level, count(*) AS asset_count
-    FROM data_assets
-   WHERE tenant_id = $1 AND deleted_at IS NULL
-   GROUP BY sensitivity_level;
-  -- 30-days-prior comparison reads the same aggregation from a
-  -- daily snapshot table, estate_sensitivity_snapshot, not a live
-  -- historical scan (avoids scanning full history on every render).
-
-Data source: data_assets (current); estate_sensitivity_snapshot (trend)
-Bounded Context: Data Estate
-Populated by: Classification pipeline stage + a daily snapshot job
-
-Drill-down: click the Restricted segment
-  → reveals: DataAsset rows at Restricted, sorted by classified_at descending
-  → data source: data_asset_list Read Model, filtered by
-    sensitivity_level = 'Restricted'
-
-Refresh / staleness contract:
-  Source recompute cadence: current counts are live (query on render);
-    snapshot table updates once daily at 02:00 UTC
-  Client staleness tolerance: 60 s on the current-count query
-  Staleness indicator required: yes, on the trend comparison
-    ("compared to [snapshot date]")
-
-Empty-state data condition: zero rows in data_assets for the tenant
-  (distinct from "no source connected yet" — the onboarding-empty case)
-```
-
-This is handed to the ux-architect to lay out (likely a stacked bar per `react-dashboard-components`' chart-choice table) and to the frontend-engineer to implement against `data_asset_list` and `estate_sensitivity_snapshot`.
+If the question is "what does this widget contain, when is it correct, and what chart
+form shows it," it belongs here. If it is "what exact colour / where on the grid,"
+redirect to `ui-component-spec`.
 
 ---
 
@@ -240,74 +145,32 @@ This is handed to the ux-architect to lay out (likely a stacked bar per `react-d
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Data-only scope | No layout, colour, or component detail present | Spec dictates grid position or chart colour |
-| Metric precision | Definition is reproducible by an independent implementer | Vague label with no formula |
-| Aggregation stated | SQL or pseudocode given for every widget | "Backend will figure out the query" |
-| Read Model sourced | Widget reads a pre-aggregated Read Model, not raw rows | Client-side aggregation over raw tables implied |
-| Drill-down terminates in evidence | Drill-down reaches a specific, auditable record | Drill-down that dead-ends in another summary |
-| Staleness contract explicit | Recompute cadence and client tolerance both stated | Refresh behaviour left implicit |
-| Empty-state condition precise | Exact query/data condition given, distinct from error/onboarding states | "Show empty state when there's no data" with no condition |
-| Traced to a requirement | Every widget references its `analytics-requirements` entry | Widget with no originating requirement |
+| Metric precision | Reproducible by an independent implementer | Vague label, no formula |
+| Grain stated | Every widget names the row it counts | Grain left implicit |
+| Read Model sourced | Reads a pre-aggregated Read Model | Client-side aggregation over raw rows |
+| Chart matches question | Form chosen for the question (Knaflic guide) | A chart that hides the point |
+| Metric actionable | Passes the four-part Lean test | Vanity metric with no behaviour change |
+| Exploratory/explanatory set | Each widget classified; takeaway present when explanatory | Explanatory point shipped as raw density |
+| Staleness contract explicit | Recompute cadence + client tolerance both stated | Refresh behaviour implicit |
+| Empty-state precise | Exact condition, distinct from error/onboarding | "Show empty when no data," no condition |
+| Traced to a requirement | Every widget cites its `analytics-requirements` entry | Widget with no originating requirement |
 
 ---
 
 ## Anti-Patterns
 
-- **Layout creep.** Specifying widget size, chart colour, or grid position "just to be helpful." This is `ui-component-spec`'s job; a dashboard-specification that dictates pixels has started making decisions the ux-architect owns, and the two documents will drift out of sync the first time either changes independently.
-- **The vague metric label.** "Compliance health score" with no formula. If two engineers implementing it independently would produce different numbers, the definition is not done.
-- **Client-side aggregation by default.** Specifying a widget against raw `data_assets` rows "because the frontend can just count them." Aggregation belongs in the Read Model; shipping thousands of rows to compute a count in the browser is both a performance and a correctness risk (a paginated fetch will undercount).
-- **Drill-down to nowhere.** A click that reveals another summary number instead of the underlying record and its lineage. In a compliance product, every drill-down should be able to end at "here is the exact evidence."
-- **Missing staleness contract.** Leaving refresh cadence unstated on the assumption "the frontend will just poll reasonably." A compliance officer briefing a CISO needs to know whether the number on screen is definitely current or possibly 15 minutes old.
-- **Empty-state conflation.** Treating "zero open gaps" (good news) and "pipeline never ran" (onboarding problem) as the same empty state. They require different data conditions and different downstream treatments.
-- **Un-traced widgets.** Adding a widget because it "seemed useful for a dashboard" with no entry in `analytics-requirements`. Every widget exists because a decision needs it — trace it or cut it.
-
----
-
-## Output Format
-
-```markdown
----
-name: dashboard-specification
-product: [product name]
-dashboard: [dashboard name]
-version: 1.0.0
-phase: data
-created: [date]
-owner: data-engineer
----
-
-# Dashboard Specification — [Dashboard Name]
-
-## Widget: [name]
-Answers requirement: [analytics-requirements reference]
-
-### Metric Definition
-[Precise statement]
-
-### Aggregation Logic
-```sql
-[query or pseudocode]
-```
-
-### Data Source
-Read Model / table: [name]
-Bounded Context: [name]
-Populated by: [pipeline stage / event(s)]
-
-### Drill-Down
-[What deeper data is revealed, and its source]
-
-### Refresh / Staleness Contract
-| Field | Value |
-|---|---|
-| Source recompute cadence | |
-| Client staleness tolerance | |
-| Staleness indicator required | |
-
-### Empty-State Data Condition
-[Precise data condition]
-
-## Handoff Notes
-- To ux-architect (`ui-component-spec`): [widget list, labels, drill-down existence]
-- To frontend-engineer (`react-dashboard-components`): [Read Model contracts, staleness numbers]
-```
+- **Impressive over legible.** Choosing a chart because it looks sophisticated
+  instead of the form that makes the answer easy to see (see the reference guide's
+  banned-chart list).
+- **Vague metric label.** "Compliance health score" with no formula or grain — two
+  engineers would produce different numbers.
+- **Vanity widget.** A monotonic cumulative count ("total assets scanned") that no
+  value would change anyone's behaviour over. Cut it or make it a rate.
+- **Client-side aggregation.** Specifying a widget against raw `data_assets` rows
+  because "the frontend can just count them" — a paginated fetch will undercount.
+- **Layout / styling creep.** Dictating grid position, hex colour, or typography —
+  that is `ui-component-spec`'s call and the two docs will drift.
+- **Missing staleness contract.** Leaving refresh unstated; a compliance officer
+  briefing a CISO must know if the number is current or 15 minutes old.
+- **Empty-state conflation.** Treating "zero open gaps" (good news) and "pipeline
+  never ran" (onboarding problem) as one empty state.
