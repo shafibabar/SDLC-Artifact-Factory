@@ -1,200 +1,137 @@
 ---
 name: cqrs-pattern
 description: >
-  Teaches how to apply Command Query Responsibility Segregation (CQRS) within
-  a service — covering the write model (Commands → Aggregates → Domain Events),
-  the read model (Domain Events → Projectors → Read Models), the application
-  layer separation, Go implementation patterns for command handlers and query
-  handlers, and when CQRS is appropriate vs when it adds unnecessary complexity.
-  Companion to the domain-event-catalog and read-model-design skills. Used by
-  the enterprise-architect and backend-engineer agents.
-version: 1.1.0
-phase: design
-owner: enterprise-architect
+  Teaches the backend-engineer to select the appropriate CQRS variant for a
+  service and implement the Write/Read model separation — covering the three
+  CQRS variants (Simple Read Model, Full CQRS, Event-Sourced CQRS) with
+  explicit selection criteria, the projection update mechanics (synchronous vs.
+  event-driven vs. CDC-driven), consistency trade-offs, Go implementation
+  patterns for command handlers and projectors, and the integration points with
+  domain-event-catalog and read-model-design. Used during Implement when a
+  service requires independent scaling of reads and writes or event sourcing.
+version: 2.0.0
+phase: implement
+owner: backend-engineer
 created: 2026-06-25
-tags: [design, architecture, cqrs, write-model, read-model, event-sourcing, go]
+tags: ["implement","cqrs","read-model","write-model","projections","event-sourcing","domain-modeling"]
+related: [domain-event-catalog, read-model-design, subdomain-distillation, aggregate-design, go-domain-model]
 ---
 
 # CQRS Pattern
 
-## Purpose
+## What CQRS Is
 
-Command Query Responsibility Segregation (CQRS, Greg Young) separates the write model (how state is changed) from the read model (how state is queried). In a CQRS system, a Command mutates state and returns no data; a Query reads state and changes nothing.
+Command Query Responsibility Segregation (CQRS, Greg Young) separates the **Write Model** (how state changes) from the **Read Model** (how state is queried). A Command mutates state and returns no data. A Query reads state and changes nothing.
 
-This separation:
-- Allows the write and read sides to be optimised independently
-- Prevents query complexity from bleeding into the domain model
-- Enables multiple Read Models (each optimised for its query) without affecting the Aggregate design
-- Is the natural complement to Domain Events: events flow from the write side to the read side
+This separation allows the write and read sides to be optimised independently, prevents query complexity from bleeding into the domain model, and enables multiple Read Models each optimised for a different query — without affecting Aggregate design.
+
+**CQRS is independent of Event Sourcing.** The default in this plugin is current-state Aggregates (a standard PostgreSQL table) that emit Domain Events via the Transactional Outbox. Projectors consume those events to build Read Models. Event Sourcing (state derived from event stream replay) is a third, optional escalation — see `references/cqrs-variants.md`.
 
 ---
 
-## CQRS is Not Event Sourcing
+## Three CQRS Variants
 
-CQRS and Event Sourcing are often discussed together but are independent patterns:
+Khononov identifies CQRS as a spectrum, not a binary choice. Select the variant per service based on the trade-off below.
 
-| Pattern | What it is | Required by the other? |
+| Variant | Description | Primary Selection Criterion |
 |---|---|---|
-| **CQRS** | Separate write and read models | No — CQRS can be used without event sourcing |
-| **Event Sourcing** | The Aggregate's state is derived entirely from its event history; no state table | No — event sourcing can exist without CQRS, but they are highly complementary |
+| **Simple Read Model** | Same DB, separate query layer — a dedicated query function that joins write tables through a read-side type (never the Aggregate itself) | Default when write/read scaling is modest and query shapes have not diverged significantly |
+| **Full CQRS** | Separate DBs, event-driven projection — Projectors subscribe to Domain Events and upsert into dedicated Read Model tables | Use when read/write scaling differs significantly, multiple consumers need the same data in different shapes, or the Bounded Context already emits Domain Events |
+| **Event-Sourced CQRS** | Aggregate state derived from event stream replay; projections built from the same stream | Use when audit-trail reconstruction at an arbitrary past point in time is required, new Read Models must be built retroactively from existing history, or the event stream must be the authoritative compliance record |
 
-**This plugin uses CQRS by default.** Event Sourcing is an option for specific Bounded Contexts where full event history replay is required (e.g., audit trail reconstruction), but it is not the default — it adds significant complexity.
+> **Khononov's caution:** Simple Read Model is a legitimate starting point, not an anti-pattern. Escalate to Full CQRS when measured need arrives — not by default.
 
-The default approach: Aggregates store state in a standard PostgreSQL table, emit Domain Events via the Transactional Outbox, and Projectors build Read Models from those events.
+Full decision table (infrastructure requirements, consistency guarantees, when not to use, worked examples from this repo, and how Khononov's four Business Logic Design Patterns map to each variant) is in `references/cqrs-variants.md`.
 
 ---
 
-## The Write Side
+## Key Trade-offs
 
-### Flow
+| Axis | Simple Read Model | Full CQRS | Event-Sourced CQRS |
+|---|---|---|---|
+| Consistency | Immediate | Eventual | Eventual |
+| Write throughput | Shared with reads | Independent | Independent |
+| Infrastructure cost | Low | Medium (broker + projectors) | High (event store, snapshotting, upcasting) |
+| Rebuild capability | No | Yes — replay events | Yes — replay event stream |
+| Audit trail | Separate log needed | Domain Events are the record | Event stream is the authoritative record |
+
+---
+
+## Selection Inputs
+
+Before selecting a variant, consult:
+- **`domain-event-catalog`** — confirms which Domain Events this service emits. Full CQRS requires events; if they do not exist, adopting Full CQRS also means creating them.
+- **`read-model-design`** — the Read Model shapes are the primary input to projector design. A Read Model that requires significant transformation at query time is shaped incorrectly; fix the projection, not the query handler.
+- **`subdomain-distillation`** — for Generic or simple Supporting subdomains, evaluate Khononov's four Business Logic Design Patterns (Transaction Script, Active Record, Domain Model, Event-Sourced Domain Model) before defaulting to Full CQRS. See `references/cqrs-variants.md`.
+
+---
+
+## Write Side
 
 ```
 HTTP Request
      ↓
-API Handler (handlers/)
-  - Structural validation
-  - Map request DTO → Command struct
+API Handler — structural validation, maps DTO → Command struct
      ↓
 Command Handler (application/commands/)
-  - Check idempotency
-  - Load Aggregate from Repository
-  - Call Aggregate method (business rule enforcement)
-  - Save Aggregate to Repository (includes writing to outbox_events)
-  - Return result
+  — idempotency check
+  — load Aggregate from Repository
+  — call Aggregate method (invariant enforcement)
+  — save Aggregate (state + outbox events in one transaction)
      ↓
 Repository (infrastructure/postgres/)
-  - BEGIN transaction
-  - UPDATE aggregate table
-  - INSERT into outbox_events
-  - COMMIT
+  — BEGIN transaction
+  — UPDATE aggregate table
+  — INSERT into outbox_events
+  — COMMIT
 ```
 
-### Command Handler Pattern (Go)
+Command handlers return no domain data — only `error`, plus (at most) the new Aggregate ID and version for `201` responses. The application layer split is absolute:
 
-```go
-type ClassifyDataAssetHandler struct {
-    repo       domain.DataAssetRepository
-    commandLog CommandLog
-}
-
-func (h *ClassifyDataAssetHandler) Handle(ctx context.Context, cmd domain.ClassifyDataAsset) error {
-    // Idempotency check
-    if err := h.commandLog.CheckAndRecord(ctx, cmd.IdempotencyKey); err != nil {
-        return err // already processed
-    }
-
-    // Load aggregate
-    asset, err := h.repo.FindByID(ctx, cmd.DataAssetID)
-    if err != nil {
-        return fmt.Errorf("loading data asset: %w", err)
-    }
-
-    // Domain operation (enforces invariants, collects events)
-    if err := asset.Classify(cmd); err != nil {
-        return err // domain error — business rule violated
-    }
-
-    // Save (aggregate state + outbox events in one transaction)
-    return h.repo.Save(ctx, asset)
-}
+```
+application/
+├── commands/    ← one handler per Command
+└── queries/     ← one handler per Query
 ```
 
-### Repository Interface (domain/)
-
-```go
-type DataAssetRepository interface {
-    FindByID(ctx context.Context, id DataAssetID) (*DataAsset, error)
-    Save(ctx context.Context, asset *DataAsset) error
-}
-```
-
-The Repository interface is defined in the domain layer. The PostgreSQL implementation is in the infrastructure layer. The Command Handler depends only on the interface — not the implementation (Dependency Inversion).
+Go code for command handlers, idempotency enforcement, and the Repository interface pattern is in `references/go-implementation.md`.
 
 ---
 
-## The Read Side
-
-### Flow
+## Read Side
 
 ```
-Outbox Relay
-  - Reads from outbox_events (WHERE published = false)
-  - Publishes to Redpanda
-     ↓
-Projector (infrastructure/projectors/)
-  - Consumes from Redpanda consumer group
-  - Calls ReadModelStore.Upsert/Update/Delete based on event type
-     ↓
-Read Model Store (PostgreSQL — separate tables from aggregate tables)
-     ↓
-Query Handler (application/queries/)
-  - Queries Read Model Store
-  - Returns Read Model struct
-     ↓
-API Handler (handlers/)
-  - Maps Read Model struct → HTTP response DTO
+Outbox Relay → Redpanda → Projector (infrastructure/projectors/)
+                                ↓
+                       Read Model Store (PostgreSQL — separate tables)
+                                ↓
+                       Query Handler (application/queries/)
+                                ↓
+                       API Handler → HTTP response DTO
 ```
 
-### Query Handler Pattern (Go)
-
-```go
-type GetDataAssetDetailHandler struct {
-    store DataAssetReadStore
-}
-
-func (h *GetDataAssetDetailHandler) Handle(ctx context.Context, query GetDataAssetDetail) (*DataAssetDetail, error) {
-    detail, err := h.store.FindDetail(ctx, query.DataAssetID, query.TenantID)
-    if err != nil {
-        return nil, err
-    }
-    return detail, nil
-}
-```
-
-Query handlers are intentionally simple. The complexity lives in the Projector (which builds the Read Model) and in the Read Model store's index design. The query handler just retrieves the pre-built result.
+Projector update mechanics — synchronous (same transaction as write), event-driven (subscribe to broker), and CDC-driven (Debezium reads WAL) — with idempotency requirements and Go implementation sketches are in `references/projection-patterns.md`.
 
 ---
 
 ## When to Apply CQRS
 
-CQRS adds complexity. Apply it where the benefits are worth the cost:
-
-| Apply CQRS | Reason |
+| Apply | Reason |
 |---|---|
 | Read and write loads are significantly different | Write: low volume, complex; Read: high volume, simple |
 | Multiple Read Models needed from the same domain data | Dashboard view ≠ detail view ≠ search index |
-| Bounded Context emits Domain Events to other contexts | Events are already being produced — projecting them into Read Models is low marginal cost |
-| Audit trail is required | The event stream from the write side is the audit trail |
-| The domain model is complex | CQRS keeps query complexity from polluting the domain model |
+| Bounded Context already emits Domain Events | Events already produced — projecting them is low marginal cost |
+| Audit trail is required | Domain Events from the write side are the audit trail |
+| Domain model is complex | CQRS keeps query complexity from polluting the Aggregate |
 
-| Skip CQRS | Reason |
+| Skip or simplify | Reason |
 |---|---|
-| Simple CRUD with no domain logic | The overhead exceeds the benefit |
+| Simple CRUD with no domain logic | Overhead exceeds the benefit |
 | Read and write patterns are identical | No benefit from separate optimisation |
-| Single consumer of the data | One Read Model = one query = CQRS is overkill |
-| Team is small and delivery speed is the constraint | Simpler architecture may be the right trade-off |
+| Single consumer of the data | One Read Model = one query = Full CQRS is overkill |
+| Generic or simple Supporting subdomain | Consider Transaction Script or Active Record first |
 
-For this plugin's first product, CQRS applies to all core Bounded Contexts (Storage Integration, Classification, Compliance Intelligence, Graph). Simple support Bounded Contexts (user management, configuration) may use a simpler repository pattern without full CQRS.
-
----
-
-## Application Layer Separation
-
-The Application layer has two clearly separated sections:
-
-```
-application/
-├── commands/
-│   ├── classify_data_asset.go      ← ClassifyDataAssetHandler
-│   ├── connect_storage_source.go   ← ConnectStorageSourceHandler
-│   └── trigger_estate_scan.go      ← TriggerEstateScanHandler
-└── queries/
-    ├── get_data_asset_detail.go    ← GetDataAssetDetailHandler
-    ├── list_data_assets.go         ← ListDataAssetsHandler
-    └── get_compliance_dashboard.go ← GetComplianceDashboardHandler
-```
-
-No file crosses the boundary. A command handler never queries a Read Model store. A query handler never calls an Aggregate.
+For this plugin's first product: Full CQRS applies to all core Bounded Contexts (Storage Integration, Classification, Compliance Intelligence, Graph). Simple support Bounded Contexts (user management, configuration) may use the Simple Read Model variant or a plain repository pattern.
 
 ---
 
@@ -202,12 +139,13 @@ No file crosses the boundary. A command handler never queries a Read Model store
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Command returns no data | Command handlers return no domain data — an `error`, plus at most the new Aggregate ID and version (for `201` responses and read-your-own-writes) | Command handler returns the updated Aggregate state or a query result |
-| Query changes no state | Query handlers call no Aggregates; perform no writes | Query handler with a side effect |
-| Separate packages | `application/commands/` and `application/queries/` are distinct packages | Mixed file with both commands and queries |
+| Command returns no data | `error` + (optionally) new ID and version | Command returns updated Aggregate state or a query result |
+| Query changes no state | Query handler calls no Aggregates; performs no writes | Query handler with a side effect |
+| Separate packages | `application/commands/` and `application/queries/` are distinct | Mixed file with both commands and queries |
 | Read Models from events | Read Models built by Projectors consuming Domain Events | Read Models built by querying Aggregate tables directly |
 | Domain interface for repo | Repository interface in `domain/ports.go` | Repository interface in `infrastructure/` |
-| Idempotency in command handler | All command handlers check idempotency before processing | Command handlers with no idempotency check |
+| Idempotency in command handler | All command handlers check idempotency before processing | Command handler with no idempotency check |
+| Idempotency in projector | Projectors are idempotent — safe to process the same event twice | Projector with no dedup or version check |
 
 ---
 
@@ -215,29 +153,30 @@ No file crosses the boundary. A command handler never queries a Read Model store
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **CQRS everywhere** — full write/read separation for trivial CRUD contexts | Projectors, outbox rows, and eventual consistency are pure overhead where one model would do | Apply the "When to Apply CQRS" table honestly; support contexts may use a plain repository |
-| **Guards checked against Read Models** — a command handler validating against a projection | The projection lags the Write Model; the guard races reality and passes on stale data | Invariants are enforced inside the Aggregate against transactionally-loaded state |
-| **Command handler with a query habit** — returning view data from the write path | The write path inherits read-side performance and shape concerns; the separation dissolves | Return only the error / new ID and version; the client queries a Read Model |
-| **Query with a side effect** — "just bump the view counter while reading" | Reads become non-repeatable and non-cacheable; load tests mutate production state | Queries change nothing; if the domain cares about views, that is a Command emitting a Domain Event |
-| **Synchronous projection in the command transaction** — updating Read Model tables alongside the Aggregate write | Couples every view's schema and latency to the write path; rebuild-from-events is no longer true | Projectors consume events after commit via the Transactional Outbox and broker |
-| **CQRS assumed to mean Event Sourcing** — dropping the state table because events exist | Event Sourcing's replay, snapshotting, and versioning costs arrive uninvited | Keep state-stored Aggregates by default; adopt Event Sourcing per Bounded Context via an ADR |
-| **One handler class for everything** — `DataAssetService` exposing both commands and queries | Dependencies of both sides accumulate in one type; the separation exists only in method names | One handler per Command and per Query, in `application/commands/` and `application/queries/` |
+| **Full CQRS everywhere** — for trivial CRUD contexts | Projectors, outbox rows, and eventual consistency are overhead where one model suffices | Apply "When to Apply CQRS" honestly; start with Simple Read Model |
+| **Guards against Read Models** — command validates against a projection | Projection lags Write Model; guard races reality on stale data | Invariants enforced inside Aggregate against transactionally-loaded state |
+| **Command handler with a query habit** — returning view data from the write path | Write path inherits read-side performance and shape concerns | Return only error / new ID and version |
+| **Query with a side effect** — "just bump the view counter while reading" | Reads become non-repeatable and non-cacheable | Queries change nothing; if domain cares about views, that is a Command emitting a Domain Event |
+| **Synchronous projection in the command transaction** — updating Read Model tables alongside the Aggregate write | Couples every view's schema and latency to the write path | Projectors consume events post-commit via Transactional Outbox and broker |
+| **CQRS assumed to mean Event Sourcing** — dropping the state table because events exist | Event Sourcing's replay, snapshotting, and upcasting costs arrive uninvited | Current-state Aggregates by default; adopt Event-Sourced CQRS via an explicit ADR |
+| **One handler class for everything** — `DataAssetService` with both commands and queries | Dependencies of both sides accumulate; separation exists only in method names | One handler per Command and per Query |
 
 ---
 
 ## Output Format
 
-This skill produces design notes that are incorporated into the Component Diagram and the service design artifact:
-
 ```markdown
 ## CQRS Design: [Service Name]
+
+### Variant Selected
+[Simple Read Model / Full CQRS / Event-Sourced CQRS] — [one-sentence rationale]
 
 ### Write Side
 | Command | Handler | Aggregate method | Repository save | Event emitted |
 |---|---|---|---|---|
 
 ### Read Side
-| Read Model | Projector | Source events | Storage table | Query handler |
+| Read Model | Projector | Projection mechanic | Storage table | Query handler |
 |---|---|---|---|---|
 
 ### Application Layer Structure
