@@ -12,6 +12,7 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, go, fixtures, test-data, hermetic, builder, seeding, cleanup]
+related: [go-unit-test, go-integration-test, go-e2e-test, mock-generation]
 ---
 
 # Test Fixture Design
