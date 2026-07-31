@@ -1,243 +1,150 @@
 ---
 name: domain-event-catalog
 description: >
-  Teaches how to define, catalogue, and govern Domain Events — including the
-  event definition format, naming conventions, event schema design, versioning
-  strategy, retention policy, and the Transactional Outbox pattern for reliable
-  event publication. The domain-event-catalog is the authoritative record of all
-  events in a Bounded Context and the primary contract between services in an
-  event-driven architecture. Used by the domain-modeler agent after Event
-  Storming, as a prerequisite to service design.
-version: 1.1.0
+  Teaches the domain-modeler and backend-engineer how to author, structure,
+  and maintain a Domain Event Catalog — the authoritative registry of every
+  Domain Event emitted by a Bounded Context, covering event naming conventions,
+  the canonical envelope format (what fields every event must carry), the
+  Outbox pattern as the reliable emission mechanism, Change Data Capture as
+  the Outbox trigger, event versioning strategy, retention policy by event
+  class, and the catalog artifact template. Used during Design and Implement
+  phases whenever a new Bounded Context or Domain Event is defined.
+version: 2.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: [design, ddd, domain-events, event-catalog, event-driven, transactional-outbox]
+tags: ["design","domain-modeling","event-storming","domain-events","outbox","event-naming","cdc"]
+related:
+  - aggregate-design
+  - bounded-context-mapping
+  - go-event-publisher
+  - cqrs-pattern
+  - read-model-design
+  - glossary-management
 ---
 
 # Domain Event Catalog
 
 ## Purpose
 
-A Domain Event is something that happened in the domain that is significant to the business. It is a fact — immutable, past-tense, and business-meaningful. Domain Events are the communication medium of an event-driven architecture: they carry information across Bounded Context boundaries without direct coupling.
-
-The Domain Event Catalog is the authoritative, versioned record of every Domain Event in a Bounded Context. It defines what each event means, what data it carries, who emits it, who consumes it, and how it must be handled. Any service integration that is not governed by this catalog is undocumented coupling.
+A Domain Event is something that happened in the domain that is significant to the business — immutable, past-tense, and business-meaningful. Evans identified Domain Events as the escape hatch for Rule 3 (one Aggregate per transaction): an Aggregate emits an event inside its own transaction; everything else updates asynchronously via that event. The Domain Event Catalog is the authoritative, versioned record of every Domain Event in a Bounded Context. Any service integration not governed by this catalog is undocumented coupling.
 
 ---
 
-## Domain Event Naming
+## Event Naming
 
-Events follow the pattern: `[Aggregate][PastTenseVerb]`
+Events follow the pattern: `[Aggregate][PastTenseVerb]` in PascalCase.
 
-| Good event name | Poor event name |
-|---|---|
-| `DataAssetClassified` | `FileUpdated` (too generic; not business-meaningful) |
-| `ComplianceGapDetected` | `GapFound` (imprecise; which gap? in what context?) |
-| `StorageSourceConnected` | `SourceAdded` (vague; doesn't name the concept) |
-| `ScanCompleted` | `ScanDone` (informal; doesn't use Ubiquitous Language) |
-| `AuditRecordCreated` | `AuditLogged` (verb "logged" is technical; "created" is domain) |
+| Good | Poor | Why the poor name fails |
+|---|---|---|
+| `DataAssetClassified` | `FileUpdated` | Too generic; no business meaning |
+| `ComplianceGapDetected` | `GapFound` | No aggregate prefix; imprecise |
+| `StorageSourceConnected` | `SourceAdded` | Vague; not Ubiquitous Language |
+| `AuditRecordCreated` | `AuditLogged` | Technical verb; domain says "created" |
 
 Rules:
-- Use PascalCase
-- Use past tense — the event records something that has already happened
-- The name must be meaningful to a domain expert, not just an engineer
-- Never use CRUD verbs directly ("Created", "Updated", "Deleted") as the entire name — they describe technical operations, not business events. Use them only as the verb component after a meaningful noun: `DataAssetRegistered`, not `FileCreated`
+- Past tense — the event records something that already happened
+- Name must be meaningful to a domain expert, not just an engineer
+- Never use a CRUD verb alone as the full name — `DataAssetRegistered`, not `DataAssetCreated`
 
 ---
 
-## Domain Event Definition Format
+## Event Categories
 
-Every event in the catalog must have a complete definition:
+Identify the category before defining an event — it determines retention, routing, and versioning discipline.
 
-```
-Event:           [EventName]
-Bounded Context: [Which context emits this event]
-Aggregate:       [Which Aggregate emits this event]
-Version:         [SemVer — 1.0.0]
+| Category | Definition | Example | Published externally? |
+|---|---|---|---|
+| **Domain Event** | A business fact from inside one Bounded Context; notifies consumers across contexts | `DataAssetClassified` | Yes — via Outbox → Redpanda |
+| **Integration Event** | A shaped, translated version of a Domain Event for a specific consumer's contract | `ComplianceIntegration.DataAssetClassified.v1` | Yes — shaped per consumer |
+| **Notification Event** | A lightweight signal carrying only the Aggregate ID; consumer fetches state via Read Model | `DataAssetUpdated` (ID only) | Yes — coarse-grained fan-out |
 
-Description:     [What happened in business terms — one or two sentences]
+Use Domain Events as the default. Use Integration Events when a consuming context needs a stable, separately-versioned schema. Use Notification Events only when consumers will always query the Read Model for details anyway.
 
-Trigger:         [What Command or condition caused this event to be emitted]
-Consumers:       [Which Bounded Contexts or services consume this event]
-Retention:       [How long this event must be retained in the message broker]
-Idempotency Key: [Which field(s) uniquely identify this event so consumers can deduplicate]
-
-Payload:
-  [field name]: [type] — [description and constraints]
-  [field name]: [type] — [description and constraints]
-
-Invariants:
-  - [Rule that is always true about this event's payload]
-
-Policy (if any): [If this event automatically triggers a Command: "Whenever [Event], [Command]"]
-
-Example:
-{
-  "eventId": "uuid",
-  "eventType": "[EventName]",
-  "version": "1.0.0",
-  "occurredAt": "ISO8601 timestamp",
-  "aggregateId": "uuid",
-  "payload": { ... }
-}
-```
+> **Internal vs. integration events (Khononov):** An event-sourced Aggregate may maintain internal persistence events used only to reconstruct its own state — these are distinct from the Domain Events published for cross-context integration. Design both lists separately and translate internal events to coarser Domain Events before the Outbox. See `references/versioning-and-retention.md`.
 
 ---
 
-## Standard Event Envelope
+## Canonical Envelope
 
-All Domain Events share a common envelope — fields that appear in every event regardless of type:
+Every Domain Event carries the same envelope regardless of type. Required fields:
 
-| Field | Type | Description |
+| Field | Type | Role |
 |---|---|---|
-| `eventId` | UUID v4 | Unique identifier for this event instance — used for idempotency |
-| `eventType` | string | The event name: `DataAssetClassified` |
+| `eventId` | UUID v4 | Unique event instance ID — consumers use this for idempotency |
+| `eventType` | string | PascalCase event name: `DataAssetClassified` |
 | `version` | string | Schema version: `1.0.0` |
-| `occurredAt` | ISO 8601 | When the event occurred in the domain (not when it was published) |
-| `aggregateId` | UUID | The ID of the Aggregate that emitted the event |
-| `aggregateType` | string | The Aggregate name: `DataAsset` |
-| `correlationId` | UUID | Traces the chain of events back to the original Command |
-| `causationId` | UUID | The ID of the event or Command that directly caused this event |
-| `boundedContext` | string | The Bounded Context that emitted this event |
-| `tenantId` | UUID | For multi-tenant systems — which tenant this event belongs to |
-| `payload` | object | Event-specific data — defined per event |
+| `occurredAt` | ISO 8601 | When the fact happened in the domain (not when published) |
+| `aggregateId` | UUID | The emitting Aggregate's ID |
+| `aggregateType` | string | The emitting Aggregate's type: `DataAsset` |
+| `correlationId` | UUID | Traces the full event chain back to the originating Command |
+| `causationId` | UUID | ID of the immediate event or Command that directly caused this event |
+| `boundedContext` | string | The emitting Bounded Context: `classification-engine` |
+| `tenantId` | UUID | Physical multi-tenancy — required in every event for this product |
+| `payload` | object | Event-specific data — schema defined per event in the catalog |
 
-The `tenantId` is mandatory in all events for the first product due to physical multi-tenancy requirements.
+For the Go struct definition, CloudEvents alignment, detailed field-by-field explanations, and a worked `DataAssetClassified` example with every field filled: see **`references/event-format.md`**.
 
 ---
 
-## Event Versioning
+## Outbox Pattern
+
+Publishing a Domain Event from the request path (dual-write) is an anti-pattern: a crash between the database write and the broker publish loses events or creates phantoms. The Transactional Outbox pattern solves this without a distributed transaction:
+
+1. **Same transaction:** Update the Aggregate's table AND write the event to `outbox_events` — COMMIT. Either both succeed or both fail.
+2. **Separate relay process:** Read unpublished rows, publish to Redpanda, mark as published.
+
+Two relay approaches:
+- **Polling:** A background goroutine queries `WHERE NOT published ORDER BY created_at` on a schedule. Simple; slight latency.
+- **CDC (Change Data Capture):** Debezium captures WAL changes to `outbox_events` and forwards them to Redpanda. Near-real-time; requires Kafka Connect deployment.
+
+Choose polling for simplicity; choose CDC when sub-second latency is required or polling load on the database is unacceptable.
+
+For the full `outbox_events` DDL, Go polling publisher implementation, CDC/Debezium connector configuration, idempotency consumer pattern, and DLQ mechanics: see **`references/outbox-and-cdc.md`**.
+
+---
+
+## Versioning Strategy
 
 Events are immutable facts. Once emitted, they cannot be changed. When the schema must evolve:
 
-| Change type | Strategy |
+| Change type | Strategy | Consumer obligation |
+|---|---|---|
+| Additive (new optional field) | Minor bump: `1.0.0 → 1.1.0` | Forward-compatible: tolerate unknown fields |
+| Breaking (rename, remove, type change) | Major bump: `1.0.0 → 2.0.0` | Run both versions in parallel; old version has documented sunset |
+| Event rename | Emit under new name; keep old name through sunset period | Consumers opt into migration explicitly |
+
+> **Event-sourced internal events:** The additive/breaking strategy applies to transient integration events. Permanently-stored internal events (event-sourced Aggregates) require **event upcasting** — a load-time transformation, never parallel emission — because stored events can never be deleted or reissued. See `references/versioning-and-retention.md`.
+
+For migration playbooks, consumer-side tolerant-reader patterns, and upcasting implementation: see **`references/versioning-and-retention.md`**.
+
+---
+
+## Retention Policy
+
+| Event category | Broker retention | Long-term storage |
+|---|---|---|
+| Domain Event (audit-required) | 90 days | Indefinitely in the audit store |
+| Domain Event (non-audit) | 30 days | Not required |
+| Integration Event | Match consumer SLA | Consumer decides |
+| Notification Event | 7 days | Not required |
+
+Default for this product: all `DataAsset*` events are audit-required — 90 days on Redpanda, indefinitely in the audit store.
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Correction |
 |---|---|
-| **Additive change** (new optional field) | Bump minor version: `1.0.0` → `1.1.0`. Existing consumers must tolerate unknown fields (forward compatibility). |
-| **Breaking change** (rename, remove, or change type of a field) | Bump major version: `1.0.0` → `2.0.0`. Run both versions in parallel during migration. Never delete `v1` until all consumers have migrated. |
-| **Rename an event** | Emit under the new name; keep emitting under the old name for a defined sunset period. Document the sunset date. |
-
-**Consumer responsibilities:**
-- Consumers must be forward-compatible: they must handle fields they don't know about (ignore them, do not reject)
-- Consumers must be backward-compatible for minor version bumps
-- Consumers must explicitly opt into major version migration
-
----
-
-## Transactional Outbox Pattern
-
-Publishing a Domain Event and updating the database in the same transaction would require a distributed transaction — which is fragile and expensive. The Transactional Outbox pattern solves this without a distributed transaction:
-
-```
-┌──────────────────────────────────────────────────────────┐
-│ Application Transaction (single DB transaction)           │
-│                                                          │
-│  1. Update Aggregate state in aggregate table            │
-│  2. Write Domain Event to outbox table (same DB)         │
-│                                                          │
-│  COMMIT — either both succeed or both fail               │
-└──────────────────────────────────────────────────────────┘
-          │
-          │ (separate process — not in the transaction)
-          ▼
-┌──────────────────────────────────────────────────────────┐
-│ Outbox Relay (polling or CDC)                            │
-│                                                          │
-│  3. Read unpublished rows from outbox table              │
-│  4. Publish to Redpanda                                  │
-│  5. Mark row as published (or delete)                    │
-└──────────────────────────────────────────────────────────┘
-```
-
-**Outbox table schema (Go/PostgreSQL):**
-```sql
-CREATE TABLE outbox_events (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    event_type  TEXT NOT NULL,
-    aggregate_id UUID NOT NULL,
-    payload     JSONB NOT NULL,
-    published   BOOLEAN NOT NULL DEFAULT false,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE INDEX ON outbox_events (published, created_at) WHERE NOT published;
-```
-
-**Rules:**
-- The outbox table is always in the same database as the Aggregate table
-- The outbox relay runs as a separate process — it is not part of the request path
-- If the relay fails, events remain in the outbox until the relay recovers (at-least-once delivery)
-- Consumers must be idempotent — they may receive the same event more than once
-- The relay publishes with `aggregate_id` as the Redpanda partition key and reads rows in `created_at` order — this preserves per-Aggregate event ordering, which consumers may rely on; cross-Aggregate ordering is never guaranteed and consumers must not depend on it
-
----
-
-## Dead Letter Queue
-
-When a consumer cannot process an event after exhausting retries, the event is moved to the Dead Letter Queue (DLQ):
-
-- DLQ is a separate Redpanda topic: `[original-topic].dlq`
-- Every event in the DLQ must be monitored and alerted on
-- Events in the DLQ must not be silently discarded — they represent processing failures that require investigation
-- Reprocessing from the DLQ must be a safe, monitored operation
-- **Ordering caveat:** parking an event in the DLQ lets later events for the same Aggregate be processed first. A consumer whose logic depends on per-Aggregate ordering must either halt that partition until the poison event is resolved, or be designed to reconcile out-of-order redelivery when the DLQ event is replayed. Choose per consumer and record the choice in the catalog.
-
----
-
-## Worked Example
-
-```
-Event:           DataAssetClassified
-Bounded Context: Classification Engine
-Aggregate:       DataAsset
-Version:         1.0.0
-
-Description:     A DataAsset has been assigned a SensitivityLevel, either by the
-                 classification engine or by a human override.
-
-Trigger:         ClassifyDataAsset Command accepted by the DataAsset Aggregate
-Consumers:       Compliance Intelligence (gap analysis), Graph Context (node labelling)
-Retention:       90 days on the broker; indefinitely in the audit store
-Idempotency Key: eventId
-
-Payload:
-  dataAssetId:      UUID           — the classified asset
-  storageSourceId:  UUID           — where the asset lives (reference by ID)
-  sensitivityLevel: string         — one of: Public, Internal, Confidential, Restricted
-  previousLevel:    string|null    — null on first classification
-  classifiedBy:     string         — "engine" or a user ID for manual override
-  confidence:       number|null    — engine confidence 0.0–1.0; null for manual override
-
-Invariants:
-  - sensitivityLevel is always a valid SensitivityLevel value
-  - previousLevel ≠ sensitivityLevel (a no-op reclassification emits no event)
-  - confidence is null if and only if classifiedBy is a user ID
-
-Policy:          Whenever DataAssetClassified with sensitivityLevel = Restricted,
-                 EvaluateComplianceGap (Compliance Intelligence context)
-```
-
-```json
-{
-  "eventId": "8f14e45f-ceea-467f-a0e6-b2d9b3b0a1c2",
-  "eventType": "DataAssetClassified",
-  "version": "1.0.0",
-  "occurredAt": "2026-07-01T14:32:09Z",
-  "aggregateId": "3c9909af-9d2a-4c9c-8b1a-6e2f1a7d4e88",
-  "aggregateType": "DataAsset",
-  "correlationId": "a1b2c3d4-0000-4000-8000-000000000001",
-  "causationId": "a1b2c3d4-0000-4000-8000-000000000001",
-  "boundedContext": "classification-engine",
-  "tenantId": "b7e23ec2-9d0a-4f5b-9c3d-2f8e6a1b4c7d",
-  "payload": {
-    "dataAssetId": "3c9909af-9d2a-4c9c-8b1a-6e2f1a7d4e88",
-    "storageSourceId": "5d2c1f0e-7a8b-4c3d-9e0f-1a2b3c4d5e6f",
-    "sensitivityLevel": "Restricted",
-    "previousLevel": "Internal",
-    "classifiedBy": "engine",
-    "confidence": 0.94
-  }
-}
-```
+| **Event as state dump** — full Aggregate state in payload | Carry only the business fact and the fields consumers need to react |
+| **Anaemic event** — only an ID in payload | Include the business-meaningful fields of the fact itself |
+| **CRUD event name** — `DataAssetUpdated` as the only event | One event per business fact: `DataAssetClassified`, `DataAssetArchived` |
+| **Dual write** — request handler publishes directly to broker | All publication goes through the Transactional Outbox |
+| **Command disguised as event** — `SendComplianceReport` emitted as event | Name the fact (`ComplianceGapDetected`); a Policy in the consumer issues the Command |
+| **Mutating published schema in place** | Additive → minor bump; breaking → new major version run in parallel |
+| **Consumer coupling to cross-Aggregate order** | Per-Aggregate order only; use `correlationId`/`causationId` for causal reconstruction |
+| **Internal events published as external contracts** | Translate internal persistence events to coarser Domain Events before the Outbox |
 
 ---
 
@@ -245,86 +152,19 @@ Policy:          Whenever DataAssetClassified with sensitivityLevel = Restricted
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Past-tense naming | All events use `[Aggregate][PastTenseVerb]` in PascalCase | Events in present tense, CRUD-only names, or informal names |
-| Standard envelope | All events include the standard envelope fields | Events missing `eventId`, `correlationId`, `tenantId`, or `version` |
-| Idempotency key defined | Every event names the field(s) consumers use to deduplicate | Events with no idempotency key — consumers cannot be idempotent |
-| Consumer list | Every event lists its known consumers | Events with no consumer documentation — orphan events |
-| Versioning strategy | Additive vs breaking change handling is defined | Events with no versioning strategy |
-| Transactional Outbox | All event publication uses the Transactional Outbox | Events published directly from the request path (dual-write anti-pattern) |
-| DLQ defined | Every consumer topic has a corresponding DLQ topic | Events that are silently discarded on consumer failure |
+| Past-tense naming | `[Aggregate][PastTenseVerb]` in PascalCase | Present tense, CRUD-only, or informal names |
+| Full envelope | All required envelope fields present | Missing `eventId`, `correlationId`, `tenantId`, or `version` |
+| Idempotency key | Every event names the consumer-deduplication field | No idempotency key defined |
+| Consumer list | Every event names known consumers | Orphan events with no consumers |
+| Versioning strategy | Additive vs. breaking change handling stated | No versioning strategy |
+| Outbox only | All publication uses Transactional Outbox | Direct broker publish from request path |
+| DLQ defined | Every consumer topic has a DLQ topic | Events silently discarded on failure |
 
 ---
 
-## Anti-Patterns
+## References
 
-| Anti-pattern | Why it fails | Correction |
-|---|---|---|
-| **Event as state dump** — the payload carries the Aggregate's entire current state | Consumers couple to the full write model; every internal field change is a schema change | Carry the fact and the fields consumers need to react; consumers query a Read Model for anything more |
-| **Anaemic event** — payload is only an ID, forcing every consumer to call back | Turns event-driven integration into hidden synchronous coupling; the emitter's availability gates every consumer | Include the business-meaningful fields of the fact itself (what changed, from what, by whom) |
-| **CRUD event names** — `DataAssetUpdated` as the only event | The business meaning is erased; consumers must diff payloads to guess what happened | One event per business fact: `DataAssetClassified`, `DataAssetArchived`, each with precise triggers |
-| **Mutating a published schema in place** — editing v1 instead of versioning | Deployed consumers break without warning; the immutable-fact contract is violated | Additive change → minor bump with tolerant readers; breaking change → new major version run in parallel |
-| **Dual write** — request handler writes the database and publishes to the broker directly | A crash between the two writes loses events or publishes phantom ones | All publication goes through the Transactional Outbox |
-| **Commands disguised as events** — `SendComplianceReport` published as an "event" | An instruction broadcast to many consumers has no single accountable handler and cannot be rejected | Name the fact (`ComplianceGapDetected`) and let a Policy in the consuming context issue the Command |
-| **Consumer coupling to cross-Aggregate order** | Only per-Aggregate order is guaranteed by the partition key; cross-partition order is an accident of timing | Design consumers around per-Aggregate ordering plus `correlationId`/`causationId` for causal reconstruction |
-
----
-
-## Output Format
-
-```markdown
----
-name: domain-event-catalog
-product: [product name]
-bounded-context: [context name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: domain-modeler
----
-
-# Domain Event Catalog: [Bounded Context Name]
-
-## Event Summary
-
-| Event Name | Aggregate | Version | Consumers | Retention |
-|---|---|---|---|---|
-
----
-
-## Event Definitions
-
-### [EventName] v1.0.0
-
-| Field | Value |
-|---|---|
-| **Bounded Context** | |
-| **Aggregate** | |
-| **Trigger** | |
-| **Consumers** | |
-| **Retention** | |
-| **Idempotency Key** | |
-| **Policy** | |
-
-**Payload:**
-| Field | Type | Required | Description |
-|---|---|---|---|
-
-**Invariants:**
-- [Rule always true about this event]
-
-**Example:**
-```json
-{ ... }
-```
-
-[Repeat for each event]
-
----
-
-## Outbox Table Definition
-[SQL CREATE TABLE statement for this context's outbox_events table]
-
-## DLQ Topics
-| Source Topic | DLQ Topic | Alert Threshold |
-|---|---|---|
-```
+- **`references/event-format.md`** — Full envelope specification: Go struct, CloudEvents alignment, field-by-field purpose, worked `DataAssetClassified` example with every field filled
+- **`references/outbox-and-cdc.md`** — Outbox DDL, polling publisher (Go), CDC/Debezium configuration, idempotency consumer pattern, DLQ mechanics
+- **`references/versioning-and-retention.md`** — Additive versioning worked example, breaking-change migration playbook, event upcasting for event-sourced Aggregates, retention table with rationale, archival mechanics
+- **`references/catalog-template.md`** — Fill-in artifact template with worked `DataAssetClassified` entry showing every field
