@@ -1,232 +1,93 @@
 ---
 name: context-map-patterns
 description: >
-  Deep reference for the nine Context Map relationship patterns from Domain-Driven
-  Design — covering when to apply each pattern, the team dynamics each implies,
-  the implementation mechanism (ACL, OHS, Shared Kernel, etc.), the Consumer-Driven
-  Contract test requirement, and the downstream risk of each pattern choice.
-  Companion skill to bounded-context-mapping; used when the domain-modeler or
-  enterprise-architect needs to reason through relationship pattern selection in
-  detail.
-version: 1.1.0
+  Teaches the domain-modeler and enterprise-architect to select and apply the correct Context Map
+  integration pattern for each Bounded Context relationship — covering the full Evans/Vernon pattern
+  catalogue (Partnership, Shared Kernel, Customer/Supplier, Conformist, Anti-Corruption Layer, Open
+  Host Service / Published Language, Separate Ways, Big Ball of Mud), with explicit selection
+  criteria for each pattern, the political/organizational dynamics that drive pattern choice as much
+  as technical ones, and how each pattern manifests in this platform's implementation (Go ACL
+  adapter, OpenAPI-based OHS, schema-registry Published Language, etc.). Used during Design when
+  establishing inter-BC communication contracts.
+version: 2.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: [design, ddd, context-map, bounded-context, acl, ohs, shared-kernel, contracts]
+tags: ["design","domain-modeling","context-map","integration-patterns","acl","open-host-service","partnership","conformist"]
+related: [bounded-context-mapping, go-contract-test, integration-design, event-driven-patterns]
 ---
 
 # Context Map Patterns
 
 ## Purpose
 
-This skill is a deep reference for Context Map relationship patterns. Where `bounded-context-mapping` teaches how to draw the Context Map and select a pattern, this skill teaches the mechanics, trade-offs, and implementation implications of each pattern in detail.
+This skill teaches pattern selection for Context Map relationships. Where `bounded-context-mapping`
+teaches how to draw the map, this skill teaches which pattern belongs on each line — and why.
 
 Use this skill when:
-- The domain-modeler needs to explain the rationale for a pattern selection
-- The enterprise-architect is evaluating the service integration strategy
+- Selecting a pattern for a new Bounded Context relationship
+- Evaluating whether an existing integration design is correctly pattern-matched
 - A Consumer-Driven Contract requirement needs to be designed
-- A new context relationship is being added to an existing system
+- An integration anti-pattern (pass-through ACL, conformist-by-inertia) needs to be identified
+
+**References:**
+- `references/integration-patterns-catalogue.md` — full per-pattern details, Go implementation
+  shapes, precise use/do-not-use criteria, and worked examples from this repo's domain
+- `references/pattern-selection-guide.md` — the worked decision tree: start from team relationship,
+  arrive at 1–2 pattern candidates; political signals that override technical preference
+- `references/worked-example.md` — complete 3-BC Context Map (DataAsset Management, Compliance,
+  Reporting) with every relationship annotated with pattern and rationale
 
 ---
 
-## The Nine Patterns
+## The Primary Organizing Principle: Power and Obligation
 
-### 1. Partnership
+Pattern selection is driven as much by the **organizational relationship** between teams as by
+technical factors. The upstream/downstream power dynamic determines which patterns are viable:
 
-**What it is:** Two teams commit to succeed or fail together. They synchronise their planning and release cycles. Each team has veto power over the other's interface changes.
-
-**Team dynamic:** Requires high trust and continuous communication. Cannot be forced — both teams must agree.
-
-**When to use:** Two Bounded Contexts are so closely aligned in purpose that independent release is impossible for a period. Treat as temporary — work toward Customer/Supplier as the relationship matures.
-
-**Risk:** High coordination cost. If the teams drift, the partnership degrades into implicit coupling without the governance of Shared Kernel.
-
-**Implementation:** Shared planning meetings; unified release gates; joint architecture review for changes to shared interfaces.
-
----
-
-### 2. Shared Kernel
-
-**What it is:** Two Bounded Contexts share a small, explicitly agreed-upon subset of the domain model. The shared code is owned jointly and changes require agreement from both teams.
-
-**Team dynamic:** Requires disciplined governance. Any change to the Shared Kernel must be negotiated, tested in both contexts, and released coordinately.
-
-**When to use:** Two contexts genuinely share immutable concepts — canonical IDs, cross-cutting reference data, or published language schemas. Keep the shared kernel as small as possible.
-
-**Risk:** The kernel grows. Every team wants to add to it; no team wants to remove from it. A Shared Kernel that grows becomes a bottleneck that slows both teams.
-
-**Implementation:** A dedicated shared library or package. Both teams are owners. Changes require a PR approved by both teams. Consumer-Driven Contracts test the shared code from both directions.
-
----
-
-### 3. Customer / Supplier
-
-**What it is:** A clear upstream (Supplier) / downstream (Customer) dependency. The Supplier has obligations to the Customer — it must not make breaking changes without consulting the Customer, and it should prioritise the Customer's needs in its roadmap.
-
-**Team dynamic:** The Supplier has power over the Customer. The risk is that the Supplier deprioritises the Customer's needs. Consumer-Driven Contracts are the mechanism that gives the Customer power — the Supplier cannot break the contract without breaking the Customer's tests.
-
-**When to use:** Most internal upstream/downstream relationships should be Customer/Supplier. It is the most common pattern for well-governed microservices.
-
-**Risk:** If the Supplier team does not honour the obligation, the relationship degrades to Conformist. Consumer-Driven Contracts prevent this.
-
-**Implementation:** Consumer-Driven Contracts (Pact or equivalent). The Customer writes the contract tests; the Supplier runs them in CI. A failing contract test blocks the Supplier's deployment.
-
----
-
-### 4. Conformist
-
-**What it is:** The downstream context simply conforms to the upstream model. The upstream team has no obligation to the downstream and no incentive to negotiate.
-
-**Team dynamic:** The upstream team is indifferent to the downstream's needs. This is the team dynamic when integrating with a large external vendor, a legacy system with no owner, or an internal team with much higher power.
-
-**When to use:** When the upstream cannot be negotiated with. Accept the upstream model as-is. Do not fight it.
-
-**Risk:** The upstream model leaks into the downstream domain model, polluting it with concepts that don't belong. The downstream becomes dependent on the upstream's quirks.
-
-**Mitigation:** If the upstream model is poor or significantly different from the downstream's needs, escalate to ACL instead of Conformist. Conformist is acceptable only if the upstream model is reasonable and relatively stable.
-
-**Implementation:** No special mechanism — the downstream simply uses the upstream's types and models directly. Document the dependency and the upstream's release cycle.
-
----
-
-### 5. Anti-Corruption Layer (ACL)
-
-**What it is:** The downstream context builds a translation layer that converts the upstream model into the downstream's own Ubiquitous Language. The ACL is the boundary — nothing inside the downstream context ever sees the upstream model directly.
-
-**Team dynamic:** The downstream team is taking full control of its own model, regardless of the upstream's model quality or stability.
-
-**When to use:**
-- Integrating with third-party APIs (Google Drive, AWS S3, Office 365) — **always**
-- Integrating with a legacy system with a poor or poorly-documented model
-- When the upstream model is significantly different from the downstream's Ubiquitous Language
-- When the upstream is expected to change frequently and the downstream must be insulated
-
-**Risk:** The ACL must be maintained as the upstream changes. It is an investment — but the alternative (model pollution) is more expensive.
-
-**Implementation:**
-```
-External API → ACL Package
-                ├── adapters/     (HTTP client wrappers — call the external API)
-                ├── translators/  (map upstream types to downstream types)
-                └── ports/        (interface definitions the domain uses)
-```
-
-The domain never imports from `adapters/`. It imports only from `ports/`. The `translators/` convert in both directions.
-
----
-
-### 6. Open Host Service (OHS)
-
-**What it is:** The upstream context defines a well-documented, versioned protocol that any downstream context can use. The protocol is the contract — not the implementation.
-
-**Team dynamic:** The upstream team takes on responsibility for a public API. This requires API versioning discipline, backward compatibility commitments, and change communication.
-
-**When to use:** When one context must serve many downstream consumers. Rather than negotiating privately with each Consumer, publish a standard protocol.
-
-**Risk:** The OHS becomes a lowest-common-denominator API that serves no consumer well because it tries to serve all. Design for the primary consumer first; extend carefully.
-
-**Implementation:** OpenAPI specification (versioned). Consumer-Driven Contracts for each known consumer. Breaking changes require a major version bump; all versions are supported for a defined sunset period.
-
----
-
-### 7. Published Language (PL)
-
-**What it is:** A well-documented, versioned shared language (event schemas, canonical data models) that multiple contexts use to communicate. Often used with OHS: the OHS publishes using the Published Language.
-
-**Team dynamic:** Similar to Shared Kernel but for communication formats rather than shared code. Requires a schema registry and governance process for schema evolution.
-
-**When to use:** Event-driven integration across Bounded Contexts. The event schema is the Published Language.
-
-**Risk:** Schema evolution is hard to coordinate across many consumers. Additive changes are safe; breaking changes require coordinated migration.
-
-**Implementation:**
-- JSON Schema or Avro schemas registered in a schema registry
-- All producers validate outgoing events against the schema
-- All consumers validate incoming events against the schema
-- Schema changes require a PR approved by the schema owner
-- Breaking changes: run both schema versions simultaneously during migration
-
----
-
-### 8. Separate Ways
-
-**What it is:** Two contexts have no integration. They operate completely independently.
-
-**When to use:** When the cost of integration exceeds the value. Two subdomains that have nothing to share should not be forced to integrate.
-
-**Risk:** If the separation is wrong — if the contexts actually do share data or need to coordinate — the separation creates duplication and inconsistency. Validate the decision to separate with Event Storming before committing.
-
-**Implementation:** No code shared. No events exchanged. No shared database tables. Complete independence.
-
----
-
-### 9. Big Ball of Mud
-
-**What it is:** Not a design pattern — a recognition that an existing system has no clear boundaries, no defined interfaces, and ad-hoc integration everywhere. Named in the Context Map to document reality.
-
-**When to use:** When documenting a legacy system or an existing service that has accumulated coupling over time. Naming it "Big Ball of Mud" on the Context Map is an honest assessment — it does not pretend a boundary exists where there isn't one.
-
-**Next step:** Plan migration toward defined boundaries (ACL or OHS as the entry point into the legacy system). Never design new services to directly integrate with a Big Ball of Mud — always introduce an ACL.
-
----
-
-## Pattern Selection Guide
-
-| Situation | Pattern |
+| Upstream/Downstream Dynamic | Pattern Space |
 |---|---|
-| Third-party API or external service | ACL (always) |
-| Legacy system with poor model | ACL |
-| Many consumers of one service | OHS + PL |
-| Two internal teams, negotiating | Customer/Supplier + Consumer-Driven Contracts |
-| Non-cooperative upstream | Conformist (if model OK) or ACL (if model is poor) |
-| Event-driven integration | PL (event schemas) |
-| Two tightly coupled contexts, same team | Shared Kernel (small) or Partnership (temporary) |
+| Two teams with mutual obligation, negotiating as equals | Partnership, Shared Kernel, Customer/Supplier |
+| Upstream has no obligation to downstream | Conformist or ACL |
+| Upstream serves many consumers | Open Host Service + Published Language |
 | No real dependency | Separate Ways |
-| Existing legacy without boundaries | Big Ball of Mud (documented); plan ACL migration |
+| Legacy system with undefined boundaries | Big Ball of Mud → plan ACL migration |
+
+The political signal overrides the technical preference. Conformist is not a compromise — it is
+the correct pattern when the upstream team has no obligation to the downstream. An ACL protects the
+downstream's model regardless of the upstream's cooperation level.
 
 ---
 
-## Consumer-Driven Contract Tests
+## Pattern Quick Reference
 
-Consumer-Driven Contracts are the enforcement mechanism for Customer/Supplier relationships. The Consumer writes the contract (what it expects from the Supplier); the Supplier runs the contract tests in CI.
-
-Every Customer/Supplier relationship in the Context Map must have:
-1. A named contract owner (the Consumer team / context)
-2. A contract test suite (Pact or HTTP-level tests)
-3. A CI gate: Supplier's deployment pipeline fails if any Consumer's contract test fails
-4. A process for the Consumer to update the contract when its needs change
-
-Without Consumer-Driven Contracts, a Customer/Supplier relationship is a verbal agreement — it will be violated.
-
----
-
-## Worked Example
-
-Pattern Selection Rationale for the data-estate compliance product:
-
-| Relationship | Pattern selected | Rationale | Consumer-Driven Contracts required? |
+| # | Pattern | One-Sentence Description | Primary Selection Signal |
 |---|---|---|---|
-| Google Drive API → Storage Integration | ACL | Vendor `File` resource model (mimeTypes, revisions, permissions arrays) must not leak into the domain; the ACL translates it into `DataAsset` candidates and `StorageSource` health signals | No (vendor will not run our tests; ACL integration tests instead) |
-| AWS S3 API → Storage Integration | ACL | Same reasoning as Google Drive; S3 object/bucket vocabulary stays behind `ports/` | No |
-| Storage Integration → Classification Engine | OHS + PL | Classification is consumed by discovery today and by future connectors; `DataAssetDiscovered` events are the Published Language, schema-registered | Yes — one contract per consumer of the OHS |
-| Classification Engine → Compliance Intelligence | Customer/Supplier | Compliance depends on `DataAssetClassified` (carrying `SensitivityLevel`) and can negotiate schema needs with the upstream | Yes |
-| Graph Context → Compliance Intelligence | Customer/Supplier | Compliance queries entity relationships for gap analysis; Graph owes it a stable query contract | Yes |
-| Classification Engine ↔ Billing (future) | Separate Ways | Usage metering can be derived from broker consumer offsets; direct integration adds coupling with no compensating value | No |
-
-Note what is absent: no Shared Kernel (single team, but contexts must stay independently deployable), no Conformist (every external model is poor enough to warrant an ACL), no Partnership (no relationship where neither side can be upstream).
+| 1 | **Partnership** | Two teams coordinate releases; neither can proceed without the other | Shared delivery deadline with mutual veto power over interface changes |
+| 2 | **Shared Kernel** | Two contexts share a small, jointly-owned subset of the domain model | Immutable canonical concepts genuinely shared; both teams govern every change |
+| 3 | **Customer/Supplier** | Upstream has obligations to downstream; Consumer-Driven Contracts enforce them | Two internal teams negotiating; downstream can demand a stable contract |
+| 4 | **Conformist** | Downstream adopts upstream model as-is; upstream has no obligation | Upstream is indifferent or inaccessible; model is coherent in the downstream's domain sense |
+| 5 | **Anti-Corruption Layer** | Downstream translates upstream model into its own Ubiquitous Language via an adapter | Third-party API, legacy system, or upstream vocabulary that conflicts with the downstream's model |
+| 6 | **Open Host Service** | Upstream publishes a versioned protocol any downstream can consume | One upstream serves multiple downstream consumers; stability and versioning discipline required |
+| 7 | **Published Language** | A shared, versioned event or data schema multiple contexts use to communicate | Event-driven integration; the schema is the cross-context contract |
+| 8 | **Separate Ways** | No integration; both contexts operate independently | Cost of integration exceeds its value; no domain concepts genuinely shared |
+| 9 | **Big Ball of Mud** | Existing system with no clear boundaries; documented honestly | Naming reality in a legacy system; plan ACL as the single entry point |
 
 ---
 
-## Quality Criteria
+## Decision Table: Situation → Pattern Candidates
 
-| Criterion | Pass | Fail |
+| Situation | Primary Pattern | When to Escalate |
 |---|---|---|
-| Exhaustive coverage | Every connection on the Context Map carries exactly one of the nine patterns | Unnamed lines, or one connection carrying two conflicting patterns |
-| Rationale recorded | Each selection states why it beat the plausible alternatives | Pattern named with no rationale — the decision cannot be revisited safely |
-| ACL for external systems | Every third-party or legacy integration is behind an ACL; domain packages import only from `ports/` | Vendor SDK types appearing in domain or application packages |
-| Contracts enforce Customer/Supplier | Every Customer/Supplier and OHS relationship has a Consumer-Driven Contract suite wired as a CI gate on the Supplier | Contract exists on paper but does not block the Supplier's deployment |
-| Shared Kernel enumerated | Any Shared Kernel lists its exact contents and joint-approval rule | An open-ended "common" or "shared" package labelled Shared Kernel |
-| Temporary patterns time-boxed | Partnership and dual-schema migration states carry an explicit exit plan | Indefinite Partnership; "temporary" dual publishing with no sunset date |
+| Third-party API (Google Drive, AWS S3) | ACL — always | N/A |
+| Legacy system with poor model | ACL | N/A |
+| Internal team, upstream cooperative | Customer/Supplier + Consumer-Driven Contracts | To OHS when downstream count exceeds 2–3 |
+| Internal team, upstream uncooperative | Conformist (model OK) or ACL (model poor) | Escalate Conformist to ACL when upstream vocabulary conflicts with downstream's Ubiquitous Language |
+| One upstream, many consumers | OHS + Published Language | — |
+| Event-driven integration | Published Language (event schemas) | — |
+| Same team, tightly coupled contexts | Shared Kernel (small) or Partnership (temporary) | — |
+| No shared domain concepts | Separate Ways | — |
+| Existing legacy without clear boundaries | Big Ball of Mud → plan ACL migration | — |
 
 ---
 
@@ -234,23 +95,36 @@ Note what is absent: no Shared Kernel (single team, but contexts must stay indep
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **Pattern archaeology** — naming whatever integration already exists as a "pattern" after the fact | The map documents accidents instead of decisions; obligations were never agreed | Select the pattern first, then build the integration to match it |
-| **Pass-through ACL** — an ACL whose translators map upstream fields 1:1 into identically-shaped downstream types | All the cost of an ACL with none of the insulation; upstream renames still break the domain | Translate into the downstream's Ubiquitous Language, or admit the relationship is Conformist |
-| **Conformist by inertia** — conforming to an internal upstream because negotiating felt hard | Cedes the downstream model to a team that owes it nothing; internal relationships can and should carry obligations | Escalate to Customer/Supplier with Consumer-Driven Contracts; reserve Conformist for genuinely non-negotiable upstreams |
-| **Union-of-wishes OHS** — extending the host protocol with every consumer's request | The API becomes a lowest common denominator that serves nobody and can never shed a field | Design for the primary consumer; additive extensions only after a named consumer commits to them |
-| **`common/` labelled Shared Kernel** — a grab-bag utility package declared a Shared Kernel retroactively | No agreed scope, no joint ownership, no governance — it is coupling wearing a pattern's name | Enumerate a minimal kernel with two-owner approval, or dissolve it into per-context code |
-| **Building against the Big Ball of Mud directly** — new services calling into the legacy tangle | The mud's instability and implicit contracts propagate into every new service | One ACL is the single entry point into the mud; all new integration goes through it |
+| **Pattern archaeology** | Names whatever integration exists as a pattern — documents accidents, not decisions | Select the pattern first; build the integration to match it |
+| **Pass-through ACL** | Translator maps upstream fields 1:1 into identically-shaped downstream types — all cost, no insulation | Translate into the downstream's Ubiquitous Language, or admit the relationship is Conformist |
+| **Conformist by inertia** | Conforming to an internal upstream because negotiating felt difficult | Escalate to Customer/Supplier; reserve Conformist for genuinely non-negotiable upstreams |
+| **Union-of-wishes OHS** | OHS extended with every consumer's special request | Design for the primary consumer; additive extensions only after a named consumer commits |
+| **`common/` labelled Shared Kernel** | Grab-bag utility package with no agreed scope or joint ownership | Enumerate a minimal kernel with two-owner approval, or dissolve it into per-context code |
+| **Building against Big Ball of Mud directly** | Legacy instability propagates into every new service | One ACL is the single entry point; all new integration goes through it |
+
+---
+
+## Consumer-Driven Contracts Requirement
+
+Every **Customer/Supplier** and **Open Host Service** relationship must have:
+1. A named contract owner (the Consumer context)
+2. A contract test suite (schema-based or Pact)
+3. A CI gate: Supplier's pipeline fails if any Consumer's contract test fails
+4. A process for the Consumer to update the contract when its needs change
+
+Without Consumer-Driven Contracts, a Customer/Supplier relationship is a verbal agreement — it
+will be violated. See `go-contract-test` for the Go implementation.
 
 ---
 
 ## Output Format
-
-This skill produces reference content used in `bounded-context-mapping`. Its direct output is the Pattern Selection Rationale section of the Context Map artifact:
 
 ```markdown
 ## Pattern Selection Rationale
 
 | Relationship | Pattern selected | Rationale | Consumer-Driven Contracts required? |
 |---|---|---|---|
-| [Context A] → [Context B] | [Pattern] | [Why this pattern and not others] | [Yes / No] |
+| [Context A] → [Context B] | [Pattern] | [Why this pattern and not alternatives] | [Yes / No] |
 ```
+
+See `references/worked-example.md` for a complete, annotated 3-BC context map.
