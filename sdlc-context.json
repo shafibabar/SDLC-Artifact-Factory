@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-31",
-    "updated_by": "Chunk 49 — test-pyramid deep rebuild (issue #424, wave 1 of 3). Skills/test-pyramid: v1.1.0 → v2.0.0 (MAJOR: description rewritten as trigger surface); related: field added (13 skills); Output Format template moved to references/test-strategy-template.md; Coverage Philosophy updated with formal Statement/Branch/Path Coverage names; exploratory-testing pointer added in Shift-Right. New contract test: tests/skills/test-pyramid.contract.sh. PR merges into issue-424-test-engineering-rebuild integration branch (not main until all 3 skills complete)."
+    "updated_by": "Chunk 50 — test-fixture-design deep rebuild (issue #424, wave 2 of 3). Skills/test-fixture-design: v1.1.0 → v2.0.0 (MAJOR: description rewritten as trigger surface); related: field added (go-unit-test, go-integration-test, go-e2e-test, mock-generation); 5 Go code blocks moved from body to references/fixture-patterns-catalogue.md; Object Mother pattern and unit-vs-integration fixture strategy added; new contract test: tests/skills/test-fixture-design.contract.sh. New glossary terms: Object Mother, Test Data Builder. PRs merge into issue-424-test-engineering-rebuild integration branch (not main until all 3 skills complete)."
   },
 
   "project": {
@@ -901,6 +901,31 @@
         "9 new contract tests added for skills that had none before (go-migration, go-dockerfile, go-makefile, go-openapi-codegen, go-mutation-test, go-e2e-test, go-performance-test, go-load-test, go-contract-test), each grounded in a fact confirmed present in the rebuilt content and run live before being counted as passing. One pre-existing contract test (go-event-consumer) needed its premise rewritten after a legitimate design correction (the liveness heartbeat's single-ticker design was replaced with a two-signal design that actually catches a wedged consume loop, per Cox-Buday's real Heartbeat Pattern) -- rerun live after the rewrite, not left silently broken.",
         "5 new canonical glossary terms this chunk (Fitness Function, Expand/Contract Pattern, Blast Radius, Steady-State Hypothesis, Provider State), each verified to recur across multiple rebuilt skills (not a one-off mention) before being added, and each checked for zero duplication against the existing glossary before insertion.",
         "Trailing housekeeping sub-issue (#368, PR #393) closed the corrected campaign. The react-* domain campaign (issue #326) had not yet received the same per-skill correction at this point -- that was completed as Chunks 44/45 on main (issues #394-#406, PRs #408-#420)."
+      ]
+    },
+    {
+      "chunk": 49,
+      "title": "test-pyramid deep rebuild under skill-authoring-standards (issue #424, wave 1 of 3)",
+      "status": "complete",
+      "date_completed": "2026-07-31",
+      "deliverables": [
+        "skills/test-pyramid/SKILL.md: v1.1.0 → v2.0.0 (MAJOR: description rewritten as trigger surface, naming test-strategist, implement/quality phases, formal coverage criterion nouns, exploratory-testing pointer); related: field added (13 skills); Output Format template moved to references/test-strategy-template.md; Coverage Philosophy updated with formal Statement/Branch/Path Coverage names per testing-vv-dictionary-quigley.md research; Shift-Right section gained one-sentence pointer to exploratory testing in uat-plan",
+        "skills/test-pyramid/references/test-strategy-template.md (new): self-contained Output Format template with Pyramid Target table (unit/contract/integration/e2e), Shift-Left/Right methodology, Coverage targets by quadrant, Flaky-test policy, Delegated Testing boundary note",
+        "tests/skills/test-pyramid.contract.sh (new): probes 70% mutation kill threshold from references/test-strategy-template.md — fact exists only in references/, not SKILL.md body, proving progressive-disclosure split is functional",
+        "Sub-issues: #425 (discovery), #427 (blueprint), #428 (content), #430 (tests), #431 (housekeeping); all merged into issue-424-test-engineering-rebuild integration branch"
+      ]
+    },
+    {
+      "chunk": 50,
+      "title": "test-fixture-design deep rebuild under skill-authoring-standards (issue #424, wave 2 of 3)",
+      "status": "complete",
+      "date_completed": "2026-07-31",
+      "deliverables": [
+        "skills/test-fixture-design/SKILL.md: v1.1.0 → v2.0.0 (MAJOR: description rewritten as trigger surface, naming test-strategist, implement phase, exact capability nouns — Test Data Builder, Object Mother, hermetic fixture, t.Cleanup, golden file, parallel-safe isolation, Testcontainers, unit-vs-integration fixture strategy); related: field added (go-unit-test, go-integration-test, go-e2e-test, mock-generation); all 5 Go code blocks moved from body to references/; Object Mother vs. Test Data Builder distinction added; unit-vs-integration fixture strategy section added; cross-reference to go-integration-test's rollback-vs-tenant tradeoff added; Khorikov maintainability rationale for builders added",
+        "skills/test-fixture-design/references/fixture-patterns-catalogue.md (new, 420 lines): 7 self-contained sections — Test Data Builder (full Go code, DataAssetBuilder), Object Mother (MakeClassifiedAsset/MakeArchivedAsset/MakeUnclassifiedAsset/SeedActiveTenant with Go code), t.Cleanup Teardown (SetupTestDB/FreshTenant Go code, why defer fires too early), Deterministic Data (fixed clock, explicit IDs, seeded rand), Golden Files (AssertGolden helper, normalizeForGolden pattern), Parallel-Safe Isolation (tenant-scoped vs. transaction rollback), Unit-Layer vs. Integration-Layer Fixtures (decision table and rule)",
+        "tests/skills/test-fixture-design.contract.sh (new): probes SeedActiveTenant — the Object Mother factory for creating a fully-configured active tenant in the test database; this function exists only in references/, not SKILL.md body, proving progressive-disclosure split is functional",
+        "New canonical glossary terms warranted: Object Mother, Test Data Builder (to be added in glossary-management when that skill is next touched)",
+        "Sub-issues: #436/#438 (discovery wave 1), #439 (blueprint), #440 (content), #441 (tests), #442 (housekeeping); all merged into issue-424-test-engineering-rebuild integration branch"
       ]
     }
   ],
