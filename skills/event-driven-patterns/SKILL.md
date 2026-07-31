@@ -1,231 +1,85 @@
 ---
 name: event-driven-patterns
 description: >
-  Reference skill for the core event-driven architecture patterns used in this
-  plugin — covering Event Choreography vs Orchestration, the Saga pattern for
-  distributed transactions, Idempotent Consumers, Event Replay, the Competing
-  Consumers pattern for parallel processing, and Change Data Capture. Provides
-  the pattern knowledge that the enterprise-architect, backend-engineer, and
-  platform-engineer apply when designing and implementing event-driven services.
-version: 1.1.0
+  Teaches the enterprise-architect and backend-engineer to select and apply
+  event-driven integration patterns — Event Choreography vs. Orchestration, the
+  Saga pattern for distributed transactions, Idempotent Consumers, Competing
+  Consumers, the Transactional Outbox, Change Data Capture, Dead Letter Queues,
+  and Retry/Backoff — covering the explicit selection criterion for each, the
+  consistency guarantees each provides, the failure modes each defends against,
+  and the Go + Redpanda implementation in this platform. Used during Design when
+  defining how Bounded Contexts communicate asynchronously.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, event-driven, saga, choreography, orchestration, idempotency, cdc]
+tags: [design, architecture, event-driven, choreography, orchestration, saga, idempotency, transactional-outbox, cdc, dead-letter-queue]
+related: [integration-design, data-pipeline-design, event-schema-design, cqrs-pattern, container-diagram, context-map-patterns]
 ---
 
 # Event-Driven Patterns
 
 ## Purpose
 
-This skill is a reference for the event-driven architecture patterns that appear throughout the plugin's artifact set. It provides the "how" behind patterns that are mandated in the methodology and tech stack — giving the enterprise-architect and backend-engineer the knowledge to apply each pattern correctly and avoid its failure modes.
+Reference for the event-driven architecture patterns mandated by this plugin's methodology and Redpanda tech stack. It gives the enterprise-architect and backend-engineer the criteria to **select** the right pattern for a given asynchronous integration between Bounded Contexts, the **consistency guarantee** each provides, and the **failure mode** each defends against — so a flow is designed with the correct coordination style and correct delivery guarantees, not defaulted into one.
+
+This skill is knowledge, not reasoning: it holds the selection tables and criteria. Applying them to a specific flow (which pattern this scan needs, which steps compensate) is the enterprise-architect's and backend-engineer's job.
 
 ---
 
-## 1. Event Choreography vs Orchestration
+## The Primary Choice: Choreography vs. Orchestration
 
-The fundamental choice in multi-service event flows:
+Every multi-service flow is first classified on its **coordination style**. This is the organizing decision; every other pattern below is layered on top of it.
 
-### Choreography
+| | Choreography | Orchestration |
+|---|---|---|
+| **Who decides "what's next"** | Each service reacts to events autonomously; no central coordinator | A central orchestrator issues Commands and tracks progress |
+| **Coupling** | Lowest — events are the public API between contexts | Orchestrator couples to every participant |
+| **Central view of progress** | None — "where is this scan?" requires reading N services' logs | One place holds the flow state, queryable |
+| **Failure recovery** | Distributed across participants | Clear, centralized recovery path |
+| **Select when** | Flow is simple (**2–3 services**); steps are natural independent reactions; no compensation needed | Flow is complex (**4+ services**); needs a queryable central view; has compensating transactions |
 
-Each service reacts to events from other services. There is no central coordinator — each service knows what to do when it receives an event.
+**Selection criteria, in order of weight:** (1) **number of steps** — 2–3 favors choreography, 4+ favors orchestration; (2) **need for a central view of progress** — any "where is this business process right now?" requirement forces orchestration; (3) **coupling tolerance** — if the participants are owned by independent teams and must stay decoupled, prefer choreography and accept the tracing cost.
 
-```
-Storage Integration                 Classification Service
-emits: StorageSourceConnected  ────▶  reacts: trigger initial scan
-emits: FileCrawled             ────▶  reacts: classify file
-                                      emits: DataAssetClassified
-                                                    │
-                                                    ▼
-                                      Graph Service
-                                      reacts: update knowledge graph
-```
+**Default for this plugin:** Choreography for standard Domain Event flows between two contexts; **Orchestration (a persisted Saga coordinator)** for any multi-step distributed business process with compensations.
 
-**Advantages:** Loose coupling; each service is independently deployable; no single point of failure.
-
-**Disadvantages:** Hard to trace the overall flow; difficult to debug when something fails midway; can lead to circular event chains if not carefully designed.
-
-**Use when:** The flow is simple (2-3 services); the services are clearly owned by independent teams; the events are the natural public API between contexts.
-
-### Orchestration
-
-A central orchestrator service coordinates the flow by issuing Commands to each participant and waiting for their results.
-
-```
-Scan Orchestrator
-  1. Command → Storage Integration: "crawl this source"
-  2. Receives: CrawlCompleted event
-  3. Command → Classification Service: "classify these files"
-  4. Receives: ClassificationCompleted event
-  5. Command → Graph Service: "update graph"
-  6. Receives: GraphUpdated event
-  7. Emits: EstateScanCompleted
-```
-
-**Advantages:** The flow is visible and traceable in one place; easier to debug; clear recovery path when a step fails.
-
-**Disadvantages:** The orchestrator is a coupling point; it must know about all participants; a bug in the orchestrator affects the entire flow.
-
-**Use when:** The flow is complex (4+ services); the business logic of "what happens next" is genuinely cross-cutting; strong observability of the flow is required.
-
-**Default for this plugin:** Choreography for standard Domain Event flows; Orchestration (Saga) for multi-step distributed business processes.
+`references/pattern-catalogue.md` classifies each flow further on all three of Ford's *dynamic-coupling* axes — communication (sync/async), **consistency (atomic/eventual)**, and coordination (choreographed/orchestrated) — and names the eight Saga archetypes those axes produce, so consistency is chosen as its own decision, not conflated with coordination.
 
 ---
 
-## 2. Saga Pattern (Distributed Transactions)
+## The Pattern Menu
 
-A Saga is a sequence of local transactions. Each step emits an event (or message) that triggers the next step. If a step fails, compensating transactions undo the preceding steps.
+Each pattern below has a one-line definition and its **primary selection criterion**. Full definitions, failure modes, consistency guarantees, and Redpanda manifestations are in `references/pattern-catalogue.md`; the Saga in depth is in `references/saga-patterns.md`; Go code is in `references/go-implementation.md`.
 
-### Choreography-based Saga
+| Pattern | One line | Select when (primary criterion) |
+|---|---|---|
+| **Event Choreography** | Services react to each other's events with no coordinator | Simple flow (≤3 services), steps are independent reactions |
+| **Orchestration (Saga coordinator)** | A persisted state machine issues Commands and tracks progress | Complex flow (4+ steps) needing a central, queryable view |
+| **Saga** | A sequence of local transactions with compensating transactions on failure | A business process spans **multiple services/Aggregates** and cannot be one ACID transaction |
+| **Idempotent Consumer** | Processing the same event twice yields the same result as once | **Always** — Redpanda delivery is at-least-once; every consumer needs it |
+| **Competing Consumers** | Multiple instances of one consumer group split a topic's partitions | Processing volume exceeds a single consumer's throughput |
+| **Transactional Outbox** | State change and its event are written in **one** local transaction; a publisher relays the outbox row | A new service must emit an event atomically with its own DB write |
+| **Change Data Capture (CDC)** | DB row changes are streamed as events without app code changes | A **legacy** service can't adopt the Outbox, or you must capture existing table changes |
+| **Dead Letter Queue (DLQ)** | Poison messages are routed to a side topic after N failed retries | A malformed/unprocessable event must not block its partition forever |
+| **Retry with Backoff** | Failed processing is retried on a growing, jittered delay | A **transient** failure (network, downstream 5xx) is worth re-attempting before DLQ |
 
-```
-Step 1: ConnectStorageSource    → emits StorageSourceConnected
-Step 2: CreateConsumerGroup     → emits ConsumerGroupCreated (or Failed → compensate Step 1)
-Step 3: TriggerInitialScan      → emits InitialScanStarted (or Failed → compensate Steps 1-2)
-```
-
-Each service knows its compensating action. `StorageSourceConnected` → if Step 2 fails → emit `DisconnectStorageSource` command.
-
-### Orchestration-based Saga
-
-```
-Saga Orchestrator tracks state:
-  STARTED
-    → send ConnectStorageSource command
-  STORAGE_CONNECTED
-    → send CreateConsumerGroup command
-  CONSUMER_GROUP_CREATED
-    → send TriggerInitialScan command
-  SCAN_TRIGGERED → COMPLETED
-  
-  On any failure:
-  STORAGE_CONNECTED + CreateConsumerGroup failed
-    → send DisconnectStorageSource (compensate)
-  → FAILED
-```
-
-The Saga Orchestrator persists its state — it must survive restarts and continue from where it left off. The state transition is persisted **before** the next Command is dispatched; a crash between dispatch and persistence is resolved by the participants' idempotency (the re-dispatched Command is deduplicated).
-
-### Compensation Rules
-
-Compensation is where Sagas actually fail in production. These rules are non-negotiable:
-
-1. **Compensate in reverse order.** Compensating transactions run in the reverse order of the completed steps. Step 3 fails → compensate Step 2, then Step 1. Forward steps may have built on earlier state; unwinding out of order compensates state a later compensation still depends on.
-2. **Compensations must not fail permanently.** A compensating transaction is retried until it succeeds or is escalated to manual intervention (DLQ + alert). There is no "compensation of a compensation" — design each compensating action to be idempotent and always eventually applicable.
-3. **Classify every step: compensatable, pivot, or retryable.** A *compensatable* step can be undone. The *pivot* is the point of no return — once it commits, the Saga can only move forward. *Retryable* steps after the pivot must always eventually succeed. Order steps so all compensatable steps precede the pivot; a Saga with two pivots is two Sagas.
-4. **Compensation is semantic, not rollback.** `DisconnectStorageSource` does not make `StorageSourceConnected` un-happen — the event history keeps both facts. Consumers of the intermediate events must tolerate seeing work that was later compensated (e.g. a scan started, then cancelled).
-5. **Compensation data is captured on the way forward.** Each step records in the Saga `payload` whatever its compensation will need (created IDs, prior values). A compensation that must query current state to know what to undo will race concurrent changes.
-
-**Saga state table (PostgreSQL):**
-```sql
-CREATE TABLE saga_instances (
-    id              UUID PRIMARY KEY,
-    saga_type       TEXT NOT NULL,
-    current_state   TEXT NOT NULL,
-    payload         JSONB NOT NULL,
-    started_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    completed_at    TIMESTAMPTZ,
-    failed_at       TIMESTAMPTZ,
-    failure_reason  TEXT
-);
-```
+**Two patterns that are easy to confuse — pick deliberately:**
+- **Transactional Outbox vs. CDC** — both get a DB change onto a topic. The **Outbox is the default for new services** (simpler to operate, emits domain-meaningful events). CDC is for **legacy** systems you cannot modify, and its events reflect *table row structure*, not domain concepts. Using CDC where the Outbox would do is an anti-pattern.
+- **Retry/Backoff vs. DLQ** — Retry is for **transient** failures worth re-attempting; the DLQ is the terminus for **permanent** failures (poison messages) after retries are exhausted, so one bad message never blocks a partition. They compose: retry N times, then DLQ.
 
 ---
 
-## 3. Idempotent Consumers
+## Eventual Consistency: When It's Acceptable
 
-Redpanda (Kafka) provides at-least-once delivery. A consumer may receive the same event more than once (after a restart, network failure, or rebalance). Consumers must be idempotent — processing the same event twice must produce the same result as processing it once.
+Every asynchronous pattern above trades synchronous atomicity for **eventual consistency** — Kleppmann's precise, weak guarantee: *if writes stop, replicas eventually converge, with no promise about ordering or timing.* The design must state, for each flow, whether that is acceptable.
 
-### Implementation Pattern
+**Eventual consistency is acceptable when** the intermediate state is a tolerable, visible fact — a DataAsset is "classified" a few seconds after it is "ingested"; a compliance dashboard lags the write side by seconds. Consumers must tolerate seeing work that is in-flight or was later compensated.
 
-```go
-type IdempotencyStore interface {
-    HasProcessed(ctx context.Context, eventID uuid.UUID) (bool, error)
-    MarkProcessed(ctx context.Context, eventID uuid.UUID) error
-}
+**A synchronous call is required instead when** the caller cannot proceed without the result *and* the result must be current — e.g., an authorization check ("may this tenant access this source?") gating a request, or a uniqueness constraint that must hold *now* (a **linearizability** need, not merely eventual). These are the deliberate exceptions; everything else defaults to async events.
 
-func (h *DataAssetClassifiedHandler) Handle(ctx context.Context, event domain.DataAssetClassified) error {
-    // Idempotency check
-    processed, err := h.idempotency.HasProcessed(ctx, event.EventID)
-    if err != nil {
-        return fmt.Errorf("checking idempotency: %w", err)
-    }
-    if processed {
-        return nil // already handled — safe to skip
-    }
+**Causal ordering.** The event envelope's `causationId`/`correlationId` fields carry *happens-before* metadata (Kleppmann's causal consistency — cheaper than linearizability). Partitioning by `tenant_id` preserves per-tenant order **within a partition** only; two causally-related events on *different* Aggregates can still be observed out of order across partitions. If a flow genuinely needs causal ordering across Aggregates, that is a design constraint to name explicitly — see `references/pattern-catalogue.md`.
 
-    // Process event
-    if err := h.readModelStore.UpdateSensitivity(ctx, event.DataAssetID, event.SensitivityLevel); err != nil {
-        return err
-    }
-
-    // Mark processed (in the same transaction as the state update)
-    return h.idempotency.MarkProcessed(ctx, event.EventID)
-}
-```
-
-The idempotency check and the state update must be in the same transaction. If they are not, a crash between the state update and the idempotency mark will cause the event to be processed again on restart.
-
----
-
-## 4. Event Replay
-
-The ability to replay events from the beginning of the event stream is critical for:
-- Rebuilding a corrupted Read Model
-- Adding a new Read Model without re-scanning all data
-- Debugging — reproducing a historical state
-- Onboarding a new consumer service that needs to process historical events
-
-**Replay requirements:**
-1. Redpanda topic retention must be set long enough for replay (minimum 7 days; compliance use cases may require indefinitely)
-2. All consumers must be idempotent (replay will re-deliver already-processed events)
-3. Consumer groups can be reset to the beginning of a topic (`--reset-offsets --to-earliest`)
-4. Read Models must support full rebuild (drop and rebuild, not incremental patch)
-
-**Replay as a maintenance operation:**
-```bash
-# Reset consumer group offset to beginning of topic
-rpk group seek [consumer-group] --topic [topic-name] --to-earliest
-
-# Restart the consumer service — it will process all events from the beginning
-```
-
----
-
-## 5. Competing Consumers (Parallel Processing)
-
-When processing volume exceeds single-consumer throughput, multiple consumer instances read from the same consumer group. Redpanda assigns partitions to each consumer instance — each partition is processed by exactly one consumer at a time.
-
-```
-Topic: classification.file-crawled (8 partitions)
-Consumer Group: classification-service
-  Instance 1: partitions 0, 1
-  Instance 2: partitions 2, 3
-  Instance 3: partitions 4, 5
-  Instance 4: partitions 6, 7
-```
-
-**Partition key design:** The partition key determines which partition an event lands on. Events with the same partition key always go to the same partition, which means they are always processed by the same consumer instance in order.
-
-For the first product, partition by `tenant_id` — all events for a given tenant go to the same partition, preserving per-tenant ordering while allowing concurrent processing across tenants.
-
----
-
-## 6. Change Data Capture (CDC)
-
-CDC captures database row changes as events, without modifying application code. Debezium (or PostgreSQL logical replication) streams `INSERT`, `UPDATE`, and `DELETE` operations as events to Redpanda.
-
-**When to use:**
-- Integrating with a legacy service that cannot be modified to use the Transactional Outbox
-- Building a real-time analytics pipeline from an existing database
-- Migrating from a monolith to microservices by capturing existing database changes as events
-
-**When NOT to use:**
-- As a substitute for the Transactional Outbox in new services — the Transactional Outbox is simpler to operate
-- When event schemas need to be domain-meaningful — CDC events reflect table row structure, not domain concepts
-
-**CDC in this plugin's first product:** CDC is used for the graph update pipeline — changes to entity extraction results in the Classification service are captured and streamed to the Graph service via CDC, avoiding a direct service call.
+**No distributed transactions.** This platform never uses two-phase commit (2PC) across services — it is a blocking protocol that collapses availability (Kleppmann Ch. 9). Atomicity is achieved *locally* (Transactional Outbox: one transaction, one node) and cross-service effects propagate as an idempotently-retriable event stream. A Saga's compensations replace the cross-service rollback 2PC would have given.
 
 ---
 
@@ -234,12 +88,14 @@ CDC captures database row changes as events, without modifying application code.
 | Need | Pattern |
 |---|---|
 | Simple multi-service flow (≤3 services) | Choreography |
-| Complex multi-step flow with compensations | Saga (orchestration-based) |
-| High-throughput event processing | Competing Consumers with partition-by-tenant |
-| Rebuild a Read Model | Event Replay |
-| Guarantee at-most-once business effect | Idempotent Consumer |
-| Integrate with legacy system without code change | CDC (Debezium) |
-| New service needs historical events | Event Replay to new consumer group |
+| Complex multi-step flow with compensations | Orchestration-based Saga (persisted coordinator) |
+| High-throughput event processing | Competing Consumers, partitioned by `tenant_id` |
+| Emit an event atomically with a DB write (new service) | Transactional Outbox |
+| Capture changes from a legacy DB you can't modify | CDC (Debezium / logical replication) |
+| Guarantee a business effect fires effectively-once | Idempotent Consumer (dedup table) |
+| Survive transient downstream failures | Retry with exponential backoff + jitter |
+| Stop a poison message blocking a partition | DLQ after N retries |
+| Rebuild a Read Model from history | Event replay into a shadow table, then swap |
 
 ---
 
@@ -247,13 +103,13 @@ CDC captures database row changes as events, without modifying application code.
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Choreography vs orchestration declared | Each multi-service flow names its coordination style | Flows with no documented coordination pattern |
-| Saga compensation defined | Every Saga step has a documented compensating action | Sagas with no rollback strategy |
-| Idempotency everywhere | All event consumers implement the idempotency pattern | Consumers that process events without idempotency checks |
-| Partition key documented | Every topic defines its partition key and the ordering guarantee it provides | Topics with default (round-robin) partitioning applied to ordered-processing use cases |
-| Topic retention set | Retention period defined for every topic, justified by replay and compliance needs | Topics with no retention policy |
-| CDC justified | CDC usage is explicitly justified against the Transactional Outbox | CDC used in new services where the Transactional Outbox is simpler |
-| Saga step classification | Every Saga step is classified compensatable, pivot, or retryable, with one pivot per Saga | Steps of unknown class, or compensatable steps after the pivot |
+| Coordination style declared | Each multi-service flow names choreography or orchestration | Flow with no documented coordination pattern |
+| Consistency named separately | Each flow states atomic vs. eventual as its own decision | Consistency conflated with, or inferred from, coordination |
+| Saga compensation defined | Every Saga step has a documented compensating action and a class (compensatable/pivot/retryable) | Saga with no rollback strategy, or steps of unknown class |
+| Idempotency everywhere | Every consumer dedups redelivered events atomically with its state write | Consumer that processes events with no idempotency check |
+| Partition key documented | Every topic names its partition key and the ordering guarantee it gives | Round-robin partitioning applied to an ordered-processing use case |
+| Outbox vs. CDC justified | CDC usage justified against the Outbox; Outbox is the new-service default | CDC used in a new service where the Outbox is simpler |
+| DLQ + retry policy set | Every consumer defines retry count, backoff, and DLQ routing | Poison messages that can block a partition indefinitely |
 
 ---
 
@@ -261,14 +117,23 @@ CDC captures database row changes as events, without modifying application code.
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **Choreography sprawl** — a 6-service business process coordinated purely by event reactions | Nobody can answer "where is this scan right now?"; failure recovery requires reading six services' logs | Flows beyond ~3 services, or any flow with compensations, get an orchestration-based Saga |
-| **Orchestrator doing the work** — the Saga Orchestrator calling databases and applying business rules itself | The orchestrator becomes a god service; participants' invariants are bypassed | The orchestrator only sends Commands, tracks state, and triggers compensations; all domain work stays in participants |
-| **Circular event chains** — context A reacts to B's events with events B reacts to | Infinite loops or oscillating state, often triggered only under production timing | Draw the full event flow graph during design; any cycle must be broken with a terminating condition or merged into one Saga |
-| **Distributed transaction nostalgia** — trying to make a Saga atomic (locks held across steps, two-phase commit) | Reintroduces the coupling and availability collapse Sagas exist to avoid | Accept intermediate states as visible facts; design compensations and consumer tolerance instead |
-| **Compensation as afterthought** — Saga designed happy-path-first, compensations "to be added later" | The first mid-Saga failure strands real tenant state with no recovery path | Compensating actions, step classification, and pivot placement are part of the initial Saga design |
-| **Read-check idempotency across transactions** — `HasProcessed` and the state write in separate transactions | A crash between them re-processes the event; the guarantee silently degrades to at-least-twice | Idempotency mark and state change commit atomically; unique-constraint violation treated as "already processed" |
-| **Partitioning by random key for ordered flows** — round-robin partitioning where order matters | Events for one tenant interleave across consumers; per-tenant ordering is destroyed | Partition key = `tenant_id` (or Aggregate ID where finer ordering is needed); document the guarantee per topic |
-| **Replay without rebuild discipline** — replaying a topic into a live, incrementally-patched Read Model | Replayed events mix with live ones; the view ends in a state neither history produced | Replay into a shadow table, then swap; consumers must be idempotent and replay-aware |
+| **Choreography sprawl** — a 6-service process coordinated purely by event reactions | Nobody can answer "where is this scan now?"; recovery means reading six services' logs | Flows beyond ~3 services, or any with compensations, get an orchestration-based Saga |
+| **Orchestrator doing the work** — the coordinator calls DBs and applies business rules | It becomes a god service; participants' invariants are bypassed | The orchestrator only sends Commands, tracks state, triggers compensations |
+| **Horror Story Saga** — async communication + attempted *atomic* consistency + choreographed | No coordinator *and* an assumed all-or-nothing across async calls: the worst combination (Ford) | Either accept eventual consistency explicitly, or move to an orchestrated Parallel Saga |
+| **Distributed-transaction nostalgia** — trying to make a Saga atomic via 2PC/locks | Reintroduces the coupling and availability collapse Sagas exist to avoid | Accept intermediate states as visible facts; design compensations and consumer tolerance |
+| **Compensation as afterthought** — happy-path Saga, "compensations added later" | The first mid-Saga failure strands real tenant state with no recovery path | Compensations, step classes, and pivot placement are part of the initial design |
+| **Read-check idempotency across transactions** — `HasProcessed` and the state write in separate transactions | A crash between them re-processes the event; the guarantee degrades to at-least-twice | Dedup mark and state change commit atomically; unique-constraint violation = "already processed" |
+| **CDC where the Outbox would do** — CDC bolted onto a new service | Events reflect table rows, not domain concepts; two mechanisms to operate | Use the Transactional Outbox for new services; reserve CDC for legacy integration |
+| **No DLQ / infinite retry** — a poison message retried forever | It blocks its partition; per-tenant processing stalls | Retry transient failures with backoff, then route to a DLQ after N attempts |
+| **Partitioning by random key for ordered flows** — round-robin where order matters | Events for one tenant interleave across consumers; per-tenant ordering is destroyed | Partition key = `tenant_id` (or Aggregate ID for finer ordering); document the guarantee |
+
+---
+
+## References
+
+- **`references/pattern-catalogue.md`** — every pattern in full: formal definition, when to use / when NOT to use, the failure mode addressed, the consistency guarantee, and the Redpanda + Go manifestation. Grounded in Kleppmann (log-based brokers, effectively-once) and Newman/Ford (choreography vs. orchestration, the eight Saga archetypes, smart endpoints/dumb pipes).
+- **`references/saga-patterns.md`** — the Saga in depth: choreographed vs. orchestrated, compensating transactions, the **pivot transaction** concept, step classification, failure and recovery, and a worked DataAsset ingestion → classification → compliance-check → indexing Saga with a compensation for each step. Includes Ford's guidance on Saga state ownership.
+- **`references/go-implementation.md`** — Go sketches on Redpanda: the Transactional Outbox table DDL + publisher, the idempotent consumer with a `processed_message_ids` dedup table, DLQ routing after N retries, exponential backoff with jitter, and the exactly-once vs. at-least-once trade-off on Redpanda.
 
 ---
 
@@ -279,17 +144,17 @@ This skill produces design notes incorporated into the Integration Design and Co
 ```markdown
 ## Event-Driven Pattern Decisions: [Service/Flow Name]
 
-| Flow | Coordination style | Rationale |
-|---|---|---|
+| Flow | Coordination | Consistency (atomic/eventual) | Rationale |
+|---|---|---|---|
 
 ## Saga Definitions
-| Saga | Steps | Compensation actions | State persistence |
+| Saga | Steps (class: comp/pivot/retry) | Compensation actions | State persistence |
 |---|---|---|---|
 
 ## Topic Design
-| Topic | Partition key | Retention | Consumer groups | DLQ |
+| Topic | Partition key | Retention | Consumer groups | DLQ topic |
 |---|---|---|---|---|
 
-## Idempotency Implementation
-[Per-consumer: idempotency store location, transaction scope]
+## Idempotency & Delivery
+[Per-consumer: dedup store, transaction scope, retry/backoff policy, DLQ threshold]
 ```
