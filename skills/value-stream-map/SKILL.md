@@ -8,11 +8,12 @@ description: >
   not the product it builds. Consulted by Shafi during retrospectives and by
   any agent proposing a change to phase sequencing, gate criteria, or
   handoff structure.
-version: 1.0.0
+version: 1.1.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
-tags: [governance, value-stream-map, flow-efficiency, lean, continuous-improvement, cross-cutting]
+tags: [governance, value-stream-map, flow-efficiency, lean, continuous-improvement, cross-cutting, dora]
+related: [impact-mapping, jtbd-analysis, dora-metrics]
 ---
 
 # Value Stream Map
@@ -66,6 +67,27 @@ Flow Efficiency = Total Process Time / Total Lead Time × 100%
 ```
 
 This is the single number that matters most. A story with 6 hours of process time and 30 hours of lead time has 20% flow efficiency — the story was actively worked on one-fifth of the time it took to ship. Flow efficiency below roughly 15–25% is typical even in healthy pipelines (most software delivery pipelines sit in this range); the value of measuring it is not hitting some target percentage, but making waste visible so it can be deliberately reduced.
+
+## DORA Benchmarks — External Calibration
+
+Flow efficiency and lead time are relative measures — they show whether the factory is improving over time, but they do not answer "is this actually good, or just better than last quarter?" The DORA cluster benchmarks (from Nicole Forsgren, Jez Humble, and Gene Kim's *Accelerate*, four years of cross-industry survey data) provide the external reference frame for the same underlying concept: how long does it take a unit of work to move from inception to customer value?
+
+| Cluster | Lead Time for Changes | Deployment Frequency | MTTR | Change Failure Rate |
+|---|---|---|---|---|
+| High performer | < 1 hour | Multiple times/day | < 1 hour | 0–15% |
+| Medium performer | 1 day – 1 week | 1/week – 1/month | < 1 day | 16–30% |
+| Low performer | 1 month – 6 months | 1/month – 1 per 6 months | 1 week – 1 month | 46–60% |
+
+**Scope note:** DORA's Lead Time for Changes measures commit → production (the delivery pipeline only). The VSM's lead time measures story start → customer validation — a broader window that includes pre-commit phases (Strategy through Design) and the post-deploy Customer Validation phase. The VSM is the larger view; DORA captures only the Implement→Deploy slice of it. Use `dora-metrics` for the narrower delivery-pipeline measurement.
+
+### Applying DORA Benchmarks in the VSM Retrospective
+
+After computing the factory's lead time from the value stream map, apply this four-step external calibration:
+
+1. **Extract the delivery-pipeline segment.** From the VSM's phase timeline, isolate the Implement→Deploy window — the segment that maps to DORA's commit → production definition. This is the comparable window.
+2. **Identify the cluster.** Compare the Implement→Deploy duration to the DORA cluster thresholds and state explicitly which cluster the factory is in: "our Implement→Deploy window of 2 days places us in the Medium performer cluster."
+3. **Use the cluster to answer "is this actually good?"** A factory whose flow efficiency improved from 10% to 20% is making progress — but if its Implement→Deploy lead time still maps to the Low performer cluster (1 month – 6 months), the honest answer is: "we are improving and we are still in the lowest performance tier." The cluster provides an external answer the internal trend alone cannot give.
+4. **Set the next improvement target as the next cluster's threshold.** If the factory is Medium (1 day – 1 week), the target is the High threshold: under 1 hour for the Implement→Deploy segment. The VSM's waste analysis then focuses on what would need to change — which waits eliminated, which rework loops closed — to cross that boundary.
 
 ## Identifying Waste
 
