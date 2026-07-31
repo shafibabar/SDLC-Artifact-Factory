@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "go-project-structure" \
-  "According to this skill, what Go design pattern does embedding an interface (not a concrete type) inside a wrapper struct implement, and what is a worked example type name for this?" \
-  "instrumentedRepo"
+  "According to this skill's 12-factor Kubernetes compliance checklist, what specific violation example is given for the config-from-environment-variables requirement?" \
+  "config.yaml"
 
 smoke_test_summary

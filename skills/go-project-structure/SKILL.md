@@ -18,7 +18,7 @@ description: >
   and composition/generics worked examples in
   references/composition-and-generics.md. Used by the backend-engineer during
   Implement.
-version: 2.1.0
+version: 2.2.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -158,6 +158,38 @@ This skill states only **where** each kind of error is declared per layer — ne
 - **Business logic in `main.go`** — the composition root wires and starts; the moment it decides anything, that decision is untestable without booting the process.
 - **Editing a generated file "just this once"** — invisible after the next regeneration; `make ci`'s freshness check will not catch a hand-edit that still matches the current spec, only a drifted one.
 - **A dedicated `infrastructure/errors.go`** — implies infrastructure owns a failure vocabulary; it only ever translates into the domain's.
+
+---
+
+## 12-Factor Kubernetes Scheduling Contract
+
+A Go service written against the layout in this skill is correct only if it also complies with the five 12-factor principles that map directly to Kubernetes scheduling primitives. A developer can follow every rule above and still produce a service that is non-compliant with the platform. Verify each item before the Implement phase gate:
+
+| # | Requirement | Kubernetes Primitive | Violation Example |
+|---|---|---|---|
+| 1 | **Config from env vars only** — no config files baked into the image; all addresses, URLs, feature flags, and tuneable parameters injected at deploy time | `ConfigMap`/`Secret` env-var projection | Reading a `config.yaml` at startup from inside the image |
+| 2 | **Backing services as attached resources** — database URL, broker address, cache address are env vars; swapping dev-postgres for prod-postgres is a config change, not a code change | Kubernetes `Service` DNS (`<svc>.<ns>.svc.cluster.local`) as the URL source | Hardcoded `postgres://db.internal:5432/mydb` in source |
+| 3 | **Logs as streams** — write ALL logs to `stdout`; write NOTHING to files; the Kubernetes logging pipeline captures `stdout` automatically via the kubelet | kubelet log capture → DaemonSet agent (Fluent Bit) → Loki | Writing to `/var/log/app.log` or any named file path |
+| 4 | **No local disk state** — the pod's local filesystem is ephemeral and is lost on eviction, crash, or reschedule; data that must survive a pod restart goes to PostgreSQL, Redpanda, or a mounted `PersistentVolume` | `PersistentVolumeClaim` for durable storage; PostgreSQL/Redpanda for structured/event data | Storing uploaded files, session tokens, or computed results in a local directory path |
+| 5 | **Stateless processes** — N replicas can run in parallel; any replica handles any request; no per-process in-memory state is shared between replicas | `Deployment` with `replicas: N`; Horizontal Pod Autoscaler | Keeping session tokens, computed state, or in-process caches that are not in an external store |
+
+**Mechanical verification:**
+
+```bash
+# Rule 1 — no config-file reads at startup inside the image
+grep -rn "os\.ReadFile\|ioutil\.ReadFile\|os\.Open" cmd/ internal/ | grep -v "_test.go"
+# Every hit that reads a config file at startup is a violation; reading migration SQL is permitted.
+
+# Rule 3 — no log file writers
+grep -rn 'log\.SetOutput\|os\.Create\|os\.OpenFile\|bufio\.NewWriter' internal/ | grep -v "_test.go"
+# Any hit that opens a file path for log output is a violation.
+
+# Rule 1 cross-check — all config values come from env
+grep -rn 'os\.Getenv\|envconfig\|env\.Parse' cmd/server/main.go
+# Every external address, URL, and flag should trace to one of these in main.go.
+```
+
+Full rationale per rule, compliant Go patterns for each, detection recipes, and the ConfigMap/Secret injection examples that wire these at deploy time: `references/twelve-factor-kubernetes.md`.
 
 ---
 
