@@ -1,226 +1,145 @@
 ---
 name: container-diagram
 description: >
-  Teaches how to produce a C4 Level 2 Container Diagram — showing the deployable
-  units (services, databases, message brokers, frontends) that make up the system,
-  how they communicate, and which technology each uses. The Container Diagram is
-  the primary input to service decomposition decisions and the blueprint that
-  backend-engineer, frontend-engineer, data-architect, and platform-engineer
-  work from. Used by the enterprise-architect agent after the System Context
-  Diagram is approved.
-version: 1.1.0
+  Teaches the enterprise-architect to produce a C4 Level 2 (Container) diagram —
+  the runtime building blocks of a system (services, databases, message brokers,
+  front-ends) and the synchronous/asynchronous communication paths between them —
+  while keeping the runtime component-and-connector concerns cleanly separated from
+  deployment/allocation concerns (which belong to the deployment view). Covers C4-L2
+  notation, technology-choice annotation, the Clements component-and-connector vs.
+  allocation viewtype distinction, and the diagram template. Used during Design
+  after the System Context view is fixed.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, c4, container-diagram, service-decomposition, microservices]
+tags: [design, architecture, c4-model, container-diagram, documentation, runtime-topology, viewtype, deployment]
+related: [system-context-diagram, component-diagram, deployment-diagram, integration-design, adr-authoring, glossary-management, methodology-review]
 ---
 
 # Container Diagram
 
-## Purpose
+## What a Container Diagram Is
 
-The Container Diagram (C4 Level 2) zooms into the system and shows the high-level technical building blocks — the **containers**. A container is anything that must be separately deployed and run: a service, a database, a message broker, a frontend application, a background worker, a CLI tool.
+A Container Diagram (C4 Level 2) zooms one level inside the system boundary drawn by the
+System Context view and shows the **containers** — the independently deployable and runnable
+units that make the system work: a Go API service, a PostgreSQL database, a Redpanda broker, a
+React front-end, a background worker. A container is anything that must be **separately deployed
+and run** and that hosts code or stores state.
 
-The Container Diagram answers: **what are the independently deployable units of this system, what technology does each use, and how do they communicate?**
+The Container Diagram answers exactly three questions:
 
-It is the most important architecture diagram for engineers: it establishes the service boundaries, the communication patterns, and the technology choices that all implementation work flows from.
+1. **What are the independently deployable/runnable units of this system?**
+2. **What technology does each one use?**
+3. **How do they communicate at runtime — over what protocol, synchronously or asynchronously?**
 
----
+It is a **component-and-connector (C&C) view** in Clements' viewtype terminology: components are
+the running containers, connectors are the runtime communication paths. This single fact governs
+everything below — see `references/viewtype-distinction.md`.
 
-## Container Types
+### What it shows vs. what it omits
 
-| Container type | Examples |
+| Shows | Omits (and where it belongs) |
 |---|---|
-| **Web application** | React + TypeScript SPA served as static assets |
-| **API service** | Go service exposing HTTP endpoints (net/http + chi) |
-| **Background worker** | Go service consuming from Redpanda, performing async processing |
-| **Message broker** | Redpanda (Kafka-compatible) |
-| **Relational database** | PostgreSQL (primary store per service) |
-| **Document store** | MongoDB (variable-schema bounded contexts) |
-| **Graph database** | Apache AGE (PostgreSQL extension) |
-| **Search index** | Elasticsearch |
-| **Cache** | Redis |
-| **File store** | Object storage (S3-compatible) |
-| **Identity provider** | External — shown as external system (from System Context) |
+| Deployable/runnable units and their technology | Internal component/layer structure of a container → **C4 L3 Component diagram** |
+| Runtime communication paths (protocol, sync/async) | Where containers physically run — nodes, pods, regions, tenant stamps → **deployment (allocation) view** |
+| The system boundary; persons and external systems carried down from L1 | Class/function structure → **C4 L4 Code** |
 
----
+## The Correctness Rule: C&C vs. Allocation
 
-## Container Diagram Rules
+**A Container Diagram is a runtime C&C view. Deployment placement is a separate view. Never mix them.**
 
-### One database per service
+This is a correctness rule, not a style preference. The Container Diagram documents *what talks to
+what, and how* at runtime. It must NOT document *where each container is deployed* — Kubernetes
+nodes, pods, availability zones, per-tenant stamps, Helm release topology, or how many copies run.
+That is an **allocation view** (a deployment diagram): the mapping of software onto non-software
+structure.
 
-Each service owns its own database. No two services share a database. Cross-service queries go through APIs or events — never through a shared database.
+Prior review (Clements, *Documenting Software Architectures*) flagged the earlier version of this
+skill for exactly this conflation — putting deployment-flavoured annotations (cluster placement,
+port bindings, tenant multiplication) onto what is nominally a C&C diagram. Symptoms that you have
+drifted into an allocation view: node/pod boxes, region labels, or "×N per tenant" multipliers
+appearing on the diagram. When you catch these, move them to the deployment diagram (owned by
+`deployment-diagram` / `platform-engineer`) and leave a pure C&C view behind.
 
-This is a hard rule. Shared databases create invisible coupling between services: one service's schema change breaks another service's queries without warning.
-
-### Technology is explicit
-
-Every container is labelled with its technology:
-- API service: "Go, net/http + chi"
-- Database: "PostgreSQL 16, pgx"
-- Message broker: "Redpanda (Kafka-compatible)"
-- Frontend: "React 18, TypeScript"
-
-Technology labels make the diagram actionable for engineers. A diagram that says "service" without a technology is incomplete.
-
-### Communication protocols are labelled
-
-Every arrow between containers is labelled with:
-- What flows (events, HTTP request, query result)
-- The protocol (HTTP/JSON, gRPC, Kafka topic, AMQP)
-- The direction of initiation
-
-### Bounded Context → Container mapping
-
-Each Bounded Context from the domain model maps to one or more containers. The mapping must be documented:
-- Most Bounded Contexts map to: one API service + one database + (if async) event publishing to the message broker
-- Some Bounded Contexts may share infrastructure (e.g., the same Redpanda cluster) while having separate logical topics
-
----
+The two views relate through a **mapping between views** — each container in this diagram is later
+allocated to nodes/pods in the deployment view — but they are drawn separately and never merged.
+Full theory, the questions each view answers, and the conflation symptoms: `references/viewtype-distinction.md`.
 
 ## Standard Container Set (Default Stack)
 
-For each service that owns a Bounded Context, the default container set is:
+For a Bounded Context in this repo's default stack, the standard C&C container set is:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ [Bounded Context Name] Service                                  │
-│                                                                 │
-│  ┌──────────────────┐     ┌───────────────────────────────┐    │
-│  │  [Name] API      │────▶│  PostgreSQL                   │    │
-│  │  Go, chi         │     │  [name]_db                    │    │
-│  │  Port: 8080      │     │  Aggregate tables             │    │
-│  └──────────────────┘     │  Outbox table                 │    │
-│           │               │  Read model tables            │    │
-│           │ Publishes     └───────────────────────────────┘    │
-│           ▼ events                                              │
-│  ┌──────────────────┐                                          │
-│  │  Redpanda        │  (shared cluster, dedicated topics)      │
-│  │  Topic:          │                                          │
-│  │  [bc-name].*     │                                          │
-│  └──────────────────┘                                          │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Container | Role | Technology annotation |
+|---|---|---|
+| `<BC> API` | Synchronous request/response + command handling | `Go, net/http + chi` |
+| `<BC> Worker` | Consumes Domain Events, async processing | `Go, franz-go consumer` |
+| `<BC> DB` | State store owned by exactly this service | `PostgreSQL 16, pgx` |
+| Redpanda | Shared broker; one logical topic set per BC | `Redpanda (Kafka API)` |
+| Web Shell / MFE | User-facing front-end | `React 18, TypeScript` |
+| Graph store | Relationship/lineage queries | `Apache AGE (PostgreSQL ext.)` |
 
----
+**One database per service** is a hard rule: no two containers share a database; cross-service data
+flows through APIs (sync) or Domain Events on Redpanda (async), never a shared schema. Every
+container carries an explicit technology label — an unlabelled container is an incomplete artifact.
+Annotation conventions and the technology vocabulary: `references/runtime-topology-and-template.md`.
 
-## Container Diagram Example (Data Estate Product)
+## Notation (summary)
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ Data Estate Mapping & Compliance Intelligence                        │
-│                                                                     │
-│  [Compliance Officer]──────────────▶┌─────────────────────┐        │
-│  [CISO]                             │  Web App             │        │
-│                                     │  React 18+TypeScript │        │
-│                                     │  Nginx / static      │        │
-│                                     └──────────┬──────────┘        │
-│                                                │ HTTPS/JSON         │
-│  ┌──────────────────┐    ┌────────────────────▼──────────────┐     │
-│  │  Storage         │    │  API Gateway / BFF                │     │
-│  │  Integration     │    │  Go, chi — routing, auth, rate    │     │
-│  │  Service         │    │  limiting, JWT validation         │     │
-│  │  Go, chi         │◀───│                                   │     │
-│  │  [Google Drive   │    └───────┬───────────┬──────────────┘     │
-│  │   ACL, S3 ACL]   │           │ gRPC/HTTP  │                    │
-│  └────────┬─────────┘           ▼            ▼                    │
-│           │             ┌────────────┐ ┌──────────────┐           │
-│           │             │ Classific- │ │ Compliance   │           │
-│           │             │ ation Svc  │ │ Intelligence │           │
-│           │ events      │ Go, chi    │ │ Svc Go, chi  │           │
-│           │             │ PostgreSQL │ │ PostgreSQL   │           │
-│           │             └────────────┘ └──────────────┘           │
-│           │                    │               │                   │
-│           └────────────────────▼───────────────▼                  │
-│                          ┌───────────┐                             │
-│                          │ Redpanda  │  Kafka-compatible           │
-│                          │ Cluster   │  Topics per BC              │
-│                          └───────────┘                             │
-│                                │                                   │
-│                          ┌─────▼──────┐                           │
-│                          │ Graph Svc  │  Apache AGE                │
-│                          │ Go, chi    │  (PostgreSQL ext.)         │
-│                          └────────────┘                            │
-└─────────────────────────────────────────────────────────────────────┘
-         │                                      │
-         ▼                                      ▼
- [Google Drive API]                        [AWS S3 API]
- (External)                                (External)
-```
+- **Container box** — name + technology + one-line responsibility. Nothing about placement.
+- **Sync connector** — solid arrow, labelled with protocol and payload, e.g. `HTTP/JSON`, `gRPC`.
+- **Async connector** — dashed arrow via the broker, labelled with the topic, e.g. `Kafka/Redpanda: dataasset.discovered`.
+- **System boundary box** — everything inside is a container of *this* system.
+- **Person / external system** — carried down unchanged from the System Context (L1) view.
 
----
+Full notation catalogue — box anatomy, arrow semantics, boundary and external-element rules:
+`references/c4-container-notation.md`.
 
-## Deciding Service Boundaries
+## Deciding Container Boundaries
 
-Service boundaries follow Bounded Context boundaries from the domain model, subject to these additional constraints:
+Container boundaries follow Bounded Context boundaries from the domain model. Split further only
+when a concern genuinely demands an independently deployable unit:
 
-| Constraint | Effect on boundaries |
+| Driver | Effect |
 |---|---|
-| Physical multi-tenancy | Tenant isolation may require separate deployment per tenant — the container boundary stays, but the deployment multiplies |
-| Data residency NFR | Data that must not leave a jurisdiction may require a separate service boundary to enforce the constraint at the network level |
-| Independent scaling | A container that must scale independently (e.g., the scanning worker) must be its own service — it cannot share a process with a request-response API |
-| Team ownership | If different teams own different capabilities, those capabilities are in different containers — shared containers create coordination overhead |
-| Change rate | A container that changes frequently should not be coupled to one that is stable — independent deployment requires independent containers |
+| Independent scaling | A unit that must scale on its own (scanning worker) is its own container |
+| Change rate | A fast-changing unit is not coupled into a stable one |
+| Team ownership | Different owners → different containers |
 
----
+Note: physical multi-tenancy and data-residency constraints affect *where* and *how many times* a
+container is deployed — that is allocation reasoning and is captured in the deployment view, not by
+adding tenant copies to this C&C diagram. The container boundary stays singular here.
 
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Technology labelled | Every container states its technology | Containers labelled only with a name |
-| One DB per service | No shared databases between services | Two services with the same database |
-| Protocol labelled | Every inter-container arrow has a protocol label | Unlabelled arrows |
-| BC → container map | Every Bounded Context maps to at least one container | Containers with no domain model origin |
-| External systems consistent | External systems match the System Context Diagram | New external systems appearing for the first time |
-| Bounded by the system | All containers shown are inside the system boundary | Containers from other systems inside the box |
-
----
+| Pure C&C view | No nodes, pods, replicas, regions, or tenant multipliers | Deployment placement drawn on the diagram |
+| Technology labelled | Every container states its technology | Container labelled with a name only |
+| Protocol labelled | Every connector names protocol + sync/async | Unlabelled arrows |
+| One DB per service | No shared databases | Two services against one DB |
+| External systems consistent | Match the System Context view exactly | New external systems appearing here |
 
 ## Anti-Patterns
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **Shared database** — two services drawn against one PostgreSQL | Schema changes in one service silently break the other; the database becomes an unmanaged Shared Kernel | One database per service; cross-service data flows through APIs or Domain Events |
-| **Distributed monolith** — every request fans out through chains of synchronous calls | No container can deploy, fail, or scale independently; availability multiplies down the chain | Prefer Domain Events for cross-context flows; keep synchronous chains at most one hop past the gateway |
-| **Nano-service sprawl** — one container per Aggregate or per function | Operational cost (deployment, observability, versioning) grows per container with no matching decoupling benefit | Containers follow Bounded Contexts; split further only when a Deciding Service Boundaries constraint demands it |
-| **Broker as shared database** — services consuming another context's internal topics | Topic schemas become invisible contracts; the producer can never evolve them safely | Cross-context topics carry Published Language schemas only; internal topics are private to their context |
-| **The invisible infrastructure** — omitting the broker, databases, or workers "for clarity" | Engineers provision from this diagram; an omitted container is an unplanned one | Every deployable and every datastore appears — clarity comes from layout, not omission |
-| **Business logic in the gateway** — the BFF grows validation, orchestration, or domain rules | The gateway becomes an unowned service coupled to every Bounded Context at once | Gateway does routing, auth, rate limiting only; domain behaviour lives in the owning service |
-| **Aspirational technology labels** — labelling containers with technology never agreed | The diagram silently overrides `sdlc-config.json`; implementation and design diverge on day one | Labels come from the agreed stack; deviations require an ADR before they appear on the diagram |
+| **Deployment on a C&C view** | Nodes/pods/replicas make it an unlabelled combined view that answers no question cleanly | Move placement to the deployment (allocation) diagram; keep this a pure C&C view |
+| **Shared database** | Silent coupling; the DB becomes an unmanaged Shared Kernel | One DB per service; cross-service via API or Domain Event |
+| **Invisible infrastructure** | An omitted broker/DB/worker is an unplanned one | Every deployable and datastore appears |
+| **Business logic in the gateway** | The BFF becomes an unowned service coupled to every BC | Gateway does routing/auth/rate-limiting only |
+| **Aspirational technology labels** | Diagram silently overrides `sdlc-config.json` | Labels come from the agreed stack; deviations need an ADR |
 
----
+## Producing the Artifact
 
-## Output Format
+Follow the template in `references/runtime-topology-and-template.md`: a Mermaid/textual C4 primary
+presentation, a Containers catalogue table, a Communication Matrix (pure C&C — from, to, protocol,
+sync/async), a Bounded-Context→Container mapping, and a pointer to where the deployment/allocation
+view lives. That reference includes a fully worked, deployment-free Container diagram for this
+repo's system (DataAsset Management + Compliance + Reporting services, Postgres, Redpanda, React shell).
 
-```markdown
----
-name: container-diagram
-product: [product name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: enterprise-architect
----
+## References
 
-# Container Diagram: [Product Name]
-
-## Diagram
-[ASCII diagram]
-
-## Containers
-
-| Container | Type | Technology | Bounded Context | Port / Topic |
-|---|---|---|---|---|
-
-## Communication Matrix
-| From | To | Protocol | Data / Event | Sync / Async |
-|---|---|---|---|---|
-
-## Bounded Context → Container Mapping
-| Bounded Context | API Container | Database | Worker | Topics |
-|---|---|---|---|---|
-
-## Service Boundary Decisions
-[For each non-obvious boundary: why this is a separate container, referencing the constraint that justifies it]
-```
+- `references/c4-container-notation.md` — full C4-L2 notation: box anatomy, sync/async connectors, system boundary, persons and external systems carried down from L1.
+- `references/viewtype-distinction.md` — Clements' module / C&C / allocation viewtypes; why a Container diagram is C&C and a deployment diagram is allocation; conflation symptoms; how the two views relate.
+- `references/runtime-topology-and-template.md` — technology-annotation conventions, the diagram artifact template, and a fully worked pure-C&C Container diagram for this repo's system.
