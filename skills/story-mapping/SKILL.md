@@ -1,215 +1,141 @@
 ---
 name: story-mapping
 description: >
-  Teaches how to build a User Story Map (Jeff Patton) — a two-dimensional backlog
-  view that arranges user activities horizontally (the narrative spine) and
-  decomposed stories vertically by depth of detail. Story mapping reveals the user
-  journey, identifies MVP by horizontal slice, and prevents building features in
-  isolation without regard to the user's end-to-end experience. Used by the
-  requirements-analyst agent during the Ideate phase after user stories and epics
-  are defined.
-version: 1.1.0
+  Teaches the requirements-analyst to build a User Story Map (Patton) — the
+  horizontal backbone of user activities/steps in narrative flow, the vertical
+  stories under each step ordered by priority/necessity, the walking skeleton
+  (the thinnest end-to-end slice), and release slicing by outcome rather than by
+  component. Match when the prompt involves a story map, narrative backbone,
+  walking skeleton, MVP slice, release slicing, cutting a horizontal slice,
+  sequencing epics/stories into releases, seeing the whole product journey at a
+  glance, or turning a flat backlog into a two-dimensional view during Ideate.
+version: 2.0.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, story-mapping, user-journey, mvp, backlog, product-discovery]
+related: [epic-definition, user-story-writing, user-persona, moscow-prioritization, impact-mapping, roadmap-authoring, acceptance-criteria]
+tags: [ideate, requirements, story-map, backbone, walking-skeleton, release-slicing, patton]
 ---
 
 # Story Mapping
 
 ## Purpose
 
-A story map (Jeff Patton, *User Story Mapping*) is a two-dimensional arrangement of user stories that makes visible what a flat backlog hides: the user's end-to-end journey. It answers the question: **how do all these stories fit together into a coherent user experience?**
+A story map (Jeff Patton, *User Story Mapping*) arranges user stories in two
+dimensions to make visible what a flat backlog hides: the user's end-to-end
+journey. It answers **how do all these stories fit together into a coherent user
+experience, and where do we cut a first release?**
 
-A flat backlog is sorted by priority. A story map is sorted by time (user journey) and depth (level of detail). This makes it possible to:
-- See the whole product journey at a glance
-- Identify which stories must work together to enable any user outcome
-- Define a minimum viable slice by cutting horizontally across the map
-- Spot gaps in the journey where a user would get stuck
+Patton's central thesis: **the map is a conversation, not an artifact.** The
+value is the shared understanding a cross-functional team builds *while* mapping
+— not the diagram it leaves behind. A map produced solo and handed over as a
+document has captured a picture, not the understanding that matters. In this
+repo's single-agent-then-Shafi-approves workflow that live session cannot happen
+literally; the deliberate adaptation is to **narrate the spine aloud with Shafi**
+before the map is treated as final (see `references/map-structure-and-backbone.md`).
 
----
+## The Two Axes
 
-## Story Map Structure
-
-A story map has three levels:
-
-```
-LEVEL 1 — ACTIVITIES (horizontal — the narrative spine)
-Broad user activities that describe the high-level steps of the user journey.
-These are the categories — not stories, not tasks.
-
-       ↓ decompose ↓
-
-LEVEL 2 — TASKS / EPICS
-The main things users do within each activity. These map to epics.
-Walking through these left-to-right tells the user's story.
-
-       ↓ decompose ↓
-
-LEVEL 3 — STORIES (vertical — depth of detail)
-Individual user stories under each task, arranged top-to-bottom
-by depth: the top row is the backbone (minimum viable); deeper
-rows are enhancements and edge cases.
-```
-
----
-
-## Story Map Example (Data Estate Mapping Product)
+A story map is sorted by **time** (horizontal) and **priority/necessity**
+(vertical) — not by flat priority.
 
 ```
-─── ACTIVITY ──────────────────────────────────────────────────────────────────
-  Connect Sources   │  Scan & Classify  │  Review & Report  │  Manage & Govern
-─── TASKS ─────────────────────────────────────────────────────────────────────
-  Connect           │  Trigger initial  │  View compliance  │  Set retention
-  Google Drive      │  scan             │  gap report       │  policies
-
-  Connect           │  Monitor scan     │  Export gap       │  Manage user
-  AWS S3            │  progress         │  report           │  access
-
-  Connect           │  View scan        │  Schedule         │  Configure
-  SharePoint        │  results summary  │  recurring scan   │  data residency
-
-─── MVP SLICE (horizontal cut) ────────────────────────────────────────────────
-  [US-001]          │  [US-005]         │  [US-009]         │  ← above this line
-  Connect Google    │  Trigger initial  │  View gap report  │  = MVP
-  Drive             │  scan             │
-─── RELEASE 2 ─────────────────────────────────────────────────────────────────
-  [US-002]          │  [US-006]         │  [US-010]         │  [US-013]
-  Connect S3        │  Monitor progress │  Export report    │  Set retention
-─── RELEASE 3 ─────────────────────────────────────────────────────────────────
-  [US-003]          │  [US-007]         │  [US-011]         │  [US-014]
-  Connect           │  Scan results     │  Schedule scans   │  User access
-  SharePoint        │  summary          │                   │  management
+BACKBONE  →  user activities & tasks, left-to-right in narrative order
+              ("first the user does X, then Y, then Z")
+   │
+   ▼ under each backbone step
+BODY      ↓  the stories for that step, top-to-bottom by necessity
+              (top = needed for the story to be minimally whole; below = refinements)
 ```
 
----
+- **Backbone** = the narrative spine. Big-picture *activities* decompose into
+  *tasks* — the level of "Connect Google Drive", "Trigger a scan", not a UI click.
+  Read left-to-right it must narrate as a coherent user story.
+- **Body** = the stories under each backbone step, ordered vertically by what the
+  step needs to be *minimally whole*, not by arbitrary priority. Deeper rows are
+  enhancements, additional personas, and edge cases.
 
-## How to Build the Map
+Backbone-vs-body detail, facilitation steps, and the "backlog turned sideways"
+failure live in `references/map-structure-and-backbone.md`.
 
-### Step 1: Define the Narrative Spine (Activities)
+## The Walking Skeleton
 
-Walk through the product from the user's perspective:
-- "First, the user does X..."
-- "Then, the user does Y..."
-- "Then, the user does Z..."
+The **walking skeleton** (Patton credits Alistair Cockburn) is the top row read
+across the *entire* backbone: the thinnest possible slice that actually **works
+end-to-end**, however ugly — not "the minimum viable stuff", but one complete
+functioning path through the whole journey. If any activity's top row is missing
+or non-functional, the skeleton is *broken*, not merely incomplete.
 
-These high-level activities become the horizontal columns. For a data estate product: Connect Sources → Scan & Classify → Review & Report → Manage & Govern.
+This is more precise than "MVP slice": the boundary is defined by end-to-end
+function, not by a wish-list cut. Definition, the end-to-end test, and a full
+worked Data Steward estate-review skeleton are in
+`references/slicing-and-walking-skeleton.md`.
 
-The spine must be sequential (left to right = order the user encounters them), but loops and branches are allowed. Mark them with an annotation.
+## Slice by Outcome, Not by Layer
 
-### Step 2: Decompose to Tasks
+Below the walking skeleton, horizontal cuts mark **releases**. Each slice must
+itself be end-to-end viable — it must deliver a user *outcome*, not a completed
+component.
 
-Under each activity, list the specific tasks the user performs. These should map to epics defined earlier. Tasks are at the level of "Connect Google Drive", "Trigger a scan", "View the gap report" — not at the level of a UI interaction.
+- **Correct:** a thin horizontal slice crossing *every* backbone step, so the
+  user can complete the whole journey (connect → scan → review), just with fewer
+  options.
+- **Wrong (the vertical-slice MVP):** finishing one activity completely ("all
+  four connectors, perfectly") while later steps are "next quarter" — the user
+  connects flawlessly and then hits a wall.
 
-Walk the spine again: "To [Activity 1], the user does [Task 1.1], [Task 1.2]... To [Activity 2], the user does [Task 2.1]..." If the story sounds natural and sequential, the spine is correct.
+A release slice is **not** the same as a MoSCoW "Must" cut: a slice must be
+end-to-end viable, not merely the collection of Must-Haves. Release-slicing
+mechanics and how a slice maps to an MVP are in
+`references/slicing-and-walking-skeleton.md`.
 
-### Step 3: Place Stories
+## Two Kinds of MVP — Do Not Conflate
 
-Under each task, place all the user stories that belong to it. Arrange them top-to-bottom by depth of value:
-- Top row: the minimum story that makes the task workable at all
-- Middle rows: improvements and additional personas
-- Bottom rows: edge cases, configuration options, and nice-to-haves
+Patton keeps these separate, and so must this skill:
 
-### Step 4: Define the MVP Slice
+| Kind | What it is | In this repo |
+|---|---|---|
+| **Release-MVP** | The walking skeleton — smallest thing you can actually *ship* | What a story map's MVP slice describes |
+| **Learning-MVP** | Cheapest thing to *test a belief* (fake door, concierge, throwaway prototype) | Belongs upstream with `impact-mapping` / JTBD, not on the map |
 
-Draw a horizontal line across the map at the level that represents the minimum viable product. Everything above the line must be built for the MVP. Everything below is future.
+A story map produces a release-MVP. Never let a validated-learning experiment be
+treated as shippable, or demand production rigor from a learning experiment.
 
-The MVP slice must enable the user to complete the full journey from left to right without getting stuck. A user who hits a gap in the spine — an activity they cannot complete — has not experienced a product; they've experienced an incomplete prototype.
+## When to Use
 
-### Step 5: Define Releases
-
-Draw additional horizontal lines to mark release boundaries. Each release slice must also enable a complete journey for a subset of users or use cases.
-
----
-
-## Reading the Map for Gaps
-
-After placing all stories, walk the spine and ask for each activity:
-- Can the user complete this activity with only the stories in the top row?
-- If not, which stories must move up to make the minimum viable?
-- Is there a step in the journey that has no stories at all? (A gap — means discovery is incomplete)
-- Are there activities with stories piled deep but other activities with no depth? (Imbalanced discovery — investigate the shallow areas)
-
----
+| Use story mapping when | Do not reach for it when |
+|---|---|
+| Stories and epics exist and need sequencing into a coherent first release | No stories yet — do `user-story-writing` / `epic-definition` first |
+| You need to see the whole product journey at a glance | You only need to rank a flat list — use `moscow-prioritization` |
+| You must choose *what ships together* to give a user a complete outcome | You're framing *why* to build — use `impact-mapping` / JTBD |
 
 ## Connection to Other Skills
 
 | Connects to | How |
 |---|---|
-| `epic-definition` | Tasks on the map correspond to epics |
-| `user-story-writing` | Stories placed on the map are written stories with INVEST compliance |
-| `user-persona` | The spine is walked from the perspective of the primary persona |
-| `moscow-prioritization` | MoSCoW priority informs vertical placement (Must → top row) |
-| `impact-mapping` | Activities on the spine correspond to HOW impacts and WHAT deliverables from the impact map |
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Complete spine | Narrative spine covers the full user journey from start to value | Spine stops before the user has achieved their goal |
-| No gaps in MVP | User can complete the full journey using only MVP-slice stories | At least one activity in the MVP slice has no stories |
-| Depth, not priority | Stories are arranged vertically by depth of detail, not arbitrary priority | Flat rows — no visible depth gradient |
-| Release slices | At least MVP and Release 2 are defined | Single horizontal cut with everything else undefined |
-| Story placement | Every story from the backlog appears on the map | Orphan stories not placed on any activity |
-| Journey walkthrough | Map can be narrated as a user journey without breaking | Spine has logical jumps or unexplained sequences |
-
----
+| `epic-definition` | Backbone tasks are the pre-decomposition form of an epic |
+| `user-story-writing` | Body stories are INVEST-compliant written stories |
+| `user-persona` | The backbone is walked from the primary persona's viewpoint |
+| `moscow-prioritization` | MoSCoW informs vertical placement, but a slice ≠ a Must cut |
+| `impact-mapping` | Impact-map WHAT deliverables seed backbone activities |
+| `roadmap-authoring` | Release slices seed Now/Next/Later horizons directly |
 
 ## Anti-Patterns
 
-**The pasted backlog:** columns filled by copying the flat backlog in priority order, with no depth gradient. If the vertical axis does not read "minimum viable at the top, refinements below," the artifact is a backlog wearing a map's clothes.
+- **The pasted backlog** — columns filled from the flat backlog in priority
+  order with no necessity gradient. A backlog turned sideways is not a map.
+- **The vertical-slice MVP** — completing one activity instead of cutting a thin
+  horizontal slice across every backbone step (see above).
+- **The system-perspective spine** — "Ingest → Process → Store → Serve" is the
+  pipeline's journey, not the user's. Narrate what the *persona* does.
+- **Orphan stories** — stories in the backlog appearing nowhere on the map.
+- **The frozen map** — built once, never re-cut. After a slice ships, run a
+  learning checkpoint and be willing to re-cut later slices.
 
-**The vertical-slice MVP:** building one activity completely ("all four connectors, perfectly") instead of cutting a thin horizontal slice. The user connects Google Drive flawlessly — and then hits a wall, because scanning and reporting were "next quarter." The MVP line must cross *every* activity in the spine.
+## References & Output
 
-**The system-perspective spine:** "Ingest → Process → Store → Serve." That is the pipeline's journey, not the user's. The spine must narrate what the *persona* does ("Connect Sources → Scan & Classify → Review & Report"), or the map cannot reveal where a user gets stuck.
-
-**Orphan stories:** stories that exist in the backlog but appear nowhere on the map. Either they belong to an activity (place them), or they belong to no user journey (challenge why they exist at all).
-
-**The frozen map:** built once during discovery, never touched again. Each time a story is added, split, or re-prioritised, the map must absorb the change — a map that disagrees with the backlog is worse than no map, because it is trusted and wrong.
-
----
-
-## Output Format
-
-```markdown
----
-name: story-map
-product: [product name]
-version: 1.0.0
-phase: ideate
-created: [date]
-owner: requirements-analyst
-primary-persona: [name]
-mvp-boundary: [row at which MVP slice is cut]
----
-
-# User Story Map
-
-## Narrative Spine
-
-[Walk the spine in prose: "First, [Persona] does X... then Y... then Z..."]
-
-## Story Map
-
-| Activity → | [Activity 1] | [Activity 2] | [Activity 3] | [Activity 4] |
-|---|---|---|---|---|
-| **Tasks** | [Task 1.1] / [Task 1.2] | [Task 2.1] | [Task 3.1] | [Task 4.1] |
-| **MVP** | US-[ID] | US-[ID] | US-[ID] | US-[ID] |
-| **Release 2** | US-[ID] | US-[ID] | US-[ID] | US-[ID] |
-| **Release 3** | US-[ID] | — | US-[ID] | US-[ID] |
-
-## Release Definitions
-
-### MVP — [Release name and goal]
-**Enables:** [What a user can do end-to-end with only the MVP stories]
-**Stories included:** US-[IDs]
-
-### Release 2 — [Release name and goal]
-**Enables:** [Additional capability or user type]
-**Stories included:** US-[IDs]
-
-## Map Gaps and Open Questions
-[Any activities with no stories, or stories not yet placed on the map]
-```
+- `references/map-structure-and-backbone.md` — backbone vs. body, narrative
+  flow, facilitation, common mistakes, and the map gap-reading checklist.
+- `references/slicing-and-walking-skeleton.md` — walking skeleton, outcome-based
+  release slicing, slice-to-MVP mapping, the full Data Steward worked map, the
+  Quality Criteria table, and the copyable `## Output Format` template.
