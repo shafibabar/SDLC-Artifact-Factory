@@ -8,7 +8,7 @@ description: >
   probe/resource/securityContext blocks, chart testing with helm lint and a
   kind install in CI, and chart versioning with image digest pinning. Used by
   the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -95,23 +95,7 @@ A chart's workload template renders a specific Kubernetes controller. The worklo
 | `DaemonSet` | `apps/v1 DaemonSet` | Node-scoped agents — OTel Collector, Fluent Bit; one pod per node guaranteed |
 | `Rollout` | `argoproj.io/v1alpha1 Rollout` | Progressive-delivery services (canary or blue-green via Argo Rollouts) |
 
-The template uses `if`/`else if` branches to render the correct resource kind:
-
-```yaml
-{{- if eq .Values.workloadType "StatefulSet" }}
-apiVersion: apps/v1
-kind: StatefulSet
-{{- else if eq .Values.workloadType "DaemonSet" }}
-apiVersion: apps/v1
-kind: DaemonSet
-{{- else if eq .Values.workloadType "Rollout" }}
-apiVersion: argoproj.io/v1alpha1
-kind: Rollout
-{{- else }}
-apiVersion: apps/v1
-kind: Deployment
-{{- end }}
-```
+The template uses `if`/`else if` branches on `workloadType` to render the correct resource kind — `references/chart-templates.md` has the full branch.
 
 `helm-chart` owns the *mechanism* (the template branch and the `workloadType` values key). `kubernetes-workload-patterns` owns the *decision* (which branch to choose for a given service). See `references/chart-templates.md` for the full multi-workload template including `StatefulSet` `volumeClaimTemplates` and `DaemonSet` tolerations.
 
@@ -119,21 +103,7 @@ kind: Deployment
 
 ## Init Container Support
 
-Init containers run to completion before any app container starts. The chart supports an optional `initContainers[]` block in `values.yaml`. When populated, it renders under `spec.initContainers` in the pod spec.
-
-```yaml
-# values.yaml — empty by default; populate when the service needs per-pod setup
-initContainers: []
-```
-
-Template rendering (in the pod spec):
-
-```yaml
-{{- if .Values.initContainers }}
-initContainers:
-  {{- toYaml .Values.initContainers | nindent 2 }}
-{{- end }}
-```
+Init containers run to completion before any app container starts. The chart supports an optional `initContainers[]` block in `values.yaml` (empty by default: `initContainers: []`). When populated, it renders under `spec.initContainers` in the pod spec via a `{{- if .Values.initContainers }}` guard — see `references/chart-templates.md` for the values block and its placement in the pod spec template.
 
 Common init container uses: waiting for a database or dependency health endpoint to respond, pulling a secret from Vault into a shared `emptyDir` volume, running schema migrations before the service starts. The decision of *when* an init container is the right mechanism vs. an entrypoint script is in `kubernetes-workload-patterns` (the Init Container pattern from Ibryam & Huß).
 
