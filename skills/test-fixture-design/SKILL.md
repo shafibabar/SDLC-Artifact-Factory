@@ -97,7 +97,7 @@ overrides, an Object Mother provides factory functions that return a complete,
 named fixture without requiring the caller to specify any fields.
 
 **Use when:** the same complete configuration recurs across many tests
-(for example, `MakeClassifiedAsset()` or `MakeRestrictedTenant()`) and
+(for example, `MakeClassifiedAsset()` or `MakeArchivedAsset()`) and
 the specifics of that configuration are not the subject of any individual test.
 
 **Object Mother vs. builder:** builders are for one-off tests that need a
