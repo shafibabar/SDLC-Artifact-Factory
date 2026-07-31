@@ -16,7 +16,7 @@ description: >
   scripts/validate-alerting-rules-design.sh. Deep derivation, saturation
   patterns, toil, and escalation content split across references/. Used by
   the platform-engineer during Deploy.
-version: 2.1.0
+version: 2.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -45,7 +45,7 @@ Google's SRE discipline organizes monitoring around four signals — if you can 
 | **Errors** | Rate of requests that fail, explicit or implicit | SLO burn-rate alerts, below |
 | **Saturation** | How "full" the most constrained resource is, ideally trending toward exhaustion | Generic pattern in `references/burn-rate-derivation-and-golden-signals.md` — the pipeline's DLQ/lag alerts below are a domain-specific instance, not the general case |
 
-Latency, Traffic, and Errors are already covered by the SLO burn-rate alerts below. Saturation has no generic treatment in this skill beyond the pipeline-specific DLQ/lag alerts — see the reference file for a resource-agnostic saturation pattern (DB pool, disk, worker queue) using the same trend-projection technique as `PipelineConsumerLagGrowing`.
+Latency, Traffic, and Errors are already covered by the SLO burn-rate alerts below. Saturation has no generic treatment here beyond the pipeline-specific DLQ/lag alerts — the reference file gives a resource-agnostic saturation pattern (DB pool, disk, worker queue) using the same `PipelineConsumerLagGrowing` trend-projection technique.
 
 ---
 
@@ -95,63 +95,13 @@ The standard table, for a 28-day SLO window:
 | Slow burn | 5% of budget in 6 h | 6 | 6 h | 30 m | **page** |
 | Trickle | 10% of budget in 3 d | 1 | 3 d | 6 h | ticket |
 
-Worked for the ClassifyDataAsset API SLO (99.5%, budget fraction 0.005): fast burn pages when the error ratio exceeds `14.4 × 0.005 = 7.2%` on both windows — an incident pace that would exhaust 28 days of budget in ~2 days.
-
-```yaml
-# rules/slo-burn-classify-api.yaml
-groups:
-  - name: slo-burn-classify-api
-    rules:
-      - alert: ClassifyAPIErrorBudgetFastBurn
-        expr: |
-          service:http_request_errors:ratio_rate1h{service="compliance-engine"}  > (14.4 * 0.005)
-          and
-          service:http_request_errors:ratio_rate5m{service="compliance-engine"}  > (14.4 * 0.005)
-        labels: { severity: page, slo: classify-api-availability }
-        annotations:
-          summary: "ClassifyDataAsset API burning error budget at 14.4x — gone in ~2 days"
-          runbook_url: "runbooks/compliance-engine/classify-api-error-burn.md"
-      - alert: ClassifyAPIErrorBudgetSlowBurn
-        expr: |
-          service:http_request_errors:ratio_rate6h{service="compliance-engine"}  > (6 * 0.005)
-          and
-          service:http_request_errors:ratio_rate30m{service="compliance-engine"} > (6 * 0.005)
-        labels: { severity: page, slo: classify-api-availability }
-        annotations:
-          summary: "ClassifyDataAsset API burning error budget at 6x — gone in ~5 days"
-          runbook_url: "runbooks/compliance-engine/classify-api-error-burn.md"
-```
-
-Each window used (`rate5m`, `rate30m`, `rate1h`, `rate6h`) is a recording rule from `prometheus-metrics-design` — burn-rate alerts read pre-computed series, they do not run raw histogram queries. The latency SLO alerts identically, with "slow request" as the bad event; the pipeline freshness SLO alerts on the ratio of DataAssets missing the 15-minute deadline.
+Each window used (`rate5m`, `rate30m`, `rate1h`, `rate6h`) is a recording rule from `prometheus-metrics-design` — burn-rate alerts read pre-computed series, they do not run raw histogram queries. The latency SLO alerts identically, with "slow request" as the bad event; the pipeline freshness SLO alerts on the ratio of DataAssets missing the 15-minute deadline. The full worked rule-group YAML — fast + slow burn for the ClassifyDataAsset API SLO (99.5%, budget fraction 0.005), where fast burn pages when the error ratio exceeds `14.4 × 0.005 = 7.2%` on both windows: `references/burn-rate-derivation-and-golden-signals.md`.
 
 ---
 
 ## Pipeline Alerts — DLQ and Consumer Lag
 
-The leading-indicator alerts for the classification pipeline (estate-scanner → entity-extractor → compliance-engine over Redpanda):
-
-```yaml
-groups:
-  - name: pipeline-leading-indicators
-    rules:
-      - alert: PipelineDLQNotEmpty
-        expr: sum by (service, topic) (pipeline_dlq_depth) > 0
-        for: 15m
-        labels: { severity: ticket }
-        annotations:
-          summary: "{{ $labels.service }} has {{ $value }} messages in the DLQ on {{ $labels.topic }}"
-          runbook_url: "runbooks/pipeline/dlq-drain.md"
-      - alert: PipelineConsumerLagGrowing
-        expr: |
-          max by (service, topic) (pipeline_consumer_lag) > 1000
-          and
-          deriv(service:pipeline_consumer_lag:max[15m]) > 0
-        for: 15m
-        labels: { severity: page }
-        annotations:
-          summary: "{{ $labels.service }} lag on {{ $labels.topic }} is high and still growing — freshness SLO at risk"
-          runbook_url: "runbooks/pipeline/consumer-lag.md"
-```
+The leading-indicator alerts for the classification pipeline (estate-scanner → entity-extractor → compliance-engine over Redpanda) are two rules — `PipelineDLQNotEmpty` (ticket, on `pipeline_dlq_depth > 0` held `for: 15m`) and `PipelineConsumerLagGrowing` (page, on lag high *and* `deriv() > 0`). The full rule-group YAML: `references/burn-rate-derivation-and-golden-signals.md`.
 
 DLQ depth is a ticket by default (Retry and Backoff already ran; the messages are parked, not bleeding) and escalates through the freshness SLO burn if the volume is user-significant. Lag pages only when both high *and* growing — a level check alone pages on every routine catch-up after a deploy. This `deriv()`-based trend technique generalizes to any saturating resource — see `references/burn-rate-derivation-and-golden-signals.md`'s generic saturation pattern.
 
@@ -159,37 +109,7 @@ DLQ depth is a ticket by default (Retry and Backoff already ran; the messages ar
 
 ## Alertmanager — Routing, Grouping, Inhibition
 
-One Alertmanager per tenant stack, mirroring the per-tenant Prometheus topology. Grouping collapses simultaneous firings into one notification; inhibition silences the alerts a bigger alert explains; routes split page from ticket.
-
-```yaml
-# alertmanager.yml
-route:
-  receiver: tickets
-  group_by: [alertname, service]
-  group_wait: 30s          # collect a burst into one notification
-  group_interval: 5m
-  repeat_interval: 12h
-  routes:
-    - matchers: [severity="page"]
-      receiver: oncall
-      repeat_interval: 4h  # pages re-fire until resolved or silenced
-
-inhibit_rules:
-  - source_matchers: [alertname="TenantStackDown"]   # the whole stack is down —
-    target_matchers: [severity=~"page|ticket"]        # silence every per-service alert
-    equal: [tenant]
-  - source_matchers: [severity="page"]                # a page inhibits its own ticket-level echo
-    target_matchers: [severity="ticket"]
-    equal: [service, slo]
-
-receivers:
-  - name: oncall
-    webhook_configs:
-      - url: "http://alert-bridge/chat"   # self-hosted chat webhook — no paid paging SaaS
-  - name: tickets
-    email_configs:
-      - to: "ops@<product>.example"
-```
+One Alertmanager per tenant stack, mirroring the per-tenant Prometheus topology. Grouping collapses simultaneous firings into one notification; inhibition silences the alerts a bigger alert explains; routes split page from ticket. Two inhibit rules matter: a `TenantStackDown` firing silences every per-service alert in that tenant, and a page inhibits its own ticket-level echo. Delivery is self-hosted (chat webhook + email, no paid paging SaaS). The full worked `alertmanager.yml` — group keys, `group_wait`/`repeat_interval` timings, both inhibit rules, and the receivers: `references/escalation-and-postmortem-linkage.md`.
 
 Silences (with an author, a reason, and an expiry) cover planned maintenance — never edit a rule to quiet a known noisy period. A short `repeat_interval` is not an escalation policy — it re-pages the same person, it does not notify anyone else. For what "escalation" honestly means at a headcount of one, see `references/escalation-and-postmortem-linkage.md`.
 

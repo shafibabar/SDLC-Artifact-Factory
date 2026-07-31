@@ -84,3 +84,63 @@ groups:
 This is the same trend-projection shape as `PipelineConsumerLagGrowing` (`SKILL.md`, Pipeline Alerts section): a level check alone would page on every routine burst of concurrent requests; pairing the level with a positive `deriv()` restricts the alert to sustained growth toward exhaustion. It is a **ticket**, not a page — a filling pool is a capacity signal to act on soon, not a user-visible promise breaking right now (if the pool actually exhausts, the resulting request failures are already covered by the availability SLO's burn-rate page).
 
 The same two-step shape — a `level:metric:operations` recording rule per `prometheus-metrics-design`'s naming convention, then a `deriv()`-gated alert on it — generalizes to any other saturating resource (disk, worker queue, memory) by substituting the ratio's source query.
+
+## Worked Rule Group: SLO Burn-Rate Alert YAML
+
+The `SKILL.md` burn-rate table is implemented as a Prometheus rule group. Worked for the ClassifyDataAsset API SLO (99.5%, budget fraction 0.005): fast burn pages when the error ratio exceeds `14.4 × 0.005 = 7.2%` on **both** windows — an incident pace that would exhaust 28 days of budget in ~2 days.
+
+```yaml
+# rules/slo-burn-classify-api.yaml
+groups:
+  - name: slo-burn-classify-api
+    rules:
+      - alert: ClassifyAPIErrorBudgetFastBurn
+        expr: |
+          service:http_request_errors:ratio_rate1h{service="compliance-engine"}  > (14.4 * 0.005)
+          and
+          service:http_request_errors:ratio_rate5m{service="compliance-engine"}  > (14.4 * 0.005)
+        labels: { severity: page, slo: classify-api-availability }
+        annotations:
+          summary: "ClassifyDataAsset API burning error budget at 14.4x — gone in ~2 days"
+          runbook_url: "runbooks/compliance-engine/classify-api-error-burn.md"
+      - alert: ClassifyAPIErrorBudgetSlowBurn
+        expr: |
+          service:http_request_errors:ratio_rate6h{service="compliance-engine"}  > (6 * 0.005)
+          and
+          service:http_request_errors:ratio_rate30m{service="compliance-engine"} > (6 * 0.005)
+        labels: { severity: page, slo: classify-api-availability }
+        annotations:
+          summary: "ClassifyDataAsset API burning error budget at 6x — gone in ~5 days"
+          runbook_url: "runbooks/compliance-engine/classify-api-error-burn.md"
+```
+
+Each window used (`rate5m`, `rate30m`, `rate1h`, `rate6h`) is a recording rule from `prometheus-metrics-design` — burn-rate alerts read pre-computed series, they do not run raw histogram queries. The latency SLO alerts identically, with "slow request" as the bad event; the pipeline freshness SLO alerts on the ratio of DataAssets missing the 15-minute deadline.
+
+## Worked Rule Group: Pipeline Leading-Indicator YAML
+
+The leading-indicator alerts for the classification pipeline (estate-scanner → entity-extractor → compliance-engine over Redpanda) — a DLQ-depth ticket and a lag-growth page:
+
+```yaml
+groups:
+  - name: pipeline-leading-indicators
+    rules:
+      - alert: PipelineDLQNotEmpty
+        expr: sum by (service, topic) (pipeline_dlq_depth) > 0
+        for: 15m
+        labels: { severity: ticket }
+        annotations:
+          summary: "{{ $labels.service }} has {{ $value }} messages in the DLQ on {{ $labels.topic }}"
+          runbook_url: "runbooks/pipeline/dlq-drain.md"
+      - alert: PipelineConsumerLagGrowing
+        expr: |
+          max by (service, topic) (pipeline_consumer_lag) > 1000
+          and
+          deriv(service:pipeline_consumer_lag:max[15m]) > 0
+        for: 15m
+        labels: { severity: page }
+        annotations:
+          summary: "{{ $labels.service }} lag on {{ $labels.topic }} is high and still growing — freshness SLO at risk"
+          runbook_url: "runbooks/pipeline/consumer-lag.md"
+```
+
+DLQ depth is a ticket by default (Retry and Backoff already ran; the messages are parked, not bleeding) and escalates through the freshness SLO burn if the volume is user-significant. Lag pages only when both high *and* growing — a level check alone pages on every routine catch-up after a deploy. The `deriv()`-based trend technique generalizes to any saturating resource (Generic Saturation Alert Pattern above).
