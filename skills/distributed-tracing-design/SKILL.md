@@ -1,17 +1,26 @@
 ---
 name: distributed-tracing-design
 description: >
-  Teaches how to design distributed tracing across a Go microservices system —
-  span creation and naming, parent/child relationships, semantic and custom
-  attributes, recording errors and status, context propagation across HTTP and
-  the Redpanda broker (so a trace follows an event through the pipeline), span
-  events, and sampling strategy. Tracing is how a request is followed end-to-end
-  across service and async boundaries. Used by the backend-engineer during Implement.
-version: 1.1.0
+  Design distributed tracing for a Go + chi + Redpanda system: decide what work
+  becomes a span, name spans by operation not data, choose span kind
+  (SERVER/CLIENT/PRODUCER/CONSUMER/INTERNAL), attach high-cardinality domain
+  attributes, record errors with RecordError and SetStatus, propagate W3C trace
+  context across HTTP and across the async broker so one trace follows an event
+  through the outbox → Redpanda → consumer pipeline, and choose head-vs-tail
+  sampling and a sample rate. Answers "why is my trace severed at the broker?",
+  "should I span this function?", "what sample rate?", "how do errors show on a
+  span?", "head or tail sampling?". Used by backend-engineer during Implement.
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
-tags: [implement, observability, tracing, opentelemetry, spans, context-propagation, sampling]
+related:
+  - opentelemetry-instrumentation
+  - structured-logging-design
+  - go-middleware
+  - go-event-publisher
+  - go-event-consumer
+tags: [implement, observability, distributed-tracing, opentelemetry, span, context-propagation, sampling]
 ---
 
 # Distributed Tracing Design
@@ -20,127 +29,86 @@ tags: [implement, observability, tracing, opentelemetry, spans, context-propagat
 
 A distributed trace is the end-to-end story of one logical operation as it moves across services and async boundaries. When a classification request flows API → command handler → repository → outbox → broker → consumer → graph update, a single trace ties all of it together, so a latency spike or an error can be located to the exact span where it happened.
 
-This skill covers how to create well-formed spans, attach the right detail, and — critically — **propagate trace context across HTTP and the Redpanda broker** so the trace is not severed at every boundary. Provider setup is in `opentelemetry-instrumentation`; this is the tracing design on top of it.
+This skill covers the **design decisions**: what to make a span, how to name and attribute it, how to record errors, and — the part that breaks most often — how to keep one trace unbroken across the Redpanda hop. SDK/provider setup lives in `opentelemetry-instrumentation`. Full Go instrumentation code is in `references/instrumentation-go.md`; sampling and W3C propagation in depth are in `references/sampling-and-propagation.md`.
 
 ---
 
-## Span Anatomy
+## What Deserves a Span
 
-A span represents one unit of work with a start, end, status, attributes, and a parent. Spans nest to form the trace tree.
+Span the **units of work that can fail or be slow** — not every function.
 
-```go
-func (h *ClassifyDataAssetHandler) Handle(ctx context.Context, cmd ClassifyDataAsset) error {
-    ctx, span := h.tracer.Start(ctx, "ClassifyDataAsset.Handle",
-        trace.WithSpanKind(trace.SpanKindInternal),
-        trace.WithAttributes(
-            attribute.String("data_asset.id", cmd.DataAssetID.String()),
-            attribute.String("sensitivity.level", string(cmd.Sensitivity)),
-        ),
-    )
-    defer span.End()                       // span always ends, even on panic/return
-
-    if err := h.repo.Save(ctx, asset); err != nil {
-        span.RecordError(err)              // attach the error to the span
-        span.SetStatus(codes.Error, "save failed")
-        return err
-    }
-    span.SetStatus(codes.Ok, "")
-    return nil
-}
-```
-
-Rules:
-- **`defer span.End()` immediately** after `Start` — a span that never ends corrupts the trace.
-- **Pass the returned `ctx` downward** — children derive their parent from it. Dropping the returned ctx severs the tree.
-- **Name spans by operation, not data**: `ClassifyDataAsset.Handle`, `repo.DataAsset.Save` — low-cardinality, not `Classify asset a1b2…`.
-
----
-
-## Span Kinds
-
-The span kind tells the backend how to interpret the span in the trace topology:
-
-| Kind | Use for |
+| Span it | Do not span it |
 |---|---|
-| `SERVER` | Inbound request handling (HTTP server span — set by middleware) |
-| `CLIENT` | Outbound calls (DB query, external API, broker produce) |
-| `PRODUCER` | Publishing a message to the broker |
-| `CONSUMER` | Receiving a message from the broker |
-| `INTERNAL` | In-process work (command handlers, domain operations) |
+| Inbound HTTP request (middleware SERVER span) | Trivial getters/setters, pure formatting |
+| Command/query handler (INTERNAL) | In-memory struct mapping |
+| Repository call / DB query (CLIENT) | A loop body iterating a slice |
+| Broker produce (PRODUCER) and consume (CONSUMER) | Logging or metric emission itself |
+| Outbound HTTP / external API call (CLIENT) | Anything that never blocks or fails |
 
-`SERVER`/`CLIENT` and `PRODUCER`/`CONSUMER` pair across boundaries — this is what lets the backend stitch a remote parent to its child.
+A span per trivial function produces thousand-span traces where the story drowns in noise. Span the boundaries and the fallible work.
 
 ---
 
-## Attributes: High-Cardinality Detail Lives Here
+## Span Naming and Kind
 
-The detail that must **not** go on metrics (UUIDs, ids) belongs on spans — a trace is one execution, so high cardinality is fine and valuable.
+- **Name by operation, low-cardinality**: `ClassifyDataAsset.Handle`, `repo.DataAsset.Save`, `consume orders.classification` — never `classify asset 6f9a…`. The asset id is an *attribute*, not part of the name.
+- **Set the span kind** so the backend can stitch the topology: `SERVER`/`CLIENT` pair across a sync call, `PRODUCER`/`CONSUMER` pair across the broker. Handlers and domain work are `INTERNAL`. Full kind table and worked code: `references/instrumentation-go.md`.
+
+Two rules that keep the tree intact:
+- **`defer span.End()` immediately** after `Start` — a span that never ends corrupts the trace.
+- **Pass the returned `ctx` downward** — children derive their parent from it. Dropping it severs the tree into disconnected roots.
+
+---
+
+## Attributes: High-Cardinality Detail Belongs Here
+
+Detail that must **not** go on metrics (UUIDs, ids, sizes) belongs on spans — a trace is one execution, so high cardinality is fine and valuable.
 
 | Attribute type | Examples |
 |---|---|
-| Semantic conventions | `http.route`, `http.response.status_code`, `db.system`, `messaging.system` (use the `semconv` package constants, not hand-typed strings) |
+| Semantic conventions | `http.route`, `http.response.status_code`, `db.system`, `messaging.system` — use `semconv` constants, not hand-typed strings |
 | Domain attributes | `data_asset.id`, `tenant.id`, `sensitivity.level`, `batch.size` |
 | Causal attributes | `event.id`, `correlation.id`, `causation.id` |
 
-The blueprint's directive — "commit custom attributes (data sizes, batch counts) to the span context" — is exactly this: enrich spans with the quantitative detail that explains behaviour.
+Enrich spans with the quantitative detail that explains behaviour (batch counts, byte sizes). **Never** put secrets or PII — a file path, an email, document content — on a span; spans are exported to a third system with its own retention (security `privacy-design`). Ids and sizes only. Attribute conventions and code: `references/instrumentation-go.md`.
 
-```go
-span.SetAttributes(
-    attribute.Int("outbox.batch_size", len(records)),
-    attribute.String("tenant.id", tenantID.String()),
-)
+---
+
+## The Error/Status Rule
+
+A failing span must be **visibly** failing. On any error path:
+
+```
+span.RecordError(err)                    // attaches the error as a span event
+span.SetStatus(codes.Error, "save failed")
 ```
 
-**Never** put secrets or PII in attributes — spans are exported and stored (security `privacy-design`).
+`RecordError` alone does **not** mark the span failed — you need `SetStatus(codes.Error, …)` too. Omitting it renders the failing span green in every trace view. On success, leave status unset (or `codes.Ok` only where you deliberately override sampling of an otherwise-error-looking result). This mirrors the SRE golden-signals discipline of separating successful from failed latency: a trace's error status is what lets tail sampling keep exactly the failed executions.
 
 ---
 
-## Propagation Across HTTP
+## Context Propagation (the part that breaks)
 
-Inbound: the server extracts the parent context from request headers (done by instrumentation middleware). Outbound: the client injects the current context into request headers. Use `otelhttp` so this is automatic for standard clients/servers.
+A trace survives a boundary only if the **W3C `traceparent`** context crosses it.
 
-```go
-client := http.Client{Transport: otelhttp.NewTransport(http.DefaultTransport)} // injects on every request
-// inbound extraction handled by the Telemetry middleware (see go-middleware)
-```
+- **HTTP** — inbound: the SERVER middleware extracts the parent from request headers; outbound: wrap the client transport with `otelhttp` so every request injects the current context automatically.
+- **Redpanda (async)** — the async boundary is where traces usually break, because producer and consumer are different processes at different times. The trace survives only if the context is carried **in the message headers**: the publisher `Inject`s into Kafka headers, the consumer `Extract`s to continue the *same* trace. A `PRODUCER` span and a `CONSUMER` span then pair across the hop.
 
----
-
-## Propagation Across the Broker (the crucial part)
-
-An async boundary is where traces usually break — the producer and consumer are different processes, different times. The trace survives only if the context is carried **in the message headers**. The publisher injects; the consumer extracts.
-
-```go
-// Publisher (outbox relay — see go-event-publisher): inject trace context into Kafka headers
-otel.GetTextMapPropagator().Inject(ctx, kafkaHeaderCarrier{rec})
-
-// Consumer (see go-event-consumer): extract it to continue the SAME trace
-ctx = otel.GetTextMapPropagator().Extract(ctx, kafkaHeaderCarrier{rec})
-ctx, span := tracer.Start(ctx, "consume "+rec.Topic, trace.WithSpanKind(trace.SpanKindConsumer))
-```
-
-The `kafkaHeaderCarrier` adapts the broker's headers to OTel's `TextMapCarrier` interface (get/set/keys). With this, a classification event's trace spans the API request, the outbox relay, the broker hop, and every downstream pipeline stage — one connected trace across the whole choreography.
+Getting this right stitches the API request, the outbox relay, the broker hop, and every downstream pipeline stage into one connected trace across the whole choreography. Both carriers, the `kafkaHeaderCarrier` adapter, and end-to-end code are in `references/instrumentation-go.md`; the W3C header format and why event-header propagation (not span links) is the primary mechanism are in `references/sampling-and-propagation.md`.
 
 ---
 
-## Span Events and Links
+## Sampling: Head vs Tail, and the Rate
 
-- **Span events** mark a point in time within a span (a retry attempt, a cache miss): `span.AddEvent("retry", trace.WithAttributes(attribute.Int("attempt", n)))`.
-- **Span links** connect spans that are related but not parent/child — e.g., a batch consumer processing many messages links to each message's producing trace, since it has many "parents."
+Tracing every request at full volume is expensive and rarely necessary.
 
----
+| Decision | Default choice | Why |
+|---|---|---|
+| Where to decide | **Head** for the common case: `ParentBased(TraceIDRatioBased(r))` in the SDK | Cheap, and `ParentBased` guarantees whole traces — the entry service's decision is followed downstream, no half-traces |
+| Keep all errors | **Tail** sampling in the collector | You cannot know at head time whether a trace will error; tail sampling inspects the finished trace and keeps every one containing an error |
+| Rate `r` | 100% non-prod; a small fraction in prod (see reference for how to pick) | Cost and backend cardinality scale with retained spans |
 
-## Sampling Strategy
-
-Tracing every request at full volume is expensive and rarely necessary. Sample intelligently (configured in `opentelemetry-instrumentation`):
-
-| Strategy | Use |
-|---|---|
-| `ParentBased(TraceIDRatioBased(r))` | **Default** — sample a fraction `r`, but always follow the parent's decision so traces are whole |
-| Always sample errors | Tail-sampling in the collector keeps all traces that contain an error |
-| Higher ratio in non-prod | Sample 100% in staging; a small ratio in production |
-
-**ParentBased is essential**: it guarantees that if a trace is sampled at the entry service, every downstream span is kept too — no half-traces.
+**`ParentBased` is essential** — per-service independent sampling produces traces with missing middles, worse than no trace. Rate selection, tail-sampling collector policy config, and the cost/cardinality tradeoff are in `references/sampling-and-propagation.md`.
 
 ---
 
@@ -149,25 +117,25 @@ Tracing every request at full volume is expensive and rarely necessary. Sample i
 | Criterion | Pass | Fail |
 |---|---|---|
 | Spans well-formed | `defer End()`; returned ctx propagated | Unended spans; dropped ctx severing the tree |
-| Operation-named | Span names are low-cardinality operations | Names containing ids/data |
-| Errors recorded | `RecordError` + `SetStatus(Error)` on failure | Failures invisible on the span |
+| Operation-named | Low-cardinality operation names | Names containing ids/data |
+| Errors recorded | `RecordError` + `SetStatus(Error)` on failure | Failures invisible / green on the span |
 | HTTP propagation | Context extracted inbound, injected outbound | New disconnected trace per service |
-| **Broker propagation** | Trace context in message headers; consumer continues the trace | Trace severed at every async hop |
+| **Broker propagation** | Trace context in message headers; consumer continues it | Trace severed at every async hop |
 | Rich attributes | Quantitative domain attributes on spans | Bare spans with no explanatory detail |
-| No PII on spans | Attributes carry ids/sizes, not secrets/PII | PII/secrets in span attributes |
-| Whole-trace sampling | ParentBased sampling | Independent per-span sampling → half-traces |
+| No PII on spans | Ids/sizes only | Secrets/PII in span attributes |
+| Whole-trace sampling | `ParentBased`; errors kept via tail | Independent per-span sampling → half-traces |
 
 ---
 
 ## Anti-Patterns
 
-- **Dropping the returned context** — `_, span := tracer.Start(ctx, …)` then passing the *old* `ctx` downward. Every child becomes a root; the tree flattens into disconnected fragments.
-- **Span names carrying data** — `"classify asset 6f9a…"` mints one span name per asset. Names are operations; the asset id is an attribute.
-- **A span per trivial function** — tracing every getter produces thousand-span traces where the story drowns in noise. Span the units of work that can fail or be slow: handlers, repository calls, broker hops.
-- **Severed async traces** — publishing without injecting headers, or consuming without extracting them, breaks the trace exactly where debugging needs it most: across the broker.
-- **Errors swallowed by the span** — returning an error without `RecordError`/`SetStatus(Error)` renders the failing span green in every trace view.
-- **Non-ParentBased sampling** — per-service independent sampling decisions produce traces with missing middles that are worse than no trace at all.
-- **PII in attributes** — a file path, an email address, or document content on a span is PII exported to a third system with its own retention. Ids and sizes only.
+- **Dropping the returned context** — `_, span := tracer.Start(ctx, …)` then passing the *old* `ctx` down. Every child becomes a root; the tree flattens.
+- **Span names carrying data** — `"classify asset 6f9a…"` mints one span name per asset. Names are operations; the id is an attribute.
+- **A span per trivial function** — the story drowns in thousand-span traces. Span boundaries and fallible work only.
+- **Severed async traces** — publishing without `Inject` or consuming without `Extract` breaks the trace exactly where debugging needs it most.
+- **Errors swallowed by the span** — returning an error without `RecordError`/`SetStatus(Error)` leaves the failing span green.
+- **Non-`ParentBased` sampling** — independent per-service decisions produce traces with missing middles.
+- **PII in attributes** — ids and sizes only; never paths, emails, or content.
 
 ---
 
@@ -176,7 +144,9 @@ Tracing every request at full volume is expensive and rarely necessary. Sample i
 Produces Go source plus tracing assertions in tests:
 
 ```
-internal/infrastructure/telemetry/tracing.go      (tracer helpers, kafkaHeaderCarrier)
-internal/handlers/.../*.go                          (spans in handlers/consumers)
-*_test.go                                           (assert spans/attributes via tracetest)
+internal/infrastructure/telemetry/tracing.go   (tracer helpers, kafkaHeaderCarrier)
+internal/handlers/.../*.go                       (spans in handlers/consumers)
+*_test.go                                         (assert spans/attributes via tracetest)
 ```
+
+Detailed instrumentation, exporter wiring, and sampling configuration: see the two `references/` files.
