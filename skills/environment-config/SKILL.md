@@ -9,7 +9,7 @@ description: >
   only via Vault Agent), and the promotion invariance check that proves the
   artifact never changed between environments. Used by the platform-engineer
   during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -147,6 +147,8 @@ Environment parity is not only about what runs — it is about *how* environment
 | tenant-* prod | PR per fleet wave → Flux reconciler | A defect — production diverges from what staging proved |
 
 A dev environment built by hand cannot demonstrate that the automated provisioning path works. That is the purpose of dev: the first real-cluster convergence after a merge verifies not just the image but the automated pipeline that will build staging and every production tenant stamp.
+
+The same rule extends across cloud targets. The platform is cloud-agnostic by design, but product deployments land on AWS, Azure, or GCP — and each cloud is provisioned by the *same* automated OpenTofu + Helm process, never a per-cloud pipeline fork. Only the OpenTofu provider block, remote-state backend, managed-Kubernetes resource (GKE/EKS/AKS), managed-Postgres resource, and cloud secret backend differ per target, and every one of those differences lives in values and provider config, never in service code. Per-cloud provider/backend/managed-service specifics and how each cloud's secret backend relates to the Vault + SOPS story: `references/cloud-environments.md`.
 
 ---
 
