@@ -13,7 +13,7 @@ description: >
   discipline a Shared component's spec needs. Component specs are the
   primary input to the frontend-engineer's React+TypeScript implementation.
   Produced by the ux-architect agent during the Design phase.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: ux-architect
 created: 2026-06-25
@@ -34,8 +34,7 @@ code is written.
 Component specs prevent the "lost in translation" failure where a
 developer interprets design intent differently than it was meant. They
 make every component a clearly scoped unit of work with defined inputs,
-outputs, behaviour, and — for Shared components — a versioned contract
-every consuming fragment can rely on.
+outputs, behaviour, and — for Shared components — a versioned contract.
 
 ---
 
@@ -109,19 +108,13 @@ whether they should be one fragment before reaching for a shared package
 (`microfrontend-architecture`'s ad-hoc-sharing-signals-a-boundary-problem
 rule).
 
-A **Shared** component's spec needs two things a Local component's
-doesn't:
-
-- **A versioned contract** (semver in the header) — a breaking prop change
-  is coordinated across every consuming fragment before it ships, exactly
-  like any other cross-fragment contract.
-- **An explicit styling contract** — which design tokens it consumes (from
-  `packages/design-system/tokens.css`, per `css-styling-strategy`), and
-  whether it accepts any fragment-supplied style override (default: no,
-  beyond an explicitly-scoped layout-only escape hatch).
-
-Full promotion criteria, the versioning discipline, the styling contract,
-and a complete worked example (`SensitivityBadge`):
+A **Shared** component's spec needs two things a Local one doesn't: a
+**versioned contract** (semver in the header, breaking prop changes
+coordinated across every consuming fragment) and an **explicit styling
+contract** (which design tokens it consumes, and whether it accepts any
+fragment-supplied override — default no, beyond a layout-only escape
+hatch). Full promotion criteria, the versioning discipline, the styling
+contract, and a complete worked example (`SensitivityBadge`):
 `references/shared-component-contract.md`.
 
 ---
@@ -129,39 +122,25 @@ and a complete worked example (`SensitivityBadge`):
 ## Domain-Mapped Components (Local)
 
 For each Read Model and Command in **one fragment's** domain, there is a
-corresponding Local component in that fragment:
-
-| Read Model | Component | Level |
-|---|---|---|
-| `DataAssetListView` | `DataAssetTable` | Organism |
-| `ComplianceGapReportView` | `ComplianceGapReport` | Organism |
-
-| Command | Component | Level |
-|---|---|---|
-| `ClassifyDataAsset` | `ClassificationModal` | Organism |
-| `ConnectDataSource` | `ConnectSourceWizard` | Organism |
-
-A Local Organism may still depend on Shared Atoms/Molecules for its
-visual building blocks (see the `ClassificationModal` worked example's
-use of the Shared `SensitivityBadge`) — Local vs. Shared is about where a
-component's *domain logic* lives, not whether it can consume shared UI
-primitives.
+corresponding Local component in that fragment (`DataAssetListView` →
+`DataAssetTable`, `ClassifyDataAsset` → `ClassificationModal`, and so on
+— full Read-Model→component and Command→component mapping tables in
+`references/component-spec-worked-example.md`). A Local Organism may still
+depend on Shared Atoms/Molecules for its visual building blocks — Local
+vs. Shared is about where a component's *domain logic* lives, not whether
+it can consume shared UI primitives.
 
 ---
 
 ## Component Inventory
 
 Before implementation begins, produce the complete component inventory —
-the frontend-engineer's work breakdown, with Scope now a required column:
+the frontend-engineer's work breakdown — with columns Component, Level,
+Scope (a required column), Priority, Domain mapping, and Dependencies. A
+worked inventory covering both Shared and Local components is in
+`references/component-spec-worked-example.md`.
 
-| Component | Level | Scope | Priority | Domain mapping | Dependencies |
-|---|---|---|---|---|---|
-| `SensitivityBadge` | Atom | Shared | P1 | SensitivityLevel value | None |
-| `DataAssetTable` | Organism | Local (data-assets) | P1 | DataAssetListView | `SensitivityBadge`, `Button` |
-| `ClassificationModal` | Organism | Local (data-assets) | P1 | ClassifyDataAsset | `SensitivityBadge`, `Modal` |
-| `ComplianceGapReport` | Organism | Local (compliance) | P2 | ComplianceGapReportView | `StatusBadge`, `Chart` |
-
-Priority 1 components are needed for the MVP slice. Priority 2 for the
+Priority 1 components are needed for the MVP slice, Priority 2 for the
 full feature set. A Shared component's Priority reflects the earliest
 consuming fragment's need — it's built once, ahead of whichever fragment
 needs it first.
