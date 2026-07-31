@@ -1,353 +1,145 @@
 ---
 name: security-implementation
 description: >
-  Teaches the security-engineer how to implement security controls in Go services
-  — covering JWT middleware implementation, ABAC policy enforcement in Go,
-  parameterised queries to prevent SQL injection, input sanitisation, secure
-  HTTP headers, rate limiting, audit log implementation with Non-Repudiation,
-  and the Go security libraries to use (and avoid). This skill translates
-  security-architect designs into working, auditable Go code. Used by the
-  security-engineer agent during the Implement phase.
-version: 1.1.0
+  Teaches the security-engineer and backend-engineer to implement application-security controls in Go —
+  input validation (allowlist, validate at every trust boundary), output/contextual encoding,
+  authentication and session management, server-side authorization with ABAC (deny by default, IDOR
+  prevention), the OWASP Top 10 mapped to concrete Go+chi+pgx controls, secrets handling, security
+  logging and audit/attestation emission, secure defaults and least-privilege API design. Every control
+  traces back to the STRIDE threat it discharges. Used during Implement for every service handling
+  untrusted input or sensitive data.
+version: 2.0.0
 phase: implement
 owner: security-engineer
 created: 2026-06-25
-tags: [implement, security, go, jwt, abac, sql-injection, audit-log, rate-limiting]
+related:
+  - access-control-model
+  - security-architecture
+  - zero-trust-design
+  - threat-modeling
+  - secrets-management
+  - compliance-verification
+  - privacy-design
+  - glossary-management
+tags: [implement, security, owasp, input-validation, authentication, authorization, abac, secure-coding, audit-log, go]
 ---
 
 # Security Implementation
 
-## Purpose
+Translate the security architecture into working, auditable Go code. Controls are built correctly the
+first time and tested — never bolted on after a review. This is a *push-left* discipline: validated
+input, encoded output, server-side authorization, no secrets in code or logs, and a security-event log
+are as much a merge gate as passing tests (Janca, *Alice and Bob Learn Application Security*).
 
-Security implementation translates the security architecture designs into working Go code. Every control defined in the `security-architecture` skill has a corresponding implementation pattern in this skill. Security controls are not reviewed after the fact — they are built correctly the first time, tested, and verified as part of the implementation.
-
----
-
-## JWT Middleware (Go)
-
-```go
-// internal/handlers/middleware/auth.go
-
-import (
-    "github.com/lestrrat-go/jwx/v2/jwk"
-    "github.com/lestrrat-go/jwx/v2/jwt"
-)
-
-type AuthMiddleware struct {
-    keySet jwk.Set
-    audience string
-    issuer   string
-}
-
-func NewAuthMiddleware(ctx context.Context, jwksURL, audience, issuer string) (*AuthMiddleware, error) {
-    // jwk.Cache re-fetches the JWKS in the background, so signing-key rotation
-    // needs no restart. A one-shot jwk.Fetch would pin the keys forever.
-    cache := jwk.NewCache(ctx)
-    if err := cache.Register(jwksURL, jwk.WithMinRefreshInterval(15*time.Minute)); err != nil {
-        return nil, fmt.Errorf("registering JWKS URL: %w", err)
-    }
-    // Prime the cache so a bad URL fails at startup, not on the first request
-    if _, err := cache.Refresh(ctx, jwksURL); err != nil {
-        return nil, fmt.Errorf("fetching JWKS: %w", err)
-    }
-    return &AuthMiddleware{keySet: jwk.NewCachedSet(cache, jwksURL), audience: audience, issuer: issuer}, nil
-}
-
-func (m *AuthMiddleware) Handler(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        tok, err := jwt.ParseRequest(r,
-            jwt.WithKeySet(m.keySet),
-            jwt.WithAudience(m.audience),
-            jwt.WithIssuer(m.issuer),
-            jwt.WithValidate(true),
-        )
-        if err != nil {
-            writeError(w, http.StatusUnauthorized, "AUTHENTICATION_REQUIRED", "Valid authentication token required")
-            return
-        }
-        ctx := context.WithValue(r.Context(), ctxKeyToken, tok)
-        next.ServeHTTP(w, r.WithContext(ctx))
-    })
-}
-
-// Extract subject from context — called in handlers.
-// Every claim is checked: a validly-signed token with a missing or malformed
-// claim must produce an error, never a panic (no MustParse, no bare type
-// assertions — a panic here is an attacker-triggerable denial of service).
-func SubjectFromContext(ctx context.Context) (domain.Subject, error) {
-    tok, ok := ctx.Value(ctxKeyToken).(jwt.Token)
-    if !ok {
-        return domain.Subject{}, ErrNoSubjectInContext
-    }
-    userID, err := uuid.Parse(tok.Subject())
-    if err != nil {
-        return domain.Subject{}, ErrMalformedToken
-    }
-    rawTenant, ok := tok.PrivateClaims()["tenant_id"].(string)
-    if !ok {
-        return domain.Subject{}, ErrMalformedToken
-    }
-    tenantID, err := uuid.Parse(rawTenant)
-    if err != nil {
-        return domain.Subject{}, ErrMalformedToken
-    }
-    permissions, err := toStringSlice(tok.PrivateClaims()["permissions"])
-    if err != nil {
-        return domain.Subject{}, ErrMalformedToken
-    }
-    return domain.Subject{
-        ID:          userID,
-        TenantID:    tenantID,
-        Permissions: permissions,
-    }, nil
-}
-```
-
-**Library:** `github.com/lestrrat-go/jwx/v2` — supports RS256, JWKS caching with background refresh for key rotation.
-
-**JWT validation pitfalls this middleware must not fall into:**
-- **Algorithm pinning:** the accepted algorithm comes from the server's JWKS keys, never from the token's `alg` header. Publishing only RSA keys with `alg: RS256` in the JWKS prevents `alg: none` and RS256→HS256 confusion attacks.
-- **Audience and issuer are mandatory.** A token minted for another service in the same identity domain validates against the same JWKS — only `aud`/`iss` checks stop cross-service token replay.
-- **Require `exp`.** A token without an expiry claim must be rejected, not treated as never-expiring.
-- **Clock skew:** allow a small acceptance skew (≤ 2 minutes, `jwt.WithAcceptableSkew`) — no more, or "short-lived" tokens quietly stop being short-lived.
+This body holds the decision-shaping rules — the one non-negotiable rule per control category, the
+STRIDE traceability principle, and pointers into `references/` for the full Go patterns, the OWASP map,
+and the audit/attestation deliverables.
 
 ---
 
-## ABAC Policy Enforcement (Go)
+## The Seven Control Categories — One Rule Each
 
-```go
-// internal/domain/policy.go
+Every service handling untrusted input or sensitive data must satisfy all seven. The rule is the thing
+you cannot get wrong; the reference file holds the code.
 
-type AccessPolicy interface {
-    Evaluate(ctx context.Context, sub Subject, res Resource, act Action) error
-}
-
-type ABACPolicy struct {
-    assetRepo DataAssetRepository
-}
-
-func (p *ABACPolicy) Evaluate(ctx context.Context, sub Subject, res Resource, act Action) error {
-    // Rule 1: Tenant isolation — always first, always non-negotiable
-    if sub.TenantID != res.TenantID {
-        return ErrForbidden // never distinguish "wrong tenant" from "no permission"
-    }
-
-    // Rule 2: Permission check
-    requiredPerm := act.RequiredPermission()
-    if !sub.HasPermission(requiredPerm) {
-        return ErrForbidden
-    }
-
-    return nil
-}
-
-// internal/application/commands/classify_data_asset.go
-func (h *ClassifyDataAssetHandler) Handle(ctx context.Context, cmd ClassifyDataAsset) error {
-    sub, err := domain.SubjectFromContext(ctx)
-    if err != nil {
-        return ErrUnauthenticated
-    }
-
-    // Load resource to get its tenant_id for policy evaluation
-    asset, err := h.repo.FindByID(ctx, cmd.DataAssetID)
-    if err != nil {
-        return err
-    }
-
-    resource := domain.Resource{
-        Type:     "data-asset",
-        ID:       cmd.DataAssetID,
-        TenantID: asset.TenantID(),
-    }
-    action := domain.Action{Operation: "classify-data-asset"}
-
-    if err := h.policy.Evaluate(ctx, sub, resource, action); err != nil {
-        return err // ErrForbidden — do not reveal why
-    }
-
-    // Proceed with the command
-    return asset.Classify(cmd)
-}
-```
+| # | Category | The one rule | Full pattern |
+|---|---|---|---|
+| 1 | **Input validation** | **Allowlist** at **every** trust boundary — accept the known-good shape (type, length, range, format, set membership), reject everything else. A denylist always loses to an encoding it missed. | `references/secure-coding-go.md` |
+| 2 | **Output encoding** | Encode **contextually, at the sink** — HTML, JS, URL, SQL, log line, and HTTP header each need a *different* encoding. This is a **separate** control from validation and does not substitute for it. | `references/secure-coding-go.md` |
+| 3 | **Authentication & sessions** | Validate the JWT against the server's JWKS (algorithm pinned server-side, `aud`/`iss`/`exp` mandatory); harden any browser-held cookie (`HttpOnly; Secure; SameSite`), regenerate session IDs on auth, enforce idle + absolute timeouts. | `references/authn-authz.md` |
+| 4 | **Authorization** | **Server-side, deny by default, per request, per object.** Absence of an explicit grant is a denial. Every resource-by-ID access checks ownership of *that* object (IDOR/BOLA). UI hiding is never a control. | `references/authn-authz.md` |
+| 5 | **Secrets** | Never in source, committed config, or logs — injected from a secrets manager, wrapped in a redacting type at the point of read, and rotatable/revocable. | `references/secure-coding-go.md` + `secrets-management` |
+| 6 | **Security logging** | Log security **events** (authN outcome, authZ denial, validation rejection, privilege change); **never** log secrets, session tokens, or PII; encode user-controlled values so a newline can't forge a log line. | `references/audit-and-evidence.md` |
+| 7 | **Secure defaults** | The out-of-the-box configuration is the safe one — an operator opts *into* risk. Least functionality, least-privilege API surface, security headers on, errors that leak nothing. | `references/secure-coding-go.md` |
 
 ---
 
-## SQL Injection Prevention
+## Every Control Names the Threat It Discharges (STRIDE traceability)
 
-All database queries use parameterised queries via pgx. String concatenation in SQL is prohibited.
+A control with no named threat is decoration; a threat with no control is an unmet requirement. Trace
+each implemented control back to the STRIDE letter it mitigates (Shostack, *Threat Modeling*), so a
+reviewer can see what breaks if the control is removed:
 
-```go
-// CORRECT: parameterised query
-func (r *DataAssetRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.DataAsset, error) {
-    row := r.pool.QueryRow(ctx,
-        `SELECT id, file_path, sensitivity_level, tenant_id, version
-         FROM data_assets
-         WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL`,
-        id, tenantIDFromContext(ctx),
-    )
-    return scanDataAsset(row)
-}
+| STRIDE letter | Violated property | Concrete control in this stack |
+|---|---|---|
+| **S**poofing | Authentication | JWT validation against JWKS; Linkerd mTLS peer identity |
+| **T**ampering | Integrity | pgx parameterized writes; Transactional Outbox; signed events |
+| **R**epudiation | Non-repudiation | Append-only, hash-chained audit log; OpenTelemetry spans |
+| **I**nformation disclosure | Confidentiality | ABAC filtering; contextual output encoding; PII never persisted as raw text |
+| **D**enial of service | Availability | Rate limiting; Redpanda backpressure; Circuit Breaker |
+| **E**levation of privilege | Authorization | `AccessPolicy.Evaluate` deny-by-default check; per-tenant scoping |
 
-// WRONG: string concatenation — never do this
-query := "SELECT * FROM data_assets WHERE id = '" + id.String() + "'"
-```
-
-**Additional rules:**
-- Never use `fmt.Sprintf` to build SQL queries
-- Use `pgx.Batch` for multiple queries in a transaction — no dynamic SQL
-- All queries specify the `tenant_id` parameter — the parameterised tenant filter is the backstop for the ABAC check
+The OWASP Top 10 → concrete Go control → STRIDE letter map (the audit-friendly control list) lives in
+`references/owasp-controls.md`. Use it as the coherence check: the skill's scattered controls should
+read as one answer to a recognized threat set, not a bag of independent patterns.
 
 ---
 
-## Input Validation
+## The Authorization Boundary: mTLS Answers *Who*, ABAC Answers *What*
 
-Two-layer validation (structural then business — see `command-catalog` skill). The structural validation layer:
+The network is always assumed hostile — a compromised pod on the same namespace is a hostile
+participant (Gilman & Barth, *Zero Trust Networks*). Do not conflate the two planes:
 
-```go
-// internal/handlers/dto/classify_data_asset_request.go
+- **Data plane (Linkerd mTLS):** transport-layer *identity* + encryption. A meshed connection
+  succeeding proves *who* connected. It is an identity fact, **never** a permission grant.
+- **Control plane (the application's ABAC engine):** the authorization *decision*. Every `allow/deny`
+  stays here, re-evaluated per request against `Subject`/`Resource`/`Action`/`Environment`.
 
-type ClassifyDataAssetRequest struct {
-    SensitivityLevel string `json:"sensitivityLevel"`
-    ClassifiedBy     string `json:"classifiedBy"`
-}
-
-func (r ClassifyDataAssetRequest) Validate() []ValidationError {
-    var errs []ValidationError
-    level := domain.SensitivityLevel(r.SensitivityLevel)
-    if !level.IsValid() {
-        errs = append(errs, ValidationError{
-            Field:   "sensitivityLevel",
-            Message: "must be one of: Public, Internal, Confidential, Restricted",
-        })
-    }
-    if _, err := uuid.Parse(r.ClassifiedBy); err != nil {
-        errs = append(errs, ValidationError{Field: "classifiedBy", Message: "must be a valid UUID"})
-    }
-    return errs
-}
-```
-
-**Rules:**
-- Validate at the boundary — handler only, before anything else runs
-- Reject on the first invalid field batch — return all errors in one response, not one at a time
-- Never trust client-provided data: validate type, range, format, and length
-- Never echo user input back in error messages without sanitisation
+For any server-to-server call, require *both* a verified workload identity (Linkerd cert) *and* a
+re-validated propagated user `Subject` (the JWT) — a receiving service re-derives the `Subject` from
+the token; it never trusts an upstream service's assertion of it. Trust-engine signals (token
+freshness, device posture, IP reputation) feed ABAC as `Environment` attributes so a structurally-valid
+request from a low-trust context can still be denied. Full middleware, claims→`Subject` parsing, and
+the two-identity-plane pattern: `references/authn-authz.md`.
 
 ---
 
-## Secure HTTP Headers
+## One Constructor for the Subject, Not Two
 
-```go
-// internal/handlers/middleware/security_headers.go
-
-func SecurityHeaders(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("X-Content-Type-Options", "nosniff")
-        w.Header().Set("X-Frame-Options", "DENY")
-        w.Header().Set("Content-Security-Policy", "default-src 'none'")
-        w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
-        w.Header().Set("Referrer-Policy", "no-referrer")
-        w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
-        // Remove server fingerprinting
-        w.Header().Del("X-Powered-By")
-        w.Header().Del("Server")
-        next.ServeHTTP(w, r)
-    })
-}
-```
+The JWT validation middleware and `access-control-model`'s `SubjectFromContext` must agree on a
+**single** claims→`Subject` construction path built from Domain Primitives (`TenantID`, `Permission`),
+not two independent parses of the same claims (Johnsson/Deogun/Sawano, *Secure by Design*). Validity is
+a *type* guarantee established once at the boundary — downstream code receives only well-formed data and
+never re-checks. This is the "parse, don't validate" discipline. Where the constructor lives and how it
+aligns across the two skills: `references/authn-authz.md`.
 
 ---
 
-## Rate Limiting
+## Least Privilege in Depth, Breakglass, and Revocation
 
-```go
-// Per-user rate limiting using golang.org/x/time/rate
-// Applied at the API Gateway level and at individual sensitive endpoints
+From Adkins & Beyer, *Building Secure and Reliable Systems* (see `references/authn-authz.md` and
+`references/secure-coding-go.md`):
 
-import "golang.org/x/time/rate"
-
-type RateLimiter struct {
-    limiters sync.Map // map[string]*rate.Limiter
-    rate     rate.Limit
-    burst    int
-}
-
-func (rl *RateLimiter) getLimiter(userID string) *rate.Limiter {
-    v, _ := rl.limiters.LoadOrStore(userID, rate.NewLimiter(rl.rate, rl.burst))
-    return v.(*rate.Limiter)
-}
-
-func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        userID := SubjectIDFromContext(r.Context())
-        if !rl.getLimiter(userID.String()).Allow() {
-            writeError(w, http.StatusTooManyRequests, "RATE_LIMIT_EXCEEDED",
-                "Too many requests. Please retry after a moment.")
-            return
-        }
-        next.ServeHTTP(w, r)
-    })
-}
-```
-
-Default rate limits: 100 requests/minute for standard endpoints; 10 requests/minute for write endpoints.
-
-**Two hardening notes:**
-- The `sync.Map` of limiters grows one entry per user forever — evict idle limiters on a timer (track last-seen and sweep entries older than ~10 minutes), or a slow enumeration attack becomes a memory leak.
-- Unauthenticated endpoints (login, token refresh) cannot key on user ID — rate-limit those by client IP at the ingress, since they are exactly the endpoints credential-stuffing targets.
+- **Small functional APIs.** Expose intent-named operations (`ClassifyDataAsset`), not a general
+  `RunQuery` — the authority a compromised caller holds is bounded by the surface it can reach.
+- **Breakglass, not a standing backdoor.** Emergency elevated access is an explicit, time-boxed,
+  justification-gated path that emits a high-priority audit event — never a permanent admin credential.
+- **Revocation is a tested capability.** "The token will expire" is an incomplete answer; document and
+  test the emergency path that invalidates a leaked JWT, cert, or customer Drive/S3 OAuth grant, with a
+  stated propagation bound.
+- **Fail secure, decided per subsystem.** When a security dependency is unavailable (JWKS unreachable,
+  policy store times out), the default is **never** allow. Resolve the availability-vs-confidentiality
+  tension explicitly in the error path, not by whatever the code happens to do.
 
 ---
 
-## Audit Log Implementation with Non-Repudiation
+## Secure Defaults Are Inherited, Not Re-Checked
 
-```go
-// internal/infrastructure/audit/log.go
+Capture the hardened posture — deny-by-default ABAC middleware order, security headers, append-only
+audit role, non-root SecurityContext, default-deny NetworkPolicy — as a template a new service
+*inherits*, so a service is secure by omission and relaxation is the logged exception. Middleware order
+is explicit and load-bearing: **security headers → auth → rate limit → handler** (rate limiting keyed
+on user ID before auth reads an empty subject and collapses all anonymous traffic into one bucket).
 
-type AuditEntry struct {
-    ID                 uuid.UUID  `db:"id"`
-    EventType          string     `db:"event_type"`
-    AggregateID        uuid.UUID  `db:"aggregate_id"`
-    AggregateType      string     `db:"aggregate_type"`
-    ActorID            uuid.UUID  `db:"actor_id"`
-    TenantID           uuid.UUID  `db:"tenant_id"`
-    OccurredAt         time.Time  `db:"occurred_at"`
-    Payload            []byte     `db:"payload"`
-    NonRepudiationHash string     `db:"non_repudiation_hash"` // SHA-256 of previous entry hash + this entry's payload
-}
+---
 
-func (r *AuditRepository) Append(ctx context.Context, entry AuditEntry) error {
-    // Get the hash of the previous entry (for hash chain)
-    var prevHash string
-    err := r.pool.QueryRow(ctx,
-        `SELECT non_repudiation_hash FROM audit_log
-         WHERE tenant_id = $1 ORDER BY occurred_at DESC LIMIT 1`,
-        entry.TenantID,
-    ).Scan(&prevHash)
-    if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-        return fmt.Errorf("getting previous hash: %w", err)
-    }
+## Audit and Attestation as Implementation Deliverables
 
-    // Compute the hash chain link
-    h := sha256.New()
-    h.Write([]byte(prevHash))
-    h.Write(entry.Payload)
-    entry.NonRepudiationHash = hex.EncodeToString(h.Sum(nil))
-
-    // Append-only insert — no UPDATE or DELETE allowed on this table
-    _, err = r.pool.Exec(ctx,
-        `INSERT INTO audit_log (id, event_type, aggregate_id, aggregate_type,
-            actor_id, tenant_id, occurred_at, payload, non_repudiation_hash)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-        entry.ID, entry.EventType, entry.AggregateID, entry.AggregateType,
-        entry.ActorID, entry.TenantID, entry.OccurredAt, entry.Payload, entry.NonRepudiationHash,
-    )
-    return err
-}
-```
-
-**Audit log database role:** A dedicated PostgreSQL role for the audit log table has `INSERT` privilege only — no `UPDATE` or `DELETE`. Even a fully compromised service account cannot delete audit entries.
-
-**Hash-chain concurrency:** two concurrent appends that read the same previous hash fork the chain, and verification then fails for honest reasons. Serialise appends per tenant inside the insert transaction — `SELECT pg_advisory_xact_lock(hashtext($1::text))` on the tenant ID before reading the previous hash — and order the chain by a monotonic `BIGSERIAL` sequence column, not by `occurred_at` (timestamps can tie or arrive out of order).
+The append-only, hash-chained audit log (structured fields, never PII/secrets, INSERT-only DB role,
+per-tenant serialized appends) and the signed CI pipeline attestations (SLSA/in-toto-style provenance
+feeding the evidence ledger) are code this skill produces, not design notes. Both tie to
+`compliance-verification` as verifiable SOC 2 evidence. Full schema, hash-chain concurrency handling,
+and attestation emission: `references/audit-and-evidence.md`.
 
 ---
 
@@ -355,33 +147,38 @@ func (r *AuditRepository) Append(ctx context.Context, entry AuditEntry) error {
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| JWT middleware uses RS256 | `jwt.WithKeySet` with RSA keys; HS256 not used | HS256 or no algorithm constraint |
-| ABAC in Application layer | Policy evaluated in command/query handlers | Policy only at API layer (bypassable) |
-| Parameterised queries only | All pgx queries use `$N` parameters | Any `fmt.Sprintf` or string concatenation in SQL |
-| Security headers set | All headers from the list applied | Missing HSTS, CSP, or X-Content-Type-Options |
-| Audit log append-only | PostgreSQL role has INSERT only; no UPDATE/DELETE | Audit table modified by the application role |
-| Rate limiting applied | All write endpoints have rate limiting | Write endpoints with no rate limiting |
-| No panics on malformed input | Claim extraction returns errors; no `MustParse` or bare type assertions on token data | Attacker-controlled data can panic a handler |
-| JWKS refresh | Key set cached with background refresh | One-shot JWKS fetch pinned for process lifetime |
+| Input validated as allowlist at every boundary | Handler, Redpanda consumer, ingestion worker each parse-and-validate | Validation only at the HTTP handler, or a denylist |
+| Output encoded contextually at the sink | Per-sink encoding; no `dangerouslySetInnerHTML` on ingested data | Injection treated as an input-only problem |
+| JWT validated server-side | `jwt.WithKeySet` RSA; `aud`/`iss`/`exp` required | HS256, `alg` from token, or missing claim checks |
+| Authorization server-side, deny-by-default, IDOR-safe | Policy in application layer; per-object ownership check | Policy at API layer only, or authentication mistaken for authorization |
+| Single `Subject` constructor | Middleware and `SubjectFromContext` share one path | Two independent claim parses that can diverge |
+| No panics on malformed input | Claim extraction returns errors; no `MustParse` | Attacker-controlled data can panic a handler |
+| Secrets never in code/logs | Injected + redacting type at point of read | Secret as bare `string`, or logged |
+| Audit append-only + hash-chained | INSERT-only role; serialized per-tenant appends | Audit table mutable by the app role, or forked chain |
+| Every control names a STRIDE threat | Control → STRIDE letter traced | Control with no threat rationale |
 
 ---
 
 ## Anti-Patterns
 
-- **Trusting the token's `alg` header.** Letting the token declare its own algorithm enables `alg: none` and RS256→HS256 key-confusion attacks. The server decides the algorithm via its JWKS.
-- **`MustParse` on claim data.** Any `Must*` or unchecked type assertion on values an attacker can put in a token is a remote panic waiting to happen.
-- **Distinguishing denial reasons.** Returning "wrong tenant" vs "missing permission" vs "resource not found" as different errors from the policy. One `ErrForbidden` outward; the specific reason goes to the server log only.
-- **`fmt.Sprintf` SQL "just this once".** Dynamic table names, ORDER BY columns built from user input, or IN-lists assembled by string join. pgx `$N` parameters for values; a fixed allowlist map for identifiers — never interpolated input.
-- **Tenant filter only in the policy.** Queries without `tenant_id = $N` in the WHERE clause rely on a single control. The SQL filter is the backstop when the policy layer has a bug — defence in depth applies inside the repository too.
-- **Logging the token.** Writing the Authorization header, the raw JWT, or decoded claims into request logs. A leaked log becomes a replayable credential store until every token expires.
-- **Security middleware ordering by accident.** Rate limiting keyed on user ID placed before authentication reads an empty subject and collapses all anonymous traffic into one bucket. Order explicitly: security headers → auth → rate limit → handler.
-- **Audit write after response.** Fire-and-forget audit logging that can silently fail leaves gaps in the Non-Repudiation chain. The audit insert commits in the same transaction as the state change, or the state change does not happen.
+- **Treating a meshed (mTLS) connection as authorization.** It proves *who*, never *what they may do*.
+- **Trusting an upstream service's asserted `Subject`.** Re-derive it from the JWT at every hop.
+- **Two claim parsers.** The middleware and `SubjectFromContext` diverging on how a token becomes a
+  `Subject` is a latent authorization bug — one constructor.
+- **Input validation standing in for output encoding** (or the reverse). They are distinct controls.
+- **`fmt.Sprintf` SQL "just this once."** pgx `$N` for values; a fixed allowlist map for identifiers.
+- **Distinguishing denial reasons to the caller.** One `ErrForbidden` outward; the specific reason to
+  the server log only.
+- **Logging the token, claims, or any PII.** A leaked log becomes a replayable credential/disclosure sink.
+- **Breakglass as a standing admin credential** instead of a designed, audited, expiring path.
+- **"The network already isolates this"** used to skip a domain-level check — every layer enforces its
+  own boundary (defense in depth is not an excuse for a shallow model).
 
 ---
 
 ## Output Format
 
-This skill produces the actual Go code files, not a design document. Implementation outputs are:
+This skill produces real Go files, not a design document:
 
 ```
 internal/handlers/middleware/auth.go
@@ -389,7 +186,10 @@ internal/handlers/middleware/security_headers.go
 internal/handlers/middleware/rate_limiter.go
 internal/domain/policy.go
 internal/infrastructure/audit/log.go
+internal/infrastructure/secrets/secret.go
+.github/workflows/attest.yml
 tests/security/auth_test.go
 tests/security/abac_test.go
+tests/security/idor_test.go
 tests/security/sql_injection_test.go
 ```
