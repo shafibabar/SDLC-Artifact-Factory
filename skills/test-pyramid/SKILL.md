@@ -1,18 +1,19 @@
 ---
 name: test-pyramid
 description: >
-  Teaches the test strategy for a product — the Test Pyramid (many fast unit tests,
-  fewer integration, fewest e2e), the shift-left vs shift-right split (prevent bugs
-  early vs validate real-world resilience), what to test at which layer, coverage
-  philosophy, the flaky-test quarantine policy, the every-bug-gets-a-regression-test
-  rule, and how security/compliance testing is delegated to the security-engineer.
-  This is the organizing knowledge the test-strategist reasons from. Used by the
-  test-strategist during Implement and Quality.
-version: 1.1.0
+  Consulted by test-strategist during implement and quality phases when composing
+  a product's automated test strategy: pyramid layer proportions
+  (unit/contract/integration/e2e), shift-left discipline (TDD/BDD/unit/contract/
+  mutation), shift-right discipline (e2e/load/chaos), structural coverage criteria
+  (Statement Coverage, Branch Coverage, Path Coverage), flaky-test quarantine
+  policy, regression discipline, and how security and compliance testing are
+  delegated to security-engineer.
+version: 2.0.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, quality, testing, test-pyramid, shift-left, shift-right, strategy, coverage]
+related: [bdd-feature-file, go-unit-test, mock-generation, test-fixture-design, go-integration-test, go-contract-test, go-mutation-test, go-e2e-test, go-performance-test, go-load-test, go-chaos-test, security-implementation, compliance-verification, uat-plan]
 ---
 
 # Test Pyramid
@@ -81,6 +82,8 @@ Some properties only emerge under real load, real failure, and real usage. Shift
 | Resilience via fault injection | `go-chaos-test` |
 | Test-trace correlation (observe tests in prod telemetry) | folded into `go-e2e-test` |
 
+The table above covers automated, deterministic shift-right validation. For unscripted human exploration of a deployed build — finding risks nobody wrote a scenario for — see `uat-plan`'s exploratory-session component.
+
 ---
 
 ## What to Test at Each Layer
@@ -102,11 +105,14 @@ If a behaviour can be unit-tested, it should be — reserve integration and e2e 
 
 ## Coverage Philosophy
 
-Coverage is a **signal, not a target**. 100% line coverage with weak assertions proves nothing; 80% with strong behaviour-focused tests and mutation verification proves a lot.
+Coverage is a **signal, not a target**. 100% Statement Coverage with weak assertions proves nothing; 80% Branch Coverage with strong behaviour-focused tests and mutation verification proves a lot.
 
-- **Gate**: ≥80% on changed packages (the backend's `make ci` / frontend's `npm run ci` enforce this).
-- **Branch over line**: cover decision branches (error paths, edge cases), not just lines executed.
-- **Mutation as the real quality check**: `go-mutation-test` verifies the tests actually catch broken code — the antidote to high-coverage-but-useless tests.
+The structural coverage hierarchy: **Statement Coverage** (statements executed at least once — the weakest, gameable criterion) → **Branch (Decision) Coverage** (both outcomes of every conditional — subsumes statement; this repo's gate) → **Path Coverage** (every distinct execution path through a routine — the strongest but combinatorially expensive, reserved for the highest-risk domain logic only).
+
+- **Gate**: ≥80% Branch Coverage on changed packages (the backend's `make ci` / frontend's `npm run ci` enforce this).
+- **Branch over Statement**: cover decision branches (error paths, edge cases), not just lines executed.
+- **Mutation as the real quality check**: `go-mutation-test` verifies the tests actually catch broken code — the antidote to high-coverage-but-useless tests. A survived mutant names a **regression-protection** gap specifically.
+- Path Coverage is only pursued for the highest-risk domain logic (e.g., sensitivity-classification rules) where branch coverage is insufficient — not as a default expectation across all code.
 - Never chase the last few percent on trivial code (generated code, simple getters) — spend the effort where logic is complex.
 
 ---
@@ -151,7 +157,7 @@ The test-strategist ensures these layers exist and are gated, but the security-e
 | Pyramid shape | Many unit, fewer integration, fewest e2e | Inverted (mostly e2e) — slow, flaky |
 | Right layer | Behaviours tested at the lowest capable layer | Logic verified only via e2e |
 | Shift-left + right | Both halves present and intentional | All shift-left (fragile in prod) or all shift-right (slow feedback) |
-| Coverage as signal | Branch coverage + mutation verification | Line-coverage target gamed with weak tests |
+| Coverage as signal | Branch Coverage + mutation verification | Statement-coverage target gamed with weak tests |
 | Flaky policy | Flaky tests quarantined + fixed, never ignored | Retries-to-green; muted/deleted tests |
 | Regression discipline | Every bug gets a failing test first | Bugs patched with no reproducing test |
 | Security delegated | Security/compliance owned by security-engineer | Duplicated security test skills here |
@@ -162,7 +168,7 @@ The test-strategist ensures these layers exist and are gated, but the security-e
 
 - **The ice-cream cone** — a fat e2e layer over a thin unit base; every change takes minutes to verify and failures point nowhere specific.
 - **The hourglass** — decent unit and e2e layers with a hollow middle; integration seams (SQL, broker, contract) are exactly where the unverified bugs live.
-- **Coverage as the goal** — a numeric target invites assertion-free tests; coverage gates entry, Mutation Testing judges quality.
+- **Coverage as the goal** — a numeric target invites assertion-free tests; Branch Coverage gates entry, Mutation Testing judges quality.
 - **Testing the same behaviour at three layers** — triple maintenance for single confidence; prove it once at the lowest capable layer.
 - **Deleting flaky tests to stabilize CI** — removes the symptom and keeps the disease; quarantine, root-cause, restore.
 - **Fixing bugs without a reproducing test** — the same defect returns with the next refactor, now with no witness.
@@ -172,33 +178,4 @@ The test-strategist ensures these layers exist and are gated, but the security-e
 
 ## Output Format
 
-Produces the test strategy document for a product:
-
-```markdown
----
-name: test-strategy
-product: [product name]
-version: 1.0.0
-phase: implement
-created: [date]
-owner: test-strategist
----
-
-# Test Strategy
-
-## Pyramid Targets
-| Layer | Target proportion | Tooling | Owner |
-|---|---|---|---|
-
-## Shift-Left Plan
-[TDD/BDD, unit/contract/integration/mutation per service]
-
-## Shift-Right Plan
-[E2E journeys, performance gates, load/SLO targets, chaos experiments]
-
-## Coverage & Flaky Policy
-[Gates, branch focus, quarantine process]
-
-## Delegated Testing
-[Security/compliance layers → security-engineer]
-```
+See `references/test-strategy-template.md` for the complete, fill-in test-strategy document format — frontmatter fields, Pyramid Targets table, Shift-Left Plan, Shift-Right Plan, Coverage and Flaky Policy, and Delegated Testing sections.
