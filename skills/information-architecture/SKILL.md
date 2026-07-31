@@ -1,182 +1,110 @@
 ---
 name: information-architecture
 description: >
-  Teaches how to design the information architecture (IA) of a product — the
-  structure, organisation, and navigation of content and functionality. Covers
-  navigation models, content hierarchy, labelling systems, URL structure, and
-  the connection between the IA and the domain model's Bounded Contexts and
-  Read Models. A well-designed IA makes the Ubiquitous Language visible in the
-  product's navigation and reduces cognitive load for users. Produced by the
-  ux-architect agent during the Design phase.
-version: 1.1.0
+  Teaches the ux-architect to design a product Information Architecture — the
+  four IA systems (organization, labeling, navigation, search), the taxonomy and
+  labeling rules, navigation patterns, and the validation methods card sorting
+  (open vs closed) and tree testing. Grounded in Rosenfeld/Morville IA
+  fundamentals. Used during Design to structure content and navigation coherently,
+  including across the microfrontend fragment boundaries so the shell navigation
+  stays consistent.
+version: 2.0.0
 phase: design
 owner: ux-architect
 created: 2026-06-25
-tags: [design, ux, information-architecture, navigation, content-hierarchy, ia]
+tags: [design, ux, information-architecture, card-sorting, tree-testing, taxonomy, navigation, labeling]
+related: [user-journey-mapping, ux-flow-design, event-storming-facilitation, glossary-management, jtbd-analysis]
 ---
 
 # Information Architecture
 
 ## Purpose
 
-Information architecture (IA) defines how content and functionality are organised, labelled, and navigated. It answers: what sections exist, what lives in each section, what are they called, and how does a user move between them.
+Information architecture (IA) defines how content and functionality are organized, labeled, navigated, and searched. It answers four questions: what sections exist, what lives in each, what they are called, and how a user moves between and finds them.
 
-The IA is the skeleton of the product. All screen designs, navigation components, and URL structures are derived from it. A weak IA forces users to hunt for features; a strong IA makes the next action obvious.
+The IA is the skeleton of the product — every screen, navigation component, and URL is derived from it. A weak IA forces users to hunt; a strong IA makes the next action obvious. IA is front-stage by design: it structures only what the customer navigates. Backstage-only Bounded Contexts (e.g. a classification engine with no UI) correctly have no IA node.
 
 ---
 
-## IA and the Domain Model
+## The Four IA Systems (Rosenfeld / Morville)
 
-The IA must be grounded in the domain model. Navigation labels come from the Ubiquitous Language. Sections align with Bounded Contexts. Read Models define what data each section displays.
+Rosenfeld & Morville decompose IA into four interlocking systems. Design all four — an IA that only draws a nav tree has skipped three of them.
+
+- **Organization system** — how content is grouped and structured (the categories and their scheme: exact vs. ambiguous/topical, and the hierarchy/facets that arrange them).
+- **Labeling system** — what each group, page, and action is *called*; the words that represent the structure to the user.
+- **Navigation system** — how the user moves through the structure: global (site-wide), local (within a section), and contextual (inline, related-item) navigation.
+- **Search system** — how the user finds content directly rather than by browsing: query, filters, sort, and results.
+
+Full treatment of each system, organization-scheme types, controlled vocabulary, URL structure, and a worked site-map: `references/ia-systems-and-labeling.md`.
+
+---
+
+## IA Grounds the UX Layer on Real Structure
+
+In Olsen's Product-Market Fit Pyramid the UX layer sits atop Feature Set → Value Proposition → Underserved Needs. The IA is the load-bearing structure directly beneath the UX: it is where the feature set becomes navigable. A section that traces to no underserved need or Read Model is structural waste, however well-styled. Every top-level section should answer a real user job (for the Data Steward: govern assets; for the Compliance Officer: prove compliance), not mirror an org chart or a database schema.
+
+### IA and the Domain Model
+
+The IA is grounded in the domain model — labels come from the Ubiquitous Language, sections align with Bounded Contexts, Read Models define what each view displays.
 
 | Domain concept | IA implication |
 |---|---|
 | Bounded Context | A top-level navigation section or a distinct application area |
-| Ubiquitous Language term | Navigation label, page title, column header — use the exact term, not a synonym |
-| Read Model (List type) | A list/index view in the IA |
-| Read Model (Detail type) | A detail/record view in the IA |
-| Read Model (Aggregate type) | A dashboard or summary view in the IA |
-| Domain Command | An action available in the relevant section |
+| Ubiquitous Language term | Navigation label, page title, column header — the exact term, not a synonym |
+| Read Model (List) | A list/index view |
+| Read Model (Detail) | A detail/record view |
+| Read Model (Aggregate) | A dashboard or summary view |
+| Domain Command | An action entry point in the relevant section |
 
 ---
 
-## Navigation Models
+## Taxonomy and Labeling Rules
 
-Choose the navigation model based on the number of top-level sections and user task patterns:
+The taxonomy is the organization scheme made concrete: the named categories and how they nest. Key rules (worked design method in the reference):
 
-| Model | When to use | Structure |
-|---|---|---|
-| **Top navigation bar** | 3–7 top-level sections; horizontal space available; desktop primary | Horizontal tabs or links; secondary nav as dropdown or sidebar |
-| **Sidebar navigation** | Data-heavy applications; many sections; need persistent context | Left sidebar; hierarchical — section → subsection |
-| **Flat navigation** | Simple products with fewer than 5 sections; mobile-first | Bottom tab bar (mobile) or minimal top nav (desktop) |
-| **Hub and spoke** | Task-focused products; users complete tasks and return to a home hub | Central dashboard → task flows → return to dashboard |
-
-For the data estate management platform:
-- Primary model: **Sidebar navigation** — data-heavy, many entity types, desktop-first
-- Mobile: **Flat navigation** with bottom tab bar for the 3–4 most critical sections
+1. **Consistent** — one label per concept, used identically everywhere (sidebar, page title, breadcrumb, button). Synonym drift is a defect.
+2. **User language, not internal jargon** — labels use the user's and the Ubiquitous Language's terms. Implementation terms (Aggregate, Projection, Read Model) map *to* the IA; they never appear *in* it.
+3. **Mutually exclusive categories where possible** — an item has one obvious home. When categories genuinely overlap, prefer facets/filters over forcing a single parent.
+4. **Nouns for sections, verb phrases for actions** — "Data Assets" (section), "Classify Asset" (action).
+5. **No junk-drawer** — no "Tools/More/Other" catch-all. A homeless item means a missing category, not a drawer.
 
 ---
 
-## IA Structure Notation
+## Navigation-Pattern Selection
 
-The IA is documented as an indented hierarchy. Each level is a navigation node.
+Choose the navigation model from the number of top-level sections and the task pattern:
 
-```
-Level 0 (App root)
-├── Level 1: Top-level section (maps to a Bounded Context or major feature area)
-│   ├── Level 2: Subsection or entity type (maps to a Read Model)
-│   │   ├── Level 3: Record view (Detail Read Model)
-│   │   └── Level 3: Action view (Command-driven screen)
-│   └── Level 2: Dashboard (Aggregate Read Model)
-└── Level 1: Settings (cross-cutting concerns)
-```
+| Model | When to use |
+|---|---|
+| **Top navigation bar** | 3–7 top-level sections; desktop-primary; horizontal space available |
+| **Sidebar navigation** | Data-heavy apps; many sections; persistent context needed |
+| **Flat navigation** | Fewer than 5 sections; mobile-first (bottom tab bar) |
+| **Hub and spoke** | Task-focused; users complete a task and return to a home hub |
 
-### Example IA for Data Estate Management
-
-```
-[App Root]
-├── Dashboard
-│   └── Estate Overview (Aggregate Read Model: cross-source summary)
-├── Data Sources
-│   ├── All Sources (List Read Model)
-│   ├── [Source Name] (Detail Read Model)
-│   │   ├── Assets (List Read Model: assets in this source)
-│   │   └── Scan History (List Read Model: scan runs)
-│   └── Connect Source (Command: ConnectDataSource)
-├── Data Assets
-│   ├── All Assets (List Read Model: filterable, sortable)
-│   ├── [Asset Name] (Detail Read Model)
-│   │   ├── Classification (Command: ClassifyDataAsset)
-│   │   ├── Lineage (Read Model: upstream/downstream)
-│   │   └── Audit History (List Read Model: changes)
-│   └── Bulk Classify (Command: BulkClassifyDataAssets)
-├── Compliance
-│   ├── Gap Report (Aggregate Read Model: gaps by framework)
-│   ├── Controls (List Read Model: control status)
-│   └── [Control Name] (Detail Read Model)
-├── Reports
-│   ├── All Reports (List Read Model)
-│   ├── [Report Name] (Detail Read Model)
-│   └── Generate Report (Command: GenerateComplianceReport)
-└── Settings
-    ├── Team (List Read Model: users)
-    ├── Integrations (List Read Model: connected systems)
-    └── Security (audit log, MFA settings)
-```
+For the data-estate/compliance platform: **sidebar** primary (data-heavy, many entity types, desktop-first); **flat** bottom-tab on mobile for the 3–4 critical sections.
 
 ---
 
-## Labelling System
+## Validating the IA: Card Sorting and Tree Testing
 
-Labels are the names given to navigation items, page headings, buttons, and sections. Label rules:
+An IA is a hypothesis about how users expect content to be grouped and found. Validate it with two complementary methods before the frontend-engineer builds UI — do not ship an unvalidated taxonomy.
 
-1. **Use Ubiquitous Language terms.** If the domain model calls it a "Data Asset," the navigation label is "Data Assets" — not "Files," "Items," or "Resources."
-2. **Use nouns for sections.** Section labels are nouns: "Data Assets," "Reports," "Settings."
-3. **Use verb phrases for actions.** Command entry points are verb phrases: "Connect Source," "Classify Asset," "Generate Report."
-4. **No jargon the user does not know.** Technical implementation terms (Aggregate, Bounded Context, Projector) do not appear in the UI.
-5. **Consistent pluralisation.** List views are plural ("Data Assets"); detail views are the item name ("Invoice #1234").
+- **Card sorting** validates the **organization and labeling** systems — how users would group and name content. Run it *open* (users create their own groups) to discover categories, or *closed* (users sort into your categories) to test a proposed taxonomy.
+- **Tree testing** validates the **navigation** system — whether users can *find* a given item in a proposed hierarchy, tested on the bare label tree before any UI, styling, or search exists.
 
-### Label Inventory
-
-Document all navigation labels and their domain mapping:
-
-| UI label | Domain term | Type |
-|---|---|---|
-| Data Sources | DataSource | Bounded Context section |
-| Data Assets | DataAsset | Entity / Aggregate |
-| Classify Asset | ClassifyDataAsset | Command |
-| Gap Report | ComplianceGapReport | Aggregate Read Model |
-| Connect Source | ConnectDataSource | Command |
-| Scan History | ScanRun | List Read Model |
+How to run each, open-vs-closed selection, participant counts, metrics, and how results feed back into the taxonomy: `references/ia-validation-methods.md`.
 
 ---
 
-## URL Structure
+## Microfrontend IA (Shell + Remotes)
 
-URLs follow the IA hierarchy. Every section in the IA maps to a URL segment. URLs use kebab-case. URL segments use the Ubiquitous Language term in its plural noun form.
+This product's frontend is a microfrontend: a shell composing independently-deployable remotes (fragments). IA responsibility splits across the fragment boundary, and the split is itself an IA decision:
 
-| IA level | URL pattern | Example |
-|---|---|---|
-| Root | `/` | Dashboard |
-| Top-level section | `/[section]` | `/data-assets` |
-| List view | `/[section]` | `/data-assets` |
-| Detail view | `/[section]/[id]` | `/data-assets/a1b2c3` |
-| Action | `/[section]/[id]/[action]` | `/data-assets/a1b2c3/classify` |
-| Create | `/[section]/new` | `/data-sources/new` |
-| Sub-section | `/[section]/[id]/[subsection]` | `/data-sources/s1/assets` |
+- **The shell owns the global navigation system** — the top-level sections, the primary sidebar/top bar, global search, and the URL-root scheme. It is the single source of truth for cross-product structure.
+- **Each fragment owns its local IA** — the sub-navigation, list/detail structure, and contextual navigation *within* its section, deployable without touching the shell.
+- **Labels must stay consistent across fragments** — a term (e.g. "Data Asset") must read identically in the shell nav, in every fragment that shows it, and in the glossary. Because fragments deploy independently, label consistency has no compile-time guard; it is enforced by a shared label inventory sourced from `glossary-management`, not by hoping teams agree.
 
-Rules:
-- UUIDs in URLs are acceptable — no sequential integer IDs in the UI
-- Query parameters for filters and sort: `/data-assets?sensitivity=Confidential&sort=name`
-- No verbs in resource URLs; verbs appear in action sub-paths only (`/classify`, `/generate`)
-
----
-
-## Search and Findability
-
-For products with more than three sections or more than a handful of entity types, define the findability model:
-
-| Mechanism | When to include | Implementation |
-|---|---|---|
-| Global search | When users need to find any entity from any screen | Search bar in top navigation; searches across Data Assets, Sources, Reports |
-| Section filter | When a list has more than one meaningful filter attribute | Filter panel on list views |
-| Sort controls | When list order affects usability | Sort dropdown or column header click |
-| Breadcrumbs | When navigating three or more levels deep | Breadcrumb trail on detail and action screens |
-| Recent items | For returning to recently visited records | "Recent" section on dashboard or navigation hover |
-
----
-
-## IA Review Checklist
-
-Before handoff to the frontend-engineer:
-
-- [ ] Every Bounded Context has a corresponding top-level section (or a justified exception)
-- [ ] Every Read Model (List/Detail/Aggregate) has a corresponding IA node
-- [ ] Every Command has an accessible entry point in the IA
-- [ ] All labels use Ubiquitous Language terms — no synonyms
-- [ ] URL structure is consistent and follows the pattern
-- [ ] Empty states are identified for every list view
-- [ ] The IA has been verified against the flow inventory — every user flow has a valid starting point in the IA
+Fragment-boundary site-map and the shell-vs-fragment ownership worked example: `references/ia-systems-and-labeling.md`.
 
 ---
 
@@ -184,25 +112,24 @@ Before handoff to the frontend-engineer:
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Domain grounding | Every top-level section maps to a BC or Read Model | Sections invented without domain basis |
-| Ubiquitous Language | All labels use canonical glossary terms | Labels that are synonyms or informal equivalents |
-| URL consistency | All URLs follow the defined pattern | Inconsistent URL schemes across sections |
-| Command accessibility | Every Command has a reachable entry point | Commands with no navigation path |
-| Empty states identified | All list views have empty state noted | List views with no empty state consideration |
-| Depth budget | Any record reachable in ≤ 3 clicks from the root | Content buried four or more levels deep |
+| Four systems addressed | Organization, labeling, navigation, search each designed | Only a nav tree drawn |
+| Domain grounding | Every top-level section maps to a BC / Read Model / user job | Sections invented without a domain or need basis |
+| Ubiquitous Language | All labels use canonical glossary terms | Synonyms or informal equivalents |
+| Validated | Taxonomy card-sorted, hierarchy tree-tested before build | Structure shipped on the designer's intuition alone |
+| Cross-fragment consistency | Labels identical shell↔fragments; shell owns global nav | Each fragment names the same concept differently |
+| Depth budget | Any record reachable in ≤ 3 clicks from root | Content buried four or more levels deep |
 
 ---
 
 ## Anti-Patterns
 
-- **Org-chart navigation.** Structuring sections around internal teams or system architecture ("Ingestion", "Pipeline", "Admin Tools") instead of user tasks and domain concepts. Maya Chen looks for "Compliance", not for the name of the service that computes it.
-- **Synonym drift.** The domain says DataAsset, the sidebar says "Files", the page title says "Items", the button says "Records". Every synonym is a translation the user performs on your behalf. One term — the Ubiquitous Language term — everywhere.
-- **Implementation jargon in labels.** "Projections", "Aggregates", "Read Models" appearing in the UI. The IA maps *to* these concepts; it never displays them.
-- **The junk-drawer section.** A "Tools", "More", or "Other" section that accumulates everything without a home. If an item has no section, the IA is missing a section — not a drawer.
-- **Orphan Commands.** A Command exists in the domain (BulkClassifyDataAssets) but no navigation path reaches it. Features that cannot be found do not exist.
-- **Mirroring the database.** One nav section per table, including join tables and lookup entities. The IA reflects Read Models and user tasks, not the schema.
-- **Deep nesting as organisation.** Five levels of hierarchy where filters would serve. If users must drill Source → Folder → Subfolder → Type → Asset, a filterable flat list of assets is the better IA.
-- **URL scheme per developer.** `/dataAssets/42`, `/asset-detail?id=42`, and `/assets/view/42` coexisting. The URL pattern table is normative — every new route matches it or the pattern is deliberately revised.
+- **Org-chart navigation** — sections named for internal teams or services ("Ingestion", "Pipeline", "Admin Tools") instead of user tasks. The Compliance Officer looks for "Compliance", not the service that computes it.
+- **Synonym drift** — domain says DataAsset, sidebar says "Files", title says "Items", button says "Records". One term everywhere. Across microfrontends this is the default failure mode, not the exception.
+- **Implementation jargon in labels** — "Projections", "Aggregates", "Read Models" surfacing in the UI. The IA maps to these; it never displays them.
+- **Mirroring the database** — one nav section per table, including join/lookup tables. IA reflects Read Models and user jobs, not the schema.
+- **Deep nesting as organization** — five levels where facets/filters would serve. If users must drill Source → Folder → Subfolder → Type → Asset, a filterable flat list is the better IA.
+- **Unvalidated taxonomy** — shipping category names and hierarchy without a card sort or tree test, then discovering post-launch that users cannot find anything.
+- **Fragment-local labeling** — letting each remote name shared concepts on its own; the shell must own the global vocabulary.
 
 ---
 
@@ -220,20 +147,19 @@ owner: ux-architect
 
 # Information Architecture
 
-## Navigation Model
-[Model chosen and rationale]
+## Organization & Navigation Model
+[Model chosen and rationale; shell-vs-fragment ownership split]
 
 ## IA Hierarchy
-[Full indented hierarchy with domain mapping notes]
+[Indented hierarchy with domain mapping and fragment ownership notes]
 
 ## Label Inventory
-| UI label | Domain term | Type |
-|---|---|---|
+| UI label | Domain term | Type | Owning fragment |
+|---|---|---|---|
 
-## URL Structure
-| Section | URL pattern | Example |
-|---|---|---|
+## Search & Findability Model
+[Global search, filters, sort, breadcrumbs]
 
-## Findability Model
-[Search, filter, sort, breadcrumb decisions]
+## Validation Plan
+[Card sort (open/closed) and tree test: what each validates, sample size]
 ```
