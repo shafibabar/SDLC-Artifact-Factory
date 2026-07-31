@@ -8,7 +8,7 @@ description: >
   incident), and the workspaces-versus-directories decision for per-tenant
   stamping with a worked tenant-stamp module. Used by the platform-engineer
   during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -23,7 +23,7 @@ All infrastructure on this platform is Infrastructure as Code (IaC), expressed a
 
 The physical multi-tenancy model (`multi-tenancy-design`) makes this existential: every tenant environment is **stamped from the same modules with different variables**. If tenant infrastructure cannot be recreated from Git, the isolation model collapses into forty hand-grown environments nobody can upgrade.
 
-Full HCL patterns, worked examples, and an OPA policy sample: `references/hcl-patterns-and-examples.md`.
+Full HCL patterns, worked examples, and an OPA policy sample: `references/hcl-patterns-and-examples.md`. Per-cloud provider blocks, backends, and managed-service resources: `references/cloud-provider-modules.md`.
 
 ---
 
@@ -65,21 +65,13 @@ State is the map between HCL and reality; losing or forking it orphans infrastru
 - **Locking always on** — two concurrent applies against one state is state corruption.
 - **State is sensitive** — it contains resource attributes; encrypted at rest, access as tightly controlled as production credentials, never committed to Git.
 
-Backend config (S3 + DynamoDB lock): `references/hcl-patterns-and-examples.md` §Remote State.
+Backend config (S3 + DynamoDB lock): `references/hcl-patterns-and-examples.md` §Remote State. Per-cloud backends (GCS native lock, S3+DynamoDB, azurerm blob lease): `references/cloud-provider-modules.md`.
 
 ---
 
 ## Plan-Before-Apply in CI, Gated by OPA
 
-No human runs `tofu apply` from a laptop:
-
-```
-PR opened      → tofu fmt -check → tofu validate → tofu plan -out=tfplan
-               → tofu show -json tfplan | conftest test -p policy/   ← OPA gate
-               → plan posted to the PR as a comment (the reviewable diff)
-PR merged      → tofu apply tfplan            (the exact reviewed plan, not a fresh one)
-Nightly        → tofu plan -detailed-exitcode  (drift detection; exit 2 ⇒ drift ⇒ incident)
-```
+No human runs `tofu apply` from a laptop. **PR opened** runs `fmt -check` → `validate` → `plan -out=tfplan` → the OPA gate (`tofu show -json tfplan | conftest test -p policy/`), then posts the plan to the PR as the reviewable diff. **PR merged** runs `apply tfplan` — the exact saved plan, not a fresh one. **Nightly** runs `plan -detailed-exitcode` for drift detection (exit 2 ⇒ drift ⇒ incident). Full workflow: `references/hcl-patterns-and-examples.md` §Plan Pipeline.
 
 The **OPA compliance check** runs the security-engineer's policies against planned changes — public ingress on a tenant database, missing encryption flags, cross-tenant network paths, untagged resources — and fails the PR before anything exists. Applying the *saved plan file* matters: a changed world invalidates the plan and forces a re-review.
 
@@ -111,26 +103,25 @@ Full tenant-stamp worked example (HCL): `references/hcl-patterns-and-examples.md
 
 ---
 
+## Cloud-Agnostic Modules, Swappable Providers
+
+The platform is cloud-agnostic by design; `kind` is the default local environment, and product deployments target AWS, Azure, or GCP. This is reconciled by one rule: **keep the interface stable, swap the implementation.**
+
+- A module's **interface** — its `variables.tf` and `outputs.tf` contract (`tenant_id`, `region`, `instance_size` in; `endpoint`, `vault_cred_path` out) — is identical on every cloud. `tenant-stamp` composition and self-service generation never change when the target cloud changes.
+- A module's **implementation** — the provider block and the cloud's concrete resources — is the only thing that varies. `modules/postgres/{gcp,aws,azure}` each satisfy the same contract via Cloud SQL, RDS, or Flexible Server; the composition selects one by `source = "../postgres/${var.cloud}"`.
+- Cloud-specific values (machine classes, SKU tiers, backend type) live in the implementation's internal `locals` or backend block — never on the interface. If moving a module between clouds forces a variable or output to change, the boundary has leaked.
+
+Per-cloud provider blocks, remote-state backends (GCS / S3+DynamoDB / azurerm blob), managed-Kubernetes (GKE/EKS/AKS), managed-Postgres, and workload-identity handling: `references/cloud-provider-modules.md`.
+
+---
+
 ## Self-Service Infrastructure Request (Developer-Facing Golden Path)
 
 A developer who needs a new PostgreSQL database **does not write OpenTofu HCL**. They fill in a YAML request template — the golden path — and open a PR to the environment repo. The platform's CI automation validates the request, generates the corresponding module call, plans it, and applies it. The developer never authors HCL.
 
 This separates *expressing intent* (the developer's job) from *implementing infrastructure* (the platform's job) — the same boundary that `modules/postgres`'s sizing tiers enforce inside HCL.
 
-### Infrastructure Request YAML (Developer-Facing)
-
-```yaml
-# Fill in assets/infrastructure-request-template.yaml and open a PR.
-kind: InfrastructureRequest
-service: <service-name>
-resource: postgresql
-config:
-  name: <db-name>
-  size: small | medium | large      # maps to modules/postgres instance_size
-  environment: dev | staging | production
-  tenant: <tenant-id>               # for per-tenant stamp isolation
-owner: <team-or-engineer>
-```
+The developer fills in `assets/infrastructure-request-template.yaml` — kind `InfrastructureRequest`: service, resource (`postgresql | redpanda | object-storage`), size tier, environment, tenant, owner — and opens a PR; never HCL.
 
 The CI automation (`scripts/infra-request-apply.sh` in the environment repo):
 1. Validates the YAML against a JSON Schema (resource type, size enum, tenant format).
