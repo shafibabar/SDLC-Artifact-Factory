@@ -1,175 +1,138 @@
 ---
 name: user-journey-mapping
 description: >
-  Teaches how to produce a user journey map — the end-to-end experience of a
-  specific persona completing a high-value job-to-be-done across all touchpoints,
-  capturing what the user does, thinks, and feels at each stage, along with
-  friction points and opportunities. User journey maps bridge the persona and
-  JTBD analysis from the Ideate phase to the UX flow and component design in the
-  Design phase. Produced by the ux-architect agent during the Design phase.
-version: 1.1.0
-phase: design
+  Teaches the ux-architect to build a User Journey Map — the horizontal stages a
+  persona moves through, and per stage their actions, touchpoints, thoughts, and an
+  emotion curve — plus the identification of moments of truth, pain points, and
+  opportunities, and the extension into a Service Blueprint (front-stage vs back-stage
+  actions separated by the line of visibility). Grounded in Stickdorn This Is Service
+  Design Doing. Used during Ideate to see the end-to-end experience before designing
+  screens.
+version: 2.0.0
+phase: ideate
 owner: ux-architect
 created: 2026-06-25
-tags: [design, ux, user-journey, persona, jtbd, touchpoints, friction, opportunity]
+tags: [ideate, ux, journey-map, touchpoints, moments-of-truth, service-blueprint, line-of-visibility]
+related: [user-persona, ux-flow-design, information-architecture, event-storming-facilitation, service-blueprinting, glossary-management]
 ---
 
 # User Journey Mapping
 
 ## Purpose
 
-A user journey map is a narrative of a specific persona's experience completing a specific job-to-be-done — from their initial trigger through to their final outcome. It captures not just what the user does (the steps) but what they think and feel (the emotional state) at each step.
+A User Journey Map is the end-to-end story of one persona completing one high-value
+job — from the trigger that starts it to the outcome that ends it. It captures not
+only what the persona *does* but what they *think* and *feel* at each stage, so the
+experience can be seen and fixed before any screen is designed.
 
-Journey maps reveal friction points that the feature list does not. A product can have all the right features and still fail because the journey between them is painful. Journey maps make that pain visible before any UI is built.
+Journey maps reveal friction the feature list cannot. A product can have every right
+feature and still fail because the path between them is painful. During Ideate, the
+map makes that pain visible early — while it is still cheap to change. It is a
+customer-perspective artifact, drawn from `user-persona` output and the persona's
+job, and it feeds `information-architecture`, `ux-flow-design`, and (for journeys with
+a thick operational backstage) a `service-blueprinting` pass in Design.
+
+Grounded in Marc Stickdorn et al., *This Is Service Design Doing* — journey maps and
+service blueprints are its core artifacts.
 
 ---
 
-## Journey Map vs User Flow
+## The Persona Anchor — One Persona, One Journey
 
-These are distinct artifacts with different purposes:
+A journey belongs to a *named persona with stakes*, not to "a user." Map **one persona
+per journey**; if two personas experience the same job differently (a Data Steward
+classifying assets vs. a Compliance Officer preparing an audit), they get **two maps**,
+not one blended map. Without a specific persona's stakes, the Thoughts and Emotions
+lanes become fiction and the pain points become guesses.
 
-| Artifact | Question it answers | Level of detail | Created when |
-|---|---|---|---|
-| **User Journey Map** | What is the user's full experience? What do they think and feel? | High-level; whole experience; emotional | Before UX flow design; based on persona + JTBD |
-| **User Flow** | What are the exact steps and system decisions? | Detailed; screen by screen; logical | After journey map; input to frontend-engineer |
-
-The journey map identifies *what* experience to design. The user flow specifies *how* to implement it.
+Map the *highest-value job per primary persona* deeply. Add a second journey for a
+persona only when it will change a design decision — ten shallow maps of uniform depth
+are worth less than two deep ones.
 
 ---
 
 ## Journey Map Structure
 
-A journey map has six rows. Every stage of the journey populates all six rows.
+Stages run **left to right** across the top (the persona's progression through their
+job, never a tour of product screens). Under each stage sit four lanes plus the
+analytical annotations:
 
-| Row | Name | Content |
-|---|---|---|
-| 1 | **Stages** | The high-level phases of the journey (Trigger → Awareness → Onboarding → Core Use → Outcome) |
-| 2 | **Actions** | What the user does at each stage |
-| 3 | **Touchpoints** | Which part of the product (or external system) the user interacts with |
-| 4 | **Thoughts** | What the user is thinking — verbatim if possible from user research |
-| 5 | **Emotions** | How the user feels — expressed on a simple scale: Frustrated / Neutral / Satisfied / Delighted |
-| 6 | **Opportunities** | What the product could do better at this stage to reduce friction or increase delight |
-
----
-
-## Journey Stages
-
-Choose the stages appropriate to the job being mapped. Common stage patterns:
-
-### Awareness → Action journey (for new capability discovery)
-```
-Trigger → Awareness → Evaluation → Onboarding → First Use → Habit → Advocacy
-```
-
-### Task completion journey (for regular in-product use)
-```
-Entry → Setup → Execution → Review → Outcome → Follow-on Action
-```
-
-### Problem resolution journey (for support or compliance workflows)
-```
-Problem identified → Investigation → Resolution → Verification → Closure
-```
-
----
-
-## Journey Map Example
-
-**Persona:** Maya Chen — Compliance Officer  
-**Job:** When a compliance audit approaches, I want to understand my data estate's compliance gaps, so I can prioritise remediation and demonstrate control.
-
-```
-Stage:      | Trigger            | Discovery          | Setup              | Analysis           | Reporting          | Closure
-------------|--------------------|--------------------|--------------------|--------------------|--------------------|------------------
-Actions:    | Audit notification | Logs into product  | Connects data      | Reviews compliance | Generates gap      | Exports report;
-            | received from      | for the first time | sources; initiates | gap report; drills | report; marks      | shares with
-            | auditor            |                    | first scan         | into gaps          | items as reviewed  | audit team
-------------|--------------------|--------------------|--------------------|--------------------|--------------------|------------------
-Touchpoints:| Email / Calendar   | Login screen       | Connect Source     | Compliance         | Reports section;   | Export function;
-            |                    | Onboarding flow    | wizard             | Dashboard; Data    | Generate Report    | Email / portal
-            |                    |                    |                    | Asset Detail pages | form               |
-------------|--------------------|--------------------|--------------------|--------------------|--------------------|------------------
-Thoughts:   | "I need to know    | "Where do I even   | "Will it connect   | "This is a lot of  | "Can I get this    | "I hope the
-            | where we stand     | start? What do     | to our S3? Google  | data — what do I   | in a format the    | auditor finds
-            | before the         | I connect first?"  | Drive?"            | need to look at    | auditor will       | this acceptable"
-            | auditor arrives"   |                    |                    | first?"            | accept?"           |
-------------|--------------------|--------------------|--------------------|--------------------|--------------------|------------------
-Emotions:   | 😟 Anxious         | 😐 Uncertain       | 😐 Cautious        | 😊 Engaged         | 😊 Satisfied       | 😌 Relieved
-            | (high stakes)      | (new product)      | (will it work?)    | (making progress)  | (almost done)      | (task complete)
-------------|--------------------|--------------------|--------------------|--------------------|--------------------|------------------
-Friction:   | —                  | No clear starting  | Unclear which      | Too many assets —  | Report format may  | No confirmation
-            |                    | point; onboarding  | source to connect  | no guidance on     | not match auditor  | of successful
-            |                    | overwhelming       | first              | what matters most  | expectations       | submission
-------------|--------------------|--------------------|--------------------|--------------------|--------------------|------------------
-Opportunity:| —                  | Audit-readiness    | "Start here"       | Prioritised gap    | Audit-ready        | Submission
-            |                    | onboarding track   | guided wizard      | view; severity     | report templates   | checklist with
-            |                    | for compliance     | with source        | scoring            | per framework      | audit summary
-            |                    | officers           | recommendations    |                    | (SOC 2, GDPR)      |
-```
-
----
-
-## Emotional Arc
-
-After completing the journey map, draw the emotional arc — the user's emotional state plotted across the stages. The arc reveals:
-
-- **Valleys** — stages where users feel frustrated or anxious: high-priority improvement opportunities
-- **Peaks** — stages where users feel satisfied or delighted: preserve and amplify these
-- **Flat sections** — neutral stages: acceptable but look for quick wins
-
-```
-Emotion
-Delighted  |                                          *
-Satisfied  |                              *       *
-Neutral    |              *           *
-Cautious   |     *    *
-Frustrated |  *
-           |-----|-----|-----|-----|-----|-----|
-            Trigger  Disc  Setup  Analysis  Report  Close
-```
-
-An emotional valley at "Setup" (connecting sources) signals that the Connect Source wizard needs significant UX investment. This translates directly to a P1 priority for the `ConnectSourceWizard` component spec.
-
----
-
-## Friction Points and Opportunities
-
-Every friction point identified in the journey map must become either:
-1. A design decision in the UX flow (how to reduce the friction)
-2. An input to the product backlog (a new user story to address the gap)
-3. An accepted limitation (explicitly noted with rationale)
-
-| Stage | Friction point | Resolution | Artifact |
-|---|---|---|---|
-| Discovery | No clear starting point | Audit-readiness onboarding track | User story: "As Maya, I want a guided onboarding flow for compliance audits" |
-| Setup | Unclear source connection order | "Start here" recommendation in Connect Source wizard | UX flow: connect-source-guided-wizard |
-| Analysis | Too many assets, no prioritisation | Severity-scored gap view sorted by risk | Component spec: ComplianceGapReport with severity sort |
-| Reporting | Report format mismatch | SOC 2 and GDPR report templates | User story: "As Maya, I want audit-ready report templates" |
-
----
-
-## Journey Map Inventory
-
-Before designing individual journeys, produce the journey map inventory. Every primary persona gets at least one journey for their highest-value job.
-
-| Persona | Job Story ID | Journey name | Priority |
-|---|---|---|---|
-| Maya Chen (Compliance Officer) | JS-003 | Audit preparation journey | P1 |
-| Maya Chen (Compliance Officer) | JS-001 | First data estate scan | P1 |
-| Alex Rivera (Data Steward) | JS-002 | Data asset classification | P1 |
-| Sam Okafor (CISO) | JS-005 | Security posture review | P2 |
-
----
-
-## Connecting Journey Maps to Downstream Artifacts
-
-| Journey map output | Downstream artifact |
+| Lane | Captures |
 |---|---|
-| Friction points at each stage | User stories in the backlog |
-| Emotional valleys | P1 priority in component inventory |
-| Touchpoints identified | IA sections to include |
-| Opportunities noted | UX flows to design |
-| New questions raised | Open questions for the requirements-analyst |
+| **Actions** | What the persona does at this stage |
+| **Touchpoints** | Which part of the product (or external system) they interact with |
+| **Thoughts** | What they think — verbatim from research where possible |
+| **Emotion curve** | How they feel, plotted as a line across the stages (the arc, not isolated labels) |
+
+The **emotion curve** is the spine of the map: a single line rising and falling across
+the stages. Its **valleys** are the deliverable — the stages where the persona feels
+anxious or frustrated are the highest-priority design opportunities. A map whose curve
+never dips is a warning sign, not a clean bill of health (see Anti-Patterns).
+
+Full definitions of each lane, how to set journey **scope and granularity**, how to
+**source a journey from research rather than invention**, and the annotation mechanics
+are in **`references/journey-map-structure.md`**.
+
+---
+
+## The Analytical Output — Moments of Truth, Pain Points, Opportunities
+
+The lanes are the input; the analysis is the deliverable. Three annotations turn a
+descriptive map into an artifact that changes decisions:
+
+- **Moments of Truth** — the few touchpoints where the persona's overall perception of
+  the whole service is disproportionately shaped (Jan Carlzon's term, cited by
+  Stickdorn). Concentrate design effort here; do not spread investment evenly across
+  every stage. A Moment of Truth usually sits at an emotion-curve valley or peak.
+- **Pain points** — friction at a stage. Every pain point must resolve into one of:
+  (1) a design decision in a downstream UX flow, (2) a new user story in the backlog,
+  or (3) an explicitly accepted limitation with rationale. A pain-point lane with no
+  follow-through is a poster, not an artifact.
+- **Opportunities** — what the product could do better at this stage to remove friction
+  or amplify delight, each traceable to a downstream artifact.
+
+Annotation mechanics, the pain-point → action log format, and common mistakes are in
+`references/journey-map-structure.md`.
+
+---
+
+## Journey Map vs Service Blueprint
+
+The journey map is **customer-perspective only** — its Touchpoints lane records *where
+the persona looks*, never *what has to succeed behind that screen* for the look to be
+correct. That is a real and deliberate limit, not an oversight.
+
+A **Service Blueprint** extends the map across the **line of visibility**: it adds
+back-stage lanes (the internal actions and systems the customer never sees) beneath the
+front-stage actions the customer does see. Where the journey map asks "what does the
+persona experience?", the blueprint also asks "what must act, unseen, for that
+experience to work?"
+
+| | User Journey Map | Service Blueprint |
+|---|---|---|
+| Perspective | Customer / front-stage only | Front-stage **and** back-stage |
+| Question | What does the persona experience? | What must succeed, seen and unseen, for it to work? |
+| Key boundary | — | The **line of visibility** (front-stage above, back-stage below) |
+| Reveals | Emotion valleys, pain points | Back-stage gaps a map hides (a stalled scan behind a slow report) |
+| Built when | Ideate — every primary journey | Design — journeys with a thick backstage |
+
+**When to use each.** Always draw the journey map first — every primary persona's
+highest-value job gets one, in Ideate. Extend to a blueprint only for journeys where
+the front-stage/back-stage gap is large (an estate scan, a classification pass, a
+compliance evaluation), using the emotion-curve valleys as the prioritisation signal.
+A simple CRUD-like journey (editing a display name) has a thin backstage and does not
+earn a blueprint.
+
+The blueprint's full lane structure, the line of visibility, the two companion boundary
+lines, support processes, how a blueprint sources its back-stage lanes from the
+`event-storming-facilitation` output (never from the agent's own inference), and a
+worked blueprint for a Compliance Officer requesting an audit-ready report are in
+**`references/service-blueprint.md`**.
+
+> Microfrontend note: this repo's front-stage is a shell plus independently-deployable
+> remotes, so a single journey's touchpoints and a blueprint's front-stage lane span
+> fragment boundaries. A Moment of Truth often lands exactly at a hand-off *between*
+> remotes — flag those explicitly; see `references/service-blueprint.md`.
 
 ---
 
@@ -177,60 +140,69 @@ Before designing individual journeys, produce the journey map inventory. Every p
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Persona grounded | Each journey uses a named persona from the user-persona skill | Generic "user" or "customer" with no persona attributes |
-| JTBD connected | Each journey maps to a Job Story ID | Journeys disconnected from the job-to-be-done analysis |
-| All six rows complete | All stages have Actions, Touchpoints, Thoughts, Emotions, Friction, Opportunity populated | Rows left blank or marked "TBD" |
-| Emotional arc present | Emotional journey drawn; valleys identified | Journey with no emotional state assessment |
-| Opportunities actioned | Every friction point has a resolution or explicit acceptance | Friction points listed with no follow-through |
-| Downstream artifacts connected | Journey outputs connected to backlog, IA, UX flows, or component specs | Standalone journey with no connection to downstream work |
+| Persona grounded | Uses a named persona from `user-persona` with real stakes | Generic "user" with no attributes |
+| One persona per map | Each map is a single persona's journey | Two personas blended into one map |
+| Emotion curve present | A curve is plotted; valleys identified | No emotional assessment, or all-flat |
+| Moments of Truth marked | The few high-weight touchpoints identified | Every stage weighted equally |
+| Pain points actioned | Each resolves to a flow decision, story, or accepted limitation | Pain listed with no follow-through |
+| Sourced, not invented | Thoughts trace to research or are labelled assumptions | Plausible-sounding verbatims with no basis |
+| Blueprint scoped correctly | Blueprint added only where the backstage is thick | Blueprint for every journey, or none where needed |
 
 ---
 
 ## Anti-Patterns
 
-- **The generic user.** Mapping the journey of "a user" instead of Maya Chen with her audit deadline and her anxiety about the auditor's arrival. Without a persona's stakes, the Thoughts and Emotions rows become fiction and the friction points become guesses.
-- **Feature tour dressed as a journey.** Stages named after product screens ("Dashboard stage", "Reports stage") rather than the user's progression through their job. The journey belongs to the persona; the product is only the touchpoints row.
-- **Happy-feelings mapping.** Every stage marked Satisfied or Delighted. A journey map with no valley is not evidence of a great product — it is evidence the map was written to flatter the design. The valleys are the deliverable.
-- **Invented verbatims.** Writing plausible-sounding Thoughts with no basis in user research, interviews, or support tickets — and not marking them as assumptions. Unvalidated thoughts are hypotheses; label them so they can be tested.
-- **Friction with no follow-through.** A friction row full of pain points that never become a user story, a UX flow decision, or an explicitly accepted limitation. The Friction → Action log is what makes the map an artifact instead of a poster.
-- **Mapping every persona's every job.** Ten journey maps of uniform shallow depth. Map the highest-value job per primary persona deeply; add journeys only when they will change a design decision.
-- **One-time artifact.** Mapping the journey once at design time and never revisiting after usability findings or support data contradict it. The journey map is updated when reality disagrees with it — reality wins.
+- **The generic user.** Mapping "a user" instead of a named persona with a deadline and
+  a stake. The Thoughts and Emotions lanes become fiction.
+- **Feature tour dressed as a journey.** Stages named after screens ("Dashboard stage")
+  rather than the persona's progression. The journey belongs to the persona; the
+  product is only the Touchpoints lane.
+- **Happy-feelings mapping.** Every stage marked Satisfied. A curve with no valley is
+  evidence the map was written to flatter the design. The valleys are the deliverable.
+- **Invented verbatims.** Writing plausible Thoughts with no basis in research and not
+  labelling them as assumptions. Unvalidated thoughts are hypotheses — label them.
+- **Pain with no follow-through.** Friction that never becomes a story, a flow decision,
+  or an accepted limitation.
+- **Front-stage blindness.** Treating the Touchpoints lane as the whole truth and never
+  asking what must succeed behind it — a slow report blamed on the UI when the real
+  cause is a stalled back-stage scan. Escalate to a blueprint instead.
+- **One-time artifact.** Mapping once and never revisiting when usability or support
+  data contradicts it. Reality wins; update the map.
 
 ---
 
-## Output Format
+## Output Format (skeleton)
 
 ```markdown
 ---
 name: user-journey-map
 product: [product name]
 version: 1.0.0
-phase: design
+phase: ideate
 created: [date]
 owner: ux-architect
 ---
 
 # User Journey Map: [Journey Name]
 
-**Persona:** [Persona name and role]
-**Job Story:** [JS-NNN — job statement]
-**Scenario:** [Brief narrative context]
+**Persona:** [name and role]  **Job:** [the job this journey completes]
+**Scenario:** [brief narrative context]
 
-## Journey Map
-
-| Row | Stage 1 | Stage 2 | Stage 3 | ... |
+| Lane | Stage 1 | Stage 2 | Stage 3 | ... |
 |---|---|---|---|---|
 | Actions | | | | |
 | Touchpoints | | | | |
 | Thoughts | | | | |
-| Emotions | | | | |
-| Friction | | | | |
-| Opportunity | | | | |
+| Emotion | | | | |
 
-## Emotional Arc
-[ASCII chart of emotional state across stages]
+## Emotion Curve
+[line across the stages; valleys marked]
 
-## Friction → Action Log
-| Stage | Friction | Resolution | Artifact created |
-|---|---|---|---|
+## Moments of Truth
+[the few high-weight touchpoints]
+
+## Pain Point → Action Log
+| Stage | Pain point | Resolution | Downstream artifact |
 ```
+
+Full annotated template and the blueprint output format: see `references/`.
