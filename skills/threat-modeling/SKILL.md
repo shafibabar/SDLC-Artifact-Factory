@@ -1,157 +1,160 @@
 ---
 name: threat-modeling
 description: >
-  Teaches how to conduct structured threat modelling using the STRIDE framework
-  and Attack Trees — identifying threats to the system's assets, evaluating
-  their likelihood and impact, and producing a prioritised threat register with
-  mitigations. Threat modelling is the first security artifact produced for any
-  product and the input to all subsequent security design decisions. Used by the
-  security-architect agent at the start of security work in the Design phase.
-version: 1.1.0
+  Teaches the security-architect and backend-engineer to threat-model a system
+  using a concrete, repeatable method — the Four-Question Framework (what are we
+  building, what can go wrong, what are we going to do about it, did we do a good
+  job), STRIDE-per-element threat enumeration (Spoofing/Tampering/Repudiation/
+  Information-disclosure/Denial-of-service/Elevation-of-privilege mapped to
+  authentication/integrity/non-repudiation/confidentiality/availability/
+  authorization), the Data Flow Diagram with trust boundaries as the mandatory
+  modeling artifact, attack trees, and the validation loop. Used during Design
+  for every new service or significant data flow, producing a reviewable threat
+  model that feeds the Security Control Matrix.
+version: 2.0.0
 phase: design
 owner: security-architect
 created: 2026-06-25
-tags: [design, security, threat-modeling, stride, attack-trees, risk]
+tags: [design, security, threat-modeling, stride, data-flow-diagram, trust-boundary, attack-tree, risk]
+related: [security-architecture, access-control-model, zero-trust-design, privacy-design, security-implementation, compliance-design, compliance-verification, methodology-review, glossary-management]
 ---
 
 # Threat Modeling
 
-## Purpose
+Threat modeling is a **software-centric**, structured method for finding security
+threats at design time — before a weakness is built into the system, when fixing
+it costs the time to write a mitigation rather than the cost of a breach. It does
+not require a security specialist: an ordinary engineer with a structured model
+and a taxonomy can enumerate what can go wrong. This skill is the source that
+feeds the `security-architecture` Security Control Matrix — every threat it finds
+becomes a control row.
 
-Threat modeling is a structured approach to identifying security threats before they are built into the system. It answers four questions:
-1. **What are we building?** — the system and its assets
-2. **What can go wrong?** — the threats
-3. **What are we going to do about it?** — the mitigations
-4. **Did we do a good enough job?** — the validation
+## The Four-Question Framework (the backbone)
 
-Threat modeling is conducted before implementation. Finding a threat during design costs the time to write a mitigation. Finding it in production costs a breach.
+Every threat model answers four questions, in order:
 
----
-
-## STRIDE Framework
-
-STRIDE (Microsoft) categorises threats by the type of attack:
-
-| Letter | Threat | Violated property | Example |
+| # | Question | What you produce | Skips-to-avoid |
 |---|---|---|---|
-| **S** | Spoofing | Authentication | An attacker impersonates a legitimate user by stealing their JWT |
-| **T** | Tampering | Integrity | An attacker modifies an event payload in transit to change a file's classification |
-| **R** | Repudiation | Non-Repudiation | A user denies performing an action that was not logged |
-| **I** | Information Disclosure | Confidentiality | A misconfigured query returns another tenant's data |
-| **D** | Denial of Service | Availability | An attacker floods the scan API, preventing legitimate users from scanning |
-| **E** | Elevation of Privilege | Authorisation | A low-privilege user accesses an administrative endpoint due to a missing permission check |
+| 1 | **What are we building?** | A Data Flow Diagram (DFD) of the flow, with trust boundaries drawn on it | Listing "assets" in the abstract instead of drawing the system |
+| 2 | **What can go wrong?** | A STRIDE-per-element grid — every element × its applicable STRIDE letters | Attacker-brainstorm ("what would a hacker do?") with no coverage guarantee |
+| 3 | **What are we going to do about it?** | A mitigation or a signed accepted-risk note for every filled cell | Restating the threat as its own mitigation |
+| 4 | **Did we do a good job?** | The validation loop below | Treating the diagram as the finished model — the most-skipped step |
 
-For every significant component in the system (each service, each API endpoint, each data store, each integration), apply STRIDE systematically.
+Question 1 for this repo is a diagram of the **DataAsset ingestion → classification
+→ compliance** flow. Question 4 is the loop most lightweight efforts skip.
 
----
+**Why software-centric.** Of the three entry points — asset-centric (start from the
+data), attacker-centric (start from threat personas), software-centric (start from
+the DFD) — this skill mandates software-centric because the DFD is something the
+team already understands and can draw accurately. Asset lists drift; attacker
+personas invite speculation. Use asset and attacker thinking only to *prioritize*.
 
-## Assets Inventory
+## STRIDE — the "what can go wrong?" taxonomy
 
-Before identifying threats, identify what is worth protecting:
+STRIDE gives Question 2 six categories. Each is the violation of one security
+property, so the taxonomy doubles as a mitigation-property map:
 
-| Asset | Sensitivity | Why it matters |
-|---|---|---|
-| File contents (scanned files) | Critical | Contains customer PII, financial data, health records — must never leave the customer's infrastructure |
-| Extracted entity data | Critical | PII extracted from files — same sensitivity as file contents |
-| Compliance gap reports | High | Reveals the customer's compliance posture — competitive intelligence |
-| Authentication credentials (JWTs, service account keys) | Critical | Compromise enables impersonation and unauthorised access |
-| Encryption keys | Critical | Compromise enables decryption of all data at rest |
-| Audit logs | High | Tampered audit logs undermine Non-Repudiation |
-| Configuration and secrets | High | Database passwords, API keys — enable further compromise |
-| Service-to-service credentials | High | mTLS certificates — compromise enables MITM within the cluster |
+| Letter | Threat | Violates property | Mitigation lane |
+|---|---|---|---|
+| **S** | Spoofing | Authentication | mTLS peer identity (Linkerd), JWT `sub` |
+| **T** | Tampering | Integrity | Signed events, `pgx` parameterized writes, Transactional Outbox |
+| **R** | Repudiation | Non-Repudiation | Immutable audit trail, OpenTelemetry spans |
+| **I** | Information disclosure | Confidentiality | Encryption at rest/in transit, ABAC filtering, PII never persisted raw |
+| **D** | Denial of service | Availability | Rate limits, Redpanda backpressure, Circuit Breaker |
+| **E** | Elevation of privilege | Authorization | ABAC `AccessPolicy.Evaluate`, per-tenant scoping |
 
----
+Apply STRIDE **per element**, not to the system as a whole. Walk each process,
+data store, data flow, and external entity and ask which of the six apply *to that
+element*. This is far less hand-wavy than brainstorming against the system in the
+abstract, and the filled-vs-empty grid makes "did we look everywhere?" answerable.
+Full per-category depth, element-type heuristics, and DataAsset examples:
+`references/stride-catalogue.md`.
 
-## STRIDE Threat Identification Process
+## The DFD and trust boundaries (the mandatory artifact)
 
-For each trust boundary in the system (identified from the System Context and Container Diagrams):
+Question 1's artifact is a Data Flow Diagram with exactly four element types:
 
-1. List every data flow crossing the boundary
-2. For each data flow, systematically apply all six STRIDE categories
-3. For each identified threat, assess:
-   - **Likelihood:** Low / Medium / High — how likely is this to be exploited?
-   - **Impact:** Low / Medium / High / Critical — what is the consequence if exploited?
-   - **Risk score:** Likelihood × Impact (3×3 matrix → 9-point scale)
-4. For each threat with risk score ≥ Medium × Medium, define a mitigation
+- **External entity** — users, third-party services (Google Drive, S3, the browser)
+- **Process** — the ingestion worker, the classification service
+- **Data store** — PostgreSQL, and the Redpanda topic acting as a store-in-transit
+- **Data flow** — the arrows between the above
 
----
+Overlaid are **trust boundaries** — dashed lines wherever the level of trust
+changes. Threats cluster on the data flows that *cross* a boundary, so the boundary
+lines are where STRIDE pays off most. Draw the DFD first, boundaries second, then
+number every element so findings link back to the model. The boundary set for this
+repo (per-tenant namespace edge, each Linkerd mTLS hop, the Google Drive/S3
+external-ingestion edges, the browser/API edge), DFD notation, and drawing
+anti-patterns: `references/dfd-and-trust-boundaries.md`.
 
-## STRIDE Application Example
+## Attack trees — depth for the crown jewel
 
-**Component:** Classification Service API — `PATCH /v1/data-assets/{id}/classification`
+STRIDE is breadth-first discovery across the whole model; an **attack tree** is
+depth-first analysis of one goal. Author **one** tree, for the highest-value goal
+only — for this domain, crossing the physical tenant-isolation boundary to read
+another tenant's classified DataAssets. Do not scope a threat model around building
+comprehensive attack trees; good trees are high-effort and easy to do badly. Use
+STRIDE for breadth and one tree for the depth case. Worked tree:
+`references/worked-threat-model.md`.
 
-| STRIDE | Threat | Likelihood | Impact | Risk | Mitigation |
-|---|---|---|---|---|---|
-| **S** | Attacker forges a JWT to classify assets as a different user | Medium | High | High | JWT signed with RS256; validated on every request; short expiry (1 hour) |
-| **T** | Attacker intercepts the PATCH request and changes the classification level | Low | High | Medium | mTLS enforced by Linkerd between all services; TLS on ingress |
-| **R** | A user denies classifying a file as Restricted | Medium | High | High | All classification actions written to append-only audit log with user identity and timestamp |
-| **I** | A bug in the handler returns another tenant's asset | Low | Critical | High | Physical tenant isolation — separate deployment; request never routes to another tenant's service |
-| **D** | Attacker sends 10,000 PATCH requests to exhaust the service | Medium | Medium | Medium | Rate limiting at API Gateway; per-user rate limits on write endpoints |
-| **E** | A read-only user sends a PATCH request and it succeeds | Low | High | Medium | ABAC policy check on every write operation; enforced in the Application layer command handler |
+## When to threat-model
 
----
+- At **Design**, before architecture decisions are locked — for every new service
+  or significant data flow. The threat model is an *input* to Zero Trust design
+  (`zero-trust-design`), not a review of it.
+- **Again** whenever the DFD changes: a new ingestion connector, a new data store,
+  a moved boundary. A threat model dated before the current architecture is stale
+  evidence — treat any DFD change as the trigger to re-open it.
 
-## Attack Trees
+## The validation loop (Question 4)
 
-For the highest-risk threats (Critical or High × High), produce an Attack Tree — a structured breakdown of how an attacker could achieve the threat:
+The single most-skipped technique, and the one that separates a real threat model
+from a diagram. Check three things explicitly:
 
-```
-Goal: Access another tenant's file data (Information Disclosure — Critical)
-│
-├── Path 1: Compromise a JWT token
-│   ├── Steal a JWT from client storage (XSS attack on the frontend)
-│   ├── Intercept a JWT in transit (TLS downgrade attack)
-│   └── Forge a JWT (weak signing key or algorithm confusion)
-│
-├── Path 2: Exploit a multi-tenancy bug
-│   ├── Missing tenant context check in a query handler
-│   ├── Shared database connection pool returning another tenant's connection
-│   └── Event routing misconfiguration sending one tenant's events to another
-│
-└── Path 3: Compromise the infrastructure
-    ├── Access to another tenant's Kubernetes namespace
-    ├── Compromise of a shared control plane component
-    └── Access to backup storage containing tenant data
-```
+1. **Does the DFD still match the built system?**
+2. **Was STRIDE applied to *every* element**, not just the interesting ones?
+3. **Does every filled cell have a mitigation or a signed accepted-risk note?**
 
-Each leaf node is a specific attack. Each leaf node needs a specific mitigation or acceptance. The tree reveals which paths have the fewest defences and therefore which require the most attention.
+A complete worked example — the DataAsset DFD, the filled STRIDE grid per element,
+each cell's mitigation or accepted-risk note, and the Question-4 checklist — is in
+`references/worked-threat-model.md`.
 
----
+## Prioritization
 
-## Threat Register Output
-
-| ID | Component | STRIDE | Threat description | Likelihood | Impact | Risk | Mitigation | Status |
-|---|---|---|---|---|---|---|---|---|
-| THR-001 | Classification API | S | JWT forgery | Medium | High | High | RS256, short expiry, server-side revocation | Mitigated |
-| THR-002 | Multi-tenancy | I | Cross-tenant data leak via query bug | Low | Critical | High | Physical isolation; no shared DB | Mitigated |
-| ... | | | | | | | | |
-
----
+STRIDE structures the search but does not prioritize. Rank findings with an
+explicit, reviewable risk judgment (likelihood × impact). Avoid DREAD and
+false-precision numeric scores — the scores exist only to *sequence* work: crown-
+jewel paths get the attack tree and mitigations first; low-value threats may be
+accepted. For every threat you defer, record the accepted-risk rationale so the
+deferral is a visible decision, not a silent omission.
 
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| All trust boundaries covered | STRIDE applied at every trust boundary from the Container Diagram | Only the external boundary analysed; internal boundaries skipped |
-| Assets inventoried | All significant assets documented with sensitivity level | Threat model with no asset inventory |
-| Attack Trees for critical threats | Every Critical or High×High threat has an Attack Tree | Critical threats documented as a single line with no decomposition |
-| Mitigations testable | Every mitigation references a test that will verify it (security test, pen test, compliance check) | Mitigations with no verification plan |
-| Residual risk acknowledged | Accepted risks are explicitly documented as accepted, with justification | Risks silently dropped from the register |
-| Threat model versioned | Register updated when architecture changes (new integration, new trust boundary) | One-time exercise never revisited |
-
----
+| DFD exists | Question 1 is a numbered DFD with trust boundaries | Threat list with no model |
+| STRIDE-per-element | Every element carries its applicable STRIDE letters as a grid | STRIDE applied to the system in the abstract |
+| Boundaries covered | Internal boundaries (service↔service, tenant↔tenant) get STRIDE too | Only the internet-facing edge analysed |
+| Mitigations specific | Each cell names a mechanism and its verifying test | Mitigation restates the threat |
+| Residual risk honest | Deferred threats carry a signed accepted-risk note | Risks silently dropped |
+| Validated | Question 4 loop run; DFD matches the built system | Diagram treated as finished model |
+| Versioned | Re-opened when the DFD changes | One-time exercise never revisited |
 
 ## Anti-Patterns
 
-- **Threat modeling the finished system.** Running STRIDE after implementation converts every finding from a design change into a rework ticket. The threat model precedes architecture decisions — it is an input to Zero Trust design, not a review of it.
-- **Attacker-centric brainstorming without structure.** "What would a hacker do?" sessions produce whatever the room happens to imagine. STRIDE's value is exhaustiveness: six categories applied to every data flow at every trust boundary — no flow skipped because it "seems safe".
-- **Only the external boundary.** Modeling the internet-facing API while treating everything inside the cluster as trusted. Assume Breach means internal trust boundaries (service-to-service, service-to-database, tenant-to-tenant) get the same STRIDE treatment.
-- **Risk scores as decoration.** Assigning Likelihood × Impact and then mitigating in discovery order anyway. The scores exist to sequence work: Critical paths get Attack Trees and mitigations first, Low×Low may be accepted.
-- **Mitigation by restatement.** "Threat: cross-tenant leak. Mitigation: prevent cross-tenant access." A mitigation names a specific mechanism and the test that verifies it, or it is not a mitigation.
-- **A register that only ever says "Mitigated".** If nothing is Accepted or Open, the model is describing aspiration, not reality. Honest registers carry open items with owners and review dates.
-- **Frozen threat model.** A new storage integration, a new external API, or a change in tenancy model adds trust boundaries. A threat model dated before the current Container Diagram is stale evidence.
-
----
+- **Threat modeling the finished system** — turns every finding into a rework
+  ticket. The model precedes architecture decisions.
+- **Attacker-centric brainstorming without structure** — produces whatever the room
+  imagines. STRIDE-per-element is exhaustive by construction.
+- **Only the external boundary** — Assume Breach means service↔service,
+  service↔database, and tenant↔tenant boundaries get the same STRIDE treatment.
+- **Risk scores as decoration** — assigning likelihood × impact then mitigating in
+  discovery order anyway. Scores sequence work.
+- **Mitigation by restatement** — "prevent cross-tenant access" is not a mitigation;
+  a named mechanism plus its test is.
+- **A register that only ever says "Mitigated"** — if nothing is Accepted or Open,
+  the model describes aspiration, not reality.
+- **Frozen threat model** — a DFD dated before the current architecture is stale.
 
 ## Output Format
 
@@ -165,27 +168,24 @@ created: [date]
 owner: security-architect
 ---
 
-# Threat Model: [Product Name]
+# Threat Model: [Product Name / Flow]
 
-## Assets Inventory
-| Asset | Sensitivity | Description |
-|---|---|---|
+## 1. What are we building? (DFD + trust boundaries)
+[Numbered DFD — four element types — with trust boundaries drawn on it]
 
-## Trust Boundaries
-[List all trust boundaries from the Container Diagram]
+## 2. What can go wrong? (STRIDE-per-element grid)
+| Element # | Element | S | T | R | I | D | E |
+|---|---|---|---|---|---|---|---|
 
-## Threat Register
-| ID | Component | STRIDE | Threat | Likelihood | Impact | Risk | Mitigation | Status |
-|---|---|---|---|---|---|---|---|---|
+## 3. What are we going to do about it?
+| Cell (element#/letter) | Threat | Mitigation / Accepted-risk note | Verifying test |
+|---|---|---|---|---|
 
-## Attack Trees
-[One tree per Critical / High×High threat]
+## Attack Tree (crown-jewel goal only)
+[One goal-rooted AND/OR tree]
 
-## Accepted Risks
-| Threat ID | Reason accepted | Review date |
-|---|---|---|
-
-## Mitigation Verification Plan
-| Threat ID | Mitigation | Verification method | Test artifact |
-|---|---|---|---|
+## 4. Did we do a good job? (validation loop)
+- [ ] DFD matches the built system
+- [ ] STRIDE applied to every element
+- [ ] Every filled cell has a mitigation or a signed accepted-risk note
 ```
