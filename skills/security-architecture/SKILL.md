@@ -1,145 +1,111 @@
 ---
 name: security-architecture
 description: >
-  Teaches how to produce a Security Architecture document — the synthesis of all
-  security design decisions into a single coherent view covering defence-in-depth
-  layers, security controls per architecture layer (network, workload, application,
-  data), the security control matrix mapped to threat model mitigations, and how
-  security architecture connects to the NFR specification's security requirements.
-  Produced by the security-architect agent after threat modeling and Zero Trust
-  design are complete.
-version: 1.1.0
+  Teaches the security-architect to design a system's security architecture — applying the four
+  design principles (least privilege, understandability, defense in depth, design for recovery),
+  the zero-trust model (the network is always hostile; trust is never derived from network location),
+  blast-radius reduction via distinct failure domains, and producing the Security Control Matrix that
+  maps STRIDE threats to controls to enforcement layers. Covers where each control sits (Linkerd mTLS
+  = transport identity only; ABAC = the authorization decision), the security-sensitivity axis
+  orthogonal to Core/Supporting/Generic subdomain classification, and the automated-governance
+  component triad. Used during Design after threat-modeling.
+version: 2.0.0
 phase: design
 owner: security-architect
 created: 2026-06-25
-tags: [design, security, security-architecture, defence-in-depth, controls, nfr]
+tags: [design, security, zero-trust, defense-in-depth, least-privilege, blast-radius, security-control-matrix, mtls, abac]
+related: [threat-modeling, zero-trust-design, access-control-model, security-implementation, compliance-design, compliance-verification, privacy-design]
 ---
 
 # Security Architecture
 
 ## Purpose
 
-The Security Architecture document synthesises all security design decisions into a single view. Where the threat model identifies what can go wrong and the zero-trust-design skill defines the identity and encryption foundations, the Security Architecture shows how all controls work together across layers to provide defence in depth.
+The Security Architecture is the Design-phase synthesis of every security decision into one coherent, reviewable view. It sits downstream of `threat-modeling` (which produces the STRIDE-per-element grid of *what can go wrong*) and it produces the **Security Control Matrix** — the artifact that maps each threat to the controls that mitigate it, the layer each control lives in, and what happens when that control fails.
 
-Defence in depth means that no single control failure results in a complete breach. Multiple independent controls protect each asset. An attacker who defeats one control encounters another.
-
----
-
-## Defence-in-Depth Layers
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Layer 6: Data                                              │
-│  Encryption at rest (AES-256), per-tenant keys,             │
-│  backup encryption, audit log integrity                     │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 5: Application                                       │
-│  ABAC policy enforcement, input validation, output          │
-│  encoding, OWASP Top 10 + API Security Top 10 controls,     │
-│  dependency scanning                                        │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 4: Workload                                          │
-│  Non-root containers, read-only filesystems, security       │
-│  contexts, resource limits, image scanning                  │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 3: Service-to-Service                                │
-│  mTLS (Linkerd), deny-by-default Linkerd policies,          │
-│  Principle of Least Privilege for service accounts          │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 2: Network                                           │
-│  Kubernetes NetworkPolicy (deny-all default),               │
-│  Namespace isolation, ingress TLS termination               │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 1: Infrastructure                                    │
-│  Physical tenant isolation, VPC/VNET isolation,             │
-│  cloud account boundaries, IaC-only changes                 │
-└─────────────────────────────────────────────────────────────┘
-```
+This skill is decision-shaping guidance. The exhaustive per-layer control tables, the worked matrix, the zero-trust decomposition, and each design principle in depth live in `references/` — pulled in only when the security-architect needs them.
 
 ---
 
-## Security Controls Per Layer
+## The Four Design Principles
 
-### Layer 1: Infrastructure
+The document is organized around four principles (Adkins & Beyer). One line each — full depth, mechanisms, and Go grounding in `references/design-principles.md`.
 
-| Control | Implementation | Verification |
-|---|---|---|
-| Physical tenant isolation | Separate Kubernetes namespace (or cluster) per tenant | Namespace separation verified in provisioning IaC |
-| IaC-only changes | All infrastructure changes via OpenTofu; no manual console changes | CloudTrail / audit logs show only IaC-sourced changes |
-| Cloud account segmentation | Production in a dedicated cloud account; separate from staging | AWS Organizations / Azure Management Groups |
-| Immutable infrastructure | No SSH access to production nodes; changes deploy new images | No SSH keys on production nodes |
+1. **Least privilege** — every component holds the *minimum authority to do its job*, designed in depth (small intent-named APIs, scoped service accounts, scoped and revocable third-party grants), not only at the outer gate. The authority a compromised caller can wield is bounded by the surface it can reach.
+2. **Understandability** — a design whose security you cannot reason about is not secure. State the small set of **invariants** that must hold *regardless of any action an attacker takes* (e.g. "no request is processed under a tenant other than its validated JWT's `tenant_id`"); security review is confirming each change preserves every invariant.
+3. **Defense in depth** — partition into distinct, independent **failure domains** so one breach does not cascade. Every control assumes the layers around it will fail.
+4. **Design for recovery** — assume compromise is inevitable; design detection, rate-limiting, emergency revocation, and containment as first-class capabilities, and prefer root-causing over rollback (rollback can reintroduce the breached condition).
 
-### Layer 2: Network
-
-| Control | Implementation | Verification |
-|---|---|---|
-| Default-deny NetworkPolicy | Kubernetes NetworkPolicy blocks all traffic not explicitly permitted | `kubectl get networkpolicy` shows deny-all baseline |
-| Ingress TLS | TLS terminated at ingress controller; no plaintext HTTP | TLS certificate present; HTTP redirects to HTTPS |
-| Namespace isolation | No network path between tenant namespaces | Network test: attempt cross-namespace connection; expect timeout |
-
-### Layer 3: Service-to-Service
-
-| Control | Implementation | Verification |
-|---|---|---|
-| mTLS | Linkerd service mesh; automatic certificate issuance and rotation | `linkerd viz edges` shows all connections encrypted |
-| Deny-by-default service policy | Linkerd ServerAuthorization resources; only named callers permitted | Attempt call from unauthorised service; expect 403 |
-| Short-lived service credentials | Linkerd certificates rotated every 24 hours | Certificate expiry < 24 hours confirmed in Linkerd dashboard |
-
-### Layer 4: Workload
-
-| Control | Implementation | Verification |
-|---|---|---|
-| Non-root containers | `runAsNonRoot: true` in all pod SecurityContexts | `kubectl get pod -o json | jq '.spec.securityContext'` |
-| Read-only root filesystem | `readOnlyRootFilesystem: true` where possible | Pod spec audit |
-| No privilege escalation | `allowPrivilegeEscalation: false` | Pod spec audit |
-| Resource limits | CPU and memory limits on all containers | `kubectl describe pod` shows limits |
-| Image scanning | Trivy scan in CI; no HIGH or CRITICAL CVEs in production images | CI pipeline gate |
-| Signed images | Container images signed with Cosign; verified at admission | Admission webhook rejects unsigned images |
-
-### Layer 5: Application
-
-| Control | Implementation | Verification |
-|---|---|---|
-| JWT authentication | Every API endpoint validates JWT; health checks excluded | Test matrix: call endpoints with no token, expired token, invalid signature |
-| ABAC enforcement | Policy evaluated in Application layer for every Command and Query | Unit tests for every policy rule; integration tests for boundary cases |
-| Input validation | Structural validation at API handler; business validation at Aggregate | Table-driven unit tests for all validation paths |
-| SQL injection prevention | pgx parameterised queries only; no string concatenation in SQL | Code review; SAST scan |
-| Output encoding | JSON responses encoded by `encoding/json`; no manual string construction | Code review |
-| Dependency scanning | `govulncheck` and Dependabot in CI | Weekly scan report |
-
-### Layer 6: Data
-
-| Control | Implementation | Verification |
-|---|---|---|
-| Encryption at rest | PostgreSQL on encrypted filesystem; backups encrypted before upload | Storage encryption verified in IaC; backup encryption verified in restore test |
-| Per-tenant encryption keys | Separate KMS key per tenant; key access policy scoped to tenant services | KMS key policy audit |
-| Audit log integrity | Append-only audit log table; tamper detection via hash chain | Tamper test: attempt DELETE on audit log; expect failure |
-| Data residency enforcement | Physical isolation ensures data never leaves the declared boundary | Architecture review; network egress policy |
+Understandability and recovery are the two principles most often missing from a control-only architecture — they are *design-time* concerns, not runtime knobs.
 
 ---
 
-## Security Control Matrix (Threat → Control Mapping)
+## Zero Trust: The Core Rule
 
-| Threat ID | Threat | Controls that mitigate it | Layer |
-|---|---|---|---|
-| THR-001 | JWT forgery | RS256 signing with algorithm pinning (reject `alg` substitution), short expiry, issuer + audience validation | Application |
-| THR-002 | Cross-tenant data leak | Physical namespace isolation, ABAC tenant check | Infrastructure + Application |
-| THR-003 | Service impersonation | mTLS, Linkerd deny-by-default, workload identity | Service-to-Service |
-| THR-004 | Secret compromise | Vault dynamic secrets, short-lived credentials, no env var secrets | Application + Workload |
-| THR-005 | Privileged container escape | Non-root, read-only FS, no privilege escalation | Workload |
-| THR-006 | Audit log tampering | Append-only table, hash chain, separate audit user | Data |
+**The network is always hostile. Trust is never derived from network location.** A packet arriving from inside the Kubernetes cluster or inside the Linkerd mesh is exactly as untrusted as one from the public internet. Every request is authenticated and authorized on its own merits, every time — being `ClusterIP`-local is an identity fact, never a permission grant.
+
+**Where the authorization decision lives — the placement rule:** Linkerd mTLS answers *"who is connecting?"* (transport-layer workload identity + encryption). It **never** answers *"is this actor allowed to do this?"*. The authorization decision — ABAC — stays in the application. A meshed connection succeeding proves identity, not permission. This separation of *who enforces transport* from *what decides authorization* is the architectural invariant a reviewer must be able to assert; the vocabulary and decomposition behind it (and the device/user/workload identity planes, dynamic policy, micro-segmentation, per-tenant isolation as a failure-domain boundary) are in `references/zero-trust-and-mesh.md`.
 
 ---
 
-## Security NFR Traceability
+## Blast Radius and Failure Domains
 
-Every security NFR from the NFR specification must map to at least one control in this document:
+Defense in depth means more than layered controls — it means bounded, *known-in-advance* blast radius. For every control in the matrix, state two things the layer model alone does not:
 
-| NFR ID | NFR Description | Implementing Control | Layer |
-|---|---|---|---|
-| NFR-SEC-001 | All API endpoints require JWT | JWT middleware at API handler | Application |
-| NFR-SEC-002 | mTLS for all service-to-service | Linkerd service mesh | Service-to-Service |
-| NFR-SEC-003 | AES-256 encryption at rest | Encrypted filesystem + KMS | Data |
+- **Blast radius** — what becomes reachable, corrupted, or exposed if *this control alone* fails.
+- **Containing failure domain** — which independent domain still contains that blast radius.
+
+Each **physical per-tenant namespace is a failure domain**. The honest statement for a cross-tenant leak is: *if the ABAC tenant check fails, physical namespace isolation is the independent domain that still contains it.* That is a designed, stated property — not an implicit hope. Decide **fail-safe vs. fail-secure per subsystem**: what a chi handler does when its JWKS endpoint is unreachable or its policy store times out must be decided and recorded — the default must never be "allow".
+
+---
+
+## The Security Control Matrix (the artifact)
+
+The matrix is this skill's deliverable. Columns: **Threat · Control · Layer · Enforcement mode**.
+
+- **Threat column** is *generated*, not recalled. Its disciplined source is `threat-modeling`'s **STRIDE-per-element** grid: each filled STRIDE cell becomes one matrix row. STRIDE's property-to-mitigation map gives the Control column a principled derivation, not an ad-hoc one:
+
+  | STRIDE letter | Violated property | Control lane |
+  |---|---|---|
+  | Spoofing | Authentication | Linkerd mTLS peer identity, JWT `sub` |
+  | Tampering | Integrity | `pgx` parameterized writes, signed events, Transactional Outbox |
+  | Repudiation | Non-Repudiation | append-only audit log, OpenTelemetry spans |
+  | Information disclosure | Confidentiality | Encryption at rest/in transit, ABAC filtering, PII never persisted raw |
+  | Denial of service | Availability | rate limits, Redpanda backpressure, Circuit Breaker |
+  | Elevation of privilege | Authorization | `AccessPolicy.Evaluate` (ABAC), per-tenant scoping |
+
+- **Enforcement mode** (from Investments Unlimited's materiality lens) states *what happens on failure*: `gate` (blocks promotion — cross-tenant isolation, encryption-at-rest, Separation of Duties), `monitor` (alerts on drift), or `record` (emits evidence only). A control mitigating no listed threat is decoration; a filled STRIDE cell with no control is an unmet requirement.
+
+Full column definitions, a worked matrix for the DataAsset ingestion→classification flow, the six-layer control tables, and the governance component triad: `references/control-matrix-template.md`.
+
+---
+
+## Where Each Control Sits
+
+Defense-in-depth layers — the decision surface for *which layer owns which concern*:
+
+| Layer | Owns | Key controls |
+|---|---|---|
+| 1 Infrastructure | tenant + account boundary | physical namespace-per-tenant isolation, IaC-only changes, account segmentation, immutable nodes |
+| 2 Network | reachability | default-deny NetworkPolicy, ingress TLS, namespace isolation |
+| 3 Service-to-service | transport identity | Linkerd mTLS, deny-by-default authorization policy, short-lived rotated certs |
+| 4 Workload | container posture | non-root, read-only FS, no privilege escalation, image scan + signing |
+| 5 Application | authN + **authZ decision** | JWT validation, **ABAC** `Evaluate`, input validation, parameterized queries |
+| 6 Data | data at rest | encryption at rest, per-tenant keys, append-only audit, residency enforcement |
+
+The authorization *decision* is a Layer-5 concern by design (zero-trust placement rule above) — never delegated down to the mesh (Layer 3) or the network (Layer 2).
+
+---
+
+## Security Sensitivity — Orthogonal to Subdomain Classification
+
+Security-sensitivity is a **separate axis** from a Subdomain's strategic Core/Supporting/Generic classification (Secure by Design). A *Generic* Subdomain (authentication, an internal admin-token issuer) can be maximally security-sensitive; a *Core* Subdomain can be low-sensitivity. Conflating the two axes causes teams to under-review "boring" Generic/Supporting subdomains precisely because they are not where competitive value lives. Tag each Bounded Context with a security-sensitivity rating independently, and flag every subdomain where the two ratings **diverge** — those are the forcing-function candidates for proportionate review.
+
+---
+
+## Automated Governance Components
+
+Governance is itself an architecture concern with named, deployable components (Investments Unlimited's Automated Governance Reference Architecture): an **attestation-producer** (pipeline stages emitting signed, digest-pinned attestations), an **immutable evidence-store** (append-only ledger, the audit deliverable), and a **control-gate** (a pipeline stage that consumes the required attestation set, verifies signatures, and permits or blocks promotion). Design these alongside the service architecture, not as a reporting afterthought. The triad, the attestation shape, Separation of Duties in code, and Continuous Control Monitoring are in `references/control-matrix-template.md`.
 
 ---
 
@@ -147,23 +113,26 @@ Every security NFR from the NFR specification must map to at least one control i
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| All six layers addressed | Controls documented for every defence-in-depth layer | Missing layers with no controls |
-| Threat → control mapping | Every threat in the threat register maps to at least one control | Threats with no implementing control |
-| NFR traceability | Every security NFR maps to a control | Security NFRs with no implementation |
-| Verification method | Every control has a stated verification test | Controls with no way to verify they work |
-| Defence in depth | Every critical asset has controls at multiple layers | Single-layer defence for critical assets |
-| Residual risks explicit | Unmitigated threats listed with acceptance rationale | Gaps silently omitted from the document |
+| Principles named as a set | All four design principles organize the document | Only defense-in-depth present; recovery/understandability absent |
+| Invariants stated | Each control maps to a stated invariant it preserves | Controls listed with no invariant they exist to protect |
+| Blast radius per control | Every control states blast radius + containing failure domain | Blast radius left implicit |
+| Threats derived, not recalled | Every matrix threat traces to a filled STRIDE cell | Threat column authored from memory |
+| authZ placement explicit | Matrix asserts ABAC decision stays in the application, mesh = transport only | Authorization delegated to mesh/network |
+| Enforcement mode set | Every control classified gate/monitor/record | Matrix records existence but not failure behavior |
+| Sensitivity axis applied | Subdomains tagged for security-sensitivity independent of Core/Supporting/Generic | Sensitivity conflated with strategic classification |
+| Residual risk explicit | Accepted/deferred threats listed with owner + rationale | Undocumented gaps |
 
 ---
 
 ## Anti-Patterns
 
-- **Single-layer trust.** "The network is isolated, so the application check is redundant." Every control in this document assumes the layers around it will fail. Physical tenant isolation does not remove the ABAC tenant check; mTLS does not remove JWT validation.
-- **Controls without verification.** A control that cannot be tested is a hope, not a control. "Encryption at rest is enabled" means nothing without the IaC assertion and the restore test that prove it.
-- **Copy-paste security architecture.** Importing a generic control catalogue without mapping it to this product's threat register. The Security Control Matrix exists to force the question "which threat does this control mitigate?" — a control mitigating no listed threat is either missing its threat or is decoration.
-- **Perimeter thinking.** Concentrating controls at Layers 1-2 and treating everything inside as trusted. This contradicts Zero Trust Architecture: the interior layers (workload, application, data) carry their own full set of controls.
-- **NFRs and controls drifting apart.** Security NFRs written in Discovery that no control implements, or controls added ad hoc with no NFR or threat justifying them. The two traceability tables must close in both directions.
-- **Hiding residual risk.** Presenting the architecture as fully mitigated when specific threats are accepted, deferred, or partially covered. Residual risks are documented with an owner and rationale — an auditor finding an undocumented gap is far worse than one finding an accepted risk.
+- **Single-layer trust.** "The network is isolated, so the application check is redundant." Every control assumes the layers around it fail. Physical isolation does not remove the ABAC tenant check; mTLS does not remove JWT validation.
+- **Mesh-as-authorizer.** Treating a successful mTLS connection as carrying authorization weight. mTLS answers *who*; ABAC answers *what*. Conflating them puts the authorization decision in the wrong plane.
+- **Controls without invariants.** A control that names no invariant it preserves cannot be reviewed for removal — nobody can tell what breaks if it goes.
+- **Blast radius left implicit.** Listing layers without stating, per control, what is reachable if it alone fails and which domain contains that.
+- **Copy-paste control catalogue.** Importing a generic control list without deriving it from this system's STRIDE grid. A control mitigating no listed threat is decoration.
+- **Perimeter thinking.** Concentrating controls at Layers 1–2 and trusting the interior — the direct contradiction of Zero Trust Architecture.
+- **Hiding residual risk.** Presenting the architecture as fully mitigated when threats are accepted or deferred. An auditor finding an undocumented gap is far worse than one finding an owned, accepted risk.
 
 ---
 
@@ -181,20 +150,26 @@ owner: security-architect
 
 # Security Architecture
 
-## Defence-in-Depth Layers
-[Layer diagram]
+## Design Principles Applied
+[Least privilege / understandability / defense in depth / recovery — how each shapes this system]
 
-## Controls Per Layer
-[Tables per layer]
+## Security Invariants
+[The small set of properties that must hold regardless of attacker action]
+
+## Zero-Trust Placement
+[Mesh = transport identity; ABAC = authorization decision; per-hop identity planes]
 
 ## Security Control Matrix
-| Threat ID | Controls | Layer |
-|---|---|---|
+| Threat (STRIDE cell) | Control | Layer | Enforcement (gate/monitor/record) | Blast radius | Containing failure domain |
+|---|---|---|---|---|---|
 
-## Security NFR Traceability
-| NFR ID | Control | Layer | Verification |
+## Security-Sensitivity Map
+| Subdomain | Core/Supporting/Generic | Security-sensitivity | Divergence? |
 |---|---|---|---|
 
+## Automated Governance Components
+[attestation-producer / evidence-store / control-gate]
+
 ## Residual Risks
-[Threats or NFRs with incomplete mitigation — with acceptance rationale]
+[Accepted or deferred threats — owner + rationale]
 ```
