@@ -8,11 +8,12 @@ description: >
   consuming secrets at runtime without ever storing them. Used by the
   security-architect agent during Design and the security-engineer agent during
   Implement.
-version: 1.1.0
+version: 1.2.0
 phase: design
 owner: security-architect
 created: 2026-06-25
-tags: [design, security, secrets-management, vault, kubernetes, rotation, go]
+tags: [design, security, secrets-management, vault, kubernetes, rotation, go, gitops, sops, sealed-secrets]
+related: [gitops-practice, kubernetes-manifest, cd-pipeline]
 ---
 
 # Secrets Management
@@ -50,141 +51,102 @@ These are not best practices — they are absolute requirements. Violations are 
 
 ---
 
-## HashiCorp Vault as the Secrets Store
+## Two-Layer Secrets Architecture
 
-Vault is the primary secrets store for all non-certificate secrets. Vault provides:
-- **KV v2 secrets engine:** Versioned key-value storage for static secrets
-- **Database secrets engine:** Dynamic database credentials generated on demand, auto-revoked after a configurable TTL
-- **PKI secrets engine:** Certificate authority for issuing short-lived TLS certificates
-- **Transit secrets engine:** Encryption-as-a-service — services send plaintext, Vault returns ciphertext (the key never leaves Vault)
-- **Audit log:** All secret accesses logged with identity and timestamp
+Secrets flow through two complementary, non-competing layers. Each solves a distinct problem:
 
-### Vault Policy (Principle of Least Privilege)
+| Layer | Problem solved | Mechanism | When active |
+|---|---|---|---|
+| **Bootstrap / GitOps layer** | Secrets cannot be committed to Git as plaintext; the environment repo must contain everything needed to bootstrap a namespace, including initial Kubernetes Secrets | SOPS or Sealed Secrets encrypts Secret manifests; only the authorised controller can decrypt | Cluster bootstrap, namespace provisioning, Vault Agent setup |
+| **Runtime layer** | Running pods need short-lived, auto-rotating credentials; injection must be zero-touch after bootstrap | Vault Agent sidecar fetches dynamic credentials from Vault and writes them to an in-memory volume | Every pod start and on credential TTL refresh |
 
-```hcl
-# Policy for the classification-service
-path "secret/data/tenant/+/classification-service/*" {
-  capabilities = ["read"]
-}
-
-path "database/creds/classification-service-role" {
-  capabilities = ["read"]
-}
-
-# No access to other services' secrets
-path "secret/data/tenant/+/other-service/*" {
-  capabilities = []
-}
-```
-
-Each service has its own Vault policy. Services cannot read each other's secrets.
+The runtime layer depends on the bootstrap layer: Vault Agent cannot contact Vault without its own Vault address and initial token, both of which arrive via the bootstrap layer.
 
 ---
 
-## Runtime Injection in Kubernetes
+## GitOps Bootstrap Layer: SOPS vs Sealed Secrets
 
-Secrets are injected at runtime — never at build time. Two approaches:
+The environment repository must contain encrypted Secret manifests. Two tools provide this. Criteria for choosing:
 
-### Approach 1: Vault Agent Sidecar
+| Criterion | SOPS + age | Sealed Secrets |
+|---|---|---|
+| Decryption dependency | External key provider (age private key, AWS KMS, GCP KMS) — independent of any cluster | In-cluster controller's private key — tied to one specific cluster |
+| Cluster replaceable? | Yes — re-bootstrap by importing the same age key | No — replacing the cluster requires re-sealing every secret against the new controller's public key |
+| Flux native support | Yes — `kustomize-controller` decrypts SOPS-encrypted fields natively | Via ESO or manual Helm hook; not natively built into Flux reconciliation |
+| Migration / multi-cluster | Straightforward — same SOPS key works across all clusters sharing that key | Complex — each cluster has its own controller key; cross-cluster secrets must be re-encrypted |
+| Per-tenant isolation | Separate age key per tenant — tenant cannot decrypt another tenant's secrets | Separate controller per cluster — isolation is cluster-scoped |
 
-The Vault Agent runs as a sidecar container in the pod. It authenticates to Vault using the pod's Kubernetes ServiceAccount, fetches secrets, writes them to a shared in-memory volume, and refreshes them before they expire.
+**Decision for this repo:** Use SOPS + age for all per-tenant cluster stamps. Per-tenant clusters are replaceable stamps; tying decryption to cluster identity creates a key migration problem on cluster recreation. Vault Agent remains the runtime layer.
 
-```yaml
-annotations:
-  vault.hashicorp.com/agent-inject: "true"
-  vault.hashicorp.com/role: "classification-service"
-  vault.hashicorp.com/agent-inject-secret-db: "database/creds/classification-service-role"
-  vault.hashicorp.com/agent-inject-template-db: |
-    {{- with secret "database/creds/classification-service-role" -}}
-    postgresql://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/classification_db
-    {{- end }}
-```
+**How SOPS bootstrap works:**
 
-The application reads the secret from the mounted file — never from an environment variable.
+1. Generate an age key pair: `age-keygen -o age.key`
+2. Store the age private key as a Kubernetes Secret in the cluster (the one manual step; done out-of-band during cluster bootstrap)
+3. Configure Flux `kustomize-controller` to use the age key for SOPS decryption
+4. Encrypt Secret manifests with `sops --encrypt --age <public-key> secret.yaml > secret.enc.yaml`
+5. Commit `secret.enc.yaml` to the environment repo; Flux decrypts at apply time
 
-### Approach 2: External Secrets Operator
+**Sealed Secrets** is the alternative when the cluster is long-lived and non-replaceable: `kubeseal` encrypts a Kubernetes Secret against the in-cluster controller's public key, producing a `SealedSecret` CRD that only that cluster's controller can decrypt. The encrypted manifest is safe to commit; the risk is that cluster recreation or migration requires re-sealing every secret.
 
-The External Secrets Operator runs as a Kubernetes controller. It syncs secrets from Vault into Kubernetes Secrets (encrypted at rest in etcd). The application consumes the Kubernetes Secret as a mounted volume.
+Full SOPS configuration examples, Flux `kustomize-controller` SOPS setup, and a Sealed Secrets workflow are in `references/gitops-secrets-patterns.md`.
 
-**Recommendation:** Vault Agent Sidecar for dynamic secrets (database credentials). External Secrets Operator for static secrets (API keys) that change infrequently.
+---
+
+## Runtime Layer: HashiCorp Vault and Vault Agent
+
+Vault is the primary secrets store for all non-certificate runtime secrets. It provides:
+- **KV v2 secrets engine:** Versioned key-value storage for static secrets (API keys, config values)
+- **Database secrets engine:** Dynamic database credentials generated on demand, auto-revoked after configurable TTL
+- **PKI secrets engine:** Certificate authority for issuing short-lived TLS certificates
+- **Transit secrets engine:** Encryption-as-a-service — services send plaintext, Vault returns ciphertext
+- **Audit log:** All secret accesses logged with identity and timestamp
+
+Each service has its own Vault policy following the Principle of Least Privilege. Services cannot read each other's secrets.
+
+**Vault Agent Sidecar** authenticates to Vault using the pod's Kubernetes ServiceAccount, fetches secrets, writes them to a shared in-memory volume, and refreshes them before TTL expires. The application reads the secret from the mounted file — never from an environment variable.
+
+**External Secrets Operator** syncs secrets from Vault into Kubernetes Secrets (encrypted at rest in etcd). Use for static secrets (API keys) that change infrequently; use Vault Agent Sidecar for dynamic secrets (database credentials).
+
+Full Vault policy HCL, Vault Agent sidecar YAML annotations, and ESO CRD examples are in `references/gitops-secrets-patterns.md`.
 
 ---
 
 ## Go Pattern: Reading Secrets at Runtime
 
-```go
-// Read database credentials from the Vault Agent injected file
-func loadDatabaseURL() (string, error) {
-    path := os.Getenv("DB_CREDENTIALS_FILE") // path to Vault Agent output file
-    if path == "" {
-        path = "/vault/secrets/db"
-    }
-    data, err := os.ReadFile(path)
-    if err != nil {
-        return "", fmt.Errorf("reading database credentials: %w", err)
-    }
-    return strings.TrimSpace(string(data)), nil
-}
-
-// The URL is read at startup and when the Vault Agent refreshes the file
-// The application watches the file for changes using fsnotify
-```
-
-**Rules for Go secret consumption:**
-- Never assign a secret to a package-level variable — it lives for the process lifetime and defeats rotation: the Vault Agent refreshes the file, but the stale copy in the variable is what the code keeps using
+Rules for Go secret consumption:
+- Never assign a secret to a package-level variable — it lives for the process lifetime and defeats rotation
 - Never log a secret, even at debug level — and never log the connection URL, which embeds the password
-- Secrets should be read from files (Vault Agent output), not environment variables
-- Wrap secrets in a redaction type so every formatting and logging path is covered:
+- Read secrets from files (Vault Agent output), not environment variables
+- Wrap secrets in a redaction type that covers `String()`, `GoString()`, `slog.LogValue()`, and `MarshalJSON()` — `fmt.Stringer` alone does not cover `%#v`, structured log fields, or JSON marshalling
+- `Reveal()` is the single, greppable escape hatch for the moment of use
 
-```go
-type Secret string
-
-func (Secret) String() string       { return "[REDACTED]" } // %s, %v
-func (Secret) GoString() string     { return "[REDACTED]" } // %#v
-func (s Secret) LogValue() slog.Value { return slog.StringValue("[REDACTED]") } // slog
-func (Secret) MarshalJSON() ([]byte, error) { return []byte(`"[REDACTED]"`), nil }
-
-// Reveal is the single, greppable escape hatch for the moment of use
-func (s Secret) Reveal() string { return string(s) }
-```
-
-`fmt.Stringer` alone is not enough — `%#v`, `slog` structured fields, and JSON marshalling each bypass `String()` unless covered explicitly.
+Full `Secret` type implementation and `loadDatabaseURL` pattern are in `references/gitops-secrets-patterns.md`.
 
 ---
 
 ## Secret Rotation
 
-| Secret | Rotation mechanism | Zero-downtime rotation |
+| Secret | Rotation mechanism | Zero-downtime |
 |---|---|---|
-| Database passwords | Vault dynamic secrets — each connection gets unique credentials with TTL | Yes — old credentials valid until TTL expires |
-| JWT signing keys | Vault PKI; new key issued; `kid` header enables graceful rotation | Yes — old tokens valid until expiry; new tokens use new key |
-| External API keys | Manual rotation via Vault KV v2 versioning; rollback available | Yes — version N and N-1 both readable during transition |
-| TLS certificates | Vault PKI auto-rotation or Linkerd auto-rotation | Yes — certificate rotation handled by the service mesh |
+| Database passwords | Vault dynamic secrets — each connection gets unique credentials with TTL | Yes |
+| JWT signing keys | Vault PKI; `kid` header enables graceful rotation | Yes |
+| External API keys | Vault KV v2 versioning; rollback to version N-1 available | Yes |
+| TLS certificates | Vault PKI auto-rotation or Linkerd auto-rotation | Yes |
+| SOPS age key | Re-encrypt all secrets with new age key; rotate the in-cluster Secret holding the private key | Yes, if re-encryption completes before old key is removed |
 
-**Rotation test:** Rotation must be tested in a non-production environment. A rotation that brings down a production service has failed its design goal.
+**Rotation test:** Every rotation mechanism must be validated in a non-production environment. Rotation that causes downtime has failed its design goal.
 
 ---
 
 ## Secret Scanning in CI
 
-A pre-commit hook and a CI job scan for secrets in every commit:
-
-```yaml
-# GitHub Actions job
-- name: Secret scanning
-  uses: trufflesecurity/trufflehog@main
-  with:
-    path: ./
-    base: ${{ github.event.repository.default_branch }}
-    head: HEAD
-    extra_args: --only-verified
-```
-
-If a secret is detected in a commit:
+Run TruffleHog on every commit with `--only-verified` to avoid false positives. If a secret is detected:
 1. The CI pipeline fails immediately
 2. The secret is rotated immediately (treat as compromised)
-3. The commit history is cleaned (git filter-repo to remove the secret from history)
+3. The commit history is cleaned with `git filter-repo`
 4. The incident is logged in the security incident register
+
+Full CI job YAML is in `references/gitops-secrets-patterns.md`.
 
 ---
 
@@ -193,8 +155,9 @@ If a secret is detected in a commit:
 | Criterion | Pass | Fail |
 |---|---|---|
 | No secrets in source | Secret scanning CI job passes; no secrets in git history | Any secret found in source code or git history |
-| Runtime injection only | All secrets injected via Vault Agent or ESO at pod startup | Secrets in environment variables or ConfigMaps |
-| Least-privilege Vault policies | Each service's policy follows the Principle of Least Privilege; cannot read other services' secrets | Shared Vault policies; wildcard path access |
+| Runtime injection only | All runtime secrets injected via Vault Agent or ESO at pod startup | Secrets in environment variables or ConfigMaps |
+| Bootstrap layer present | GitOps environment repo contains only SOPS-encrypted Secret manifests; no plaintext Secrets committed | Plaintext Kubernetes Secrets in the environment repo |
+| Least-privilege Vault policies | Each service policy follows Principle of Least Privilege; cannot read other services' secrets | Shared policies; wildcard path access |
 | Rotation documented | Every secret type has a rotation period and mechanism | Secrets with no rotation policy |
 | Zero-downtime rotation | Rotation mechanism validated in non-production | Rotation not tested; unknown downtime impact |
 | Secret redaction in logs | All logging of structs containing secrets redacts the secret field | Secret values appearing in application logs |
@@ -203,14 +166,16 @@ If a secret is detected in a commit:
 
 ## Anti-Patterns
 
-- **"Temporary" secrets in code.** A hardcoded test password committed "just to unblock CI" is a real credential in git history forever. There is no temporary tier — the pre-commit scan blocks all of them.
-- **Secrets in environment variables.** Env vars leak through `/proc/<pid>/environ`, crash dumps, child processes, debug endpoints, and `kubectl describe pod`. File-mounted injection exists precisely to avoid this surface.
-- **Rotating by redeploying.** Treating "rotate the database password" as "schedule a maintenance window" means rotation never happens. If rotation is not zero-downtime, the rotation period silently becomes never.
-- **One Vault policy to rule them all.** A shared policy with `secret/data/*` read access turns a single compromised pod into a compromise of every service's secrets. One service, one Kubernetes ServiceAccount, one Vault role, one policy.
-- **Same secrets in CI and production.** A CI credential leak (fork PRs, log masking failures) must never be a production incident. CI uses distinct, low-privilege credentials against non-production systems.
-- **Deleting the leaked commit and moving on.** Removing a secret from HEAD does not remove it from history, forks, or clones. A committed secret is a compromised secret: rotate first, then clean history with `git filter-repo`.
-- **Logging the connection string.** `log.Printf("connecting to %s", dbURL)` at startup ships the password to the log aggregator. Log the host and database name, never the URL.
-- **Long-lived static credentials where dynamic ones exist.** Using a static database password from KV v2 when the database secrets engine can issue per-service, auto-expiring credentials. Static is the fallback, not the default.
+- **"Temporary" secrets in code.** A hardcoded test password committed "just to unblock CI" is a real credential in git history forever.
+- **Secrets in environment variables.** Env vars leak through `/proc/<pid>/environ`, crash dumps, child processes, debug endpoints, and `kubectl describe pod`.
+- **Plaintext Secrets in the environment repo.** A GitOps repo with plaintext Kubernetes Secret manifests is a secret store with no access control — anyone who can read the repo can read all credentials.
+- **Sealed Secrets on replaceable clusters.** Tying decryption to a cluster's private key makes cluster recreation a manual re-encryption operation for every secret. Use SOPS for ephemeral or replaceable clusters.
+- **SOPS age key without backup.** The age private key stored in the cluster is the sole decryption capability. Losing it means all bootstrapped secrets become permanently inaccessible. Back up the key to a secure offline location before first use.
+- **Rotating by redeploying.** If rotation requires a maintenance window, it will never happen on the prescribed schedule.
+- **One Vault policy to rule them all.** A shared policy with `secret/data/*` read access turns a single compromised pod into a full secrets compromise.
+- **Same secrets in CI and production.** A CI credential leak must never be a production incident.
+- **Logging the connection string.** `log.Printf("connecting to %s", dbURL)` ships the password to the log aggregator.
+- **Long-lived static credentials where dynamic ones exist.** Use Vault dynamic secrets for databases; static KV v2 is the fallback, not the default.
 
 ---
 
@@ -231,6 +196,9 @@ owner: security-architect
 ## Secret Inventory
 | Secret | Type | Storage | Access policy | Rotation period | Rotation mechanism |
 |---|---|---|---|---|---|
+
+## GitOps Bootstrap Layer
+[SOPS + age key setup; encrypted Secret manifests in environment repo]
 
 ## Vault Policy Definitions
 [HCL policy per service]
