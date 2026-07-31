@@ -1,173 +1,91 @@
 ---
 name: data-quality-rules
 description: >
-  Teaches how to define and enforce data quality rules across the pipeline — the
-  six data quality dimensions (completeness, accuracy, consistency, timeliness,
-  validity, uniqueness) each with a concrete rule pattern, extraction confidence
-  thresholds tied to `data-classification`'s propagation model, gate placement in
-  the pipeline (reject/quarantine/pass with confidence-band routing), the
-  distinction between a Dead Letter Queue and a quarantine store, and how data
-  quality metrics feed `metrics-instrumentation-plan`. Used by the data-engineer
-  during Data.
-version: 1.0.0
+  Define data-quality rules for a pipeline or dataset during the Data phase — the
+  six DAMA data-quality dimensions (completeness, accuracy, consistency, timeliness,
+  validity, uniqueness), how to express a checkable rule per dimension against the
+  DataAsset/extracted_entities schema, per-entity-type confidence thresholds, the
+  data-quality metrics and scorecard (per-dimension score, overall score, trending,
+  threshold alerting), and the remediation workflow — quarantine, auto-correct,
+  reject-to-DLQ, alert — implemented in Go at the pipeline boundary. Distinguishes a
+  Dead Letter Queue from a quarantine store. Used by the data-engineer.
+version: 2.0.0
 phase: data
 owner: data-engineer
 created: 2026-07-20
-tags: [data, analytics, data-quality, confidence, validation, quarantine, dlq]
+tags: [data, data-quality, dama, completeness, accuracy, validation, remediation, go]
+related: [data-classification, data-pipeline-design, data-pipeline-implementation, metrics-instrumentation-plan, data-lineage-design]
 ---
 
 # Data Quality Rules
 
 ## Purpose
 
-Data classification (`data-classification`) tells you how sensitive a piece of data is. Data quality tells you whether you can trust it at all — whether it's complete, accurate, consistent, timely, valid, and not duplicated. In a compliance product, bad data quality is not a cosmetic problem: a compliance finding built on a low-confidence extraction, a duplicated entity, or a stale sensitivity level is a wrong finding presented as evidence.
+Data classification (`data-classification`) tells you how sensitive a piece of data is. Data quality tells you whether you can trust it at all. In a compliance product, bad data quality is not cosmetic: a finding built on a low-confidence extraction, a duplicated entity, or a stale sensitivity level is a wrong finding presented as evidence.
 
-This skill defines the concrete rules that check data quality at each stage of the pipeline, sets the extraction confidence thresholds that decide whether automated output can be trusted, and places quality gates in the pipeline topology the data-architect designed (`data-pipeline-design`). It is implemented as part of the pipeline stage workers (`data-pipeline-implementation`) and its pass/fail rates feed the quality metrics tracked in `metrics-instrumentation-plan`.
-
----
-
-## The Six Data Quality Dimensions
-
-Each dimension gets a concrete, checkable rule — not a vague aspiration. "Data should be accurate" is not a rule; a rule is something a `CHECK` constraint, a validation function, or a pipeline gate can evaluate.
-
-| Dimension | Question | Rule pattern | Example check |
-|---|---|---|---|
-| **Completeness** | Is required data present? | Required-field non-null check | `data_assets.source_id IS NOT NULL` — every asset must trace to a source |
-| **Accuracy** | Does the data correctly represent reality? | Confidence-scored comparison against ground truth or a trusted source | Extraction confidence score ≥ threshold for the entity type (see below) |
-| **Consistency** | Does the data agree with itself and related data? | Cross-field / cross-table invariant check | An asset's `sensitivity_level` is never lower than the max of its contained entities' levels (see `data-classification`'s propagation rule) |
-| **Timeliness** | Is the data current enough to be useful? | Age/staleness threshold | `data_assets.last_scanned_at` within the source's configured scan interval, or the asset is flagged stale |
-| **Validity** | Does the data conform to its expected format/domain? | Schema/format/enum constraint | `sensitivity_level IN ('Public','Internal','Confidential','Restricted')`; `email` field matches RFC 5322 shape before being trusted as a detected entity |
-| **Uniqueness** | Is the same real-world thing represented once? | Deduplication key / natural-key uniqueness constraint | No two `Entity` rows for the same `(data_asset_id, entity_type, normalized_value)` — see `lineage_edges`' natural-key pattern in `data-lineage-design` for the same idea applied to lineage |
-
-Each rule is implemented as close to the data as possible: a PostgreSQL constraint where the invariant is absolute (validity, some uniqueness), and a pipeline-stage check where the judgment is probabilistic (accuracy, timeliness, completeness that depends on upstream state).
-
-```sql
--- Validity: sensitivity level domain constraint
-ALTER TABLE data_assets
-  ADD CONSTRAINT valid_sensitivity_level
-  CHECK (sensitivity_level IN ('Public','Internal','Confidential','Restricted'));
-
--- Uniqueness: one entity per (asset, type, normalized value)
-ALTER TABLE extracted_entities
-  ADD CONSTRAINT uniq_entity_per_asset
-  UNIQUE (data_asset_id, entity_type, normalized_value);
-
--- Consistency: an asset's stored level is never below its computed minimum
--- (enforced in application logic at write time, not a CHECK constraint,
--- because the computation spans a join — see the propagation rule)
-```
+This skill defines the concrete rules that check quality at each pipeline stage, computes a scorecard that tracks trustworthiness *over time*, and routes a failing record to the right remediation path. Rules attach to the six DAMA data-quality dimensions; gates sit at the stage boundaries the data-architect designed (`data-pipeline-design`); pass/fail rates feed `metrics-instrumentation-plan`.
 
 ---
 
-## Extraction Confidence Thresholds
+## The Six DAMA Data-Quality Dimensions
 
-Automated extraction (entity detection, classification) produces a confidence score, not certainty. `data-classification` already established the core rule: **below a configured threshold, the result is not auto-applied — it is flagged for review.** This skill makes that threshold concrete and ties it to specific entity-type risk.
+DAMA-DMBOK's Data Quality Management KA names six independently measurable dimensions. Each gets a concrete, checkable rule — "data should be accurate" is not a rule; a rule is something a `CHECK` constraint, a validation function, or a pipeline gate can evaluate.
 
-| Entity type / signal | Confidence threshold | Below threshold → |
+| Dimension | One-line definition | Rule attaches as |
 |---|---|---|
-| `EMAIL`, `PHONE`, `PERSON_NAME` (general PII) | ≥ 0.85 | Flag for steward review; provisional level not auto-applied |
-| `SSN`, `NATIONAL_ID`, `PASSPORT` (strong identifiers) | ≥ 0.90 (higher bar — false negative here is a compliance miss, false positive is costly review load) | Flag for steward review |
-| `HEALTH_TERM`, `DIAGNOSIS` (special-category) | ≥ 0.90 | Flag for steward review |
-| Document-level classification (aggregate of contained entities) | Inherits the lowest confidence of any contributing entity that drove the level | Asset-level flag for review |
+| **Completeness** | Is all required data present? | Required-field non-null check on the DataAsset |
+| **Accuracy** | Does the data correctly represent reality? | Confidence-scored comparison against a trusted source / threshold |
+| **Consistency** | Does the data agree with itself and related data? | Cross-field / cross-table invariant |
+| **Timeliness** | Is the data current enough to be useful? | Age / staleness threshold |
+| **Validity** | Does the data conform to its format/domain? | Schema / format / enum constraint |
+| **Uniqueness** | Is the same real-world thing represented once? | Deduplication / natural-key uniqueness constraint |
 
-The threshold is not a single global number — it is set per entity-type by the risk of getting it wrong, exactly as `data-classification`'s detection table implies. A data-quality rule that applies one blanket confidence threshold to every entity type either over-flags low-risk types (wasting steward time) or under-flags high-risk ones (the actual compliance failure mode).
+**How a rule attaches to a dimension.** Every rule declares the one dimension it covers. This is not bookkeeping: naming the dimension makes gaps visible — a table can look "validated" while having no uniqueness or timeliness rule at all. A rule that cannot name its dimension is a smell. Implement each rule as close to the data as its certainty allows: a PostgreSQL constraint where the invariant is absolute (validity, hard uniqueness), a pipeline-stage check where the judgment is probabilistic (accuracy, timeliness, completeness that depends on upstream state).
 
-**Thresholds are configuration, not code.** They are tuned over time as extraction models improve — store them in a lookup table or config, not a hardcoded constant, so a threshold change doesn't require a pipeline redeploy.
+Per-dimension depth — concrete rules on this repo's schema, thresholds, and DAMA grounding: **`references/dq-dimensions-catalogue.md`**.
+
+> DAMA's six-dimension model is deliberately fuller than the three-characteristic framing (accuracy, completeness, timeliness) in *Fundamentals of Data Engineering* — keep all six; they catch failure modes the lighter model misses.
 
 ---
 
-## Quality Gate Placement in the Pipeline
+## The Data-Quality Scorecard
 
-Every pipeline stage (from `data-pipeline-design`'s topology) that produces data other stages or humans depend on has a quality gate at its output. The gate has three possible outcomes — never just pass/fail:
+Individual gate outcomes answer "is this record trustworthy right now." They do not answer "is a rule silently degrading." DAMA's Data Quality KA is a continuous cycle, not a one-time gate design: profile, measure continuously, and trend a **scorecard** so a slow decline (e.g. falling OCR confidence on scanned PDFs) is caught as a *trend*, not by one analyst noticing.
 
-| Outcome | Meaning | What happens next |
+The scorecard is a recurring artifact, distinct from `data-storytelling`'s one-off narrative. It reports, per dimension and overall, the pass rate over a rolling window, and it alerts when a dimension drops below its configured threshold.
+
+- **Per-dimension score** — the fraction of evaluated records passing that dimension's rules in the window.
+- **Overall score** — a weighted roll-up across the six dimensions (weights reflect compliance risk, not equal thirds).
+- **Trend + alert** — a dimension falling below threshold, or trending down across windows, fires an alert.
+
+Computation formulas, the scorecard table shape, trending, and threshold-alerting mechanics: **`references/dq-metrics-and-scorecard.md`**.
+
+---
+
+## The Remediation Decision
+
+When a record fails a rule, the gate does not simply "fail" it. It selects one of four remediation paths. Collapsing these into a binary pass/fail is the central anti-pattern — the four paths have different owners and different fixes.
+
+| Path | When to select it | Owner |
 |---|---|---|
-| **Pass** | Meets all quality rules and confidence thresholds for its type | Proceeds to the next pipeline stage normally |
-| **Quarantine** | Fails a quality rule or falls below a confidence threshold, but is not malformed | Routed to a quarantine store for human review; does NOT proceed downstream until resolved |
-| **Reject** | Malformed, undecodable, or violates a hard invariant (e.g., missing `tenant_id`) | Routed to the Dead Letter Queue — this is a processing failure, not a data-quality judgment call |
+| **Quarantine** | Processed successfully, but the *result* fails a quality rule or falls below a confidence threshold; needs a judgment call | Data Steward (`data-classification`) |
+| **Auto-correct** | The failure is deterministically fixable by a known rule (trim, canonicalize, normalize casing, dedupe on natural key) | Automated — no human |
+| **Reject** | Malformed, undecodable, or violates a hard invariant (missing `tenant_id`) — a processing failure, not a quality judgment | Engineering (data-engineer), via DLQ |
+| **Alert** | A rule's failure *rate* crosses a threshold — the individual record's path is orthogonal; this signals a systemic problem | On-call / steward, depending on rule |
 
-```
-                         ┌─ confidence ≥ threshold ──► PASS ──► next stage
-Entity Extraction output ┤
-                         ├─ confidence < threshold ──► QUARANTINE ──► steward review queue
-                         │
-                         └─ undecodable / malformed ──► REJECT ──► DLQ (see data-pipeline-implementation)
-```
+**Selection principle:** try auto-correct first only for failures with a deterministic, lossless fix; never "auto-correct" a probabilistic judgment (that is quarantine). Route malformed input to reject, never quarantine — a steward cannot fix a broken schema. Alert is not exclusive with the other three: a record quarantines *and* contributes to a rate that may alert.
 
-Placing the gate at the stage boundary — not deep inside the next stage — means a downstream consumer never has to re-derive "is this trustworthy." It either received the record because it passed, or it didn't receive it at all.
+**DLQ vs. quarantine** are frequently conflated but have different SLOs, owners, and resolution paths. A DLQ holds the original unprocessable message (engineering fixes the root cause and replays); a quarantine holds the processed output with its quality result attached (a steward confirms/corrects/rejects). A growing DLQ signals a defect (alert on volume); some quarantine rate is normal (alert on *age*).
+
+Full remediation workflow — the quarantine table, the auto-correct rule catalogue, reject-to-DLQ wiring, alerting, and the Go validation implementation at the pipeline boundary: **`references/remediation-and-go.md`**.
 
 ---
 
-## Dead Letter Queue vs. Quarantine
+## Where This Sits
 
-These are frequently conflated but serve different purposes. Getting this distinction right matters because they have different SLOs, different owners, and different resolution paths.
-
-| | Dead Letter Queue (DLQ) | Quarantine |
-|---|---|---|
-| Cause | Processing failure — the message couldn't be handled at all (undecodable, exhausted retries, poison message) | Data quality failure — the message was processed successfully but the *result* doesn't meet a quality bar |
-| What it holds | The original, unprocessed (or unprocessable) message | The processed output, with its quality-check result attached |
-| Who resolves it | Engineering (data-engineer) — usually a bug or an upstream format change | Domain expert (Data Steward, per `data-classification`) — usually a judgment call |
-| Resolution path | Fix the root cause, replay from DLQ (`data-pipeline-design`'s DLQ disposition) | Review, then either confirm/correct and release, or reject permanently |
-| Is it expected? | No — a growing DLQ signals a defect | Yes — some rate of low-confidence extraction is normal and expected, especially for scanned/degraded source documents |
-| Alerting posture | Alert on any sustained growth (`data-pipeline-design`'s DLQ-depth alert) | Alert on queue *age* (items sitting unreviewed too long), not on volume alone |
-
-A quarantined record is not broken — it's a record the automated pipeline correctly declined to trust on its own. Routing a quarantine case to the DLQ (or vice versa) sends it to the wrong owner: an engineer cannot resolve "is this really an SSN," and a steward cannot fix a malformed event schema.
-
----
-
-## Data Quality Metrics Feeding Instrumentation
-
-Every quality gate emits a signal that becomes a product metric, defined fully in `metrics-instrumentation-plan`:
-
-| Signal | Rolls up into |
-|---|---|
-| Pass/quarantine/reject counts per stage | Data quality pass rate (by stage, by entity type) |
-| Confidence score distribution | Extraction-confidence-trend metric (see `metrics-instrumentation-plan`'s worked example) |
-| Quarantine queue age | Review-latency metric — how long low-confidence findings sit before a steward resolves them |
-| Steward override rate (quarantine resolved as "confirm" vs. "correct" vs. "reject") | Model-accuracy proxy — a high correction rate suggests the extraction model itself needs work, not just threshold tuning |
-
-These are **data quality metrics about the pipeline's own trustworthiness**, distinct from the system RED/USE metrics of `opentelemetry-instrumentation` (request rate, error rate, latency) and distinct from end-user product metrics like activation or gap-closure rate. A data quality metric answers "can I trust what came out of the pipeline," not "is the pipeline infrastructure healthy" or "is the customer succeeding."
-
----
-
-## Worked Example — Entity Extraction Confidence-Band Routing
-
-A scanned (image-based) PDF is processed by the Entity Extraction stage. Four entities are detected:
-
-```
-Entity 1: EMAIL "j.smith@acme.com"        confidence 0.97
-Entity 2: PERSON_NAME "J. Smith"          confidence 0.91
-Entity 3: SSN "0XX-XX-XXXX" (masked)      confidence 0.62
-Entity 4: PHONE "+1-555-..."              confidence 0.79
-
-Routing decision (per the threshold table):
-  Entity 1 (EMAIL, threshold 0.85):     0.97 ≥ 0.85  → PASS
-  Entity 2 (PERSON_NAME, threshold 0.85): 0.91 ≥ 0.85  → PASS
-  Entity 3 (SSN, threshold 0.90):       0.62 < 0.90  → QUARANTINE
-  Entity 4 (PHONE, threshold 0.85):     0.79 < 0.85  → QUARANTINE
-
-Document-level classification:
-  Passed entities alone would imply: Confidential (PII: email, name)
-  Quarantined entities, if confirmed, would imply: Restricted (strong identifier)
-  → provisional level = Confidential (from passed entities only)
-  → asset flagged: "pending review — possible SSN and phone detected
-    at low confidence, may escalate to Restricted"
-
-This is exactly data-classification's rule: automated detection only
-ever escalates on confirmed evidence, and a below-threshold signal
-does not silently set (or silently withhold) the higher level — it
-triggers review, which is the quarantine path this skill defines the
-mechanics of.
-
-Steward reviews the quarantined entities:
-  Entity 3 confirmed as a real SSN     → manual_override_level = Restricted
-  Entity 4 confirmed as a real phone   → contributes to Confidential (already covered)
-  → DataAssetReclassified emitted: Confidential → Restricted
-  → quarantine queue entry closed, resolution = "confirmed"
-  → this resolution counts toward the model-accuracy proxy metric
-```
-
-Nothing was silently dropped, nothing was silently auto-escalated past its confidence, and the eventual Restricted classification is fully traceable to an audited human decision layered on top of the automated evidence — satisfying both this skill's gate-placement rule and `data-classification`'s propagation rule.
+- Gates go at each stage *output* (`data-pipeline-design`'s topology), so a downstream consumer never re-derives "is this trustworthy" — it received the record because it passed, or not at all.
+- Confidence thresholds are **per entity-type risk**, not one blanket number, and are **configuration, not code** (tunable without a redeploy) — see `data-classification`'s propagation model and `references/dq-dimensions-catalogue.md`.
+- Every gate outcome and scorecard signal rolls up into a named metric in `metrics-instrumentation-plan`. An unmeasured gate can degrade for months unnoticed.
 
 ---
 
@@ -175,25 +93,25 @@ Nothing was silently dropped, nothing was silently auto-escalated past its confi
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| All six dimensions covered | Completeness, accuracy, consistency, timeliness, validity, uniqueness each have at least one concrete rule | A dimension left as an aspiration with no checkable rule |
-| Thresholds per entity-type risk | Confidence thresholds vary by the cost of being wrong for that type | One blanket threshold for all extraction |
-| Three-way gate outcome | Every gate distinguishes pass / quarantine / reject | Gates that only pass/fail, conflating processing failure with quality judgment |
-| DLQ vs. quarantine separated | Different stores, different owners, different resolution paths | Quality failures and processing failures routed to the same queue |
-| Thresholds configurable | Stored as data/config, not hardcoded | Threshold buried in code, requiring a redeploy to tune |
-| Metrics wired to instrumentation | Every gate outcome feeds a named metric in `metrics-instrumentation-plan` | Quality gates with no observable pass/fail rate |
-| Consistent with data-classification | Rules never silently escalate or de-escalate outside the documented propagation model | A quality rule that bypasses the manual-override/escalation rules already established |
+| All six dimensions covered | Each of the six has ≥1 concrete, checkable rule | A dimension left as an aspiration |
+| Rule names its dimension | Every rule declares the one dimension it covers | Undifferentiated "data validation" |
+| Four-way remediation | Gates select quarantine / auto-correct / reject / alert | Binary pass/fail, conflating processing failure with quality judgment |
+| DLQ vs. quarantine separated | Different stores, owners, resolution paths | Both failure types in one queue |
+| Thresholds per entity-type risk, configurable | Vary by cost-of-being-wrong; stored as data | One blanket hardcoded threshold |
+| Scorecard trends over time | Pass rate per dimension trended on a rolling window with alerting | Only point-in-time gate outcomes |
+| Metrics wired to instrumentation | Every outcome feeds a named metric | Gates with no observable rate |
 
 ---
 
 ## Anti-Patterns
 
-- **The blanket confidence threshold.** One number applied to every entity type regardless of the cost of a false negative. An SSN and a phone number are not equally risky to get wrong — the threshold reflects that.
-- **Binary pass/fail gates.** Collapsing "this is malformed" and "this is probably wrong" into one failure bucket. They have different owners and different fixes; conflating them sends quarantine cases to engineers who can't judge them and DLQ cases to stewards who can't fix them.
-- **Silent auto-escalation on partial evidence.** Computing a document's classification level as if quarantined (unconfirmed) entities were already confirmed. Only passed, confidence-cleared entities feed the provisional level; quarantined entities feed the review flag, not the level itself.
-- **Quarantine as a black hole.** A quarantine queue nobody ages out or alerts on. Unlike a DLQ (alert on volume), quarantine is alerted on *age* — a growing backlog of unreviewed low-confidence findings is a steward-capacity problem, not a pipeline bug, but it is still a problem that needs visibility.
-- **Hardcoded thresholds.** Baking a confidence cutoff into application code so that tuning it requires a full deploy cycle, discouraging the iteration that improving extraction models actually needs.
-- **Quality metrics that don't roll up.** Emitting pass/fail counts from a gate with no defined path into a named product metric (`metrics-instrumentation-plan`). An unmeasured quality gate can silently degrade for months with nobody noticing the trend.
-- **Dimension-blind validation.** Writing "data validation" as one undifferentiated check instead of naming which of the six dimensions it covers. This makes gaps invisible — a table can look "validated" while having no uniqueness or timeliness check at all.
+- **The blanket confidence threshold.** One number for every entity type — an SSN and a phone are not equally risky to get wrong.
+- **Binary pass/fail gates.** Collapsing "malformed" and "probably wrong" into one bucket sends quarantine cases to engineers who can't judge them and DLQ cases to stewards who can't fix them.
+- **Auto-correcting a judgment call.** "Correcting" a probabilistic extraction instead of quarantining it silently manufactures wrong evidence.
+- **Quarantine as a black hole.** A queue nobody ages out or alerts on — quarantine is alerted on *age*, not volume.
+- **Point-in-time only, no scorecard.** Correct per-record gates with no trend artifact; a rule degrades slowly and nobody sees it.
+- **Hardcoded thresholds.** Baking a cutoff into code so tuning needs a full deploy, discouraging the iteration extraction models need.
+- **Dimension-blind validation.** One undifferentiated check that never names which dimension it covers, making gaps invisible.
 
 ---
 
@@ -213,21 +131,16 @@ owner: data-engineer
 
 ## Dimension Rules
 | Dimension | Rule | Implementation (constraint / stage check) |
-|---|---|---|
 
 ## Confidence Thresholds
-| Entity type / signal | Threshold | Below-threshold outcome |
-|---|---|---|
+| Entity type / signal | Threshold | Below-threshold remediation path |
 
-## Gate Placement
-| Pipeline stage | Gate outcome options | Downstream routing |
-|---|---|---|
+## Scorecard
+| Dimension | Weight | Window | Pass-rate | Alert threshold |
 
-## DLQ vs. Quarantine
-| Store | Cause | Owner | Resolution path | Alerting posture |
-|---|---|---|---|---|
+## Remediation Routing
+| Failure kind | Path (quarantine/correct/reject/alert) | Store | Owner |
 
 ## Metrics Feed
 | Gate signal | Metric (see metrics-instrumentation-plan) |
-|---|---|
 ```
