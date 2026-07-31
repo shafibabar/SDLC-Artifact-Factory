@@ -1,165 +1,167 @@
 ---
 name: epic-definition
 description: >
-  Teaches how to define epics — the large, outcome-oriented units of work that
-  sit between the impact map and the user story backlog. Covers the epic format,
-  what makes an epic well-scoped (vs too large or too small), the epic hypothesis
-  structure, and how epics decompose into user stories. Used by the
-  requirements-analyst agent during the Ideate phase, after impact mapping.
-version: 1.1.0
+  Define an Epic — a large body of work that delivers a coherent outcome and
+  decomposes into multiple user stories. Covers the epic format and its fields,
+  epic-level acceptance criteria versus story-level detail, the theme/epic/story/task
+  hierarchy, the sizing signals that mark work as epic-scale (too big for one sprint),
+  and the decomposition/splitting techniques (by workflow step, by business rule, by
+  user role, by happy/edge path, verb-before-noun, SPIDR) that break an epic into
+  INVEST-sized stories. Fires when structuring a feature area before story-level detail,
+  deciding epic vs story vs theme, or splitting an oversized epic. Used by the
+  requirements-analyst during Ideate, after impact mapping and before user-story-writing.
+version: 2.0.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, epic, backlog, decomposition, product-discovery]
+tags: [ideate, requirements, epic, story-decomposition, acceptance-criteria, agile]
+related: [user-story-writing, acceptance-criteria, impact-mapping, story-mapping, moscow-prioritization, glossary-management, methodology-review]
 ---
 
 # Epic Definition
 
-## Purpose
+## What an Epic Is
 
 An epic is a large unit of product work that:
-- Delivers a meaningful outcome to a user or to the business
-- Is too large to complete in a single sprint or iteration
-- Decomposes into multiple user stories, each of which can be completed independently
 
-Epics bridge the gap between impact map deliverables (which are high-level) and user stories (which are granular and immediately implementable). An epic answers: **what is the outcome we are trying to deliver, and roughly what will be involved?**
+- Delivers a **coherent outcome** to a user or the business — describable as one capability
+- Is **too big to finish in a single sprint or iteration** (the primary sizing signal)
+- **Decomposes into 3–10 user stories**, each independently completable and INVEST-sized
 
----
+Epics bridge impact-map deliverables (high-level WHAT) and user stories (granular, immediately
+implementable). An epic answers: *what outcome are we delivering, and roughly what is involved?*
 
-## What Makes a Good Epic
+### The Cohn divergence — read this before citing a source
 
-A well-scoped epic has all five properties:
-
-| Property | Description |
-|---|---|
-| **Outcome-oriented** | Defined by the outcome it delivers, not the features it includes |
-| **Traceable** | Linked to one or more WHAT deliverables in the impact map, which in turn traces to a business goal |
-| **Estimable (in relative terms)** | The team can form a rough view of its size without knowing every implementation detail |
-| **Decomposable** | Can be split into 3-10 user stories without losing coherence |
-| **Hypothesis-testable** | Has a stated hypothesis: if we build this, we believe [behaviour change] will occur, which will advance [business goal] |
+In Mike Cohn's *User Stories Applied*, an "epic" is nothing more than **a story too big to plan
+into an iteration yet** — no hypothesis, no OKR linkage, no Bounded Context tag. This repo's epic
+construct (outcome hypothesis + business-goal trace + Bounded Context) is an **intentional
+Lean-Startup-style layering on top of Cohn's simpler idea**, added for product-discovery rigor —
+not "what Cohn calls an epic." State this divergence rather than attribute the hypothesis/OKR
+apparatus to Cohn. Likewise, Jeff Patton's *User Story Mapping* has no "epic" at all — its
+**backbone tasks** are the closest equivalent (the pre-decomposition form of an epic).
 
 ---
 
-## Epic Size Signals
+## Epic vs Story vs Theme vs Task
 
-| Signal | Problem | Resolution |
+| Level | Is | Sizing | Owns |
+|---|---|---|---|
+| **Theme** | A loose grouping label for related epics | Release / roadmap scale | Reporting only — no acceptance criteria |
+| **Epic** | One coherent outcome, too big for a sprint | Multiple sprints | Epic-level (high-level) acceptance criteria |
+| **Story** | One user-facing outcome, fits in a sprint | Days | Story-level Given/When/Then criteria |
+| **Task** | A technical step inside a story | Hours | No independent user value |
+
+Decide by the sizing signals below — never by gut feel. The full hierarchy, the fields of the epic
+artifact, and the epic-vs-story acceptance-criteria rule live in
+`references/epic-format-and-criteria.md`. The splitting toolkit and a worked repo decomposition live
+in `references/decomposition-techniques.md`.
+
+---
+
+## Sizing Signals — is this an epic, a story, or a theme?
+
+| Signal | Verdict | Action |
 |---|---|---|
-| Epic takes longer than a quarter | Too large | Split into multiple epics by outcome or user segment |
-| Epic contains a single user story | Too small | Promote the story to a standalone requirement; no epic needed |
-| Epic's "done" state cannot be described | Poorly scoped | Rewrite starting from the outcome, not the features |
-| Epic spans multiple Bounded Contexts | Architectural concern | Flag for domain-modeler and enterprise-architect; may indicate a missing Bounded Context |
+| Fits comfortably in one sprint, one clear "done" | **Story** | Write it directly with `user-story-writing` — no epic needed |
+| Too big for one sprint; one coherent outcome; splits into 3–10 stories | **Epic** | Define the epic here, then decompose |
+| Cannot be finished in a quarter | **Too large** — split into multiple epics | Split by outcome or user segment |
+| Contains exactly one story | **Not an epic** | Promote the story to a standalone requirement |
+| "Done" state is indistinguishable from the whole product | **Everything epic** — split | Cut by outcome until each epic can independently succeed or fail |
+| A grouping of several epics for a release | **Theme** | Use as a reporting label only |
+| Spans multiple Bounded Contexts | **Architectural concern** | Flag for domain-modeler; may indicate a missing Bounded Context |
+
+Fuller sizing guidance and the theme/epic/story/task hierarchy: `references/epic-format-and-criteria.md`.
 
 ---
 
-## Epic Format
+## Epic Format (fields)
 
-```
-EPIC-[ID]: [Short title — outcome phrase, not feature name]
+Name the epic after the **outcome**, never a feature or component. The epic artifact carries: an
+outcome statement (`As a result of this epic, [actor] will be able to [outcome]`), a falsifiable
+**hypothesis**, a business-goal link (OKR KR / impact-map goal), the impact-map deliverable(s) it
+implements, personas affected, the primary Bounded Context, **epic-level acceptance criteria**, a
+**decomposition** (story titles only), MoSCoW priority, and a relative size (S/M/L/XL).
 
-As a result of this epic, [actor] will be able to [outcome].
+The complete annotated template, a worked example, and the `epic-list` output format are in
+`references/epic-format-and-criteria.md`.
 
-Hypothesis: If we [build this capability], we believe [this actor behaviour will change],
-            which will contribute to [business goal or OKR KR].
-
-Business Goal Link: [OKR KR or impact map goal]
-Impact Map Link:    [WHAT deliverable(s) this epic implements]
-Personas affected:  [Which personas this epic serves]
-Bounded Context:    [Which domain this epic primarily belongs to — for handoff to domain-modeler]
-
-Acceptance Criteria (epic level — high-level only; detailed criteria live on stories):
-- [ ] [High-level condition that must be true when this epic is complete]
-- [ ] [...]
-
-Decomposition (user stories — titles only at epic definition stage):
-- US-001: [Story title]
-- US-002: [Story title]
-- ...
-
-Priority: [Must / Should / Could — MoSCoW]
-Estimated size: [S / M / L / XL — relative, not story points]
-Phase: [Which SDLC phase this epic will be implemented in]
-```
-
----
-
-## Epic Naming Convention
-
-Name epics after the outcome they deliver, not the features they contain:
-
-| Poor epic name | Better epic name |
+| Poor epic name (feature/component) | Better epic name (outcome) |
 |---|---|
-| "Build the dashboard" | "Compliance Officers can review their full estate risk in one screen" |
+| "Build the dashboard" | "A Data Steward sees the full classified estate risk in one screen" |
 | "Storage connector" | "Connect any supported storage source in under 5 minutes" |
-| "Authentication" | "Users authenticate securely without IT involvement" |
-| "API layer" | "External tools can query the compliance data via a documented API" |
+| "Authentication service" | "Users authenticate securely without IT involvement" |
 
 ---
 
-## Epic Decomposition
+## Epic-Level vs Story-Level Acceptance Criteria
 
-When splitting an epic into user stories, use these decomposition strategies:
+This distinction is load-bearing:
 
-| Strategy | When to use |
+- **Epic-level criteria** are 3–5 *high-level conditions* that describe what must be true when the
+  whole epic is complete. They are outcome checkpoints, not test cases.
+- **Story-level criteria** are detailed **Given/When/Then** written per story *after* decomposition,
+  once discovery has actually happened (see `acceptance-criteria`).
+
+Writing full story-level Given/When/Then at epic-definition time is an anti-pattern: it hardens
+guesses into commitments before the conversation that should shape them has occurred (Cohn's Three
+Cs — the detail belongs in the *Conversation*, deferred by design). Rule and examples:
+`references/epic-format-and-criteria.md`.
+
+---
+
+## The Decomposition Principle
+
+**Split an epic by outcome or workflow step — never by technical layer.**
+
+A "frontend story + backend story + database story" split is wrong: those are tasks inside one
+story, not stories. Every story must be an independently valuable, user-facing outcome (INVEST —
+Independent, Valuable). The named splitting techniques — by workflow step, by business rule, by
+user role, by data variation, by happy/edge path, verb-before-noun, and Mike Cohn's **SPIDR**
+pattern — plus a full worked decomposition of the repo epic *"A Data Steward reviews a classified
+estate"* into stories, are in `references/decomposition-techniques.md`.
+
+| Split by | Use when |
 |---|---|
-| **By user workflow step** | The epic covers a multi-step process; each story is one step |
-| **By user type** | Different personas use the same capability differently; each persona gets their own story |
-| **By data variation** | The epic works the same way but with different data types (Google Drive vs S3 vs SharePoint) |
-| **By configuration** | Happy path story first; edge cases and error states as separate stories |
-| **By reading vs writing** | Separate stories for viewing/reading and creating/editing |
+| **Workflow step** | The epic is a multi-step process; each step becomes a story |
+| **Business rule** | Behavior varies by rule (a compliance threshold, a retention policy) |
+| **User role** | Data Steward and Compliance Officer use the capability differently |
+| **Data variation** | Same behavior, different sources (Google Drive vs S3 vs SharePoint) |
+| **Happy / edge path** | Ship the simple common case first; edge cases as later stories |
 
-Never decompose by technical layer (frontend story + backend story + database story). Stories are user-facing outcomes, not technical tasks. Technical tasks live inside a story's implementation, not as separate stories.
-
----
-
-## Worked Example
-
-```
-EPIC-002: Connect any supported storage source in under 5 minutes
-
-As a result of this epic, the Compliance Officer (Maya Chen) will be able to connect
-Google Drive and AWS S3 to the platform without IT assistance.
-
-Hypothesis: If we make source connection a guided, sub-5-minute flow, we believe
-            trial users will connect all their storage sources in the first session,
-            which will contribute to KR1.1 (80% of trial users discover their first
-            compliance gap within 30 minutes).
-
-Business Goal Link: KR1.1
-Impact Map Link:    "Guided onboarding wizard", "Pre-built Google Drive OAuth connector"
-Personas affected:  Compliance Officer (primary), IT/DevOps Lead (secondary)
-Bounded Context:    Source Ingestion
-
-Acceptance Criteria (epic level):
-- [ ] A Google Drive can be connected via OAuth without leaving the product UI
-- [ ] An S3 bucket can be connected with scoped, read-only credentials
-- [ ] A failed connection explains the cause and the fix in plain language
-
-Decomposition (user stories — titles only):
-- US-001: Connect Google Drive via OAuth
-- US-002: Connect AWS S3 with read-only credentials
-- US-003: See connection health and re-authenticate an expired source
-
-Priority: Must
-Estimated size: L
-Phase: Implement
-```
-
-Note what the hypothesis buys: if trial users connect sources in the first session but still fail to discover a gap within 30 minutes, the epic *succeeded* and the hypothesis *failed* — the bottleneck is elsewhere. Without the hypothesis, that distinction is invisible and the team just "builds more onboarding."
+Full technique catalogue (SPIDR, verb-before-noun, CRUD, defer-the-hard-part) and the worked
+example: `references/decomposition-techniques.md`.
 
 ---
 
 ## Epic Readiness Checklist
 
-Before epics are handed to `user-story-writing`, each epic must pass:
+Before an epic is handed to `user-story-writing`, it must pass:
 
-- [ ] Title is outcome-oriented (not feature-named)
-- [ ] Outcome statement is written ("As a result of this epic, [actor] will be able to...")
-- [ ] Hypothesis is written
-- [ ] OKR KR or business goal is linked
-- [ ] Impact map deliverable is linked
-- [ ] At least 3 user story titles are listed (decomposition started)
-- [ ] Bounded Context is identified
-- [ ] MoSCoW priority is assigned
+- [ ] Title is outcome-oriented (not a feature or component name)
+- [ ] Outcome statement written ("As a result of this epic, [actor] will be able to…")
+- [ ] Falsifiable hypothesis written
+- [ ] OKR KR / business goal linked, and impact-map deliverable linked
+- [ ] 3–5 epic-level acceptance criteria written (high-level, not Given/When/Then)
+- [ ] At least 3 user-story titles listed (decomposition started)
+- [ ] Primary Bounded Context identified
+- [ ] MoSCoW priority assigned (see `moscow-prioritization`)
+
+---
+
+## Anti-Patterns
+
+- **The component epic** — "API layer", "Auth service". Named after a system part, delivers no
+  user-visible outcome, cannot be hypothesis-tested. Components are built *inside* outcome epics.
+- **The everything epic** — its "done" state equals the whole product. If it cannot fail without the
+  product failing, it carries no information. Split by outcome or segment.
+- **The hypothesis-free epic** — work described with no falsifiable belief attached; when it ships,
+  no one can say whether it worked.
+- **The orphan epic** — no link to an impact-map deliverable or OKR KR. Either the trace exists and
+  was not recorded, or the epic is unjustified scope.
+- **Premature story detail** — full story-level Given/When/Then written at epic time. Epic criteria
+  are 3–5 high-level conditions; detail is written per story after decomposition.
+- **Layer-cake decomposition** — splitting into frontend/backend/database "stories". Those are tasks.
 
 ---
 
@@ -167,56 +169,9 @@ Before epics are handed to `user-story-writing`, each epic must pass:
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Outcome orientation | Title and outcome statement focus on user capability | Title names a feature or system component |
-| Traceability | Linked to impact map and OKR KR | Epic with no business goal linkage |
-| Hypothesis | Stated as "if we build X, we believe Y will happen" | No hypothesis — just a description |
-| Decomposability | At least 3 user story titles | Monolithic epic with no decomposition |
-| Bounded Context | Named Bounded Context or explicit flag to domain-modeler | Cross-cutting epic without architectural flag |
-
----
-
-## Anti-Patterns
-
-**The component epic:** "API layer", "Database migration", "Authentication service". Named after a system component, delivers no user-visible outcome on its own, and cannot be hypothesis-tested. Components are built *inside* outcome epics, never as epics themselves.
-
-**The everything epic:** an epic whose "done" state is indistinguishable from the whole product ("Compliance intelligence works end to end"). If it cannot fail without the product failing, it carries no information — split by outcome or user segment until each epic could independently succeed or fail.
-
-**The hypothesis-free epic:** a description of work with no falsifiable belief attached. When it ships, no one can say whether it worked — see the worked example above for what the hypothesis makes visible.
-
-**The orphan epic:** no link to an impact map deliverable or OKR Key Result. Either the trace exists and was not recorded (record it) or it does not exist (the epic is unjustified scope).
-
-**Premature story detail:** writing full story-level acceptance criteria at epic definition time. Epic-level criteria are 3–5 high-level conditions; detailed Given/When/Then criteria are written per story after decomposition, when discovery has actually happened. Detail written too early hardens guesses into commitments.
-
----
-
-## Output Format
-
-```markdown
----
-name: epic-list
-product: [product name]
-version: 1.0.0
-phase: ideate
-created: [date]
-owner: requirements-analyst
----
-
-# Epic List
-
-## Epic Summary
-
-| ID | Title | Personas | OKR KR | Priority | Size |
-|---|---|---|---|---|---|
-
----
-
-## Epics (Detailed)
-
-### EPIC-001: [Title]
-[Full epic format as specified above]
-
----
-
-### EPIC-002: [Title]
-[Full epic format]
-```
+| Outcome orientation | Title and statement name a user capability | Title names a feature or component |
+| Traceability | Linked to impact map and OKR KR | No business-goal linkage |
+| Hypothesis | "If we build X we believe Y" | Description only |
+| Decomposability | ≥3 user-story titles, split by outcome | Monolithic, or split by layer |
+| Criteria altitude | 3–5 high-level epic criteria | Story-level Given/When/Then at epic time |
+| Bounded Context | Named, or explicit flag to domain-modeler | Cross-cutting epic, no architectural flag |
