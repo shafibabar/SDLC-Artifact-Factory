@@ -16,7 +16,7 @@ description: >
   scripts/validate-alerting-rules-design.sh. Deep derivation, saturation
   patterns, toil, and escalation content split across references/. Used by
   the platform-engineer during Deploy.
-version: 2.0.1
+version: 2.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -201,9 +201,9 @@ Silences (with an author, a reason, and an expiry) cover planned maintenance —
 - **Every page is actionable** — if the response to an alert is "watch it", it is a dashboard panel, not an alert.
 - **No duplicate coverage** — one condition, one alert. The SLO burn alert covers error symptoms; do not also alert on raw 5xx rate, mesh success rate, and per-pod error counts for the same failure. (Deployment-level up/down is `health-check-design`'s probe domain — Kubernetes restarts pods; alerting covers what restarts cannot fix.)
 - **Toil check** — for every alert that fired: did resolving it again require the same manual steps as last time, and if this is now the third-plus repetition, should it be automated instead of paged? Full toil definition and the personal-sustainability framing of Google's 50%-ceiling policy (this repo has no team to hand a misbehaving service back to): `references/toil-and-review-discipline.md`.
-- **Postmortem-linkage check** — does this alert's fired-and-actioned history have an open postmortem with unresolved action items? This skill does not author postmortems (a candidate `postmortem-authoring` skill is noted, not built, in the research behind this rebuild); it only checks for one at review time. See `references/escalation-and-postmortem-linkage.md`.
+- **Postmortem-linkage check** — every alert that fired and required action closes a loop: alert fires → page → on-call responds → incident → blameless postmortem. The postmortem's corrective actions may include alert changes (add an alert for X, raise/lower threshold Y, delete noisy alert Z) — but those changes are corrective actions *within* the postmortem, not a separate tuning process. At review time: does this alert's fired-and-actioned history have an open postmortem with unresolved action items? That context changes the keep/tune/delete decision. Full loop mechanics, the monthly cross-check, and what "postmortem-generated alert change" means in practice: `references/escalation-and-postmortem-linkage.md`.
 - **Pager-load heuristic** — a week producing more than a small, fixed number of real pages is itself a trigger for an unscheduled hygiene pass, not something to wait on until the monthly cadence. Full heuristic: `references/toil-and-review-discipline.md`.
-- **Monthly alert review** (with the SLO review in `slo-definition`), for every alert that fired: did a human act? Pages with no action are demoted or deleted; incidents with no page get a new symptom alert or a tightened SLO; alerts that flapped get longer `for:` or better windows.
+- **Monthly alert review** (with the SLO review in `slo-definition`), for every alert that fired: did a human act? Pages with no action are demoted or deleted; incidents with no page get a new symptom alert or a tightened SLO; alerts that flapped get longer `for:` or better windows. Cross-check: for every alert that fired but produced no postmortem, investigate why — either it was below SEV threshold and correctly handled via runbook only, or it was a false positive that should be tuned. Record postmortem-generated alert changes separately so the review can track which tuning decisions came from incident learning rather than noise reduction alone.
 - **Prune ruthlessly.** The target state is a pager that is silent for weeks and then only ever right. Every surviving alert must re-justify itself at review.
 
 ---
@@ -233,7 +233,8 @@ Per `skill-authoring-standards`, this skill owns two deterministic scripts — n
 | Recorded inputs | Alert expressions read recording rules | Raw histogram math evaluated per alert per interval |
 | Toil tracked | Review asks whether a repeat manual fix should be automated | Review only asks keep/tune/delete |
 | Escalation honestly scoped | Unacknowledged-page handling stated for a solo operator, not borrowed from a team model | `repeat_interval` alone presented as an escalation policy |
-| Review | Monthly review; fired-but-unactioned alerts pruned | Alert list only ever grows |
+| Postmortem loop closed | Monthly review cross-checks alerts-fired-with-no-postmortem; postmortem-generated alert changes tracked separately | Review prunes noise but never asks whether actioned pages produced a postmortem |
+| Review | Monthly review; fired-but-unactioned alerts pruned; postmortem-generated changes tracked | Alert list only ever grows |
 | Frugality | Self-hosted Alertmanager, webhook/email delivery | Paid paging SaaS at MVP scale |
 
 ---
@@ -284,8 +285,8 @@ owner: platform-engineer
 [Route tree, grouping keys, inhibition rules, receivers]
 
 ## Review Log
-| Date | Alert | Fired count | Actioned? | Toil (repeat manual fix?) | Decision (keep/tune/delete/automate) |
-|---|---|---|---|---|---|
+| Date | Alert | Fired count | Actioned? | Toil (repeat manual fix?) | Postmortem-generated change? | Decision (keep/tune/delete/automate) |
+|---|---|---|---|---|---|---|
 
 ## Configuration Files
 - prometheus/rules/slo-burn-*.yaml
@@ -301,4 +302,4 @@ owner: platform-engineer
 |---|---|
 | "Why 14.4 and not some other number?" / "Which book is the burn-rate table actually from?" / "How do I alert on saturation for something other than the pipeline?" | `references/burn-rate-derivation-and-golden-signals.md` |
 | "What is toil, formally?" / "How much manual effort is too much for one operator?" / "When should an unscheduled alert-hygiene pass happen?" | `references/toil-and-review-discipline.md` |
-| "What happens if a page goes unacknowledged?" / "Does this skill own postmortems?" / "How does alerting connect to incident review?" | `references/escalation-and-postmortem-linkage.md` |
+| "What happens if a page goes unacknowledged?" / "Does this skill own postmortems?" / "How does alerting connect to incident review?" / "What is the full alert-fire → postmortem → alert-change loop?" / "What counts as a postmortem-generated alert change?" | `references/escalation-and-postmortem-linkage.md` |

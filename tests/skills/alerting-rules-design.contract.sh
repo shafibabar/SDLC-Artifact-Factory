@@ -5,7 +5,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 
 smoke_test_skill \
   "alerting-rules-design" \
-  "Before rounding to the published 14.4, what does the raw arithmetic 0.02 x 672 actually work out to for the fast-burn multiplier?" \
-  "13.44"
+  "In the Review Log, what value format is used to record that an alert change came from a specific postmortem rather than from hygiene review alone?" \
+  "PM-YYYY-MM-DD"
 
 smoke_test_summary
