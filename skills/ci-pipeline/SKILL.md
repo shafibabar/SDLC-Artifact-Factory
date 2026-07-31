@@ -8,11 +8,12 @@ description: >
   the Pipeline of Pipelines composition, dependency caching, PR/main/nightly
   trigger split, concurrency groups, and least-privilege GITHUB_TOKEN
   permissions. Used by the platform-engineer during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
-tags: [deploy, ci, github-actions, pipeline-of-pipelines, trivy, cosign, gates]
+tags: [deploy, ci, github-actions, pipeline-of-pipelines, trivy, cosign, gates, trunk-based-development, dora]
+related: [feature-flag-design, dora-metrics, cd-pipeline, test-pyramid]
 ---
 
 # CI Pipeline
@@ -23,11 +24,90 @@ There is exactly **one path to production**: every service — Go or React — s
 
 If CI is green, the change satisfies every standard this plugin holds. If a step is skipped, the pipeline is broken — not the rule.
 
+Full workflow YAML and the worked compliance-platform example live in `references/gate-specifications.md`.
+
+---
+
+## Trunk-Based Development Policy
+
+**This is not a suggestion — it is enforced policy:**
+
+1. **Branches merge to `main` within one calendar day.** A branch older than one day is a violation, not a style choice.
+2. **Long-lived feature branches are explicitly not allowed.** The mechanism for committing unfinished work to trunk safely is a feature flag (`feature-flag-design`), not a branch. Feature flags decouple deploy from release; branches only defer integration pain.
+3. **Every successful main-branch run is a deployment-frequency event.** The rate at which commits reach `main` and pass CI is the DORA Deployment Frequency metric (`dora-metrics`).
+
+Source: *Continuous Delivery* Ch. 3 (Humble/Farley) — "commit to mainline at least once a day"; *Accelerate* Ch. 4 (Forsgren/Humble/Kim) — trunk-based development is a statistically validated capability predictor, not a cultural preference.
+
+---
+
+## Andon Cord — Stop the Line
+
+**A broken commit-stage build is the team's highest priority. No new work begins until it is fixed.**
+
+This is the Andon Cord principle from the Toyota Production System, applied to software (The DevOps Handbook, Ch. 5–6): any defect that reaches the pipeline is halted immediately, and the whole team swarms to fix it before resuming other work. A red build that sits for hours while engineers continue feature work turns one broken commit into many; integration cost compounds linearly with time.
+
+Operationally:
+- The breaking commit's author is the responsible party; the platform-engineer unblocks them if needed.
+- No PRs merge to `main` while the commit-stage build is red.
+- Nightly failures do not apply the Andon Cord — they open a GitHub issue and block the next promotion (`cd-pipeline`), but they do not halt feature work during the day.
+
+---
+
+## Commit-Stage Time Budget
+
+The commit stage (gates 1–6, the engineer-owned `make ci` / `npm run ci` block) must complete in **single-digit minutes**. This is not an aspiration — it is a quality criterion with teeth:
+
+- **Any gate that consistently exceeds 5 minutes on its own is a nightly-candidate, not a PR gate.** Move it to `nightly-suites.yml` and replace it with a faster proxy (sampling, subset, or time-boxed variant) for the PR loop.
+- The warm-build target for a Go service is ≤ 90 seconds (module + build cache via `actions/setup-go` with `cache: true`).
+- If the commit stage regularly exceeds 5 minutes total, apply the Theory of Constraints: identify the single slowest gate, optimize it first, then reassess.
+
+Source: *Continuous Delivery* Ch. 7 — "keep the commit stage in single-digit minutes"; a gate that forces engineers to context-switch while waiting trains them to ignore CI.
+
+---
+
+## Deployment Frequency Counter
+
+Every successful push to `main` emits a deployment-frequency event. This is how `dora-metrics` computes Deployment Frequency without a separate data-collection step.
+
+Add this step to the `image` job in `reusable-go-ci.yml` and `reusable-react-ci.yml`, after a successful push:
+
+```yaml
+- name: Emit deployment-frequency event
+  if: success()
+  uses: actions/github-script@v7
+  with:
+    script: |
+      await github.rest.repos.createRelease({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        tag_name: `deploy-freq-${{ inputs.service }}-${Date.now()}`,
+        name: `[deploy-freq] ${{ inputs.service }} @ ${{ github.sha.substring(0,7) }}`,
+        body: `service=${{ inputs.service }} sha=${{ github.sha }} ts=${new Date().toISOString()}`,
+        draft: false,
+        prerelease: true
+      });
+```
+
+GitHub Release events are queryable via the API and carry a timestamp, service name, and SHA — exactly the data `dora-metrics` needs. Alternative: post to a lightweight counter endpoint (`curl -sf -X POST $DEPLOY_FREQ_ENDPOINT`) if a release-event-per-deploy volume is a concern.
+
+---
+
+## CI Tool Selection
+
+**Default: GitHub Actions.** Use it unless the conditions below are met.
+
+**Concourse CI** (resource/task/job/pipeline primitives, no shared agent state) is the alternative when:
+- Reproducibility across workers is critical — Concourse runs every task in a fresh container from a pinned image; there is no shared filesystem or warm tool cache between tasks unless explicitly declared via a cache resource. This eliminates "works on my worker" failures that GitHub Actions runner state can introduce.
+- Complex multi-repo fan-in dependency graphs are required — Concourse's `passed:` constraint and fan-in model natively express "run this job only when commits from repo A, repo B, and repo C have all passed their individual unit-test jobs," without a separate orchestration layer.
+- Custom resource types are needed for internal systems — the Concourse resource interface (check/get/put) is a standard extension point for any versioned external system.
+
+The `sdlc-config.json` `ci_cd` field selects the CI system. When `ci_cd: concourse`, the platform-engineer uses Concourse resource/task/job/pipeline primitives rather than GitHub Actions YAML; the gate sequence and trunk-based development policy are unchanged — only the implementation format differs.
+
 ---
 
 ## The Gate Sequence
 
-Every merge to `main` passes these gates, in order. The first six run inside `make ci` / `npm run ci` (owned by the engineers); the last four are platform-owned:
+Every merge to `main` passes these gates, in order. Gates 1–6 run inside `make ci` / `npm run ci` (engineer-owned); gates 7–10 are platform-owned:
 
 | # | Gate | Owner | Fails the build when |
 |---|---|---|---|
@@ -42,162 +122,43 @@ Every merge to `main` passes these gates, in order. The first six run inside `ma
 | 9 | Cosign sign | platform | Signing fails (keyless, via GitHub OIDC) |
 | 10 | Push by digest | platform | — output is the immutable digest CD promotes |
 
-The image is pushed **once**, identified by digest (`sha256:…`), and never rebuilt per environment — promotion of that digest is the `cd-pipeline` and `environment-config` skills' domain.
+The image is pushed **once**, identified by digest (`sha256:…`), and never rebuilt per environment.
+
+Full YAML for the reusable Go workflow: `references/gate-specifications.md`.
 
 ---
 
 ## Pipeline of Pipelines
 
-Each service owns a thin caller workflow; the gates live in **one reusable workflow** per language. This is the Pipeline of Pipelines: per-service pipelines composed from shared, versioned building blocks — change the gate once, every service gets it.
+Each service owns a thin caller workflow; the gates live in **one reusable workflow** per language:
 
 ```
 .github/workflows/
-├── reusable-go-ci.yml          # the gates, Go services (workflow_call)
-├── reusable-react-ci.yml       # the gates, React frontends (workflow_call)
+├── reusable-go-ci.yml          # gates, Go services (workflow_call)
+├── reusable-react-ci.yml       # gates, React frontends (workflow_call)
 ├── estate-scanner-ci.yml       # caller: path-filtered to services/estate-scanner
 ├── entity-extractor-ci.yml     # caller: path-filtered to services/entity-extractor
 ├── compliance-engine-ci.yml    # caller: path-filtered to services/compliance-engine
 └── nightly-suites.yml          # e2e / load / chaos on a schedule
 ```
 
-A caller is deliberately boring — it names the service and delegates:
-
-```yaml
-# .github/workflows/estate-scanner-ci.yml
-name: estate-scanner CI
-on:
-  pull_request:
-    paths: ["services/estate-scanner/**"]
-  push:
-    branches: [main]
-    paths: ["services/estate-scanner/**"]
-
-jobs:
-  ci:
-    uses: ./.github/workflows/reusable-go-ci.yml
-    with:
-      service: estate-scanner
-      working-directory: services/estate-scanner
-    permissions:
-      contents: read
-      packages: write
-      id-token: write   # Cosign keyless signing via GitHub OIDC
-```
-
----
-
-## The Reusable Go Workflow
-
-```yaml
-# .github/workflows/reusable-go-ci.yml
-name: reusable-go-ci
-on:
-  workflow_call:
-    inputs:
-      service:            { required: true, type: string }
-      working-directory:  { required: true, type: string }
-
-concurrency:
-  group: ci-${{ inputs.service }}-${{ github.ref }}
-  cancel-in-progress: true          # a newer push supersedes the running build
-
-permissions: {}                     # default deny; jobs opt in below
-
-jobs:
-  gates:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    defaults:
-      run: { working-directory: ${{ inputs.working-directory }} }
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: ${{ inputs.working-directory }}/go.mod
-          cache: true               # caches Go modules + build cache keyed on go.sum
-      - name: Install gate tooling
-        run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.61.0
-      - name: Run all engineer gates
-        run: make ci                # tidy, generate, vet, lint, arch, vuln, cover — one command
-
-  image:
-    needs: gates
-    if: github.ref == 'refs/heads/main'   # PRs stop at gates; only main publishes
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write               # push to ghcr.io
-      id-token: write               # OIDC token for Cosign keyless
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push by digest
-        id: push
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ inputs.working-directory }}
-          push: true
-          tags: ghcr.io/${{ github.repository }}/${{ inputs.service }}:${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
-      - name: Trivy scan (fail on HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: ghcr.io/${{ github.repository }}/${{ inputs.service }}@${{ steps.push.outputs.digest }}
-          severity: HIGH,CRITICAL
-          exit-code: "1"
-      - name: Cosign sign (keyless)
-        run: cosign sign --yes ghcr.io/${{ github.repository }}/${{ inputs.service }}@${{ steps.push.outputs.digest }}
-```
-
-The React reusable workflow is the same shape: `actions/setup-node` with `cache: npm`, `npm ci && npm run ci`, then the identical image/scan/sign/push tail. One shape, two languages.
+A PR touching only `services/entity-extractor/**` runs only that service's gates — path filters keep a Bounded Context's pipeline scoped to its Bounded Context. Caller workflow pattern and full reusable workflow YAML: `references/gate-specifications.md`.
 
 ---
 
 ## Trigger Split — What Runs When
 
-The test-strategist's suite split (`test-pyramid`) maps to triggers; CI runs the suites, it does not author them:
-
 | Trigger | Runs | Why |
 |---|---|---|
-| **Pull request** | `make ci` (unit + integration, race, coverage, vuln, lint) | Fast, hermetic feedback — minutes, not hours |
-| **Push to main** | Everything on PR + image build, Trivy, Cosign, push by digest | Only merged code produces a deployable artifact |
-| **Nightly schedule** | e2e (`go-e2e-test`), load (`go-load-test`), chaos suites against a kind/staging environment | Too slow and environment-hungry for every PR |
-
-Nightly failures page nobody at 3 a.m. — they open an issue and block the next promotion until green (`cd-pipeline` checks the nightly status).
-
----
-
-## Caching and Frugality
-
-GitHub Actions minutes are the budget; caching is how CI stays inside it:
-
-- **Go**: `actions/setup-go@v5` with `cache: true` — module and build caches keyed on `go.sum`. A warm build of estate-scanner drops from ~6 min to ~90 s.
-- **npm**: `actions/setup-node` with `cache: npm` keyed on `package-lock.json`; always `npm ci`, never `npm install`.
-- **Docker**: BuildKit cache mounts inside the Dockerfile (`go-dockerfile` already orders layers for this); `docker/build-push-action` adds registry-backed layer cache (`cache-from`/`cache-to: type=gha`) when build times justify it.
-- **Concurrency groups** cancel superseded runs — no paying for a build of a commit that was already force-pushed over.
-
-All tooling is open-source (Trivy, Cosign, golangci-lint, govulncheck) on the free GitHub Actions tier — no paid CI products.
+| **Pull request** | `make ci` (unit + integration, race, coverage, vuln, lint) | Fast, hermetic feedback — minutes |
+| **Push to main** | PR gates + image build, Trivy, Cosign, push by digest + deployment-frequency event | Only merged code produces a deployable artifact |
+| **Nightly schedule** | e2e, load, chaos suites against kind/staging | Too slow and environment-hungry for every PR |
 
 ---
 
 ## Least-Privilege GITHUB_TOKEN
 
-The workflow default is `permissions: {}` — deny everything, then each job requests only what it needs. The gates job can read contents and nothing else; only the publish job can write packages; `id-token: write` exists solely so Cosign can sign keylessly against GitHub's OIDC provider (no long-lived signing keys to store, rotate, or leak — the `secrets-management` posture applied to the pipeline itself).
-
----
-
-## Worked Example — Compliance Platform
-
-The product's three Go services (estate-scanner, entity-extractor, compliance-engine) plus the React compliance dashboard each get a five-line caller workflow pointing at the shared reusable workflow. A PR touching only `services/entity-extractor/**` runs only that service's gates — path filters keep a Bounded Context's pipeline scoped to its Bounded Context. On merge to main, four signed images land in `ghcr.io`, each addressed by digest; the nightly workflow spins up kind, installs all four charts (`helm-chart`), and runs the e2e suite against the assembled system. The digests — never tags — are what `cd-pipeline` promotes through dev → staging → per-tenant production.
+Default is `permissions: {}` — deny everything; each job requests only what it needs. The gates job reads contents only; only the publish job writes packages; `id-token: write` exists solely for Cosign keyless signing via GitHub OIDC (no long-lived signing keys to store, rotate, or leak).
 
 ---
 
@@ -214,18 +175,23 @@ The product's three Go services (estate-scanner, entity-extractor, compliance-en
 | Least privilege | `permissions: {}` default, per-job opt-in | Default token permissions, or `write-all` |
 | Trigger split | PR fast suites; main publishes; nightly slow suites | e2e on every PR, or nightly suites that never run |
 | Concurrency | Groups cancel superseded runs | Stale builds racing to publish |
+| Trunk-based | All branches merge to main within 1 calendar day | Branch older than 1 day still open |
+| Commit-stage budget | Commit stage completes in single-digit minutes | Any PR gate consistently exceeds 5 min individually |
+| Deployment frequency | Every successful main-branch run emits a deploy-freq event | No event emitted; dora-metrics has no data source |
 
 ---
 
 ## Anti-Patterns
 
-- **CI as a second implementation of the Makefile** — re-listing `go test`, `go vet` in YAML drifts from `make ci` the first week. CI invokes the engineers' entry point, nothing else.
-- **A bypass lane** — "hotfix" workflows that skip the scan or sign step. The one path exists precisely for the day someone is in a hurry; an unsigned emergency image is how supply-chain incidents start.
-- **Promotion by tag** — `:latest` or `:main` can silently move. A digest cannot. If CD consumes tags, provenance is theatre.
-- **Rebuilding per environment** — one image per environment breaks the build-once/promote-everywhere guarantee and voids the signature. Build once on main; every environment runs the same digest.
+- **CI as a second implementation of the Makefile** — re-listing `go test`, `go vet` in YAML drifts from `make ci` the first week.
+- **A bypass lane** — "hotfix" workflows that skip the scan or sign step. An unsigned emergency image is how supply-chain incidents start.
+- **Promotion by tag** — `:latest` or `:main` can silently move. A digest cannot.
+- **Rebuilding per environment** — one image per environment breaks build-once/promote-everywhere and voids the signature.
 - **Advisory scanning** — a Trivy report uploaded as an artifact but not failing the build gates nothing. `exit-code: "1"` or it doesn't exist.
-- **e2e on every PR** — slow suites on the PR loop trains engineers to ignore CI. Fast on PR, thorough nightly, per the test-strategist's split.
-- **`write-all` token because "it's easier"** — a compromised third-party action then owns the repo. Deny by default; each job justifies its permissions.
+- **e2e on every PR** — slow suites on the PR loop trains engineers to ignore CI.
+- **`write-all` token because "it's easier"** — a compromised third-party action then owns the repo.
+- **Long-lived branches** — a branch open for more than a day is a deferred merge conflict; use `feature-flag-design` instead.
+- **Ignoring a red build** — continuing feature work while the commit stage is broken is the anti-pattern Andon Cord policy prevents.
 
 ---
 
