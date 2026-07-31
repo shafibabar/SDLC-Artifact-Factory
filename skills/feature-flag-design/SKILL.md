@@ -10,11 +10,12 @@ description: >
   flags are UX hints only, the CI flag matrix that tests both branches of a
   flag, and the kill-switch pattern for pausing pipeline consumers without a
   deploy. Used by the platform-engineer during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
-tags: [deploy, feature-flags, progressive-delivery, kill-switch, entitlements, openfeature]
+tags: [deploy, feature-flags, progressive-delivery, kill-switch, entitlements, openfeature, trunk-based-development]
+related: [ci-pipeline, progressive-delivery, canary-deployment, blue-green-deployment, environment-config]
 ---
 
 # Feature Flag Design
@@ -24,6 +25,12 @@ tags: [deploy, feature-flags, progressive-delivery, kill-switch, entitlements, o
 A **Feature Flag** decouples *deploying* code from *releasing* behaviour: the digest ships through the one path (`ci-pipeline`, `cd-pipeline`) and a flag decides, at runtime, whether a code path is live. That decoupling is the entire value — it also creates a liability if left unmanaged, because every live flag is a branch point that state can silently diverge across, and every flag that outlives its purpose is a piece of code nobody dares delete.
 
 This skill governs flags as a typed, owned, expiring inventory — not a scattered collection of booleans. It is deliberately narrow: `canary-deployment` and `blue-green-deployment` own *traffic* shifting between versions; this skill owns *behavioural* toggling within a running version. The two compose (a canary-scoped release flag, below) but are not the same mechanism.
+
+**Feature flags and trunk-based development.** Feature toggles exist primarily so engineers can integrate unfinished work to trunk (`main`) daily without breaking anything. This is the *Continuous Delivery* book's (Ch. 3) central motivation for feature flags: they are what makes trunk-based development viable when features take more than one day to build. Without flags, engineers face two bad options — (a) commit incomplete code that breaks the build, or (b) use a long-lived feature branch that defers integration pain to a costly merge. Flags are the third option: commit to trunk daily, hide unfinished functionality behind a flag, integrate continuously.
+
+This connects `feature-flag-design` to `ci-pipeline`'s trunk-based development policy. The two compose into one complete discipline: `ci-pipeline` establishes that branches are short-lived and engineers integrate to `main` at least daily; `feature-flag-design` provides the mechanism that makes that cadence safe when features are multi-day efforts. Neither skill alone is complete — a trunk-first commit policy without flags produces broken builds on partial commits; flags without a trunk-first policy produce a flag system that is really long-lived branches in disguise (see Anti-Patterns: **Flag-as-branch-strategy**).
+
+Flags are also the release mechanism for the `progressive-delivery` skill's flag-only release strategy. When code is deployed to 100% of instances but hidden behind a flag, the **release is the flag flip** — not a new deployment. This is the cleanest separation of deploy from release: the binary is already everywhere, the feature is hidden, and exposing it to users is a single values PR with no downtime, no rollback complexity, and no pipeline run required.
 
 ---
 
@@ -46,20 +53,7 @@ Two of the four are meant to live forever (ops, entitlement); two are meant to d
 
 ### Release flags — the flag-debt rule
 
-Every release flag is created with three fields, non-optional:
-
-```yaml
-# flags/release/extractor-v2-enabled.yaml
-key: extractor.v2.enabled
-kind: release
-owner: platform-engineer          # accountable for removal
-created: 2026-07-20
-removal_date: 2026-08-10          # ≤ 3 weeks out — hard default
-removal_issue: PLAT-482           # tracked; CI fails the flag inventory check without it
-default: false
-```
-
-The rule: **a release flag with no owner and no removal date does not merge.** At the removal date, the flag is deleted from code and from every environment's values — not "set to true forever." Deleting it means picking the winning branch and removing the loser; a release flag that survives past 100% rollout without deletion is flag debt, and the CI flag-inventory check (below) fails the build on any release flag past its `removal_date` still present in the codebase.
+Every release flag is created with four non-optional fields: `owner`, `created`, `removal_date` (≤ 3 weeks out — hard default), and `removal_issue` (CI fails the flag inventory check without it). **A release flag with no owner and no removal date does not merge.** At the removal date, the flag is deleted from code and from every environment's values — not "set to true forever." Deleting it means picking the winning branch and removing the loser; a release flag that survives past 100% rollout without deletion is flag debt, and the CI flag-inventory check fails the build on any release flag past its `removal_date` still present in the codebase. Full YAML schema and CI script: `references/implementation-patterns.md`.
 
 ### Ops / kill-switches
 
@@ -71,14 +65,7 @@ Temporary like release flags, but the exit criterion is a decision, not a percen
 
 ### Entitlement flags
 
-Not really "flags" in the disposable sense — they are tenant configuration that happens to gate code paths, and they live exactly as long as the tenant's contract does. They belong in the **per-tenant values layer** (`environment-config`'s difference-class table, row "flags"), never in a central flag service's default-off inventory, because their value is tenant-specific truth, not a rollout state:
-
-```yaml
-# deploy/clusters/tenants/tenant-acme/compliance-engine-values.yaml (extract)
-flags:
-  entitlement.advanced-classification: true    # acme's contracted tier
-  entitlement.export-to-siem: false             # not on acme's plan
-```
+Not really "flags" in the disposable sense — they are tenant configuration that happens to gate code paths, and they live exactly as long as the tenant's contract does. They belong in the **per-tenant values layer** (`environment-config`'s difference-class table, row "flags"), never in a central flag service's default-off inventory, because their value is tenant-specific truth, not a rollout state. YAML placement pattern: `references/implementation-patterns.md`.
 
 ---
 
@@ -118,95 +105,13 @@ A client that hides an "Advanced Classification" button because a flag is off is
 
 ## Testing Both Paths — the CI Flag Matrix
 
-A flag that is only ever tested in its default state is half-tested; the day it flips, the untested branch ships blind. The test-strategist's suite runs the flag matrix for every active release/experiment flag:
-
-```yaml
-# .github/workflows/ci.yml (extract — flag matrix job)
-strategy:
-  matrix:
-    extractor_v2_enabled: [true, false]
-steps:
-  - run: |
-      FLAG_EXTRACTOR_V2_ENABLED=${{ matrix.extractor_v2_enabled }} \
-        go test ./... -run TestExtractorPipeline -tags flagmatrix
-```
-
-The flag inventory itself is checked, not just the code paths:
-
-```bash
-#!/usr/bin/env bash
-# check-flag-inventory.sh — CI gate on every PR touching flags/
-today=$(date +%F)
-for f in flags/release/*.yaml flags/experiment/*.yaml; do
-  removal=$(yq '.removal_date' "$f")
-  owner=$(yq '.owner' "$f")
-  [ "$owner" = "null" ] && { echo "FLAG DEBT: $f has no owner" >&2; exit 1; }
-  if [[ "$removal" < "$today" ]]; then
-    echo "FLAG DEBT: $f is past its removal_date ($removal) and still present" >&2
-    exit 1
-  fi
-done
-```
-
-Ops and entitlement flags are exempt from the removal check (they are meant to persist) but must still appear in the inventory with an owner, so an incident responder can find every kill-switch that exists.
+A flag that is only ever tested in its default state is half-tested; the day it flips, the untested branch ships blind. The test-strategist's suite runs the flag matrix for every active release/experiment flag: a GitHub Actions `strategy.matrix` job tests both `true` and `false` values of each flag under a `flagmatrix` test tag. The flag inventory check script runs on every PR touching `flags/` and fails the build on any release or experiment flag missing an owner, missing a removal date, or past its removal date. Ops and entitlement flags are exempt from the removal check but must appear in the inventory with an owner so an incident responder can find every kill-switch. Full matrix YAML and inventory check script: `references/implementation-patterns.md`.
 
 ---
 
 ## The Kill-Switch Pattern — Pausing a Pipeline Without a Deploy
 
-The canonical ops flag: pause a Redpanda consumer group during an incident (bad message shape flooding the DLQ, a downstream dependency down) without touching the deploy pipeline.
-
-```go
-// entity-extractor consumer loop — reads the ops flag on each poll interval
-for {
-    if flags.Bool(ctx, "pipeline.entity-extractor.consumer.paused", false) {
-        metrics.ConsumerPaused.Set(1)
-        time.Sleep(pauseCheckInterval)   // 5s — fast enough to feel like a switch
-        continue
-    }
-    metrics.ConsumerPaused.Set(0)
-    processBatch(ctx)
-}
-```
-
-Flip path in an incident: edit the ConfigMap value via a PR to the environment repo (still GitOps — even a kill-switch does not bypass `cd-pipeline`'s "no `kubectl apply`" rule), or, if the incident cannot wait for a reconciliation interval, a break-glass `kubectl patch configmap` executed by the on-call and immediately followed by the matching PR so Git catches up to reality within the hour. The break-glass path is drift, and drift is alerted per `cd-pipeline` — the alert firing is expected and accepted for the duration of an active incident, not silenced.
-
-This is why ops flags live at Rung 1 (static, ConfigMap-reloaded): the fast poll interval above gives sub-10-second reaction time without needing a targeting service, and the value's home is still the environment repo — auditable, revertible, no separate system of record for "what did we turn off during the incident."
-
----
-
-## Worked Example — Canary-Scoped Release Flag for a New Extractor Model
-
-`entity-extractor` is getting a new entity-extraction model (v2). The rollout combines a **release flag** (behavioural: which model runs) with `canary-deployment`'s **tenant wave** (deployment: which tenants run the new binary at all) — two different axes, composed deliberately so the flag can be flipped back instantly if the model regresses, without waiting on a redeploy.
-
-```yaml
-# flags/release/extractor-v2-enabled.yaml
-key: extractor.v2.enabled
-kind: release
-owner: platform-engineer
-created: 2026-07-20
-removal_date: 2026-08-10
-removal_issue: PLAT-482
-default: false
-description: >
-  Routes document extraction to the v2 model when true. Canary-tenant only
-  until PLAT-482 evaluation completes; see canary-deployment worked example
-  for the accompanying traffic wave.
-```
-
-```yaml
-# deploy/clusters/tenants/tenant-canary/entity-extractor-values.yaml
-flags:
-  extractor.v2.enabled: true      # canary tenant runs v2 behaviour
-```
-
-```yaml
-# deploy/clusters/tenants/tenant-acme/entity-extractor-values.yaml
-flags:
-  extractor.v2.enabled: false     # unaffected until PLAT-482 promotes the wave
-```
-
-Both tenants run the **same image digest** — `environment-config`'s parity rule is intact; only the flag value differs. If v2 regresses extraction accuracy (caught by the correctness SLI from `slo-definition`), the fix is a values PR flipping the flag back to `false` for the canary tenant — no rollback, no redeploy, seconds not minutes. When the model is proven and rolled to the full fleet, `extractor.v2.enabled` is deleted from code (the `if` collapses to always-v2) on `removal_date`, and PLAT-482 closes.
+The canonical ops flag: pause a Redpanda consumer group during an incident (bad message shape flooding the DLQ, a downstream dependency down) without touching the deploy pipeline. The consumer loop checks the flag on each poll interval (5 s — fast enough to feel like a switch) so toggling the ConfigMap value takes effect within one poll cycle. Flip path in an incident: a PR to the environment repo (still GitOps — even a kill-switch does not bypass `cd-pipeline`'s "no `kubectl apply`" rule), or break-glass `kubectl patch configmap` executed by the on-call, immediately followed by the matching PR so Git catches up to reality within the hour. Break-glass is drift; `cd-pipeline` alerts on it, and the alert is accepted for the duration of an active incident, not silenced. This is why ops flags live at Rung 1: sub-10-second reaction time without a targeting service, and the value's home remains the environment repo — auditable, revertible, no separate system of record. Go consumer loop pattern: `references/implementation-patterns.md`.
 
 ---
 
@@ -223,6 +128,7 @@ Both tenants run the **same image digest** — `environment-config`'s parity rul
 | Tested both paths | CI flag matrix runs both branches of every active release/experiment flag | Only the default state is ever tested |
 | Kill-switch speed | Ops flags reload fast enough (seconds) to matter in an incident, still via GitOps | Kill-switch requiring a full redeploy to flip |
 | Removal enforced | Flag inventory check fails CI on any flag past its removal date | Flags accumulating indefinitely past rollout |
+| Trunk-based integration | Release flags enable daily commits to trunk without breaking the build | Long-lived feature branches used where a flag could serve instead |
 
 ---
 
