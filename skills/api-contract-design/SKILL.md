@@ -14,7 +14,7 @@ description: >
   frontend-engineer. Includes scripts/scaffold-api-contract-design.sh and
   scripts/validate-api-contract-design.sh. Used by the enterprise-architect
   agent after the Command Catalog and Read Model designs are complete.
-version: 2.1.0
+version: 2.2.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -88,7 +88,7 @@ Every Command from the Command Catalog maps to a `POST`, `PUT`, `PATCH`, or `DEL
 
 ## Standard Response Shapes
 
-### Success responses
+**Success responses:**
 
 | Status | When |
 |---|---|
@@ -97,36 +97,7 @@ Every Command from the Command Catalog maps to a `POST`, `PUT`, `PATCH`, or `DEL
 | `202 Accepted` | Command accepted for async processing — the body returns the resource ID and a status URL pointing to a fully-specified `Operation` resource (`references/advanced-resource-patterns.md`); the domain outcome also arrives via a Domain Event |
 | `204 No Content` | Successful DELETE, or action with no response body |
 
-### Error responses
-
-All error responses use a standard envelope:
-
-```yaml
-ErrorResponse:
-  type: object
-  required: [error]
-  properties:
-    error:
-      type: object
-      required: [code, message]
-      properties:
-        code:
-          type: string
-          description: Machine-readable error code in SCREAMING_SNAKE_CASE
-          example: DATA_ASSET_NOT_FOUND
-        message:
-          type: string
-          description: Human-readable description suitable for display
-          example: "The data asset with ID abc123 was not found"
-        details:
-          type: array
-          description: Field-level validation errors
-          items:
-            type: object
-            properties:
-              field: { type: string }
-              message: { type: string }
-```
+**Error responses** — all use the standard `ErrorResponse` envelope — a top-level `error` object carrying a machine-readable `code` (SCREAMING_SNAKE_CASE, e.g. `DATA_ASSET_NOT_FOUND`), a human-readable `message` suitable for display, and an optional `details` array of field-level validation errors (`{field, message}`). Full schema: `references/openapi-spec-structure-example.md`.
 
 | Status | When | Error code pattern |
 |---|---|---|
@@ -161,18 +132,7 @@ Version sunset policy: `/v1/` is maintained for a minimum of 6 months after `/v2
 
 ## Authentication
 
-All endpoints (except health checks) require JWT Bearer authentication:
-
-```yaml
-securitySchemes:
-  BearerAuth:
-    type: http
-    scheme: bearer
-    bearerFormat: JWT
-
-security:
-  - BearerAuth: []
-```
+All endpoints (except health checks) require JWT Bearer authentication — a global `security: [BearerAuth: []]` paired with a `BearerAuth` HTTP bearer scheme (`bearerFormat: JWT`) declared in `components/securitySchemes`. Full definition: `references/openapi-spec-structure-example.md`.
 
 The JWT is validated by the API Gateway / middleware before the request reaches any handler. Handler code never validates JWTs — it reads claims from context.
 
@@ -182,20 +142,7 @@ Health check endpoints (`GET /healthz`, `GET /readyz`) are excluded from authent
 
 ## Idempotency Header
 
-All `POST`, `PUT`, and `PATCH` requests must support an `Idempotency-Key` header. The server stores the result for 24 hours and returns the stored result if the same key is seen again.
-
-```yaml
-parameters:
-  - name: Idempotency-Key
-    in: header
-    required: false
-    schema:
-      type: string
-      format: uuid
-    description: >
-      Client-generated UUID v4. If provided, the server returns the stored
-      result for any duplicate request with the same key within 24 hours.
-```
+All `POST`, `PUT`, and `PATCH` requests must support an `Idempotency-Key` header — an optional client-generated UUID v4. The server stores the result for 24 hours and returns the stored result if the same key is seen again. Declared once as a reusable `components/parameters/IdempotencyKey` entry and `$ref`'d on every mutating endpoint rather than repeated inline; full definition in `references/openapi-spec-structure-example.md`.
 
 ---
 
@@ -238,20 +185,7 @@ Top-level shape: `openapi` version, `info`, `servers` (with the `tenantId` path 
 
 ## API Contract Review Checklist
 
-Large organizations catch cross-API drift with a governance board reviewing every contract before publication — a real, standing institution that exists because no single author has authority over every producing team. That institution has no referent here: `enterprise-architect` is the sole author of every API contract this factory produces, so the discipline a governance board enforces (consistency checked before a contract ships) still applies, just without the board. Run this checklist once, deliberately, over the finished spec — the same way `scripts/validate-adr.sh` is a distinct, named gate rather than something folded silently into "writing the ADR" — immediately before treating a contract as ready for the Design phase gate. It inherits every row from the Quality Criteria table above; it adds no new criteria, only the discipline of checking them as one deliberate pass rather than assuming they held because the skill was followed:
-
-- [ ] Every resource name traces to the domain Ubiquitous Language, not a database table or a generic noun
-- [ ] Every Command Catalog entry has a corresponding endpoint; every Read Model has a `GET`
-- [ ] Every error response, on every documented failure branch, uses the standard `ErrorResponse` shape
-- [ ] The path carries a `/v1/` (or current) version prefix
-- [ ] `BearerAuth` is applied globally, with only health checks excluded
-- [ ] Every mutating endpoint documents `Idempotency-Key` support
-- [ ] Every collection endpoint uses the shared cursor-pagination shape, with no per-endpoint variant
-- [ ] Every `202 Accepted` status URL resolves to a fully-specified `Operation` resource, not an unspecified "status URL"
-- [ ] Any `resource:verb` custom method is a genuine non-CRUD action, not a workaround for a standard method
-- [ ] Every resource with real concurrent-writer risk carries `etag`/`If-Match`
-
-A contract that fails any row here is not ready for the Design phase gate, regardless of how much of the spec is otherwise written.
+Before treating a contract as ready for the Design phase gate, run one deliberate review pass over the finished spec — `enterprise-architect` is the sole author of every contract this factory produces, so the consistency a governance board would enforce still applies, just as a self-imposed gate. The checklist inherits every row from the Quality Criteria table above and adds no new criteria; a contract that fails any row is not ready for the Design phase gate regardless of how much of the spec is otherwise written. Full checklist: `references/contract-review-checklist.md`.
 
 ---
 
