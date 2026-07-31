@@ -1,163 +1,127 @@
 ---
 name: impact-mapping
 description: >
-  Teaches how to build an Impact Map — a structured visual of the goal → actors →
-  impacts → deliverables hierarchy. Impact mapping links every deliverable to a
-  measurable business goal, ensures nothing is built that doesn't affect behaviour,
-  and identifies which actors and impacts to focus on first. Used by the
-  requirements-analyst agent during the Ideate phase to scope and prioritise
-  requirements before epic definition.
-version: 1.1.0
-phase: ideate
+  Teaches the requirements-analyst to build an Impact Map (Gojko Adzic) — the
+  four-level structure Why (Goal) -> Who (Actors) -> How (Impacts, the behavior
+  changes in actors) -> What (Deliverables) — which keeps deliverables traceable
+  to a measurable goal and prevents building features nobody needs. Used during
+  Strategy/Ideate to connect an OKR goal to the specific actor behavior changes
+  and only then to candidate deliverables.
+version: 2.0.0
+phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, impact-mapping, discovery, prioritisation, goal-alignment]
+tags: [strategy, requirements, impact-map, outcomes, actors, goal, deliverables]
+related: [okr-authoring, user-persona, jtbd-analysis, epic-definition, moscow-prioritization, story-mapping]
 ---
 
 # Impact Mapping
 
-## Purpose
+## What an Impact Map is for
 
-Impact mapping answers the question: **why are we building this, and is this the right thing to build to achieve the business goal?**
+An Impact Map (Gojko Adzic) answers one question: **why are we building this, and
+is this the right thing to build to move a measurable goal?** It is a four-level
+tree that forces every candidate feature to earn its place by tracing up to a
+behavior change in a real actor that advances a goal — or be dropped.
 
-An impact map is a mind-map structured around four questions:
-1. **WHY** — what business goal are we trying to achieve?
-2. **WHO** — who can cause or block the goal?
-3. **HOW** — what behaviour changes from those actors would cause (or prevent) the goal?
-4. **WHAT** — what deliverables can we produce to support or create those behaviour changes?
+The map exists to fight the **feature factory** (Cagan): a team that ships
+continuously but rarely moves the metric that matters, because it works forward
+from a pre-decided feature list instead of backward from a goal. The impact map's
+whole discipline is **outcome over output** — a deliverable is worthless unless it
+causes an actor behavior change (an outcome); shipping the feature (output) is not
+the win.
 
-The critical insight: deliverables (features) only matter if they cause a behaviour change in an actor that advances the business goal. If a deliverable doesn't change any actor's behaviour, it is waste.
+## The four levels
 
----
+Read top-down, each level answering a question about the level above:
 
-## The Four Levels
+| Level | Question | Holds | One-line definition |
+|---|---|---|---|
+| **WHY — Goal** | Why are we doing this? | The measurable business goal | The outcome we want, stated as a metric — sourced from an OKR Key Result |
+| **WHO — Actors** | Who can cause or block the goal? | People/groups with observable behavior | Specific actors (Data Steward, Compliance Officer), including blockers |
+| **HOW — Impacts** | How should the actor's behavior change? | Behavior changes in those actors | The **outcome** — what an actor starts, stops, or does differently |
+| **WHAT — Deliverables** | What could we build to cause that? | Candidate features/content/config | **Hypotheses** that might cause the impact — droppable if they don't |
 
-### Level 1: WHY — The Goal
+The load-bearing rule: **the HOW/Impacts level is a change in an actor's behavior — an
+outcome — not a feature.** "Maya briefs the CISO from live data instead of a stale
+spreadsheet" is an impact. "Maya uses the report feature" is a feature restated as
+an impact, and is a defect. If achieving the goal requires no one outside the team
+to change behavior, the "goal" is really a deliverable.
 
-State the business goal in measurable terms. This must be a business goal — not a product goal or a feature goal.
+Full depth on each level — the exact questions to ask, primary/secondary/off-stage/
+blocker actor types, and how to phrase impacts as behavior — is in
+`references/impact-map-levels.md`.
 
-- Business goal: "80% of trial users reach their first compliance gap discovery within 30 minutes of connecting their first storage source"
-- Not a goal: "Ship the compliance dashboard" (that's a deliverable, not a goal)
-- Not a goal: "Improve the product" (unmeasurable)
+## From OKR goal down to droppable deliverables
 
-The goal should come directly from the OKR Key Results. Each Key Result becomes a separate impact map.
+The map is a **chain of traceability from a single OKR Key Result to candidate
+deliverables**, and it reads in both directions:
 
----
+- **Top-down (building the map):** take one Key Result as the WHY goal → list the
+  actors who can cause or block it → for each, name the behavior change (impact)
+  that would move the goal → only then brainstorm deliverables that might cause each
+  impact. Never start at WHAT.
+- **Bottom-up (defending scope):** every deliverable must trace up through an impact
+  to the goal. A deliverable that traces to no impact — or to an impact that doesn't
+  move the goal — is waste and is cut.
 
-### Level 2: WHO — Actors
+Each Key Result becomes **its own impact map**. Deliverables are candidates, not
+commitments: more than one can serve an impact, and the map's job is to find the
+**smallest set that reliably causes the priority behavior changes** — that set is the
+MVP scope. Everything else stays on the map, already traced to the goal, as a cheaply
+prioritized backlog. The mechanics of pruning — why deliverables are droppable
+hypotheses and how to select the minimum set — are in `references/impact-map-levels.md`.
 
-Actors are people or groups who can cause or block the goal. They include:
-- **Primary actors** — those whose behaviour directly causes the goal (users)
-- **Secondary actors** — those who support primary actors (implementation partners, customer IT teams)
-- **Off-stage actors** — those whose decisions affect the goal but who don't use the product (regulators, CISO as sponsor, board as buyer authoriser)
+## How the map connects to the rest of Ideate
 
-List every relevant actor. Explicitly include actors who could block the goal — understanding blockers is as important as understanding supporters.
+The impact map is a hub artifact. It consumes goals and actors from upstream skills
+and hands deliverables downstream:
 
----
-
-### Level 3: HOW — Impacts
-
-For each actor, ask: **what behaviour must change (or remain the same) for this actor to help us achieve the goal?**
-
-Impacts are behaviour changes, not activities or features:
-- "Maya Chen (Compliance Officer) connects all storage sources within the first session" — behaviour change
-- "Maya uses the compliance report feature" — this is a feature, not a behaviour
-- "IT Lead deploys the product without raising a support ticket" — behaviour change
-
-For blocking actors: "IT Security approves the deployment request without blocking it" — the impact is removing a blocker behaviour.
-
----
-
-### Level 4: WHAT — Deliverables
-
-For each impact, ask: **what can we build (or do) to cause this behaviour change?**
-
-Deliverables are features, content, processes, or configuration options that enable the behaviour change:
-- Impact: "Maya connects all storage sources within the first session"
-- Deliverable: "Guided onboarding wizard that connects a storage source in < 5 minutes"
-- Deliverable: "Pre-built connector for Google Drive with OAuth 2.0 single-click authorization"
-- Deliverable: "In-app progress indicator showing setup completion percentage"
-
-More than one deliverable can contribute to an impact. List all candidates, then prioritise — not all must be built to achieve the impact.
-
----
-
-## Impact Map Structure (ASCII)
-
-```
-GOAL: [Measurable business goal]
-│
-├── WHO: [Actor 1]
-│   ├── HOW: [Behaviour change 1]
-│   │   ├── WHAT: [Deliverable A]
-│   │   └── WHAT: [Deliverable B]
-│   └── HOW: [Behaviour change 2]
-│       └── WHAT: [Deliverable C]
-│
-├── WHO: [Actor 2 — potential blocker]
-│   └── HOW: [Remove blocking behaviour]
-│       └── WHAT: [Deliverable D]
-│
-└── WHO: [Actor 3]
-    └── HOW: [Behaviour change 3]
-        ├── WHAT: [Deliverable E]
-        └── WHAT: [Deliverable F — optional / deferred]
-```
-
----
-
-## Prioritisation from the Map
-
-An impact map is a prioritisation tool. After the full map is drawn:
-
-1. **Identify the highest-impact actors** — which actors, if they changed their behaviour, would most directly cause the business goal?
-2. **Identify the highest-impact behaviours** — for the priority actors, which behaviour changes have the most leverage?
-3. **Select minimum viable deliverables** — for the priority behaviours, what is the smallest set of deliverables that would reliably cause the behaviour change?
-
-This gives the MVP scope: the minimum set of deliverables that, if built, would cause the behaviour changes in the key actors that would achieve the business goal.
-
-Deliverables left on the map but not selected for MVP become the backlog for subsequent phases — they are already traced to a business goal, so prioritisation is cheap.
-
----
-
-## Connection to Other Skills
-
-| Connects to | How |
+| Skill | Relationship |
 |---|---|
-| `okr-authoring` | Each OKR Key Result becomes a WHY goal |
-| `user-persona` | Personas map to WHO actors |
-| `jtbd-analysis` | Job stories identify the HOW behaviour changes for primary actors |
-| `epic-definition` | WHAT deliverables become epics |
-| `moscow-prioritization` | Must/Should/Could prioritisation of WHAT deliverables uses the impact map as the forcing function |
+| `okr-authoring` | Each OKR Key Result becomes a WHY goal (one map per KR) |
+| `user-persona` | Personas populate the WHO actors, including blockers |
+| `jtbd-analysis` | Validated job stories identify the HOW behavior changes for primary actors |
+| `epic-definition` | Selected WHAT deliverables become epics |
+| `moscow-prioritization` | Must/Should/Could binning of WHAT deliverables uses the map as the forcing function |
+| `story-mapping` | WHAT deliverables map onto story-map activities and release slices |
 
----
+A worked, end-to-end example for this repo's product — an OKR goal → Data Steward and
+Compliance Officer actors → the behavior changes wanted → candidate deliverables, and
+how it feeds story-mapping and OKRs — is in `references/impact-map-example.md`.
 
-## Quality Criteria
+## Quality criteria
 
 | Criterion | Pass | Fail |
 |---|---|---|
 | Measurable goal | WHY goal has a numeric target or binary condition | "Improve user experience" |
-| Goal-OKR link | WHY goal traces to a KR | Impact map goal not in the OKR set |
-| Behaviour, not activity | HOW impacts are behaviour changes, not tasks or features | "Users use the feature" |
-| Blocking actors | At least one blocking actor identified and addressed | Only supporters — no blockers |
-| Deliverable minimalism | Deliverables are candidates, not commitments — minimum set selected | Every deliverable treated as required |
-| MVP identification | A minimum set of deliverables is explicitly marked as the MVP cut | Full map delivered without a scope cut |
+| Goal-OKR link | WHY goal traces to a Key Result | Goal not in the OKR set |
+| Behavior, not activity | HOW impacts are behavior changes | "Users use the feature" |
+| Blocking actors | At least one blocking actor identified and addressed | Only supporters, no blockers |
+| Deliverable minimalism | Deliverables are candidates; a minimum set is selected | Every deliverable treated as required |
+| MVP cut made | A minimum deliverable set is explicitly marked as MVP | Full map delivered with no scope cut |
 
----
+## Anti-patterns
 
-## Anti-Patterns
+**Backwards mapping.** Starting from an existing feature list and drawing goal → actor
+→ impact branches to justify it. The tell: every WHAT was already on the backlog. The
+map exists to *challenge* deliverables, not launder them. (This is the same failure
+mode Olsen's problem-space/solution-space discipline catches: a "need" that is secretly
+a decided feature.)
 
-**Backwards mapping:** starting from an existing feature list and drawing goal → actor → impact branches to justify it. The tell: every WHAT on the map was already on the backlog. The map exists to challenge deliverables, not launder them.
+**Deliverable as goal.** "GOAL: ship the compliance dashboard." Shipping is under your
+control; a goal must be an outcome that actors' behavior produces.
 
-**Deliverable as goal:** "GOAL: ship the compliance dashboard." Shipping is under your control; goals must be outcomes that actors' behaviour produces. If achieving the "goal" requires no one outside the team to change behaviour, it is a deliverable.
+**Actor soup.** "The customer", "IT", "the market" as actors. An actor must be specific
+enough to have *observable behavior* — the Data Steward can connect a storage source;
+"the customer" cannot do anything observable.
 
-**Actor soup:** "the customer", "IT", "the market" as actors. An actor must be specific enough to have observable behaviour — Maya Chen the Compliance Officer can connect a storage source; "the customer" cannot do anything observable.
+**Feature usage as impact.** "Maya uses the report feature" restates a deliverable as an
+impact. The impact is the behavior the feature enables, not the using of it.
 
-**Feature usage as impact:** "Maya uses the report feature" restates a deliverable as an impact. The impact is the behaviour change the feature enables ("Maya briefs the CISO from live data instead of a stale spreadsheet").
-
-**The complete-map fallacy:** treating every branch on the map as committed scope. The map is a menu of options traced to the goal; the MVP cut selects the cheapest path through it. A map delivered without a cut has skipped its entire purpose as a prioritisation tool.
-
----
+**The complete-map fallacy.** Treating every branch as committed scope. The map is a menu
+traced to the goal; the MVP cut selects the cheapest path through it. A map with no cut has
+skipped its entire purpose as a prioritization tool.
 
 ## Output Format
 
@@ -166,7 +130,7 @@ Deliverables left on the map but not selected for MVP become the backlog for sub
 name: impact-map
 product: [product name]
 version: 1.0.0
-phase: ideate
+phase: strategy
 created: [date]
 owner: requirements-analyst
 linked-kr: [OKR Key Result ID]
@@ -174,26 +138,25 @@ linked-kr: [OKR Key Result ID]
 
 # Impact Map: [Goal statement]
 
-## Goal
-[Measurable goal statement with metric]
+## Goal (WHY)
+[Measurable goal statement with metric — sourced from linked-kr]
 
-## Impact Map
+## Map
 
-### Actor: [Actor 1 Name / Role]
-**Actor type:** [Primary / Secondary / Off-stage / Blocker]
+### Actor: [Name / Role]  — [Primary / Secondary / Off-stage / Blocker]
 
-| Impact (HOW) | Deliverable (WHAT) | Priority |
+| Impact (HOW — behavior change) | Deliverable (WHAT — candidate) | Priority |
 |---|---|---|
-| [Behaviour change] | [Feature or capability] | Must / Should / Could / Won't |
+| [Behavior change] | [Feature/content/config] | Must / Should / Could / Won't |
 
-### Actor: [Actor 2]
-[Repeat]
+### Actor: [next actor]
+[repeat]
 
 ---
 
 ## MVP Scope
-[Explicitly list the WHAT deliverables selected for the minimum viable scope, with rationale for each inclusion]
+[The WHAT deliverables selected as the minimum set, each with the impact it causes]
 
 ## Deferred Deliverables
-[WHAT items on the map that are valid but not selected for MVP — trace to which impact they address]
+[Valid WHAT items not in MVP — each traced to the impact it would address]
 ```
