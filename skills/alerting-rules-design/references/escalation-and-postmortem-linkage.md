@@ -106,3 +106,41 @@ The date reference (`PM-YYYY-MM-DD`) lets a future reviewer trace the alert chan
 | Tracking whether postmortem corrective actions have been completed | Monthly alert review (this skill's review discipline) |
 
 The key boundary: postmortem *authorship* is not this skill's domain, but postmortem *consumption* — specifically, ingesting corrective actions that affect alert definitions — is. A postmortem that says "delete alert Z" is not complete until the alert is deleted and the review log records the deletion with its postmortem reference. This skill closes that loop.
+
+---
+
+## Worked Alertmanager Routing Config
+
+`SKILL.md` names one Alertmanager per tenant stack, mirroring the per-tenant Prometheus topology: grouping collapses simultaneous firings into one notification, inhibition silences the alerts a bigger alert explains, and routes split page from ticket. The `repeat_interval` used on the page route (`4h`) is the same mechanic discussed under Escalation above — it re-fires until resolved or silenced, and is *not* an escalation policy.
+
+```yaml
+# alertmanager.yml
+route:
+  receiver: tickets
+  group_by: [alertname, service]
+  group_wait: 30s          # collect a burst into one notification
+  group_interval: 5m
+  repeat_interval: 12h
+  routes:
+    - matchers: [severity="page"]
+      receiver: oncall
+      repeat_interval: 4h  # pages re-fire until resolved or silenced
+
+inhibit_rules:
+  - source_matchers: [alertname="TenantStackDown"]   # the whole stack is down —
+    target_matchers: [severity=~"page|ticket"]        # silence every per-service alert
+    equal: [tenant]
+  - source_matchers: [severity="page"]                # a page inhibits its own ticket-level echo
+    target_matchers: [severity="ticket"]
+    equal: [service, slo]
+
+receivers:
+  - name: oncall
+    webhook_configs:
+      - url: "http://alert-bridge/chat"   # self-hosted chat webhook — no paid paging SaaS
+  - name: tickets
+    email_configs:
+      - to: "ops@<product>.example"
+```
+
+Silences (with an author, a reason, and an expiry) cover planned maintenance — never edit a rule to quiet a known noisy period. A short `repeat_interval` re-pages the same person; it does not notify anyone else, which is exactly why it cannot substitute for the unacknowledged-page handling described under Escalation above.
