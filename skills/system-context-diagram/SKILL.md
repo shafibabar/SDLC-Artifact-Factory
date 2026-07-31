@@ -1,147 +1,145 @@
 ---
 name: system-context-diagram
 description: >
-  Teaches how to produce a C4 Level 1 System Context Diagram — the highest-level
-  architecture view showing the system being built, the external users who interact
-  with it, and the external systems it depends on or integrates with. The System
-  Context Diagram is the first architecture artifact produced and the entry point
-  for all more detailed diagrams. Used by the enterprise-architect agent at the
-  start of the Design phase architecture work, after domain modelling is complete.
-version: 1.1.0
+  Teaches the enterprise-architect to produce a C4 Level 1 (System Context)
+  diagram — the system as a single box, the people (personas/roles) who use it,
+  and the external systems it depends on or is depended upon by, with the key
+  interactions labeled. Covers the C4-L1 notation, the procedure for identifying
+  external actors and drawing the correct system boundary (what is inside vs.
+  outside the system being built), and the diagram artifact template. The first
+  architecture view produced, before Container and Component views. Used at the
+  start of Design.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, c4, system-context, diagrams]
+tags: [design, architecture, c4-model, system-context, documentation, external-actors, system-boundary]
+related: [container-diagram, component-diagram, user-persona, event-storming, nfr-specification, glossary-management]
 ---
 
 # System Context Diagram
 
-## Purpose
+## What This View Shows
 
-The System Context Diagram (C4 Level 1, Simon Brown) answers the most fundamental architecture question: **what is this system, who uses it, and what does it interact with?**
+The System Context Diagram is **C4 Level 1** (Simon Brown) — the highest-level
+architecture view, drawn first. It answers one question every stakeholder,
+technical or not, must be able to answer: **what is this system, who uses it,
+and what does it interact with?**
 
-It is the first diagram an architect draws and the first one a stakeholder should see. It deliberately excludes internal detail — no services, no databases, no infrastructure. It shows only:
-- The system being built (one box)
-- The people who use it (user roles)
-- The external systems it integrates with
+It shows exactly three kinds of thing and nothing else:
 
-The System Context Diagram is the anchor for every more detailed diagram. If the context is wrong, all detail built on top of it is wrong.
+- **One system box** — the system being built, labelled with its name and a
+  one-sentence purpose. Never how it works; only what it is.
+- **Person elements** — the human roles who interact with the system, drawn
+  from the user personas and the Actors surfaced in Event Storming.
+- **External system elements** — systems outside the boundary that the system
+  integrates with. Not built or owned by this team.
 
----
+Internal detail is deliberately absent: no services, no databases, no message
+brokers, no infrastructure, no technology labels. Those belong to Level 2
+(Container) and lower. The power of this view is its simplicity — the one
+diagram Shafi can read without an IDE, without knowing Go, and use to confirm
+the scope is right before any detail is built on top of it.
 
-## C4 Model Overview
-
-The C4 model (Simon Brown) defines four levels of abstraction for architecture diagrams:
-
-| Level | Name | Shows | Audience |
-|---|---|---|---|
-| **1** | System Context | The system + users + external systems | Anyone — no technical knowledge required |
-| **2** | Container | Services, databases, frontends inside the system | Technical stakeholders, architects |
-| **3** | Component | Components inside a container | Engineers working on that container |
-| **4** | Code | Classes, functions inside a component | Engineers — generated from code |
-
-Always start with Level 1. Never jump to Level 2 before Level 1 is agreed upon.
-
----
-
-## System Context Diagram Elements
-
-### The System (centre box)
-
-The system being built — one box, labelled with the system name and a one-sentence description of its purpose.
-
-- Label: the system name from the Ubiquitous Language
-- Description: what it does for its users — not how it does it
-- Colour convention: blue (the system being designed)
-
-### Persons (actors)
-
-The human users who interact with the system. Derived from the user personas and the Actors identified in Domain Storytelling and Event Storming.
-
-- Label: the role name from the Ubiquitous Language
-- Description: how this person interacts with the system — one phrase
-- Colour convention: yellow/gold
-
-### External Systems
-
-Systems outside the boundary of the system being built that it communicates with. These are not designed by this team.
-
-- Label: the external system's name
-- Description: what data or capability this system provides to or receives from the system being built
-- Colour convention: grey (external — not owned)
-- Source: External Systems identified during Event Storming (pink cards)
-
-### Relationships
-
-Arrows between elements, labelled with the nature of the interaction:
-- Direction: the initiator points to the target
-- Label: what data or request flows along the relationship
-- Protocol (optional at Level 1, required at Level 2): HTTP, event stream, file, etc.
+In *Documenting Software Architectures* (Clements) terms this is a
+**component-and-connector view at its coarsest grain**: one component ("the
+system"), a handful of external components, and connectors labelled with what
+flows. It is a **viewpoint** — a fixed set of conventions for what may and may
+not appear — not a free-form sketch.
 
 ---
 
-## What Does NOT Belong in a System Context Diagram
+## The System-Boundary Rule
 
-These elements belong in Level 2 (Container Diagram) or lower — not here:
+The single most important decision this view makes is **where the boundary
+sits**. Apply one rule:
 
-- Individual microservices or APIs
-- Databases or message brokers
-- Infrastructure (Kubernetes, load balancers)
-- Internal components or modules
-- Technology choices
-- Deployment topology
+> **Exactly one box is "the system we are building." Everything else on the
+> diagram is either a person or an external system.**
 
-Resist the pressure to add detail. The power of the System Context Diagram is its simplicity. A diagram that shows 15 internal services as boxes next to external users is not a System Context Diagram — it is a confused Container Diagram.
+There is no third category at Level 1. If an element is neither a human role
+nor a system outside our ownership, it does not appear — it is internal, and
+internal structure is a Level 2 concern. A frontend and backend are not two
+context boxes; they are two containers *inside* the one system box.
 
----
+To classify any candidate element, apply the **"do we build and own it?" test**
+(worked in full in `references/boundary-identification.md`):
 
-## ASCII Representation
+- **We build and own it** → it is *inside* the system box, therefore invisible
+  at Level 1 (it is a container, shown at Level 2).
+- **A human uses or operates it** → it is a **person** element.
+- **It runs and is owned by someone else, and we integrate with it** → it is an
+  **external system** element.
 
-For this plugin, diagrams are expressed in ASCII for PM-reviewable Markdown. The enterprise-architect produces an ASCII version plus a structured description that can be rendered in any diagram tool.
-
-```
-                    ┌─────────────────────────────┐
-                    │     [User Role 1]            │
-                    │  Compliance Officer          │
-                    │  Reviews compliance gaps     │
-                    └──────────────┬──────────────┘
-                                   │ Views dashboards,
-                                   │ runs reports
-                                   ▼
-┌──────────────┐    ┌─────────────────────────────┐    ┌──────────────────┐
-│ Google Drive │◀───│                             │───▶│    AWS S3        │
-│ (External)   │    │   Data Estate Mapping &     │    │ (External)       │
-│ Customer's   │    │   Compliance Intelligence   │    │ Customer's files │
-│ file storage │    │                             │    └──────────────────┘
-└──────────────┘    │   Maps data estates,        │
-                    │   classifies files,          │    ┌──────────────────┐
-┌──────────────┐    │   detects compliance gaps   │◀───│  Identity        │
-│  IT Lead     │───▶│                             │    │  Provider (IdP)  │
-│ Deploys and  │    └─────────────────────────────┘    │ Customer's SSO   │
-│ configures   │                   │                   └──────────────────┘
-│ the platform │                   │ Raises alerts
-└──────────────┘                   ▼
-                    ┌─────────────────────────────┐
-                    │  [User Role 2]              │
-                    │  CISO / Security Lead       │
-                    │  Receives risk alerts       │
-                    └─────────────────────────────┘
-```
+Ambiguous cases — a shared platform service, a third-party API, an identity
+provider, a customer's own storage — are resolved by ownership and control, not
+by network location. `references/boundary-identification.md` walks each case.
 
 ---
 
-## Step-by-Step Production
+## Identifying the Actors
 
-1. Read the product name and description from `sdlc-context.json → first_product`.
-2. Read user personas — each persona maps to a Person element.
-3. Read Event Storming output — External Systems (pink cards) map to external system elements.
-4. Read NFR specification — data residency constraints determine which external systems are within vs. outside the boundary.
-5. Draw the system in the centre.
-6. Place all Person elements around it.
-7. Place all external system elements around it.
-8. Draw relationships with direction and labels.
-9. Apply the "does NOT belong" check — remove any internal detail that crept in.
-10. Present to Shafi for approval before proceeding to Container Diagram.
+An actor is anything outside the box connected to it by a relationship. Find
+them with three signals:
+
+- **Who initiates work?** A person or system that sends the system a request or
+  command. (Data Steward uploads a scan config; a webhook fires an event in.)
+- **Who receives output?** A person or system the system pushes results to.
+  (Compliance Officer reads a report; an alerting gateway receives a risk
+  alert.)
+- **Which external systems are consumed, and which consume us?** Upstream
+  dependencies the system calls out to (Google Drive, S3, an IdP) and
+  downstream consumers that call the system.
+
+Every persona from the `user-persona` skill maps to at most one person element;
+every External System (pink card) from `event-storming` maps to one external
+system element. Cross-check both inventories plus the `nfr-specification`
+(data-residency constraints move some systems across the boundary) before you
+call the actor list complete.
+
+---
+
+## When and Why to Draw It
+
+Draw it **first**, at the start of Design, after domain modelling and before
+the Container view. Never jump to Level 2 before Level 1 is agreed.
+
+Its purpose (Fairbanks/Xu: "clarify scope before drawing boxes") is a shared
+big-picture that non-technical stakeholders can read and approve. It also
+records what is **out of scope** — an external system on the diagram is an
+explicit statement of "we integrate with this, we do not build it." If the
+context is wrong, every detailed diagram built on it is wrong, so it is the
+cheapest possible place to catch a scope error.
+
+Redraw it whenever a new external integration or user role appears; a stale
+context diagram silently contradicts the detail diagrams beneath it.
+
+---
+
+## Reference Material
+
+This skill's detail lives in three self-contained reference files. Load the one
+that matches the task:
+
+- **`references/c4-context-notation.md`** — the full C4-L1 notation: the system
+  box, person elements (role + description), external-system elements,
+  relationship arrows with interaction labels and protocols, the colour
+  convention, and Clements' element-catalog / per-view Rationale guidance. Read
+  this when you need the exact vocabulary and what each element must carry. The
+  key distinction it settles: an **internal container is never shown at L1; an
+  external system always is**.
+- **`references/boundary-identification.md`** — the step-by-step procedure to
+  inventory personas and upstream/downstream systems, apply the "do we build
+  and own it?" test, resolve ambiguous cases (shared service, third-party API,
+  identity provider, customer-owned storage), and avoid the boundary
+  anti-patterns (internal service drawn as external, omitted human actor, data
+  store shown at L1). Read this when deciding what goes inside vs. outside.
+- **`references/diagram-template-and-example.md`** — the artifact template
+  (Mermaid + textual C4 + ASCII) and a fully worked System Context Diagram for
+  this repo's product: the data-estate / compliance platform, with Data Steward
+  and Compliance Officer personas, external Google Drive / S3 / identity
+  provider systems, and the platform as the single system box. Read this when
+  producing the actual artifact.
 
 ---
 
@@ -150,11 +148,12 @@ For this plugin, diagrams are expressed in ASCII for PM-reviewable Markdown. The
 | Criterion | Pass | Fail |
 |---|---|---|
 | Single system box | Exactly one box for the system being built | Multiple internal service boxes visible |
-| Named persons | All user roles from personas are represented | Generic "User" without a role name |
-| All external systems | Every external integration identified in Event Storming is shown | Missing external systems |
-| Labelled relationships | Every arrow has a label describing what flows | Unlabelled arrows |
-| No internal detail | No databases, services, or infrastructure inside the system box | Internal components visible at this level |
-| Plain English | All descriptions are readable by Shafi without technical background | Technical jargon in element descriptions |
+| Named persons | Every user role from personas is a distinct element | Generic "User" without a role name |
+| All external systems | Every integration from Event Storming is shown | A supporting system (IdP, alerting) omitted |
+| Labelled relationships | Every arrow states what flows and who initiates | Unlabelled or double-headed arrows |
+| No internal detail | No databases, services, or infrastructure inside the box | Containers or technology visible at L1 |
+| Plain English | Descriptions readable by Shafi without technical background | Jargon or technology labels on elements |
+| Rationale captured | A sentence on why this boundary, distinct from constraint notes | Boundary asserted with no reasoning |
 
 ---
 
@@ -162,51 +161,10 @@ For this plugin, diagrams are expressed in ASCII for PM-reviewable Markdown. The
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **Container Diagram in disguise** — internal services, databases, or brokers drawn at Level 1 | The one diagram every stakeholder can read is destroyed by detail only engineers need | One system box; push all internal structure down to Level 2 |
-| **The split system** — "Frontend" and "Backend" as two context-level boxes | The system boundary fragments; users appear to interact with implementation halves | One box for the whole system being built; frontend/backend is a Level 2 concern |
-| **Generic "User"** | Hides the distinct roles, goals, and permissions discovered in personas and Domain Storytelling | One Person element per role, named in the Ubiquitous Language |
-| **Forgotten supporting systems** — the IdP, email/alerting gateway, or monitoring SaaS omitted | These integrations carry auth, compliance, and availability consequences that surface late | Cross-check against Event Storming pink cards and the NFR specification before approval |
-| **Technology labels at Level 1** — "React SPA", "PostgreSQL" on context elements | Invites technology debate before the boundary is agreed; excludes non-technical reviewers | Technology first appears on the Container Diagram |
-| **Ambiguous arrows** — unlabelled or double-headed relationships | "Integrates with" hides who initiates, what flows, and which side depends on which | Every arrow: initiator → target, labelled with what flows |
-| **Context set in stone** — the diagram never revisited when a new external integration is added | Detail diagrams start contradicting Level 1; the anchor becomes misleading | Any new external system or user role triggers a context diagram update and re-approval |
-
----
-
-## Output Format
-
-```markdown
----
-name: system-context-diagram
-product: [product name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: enterprise-architect
----
-
-# System Context Diagram: [Product Name]
-
-## Diagram
-
-[ASCII diagram]
-
-## Elements
-
-### System
-**[System Name]:** [One-sentence description]
-
-### Persons
-| Person | Role description | Interaction with system |
-|---|---|---|
-
-### External Systems
-| System | Owner | What it provides / receives |
-|---|---|---|
-
-### Relationships
-| From | To | Description | Protocol |
-|---|---|---|---|
-
-## Boundary Notes
-[Any data residency or tenant isolation constraints that affect what is inside vs. outside the system boundary]
-```
+| **Container diagram in disguise** — internal services/databases drawn at L1 | Destroys the one diagram every stakeholder can read | One box; push all internal structure to Level 2 |
+| **The split system** — "Frontend" and "Backend" as two context boxes | Fragments the boundary; users appear to use implementation halves | One box for the whole system; frontend/backend is Level 2 |
+| **Generic "User"** | Hides the distinct roles found in personas and Event Storming | One person element per role, named in the Ubiquitous Language |
+| **Forgotten supporting system** — IdP, alerting, monitoring omitted | These carry auth, compliance, availability consequences that surface late | Cross-check Event Storming pink cards + NFR spec before approval |
+| **Technology labels at L1** — "React SPA", "PostgreSQL" on elements | Invites tech debate before the boundary is agreed; excludes reviewers | Technology first appears on the Container diagram |
+| **Data store at L1** — a database drawn as an external system | A database we own is internal; only externally-owned storage is external | Apply the "do we build and own it?" test |
+| **Context set in stone** — never revisited when an integration is added | Detail diagrams start contradicting L1; the anchor misleads | Any new external system or role triggers a redraw and re-approval |
