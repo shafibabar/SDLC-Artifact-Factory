@@ -3,7 +3,7 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-07-31",
-    "updated_by": "Chunks 47/48 + D039/D040 — conflict-resolution merge of issue-298-go-skills into main: all 24 go-* backend-engineering skill rebuilds (grouped first pass Chunk 47, individual correction pass Chunk 48, issues #344-#368, PRs #369-#393) now on main. Renumbered from 44/45/D037/D038 to 47/48/D039/D040 because react-* campaign had already claimed those numbers on main. 10 new canonical glossary terms (Table-Driven Test, Humble Object, Dependency Rule, Confinement, Heartbeat Pattern from Chunk 47; Fitness Function, Expand/Contract Pattern, Blast Radius, Steady-State Hypothesis, Provider State from Chunk 48). 22 total contract tests for go-* domain."
+    "updated_by": "Chunk 49 — test-pyramid deep rebuild (issue #424, wave 1 of 3). Skills/test-pyramid: v1.1.0 → v2.0.0 (MAJOR: description rewritten as trigger surface); related: field added (13 skills); Output Format template moved to references/test-strategy-template.md; Coverage Philosophy updated with formal Statement/Branch/Path Coverage names; exploratory-testing pointer added in Shift-Right. New contract test: tests/skills/test-pyramid.contract.sh. PR merges into issue-424-test-engineering-rebuild integration branch (not main until all 3 skills complete)."
   },
 
   "project": {

@@ -8,6 +8,9 @@ Format: [Semantic Version] — Date — Description
 
 ## [Unreleased]
 
+### Changed
+- 2026-07-31 — `skills/test-pyramid/SKILL.md` rebuilt to v2.0.0 under skill-authoring-standards (issue #424, PR into `issue-424-test-engineering-rebuild` integration branch): description rewritten as trigger surface naming test-strategist/implement/quality phases; Coverage Philosophy updated with formal Statement Coverage / Branch Coverage / Path Coverage hierarchy; exploratory-testing pointer added in Shift-Right section; `related:` field added (13 skills referenced in prose). Output Format template extracted to `skills/test-pyramid/references/test-strategy-template.md` (complete self-contained test-strategy document template — Pyramid Targets, Shift-Left/Right plans, Coverage/Flaky policy, Delegated Testing). Body reduced from 204 to 181 lines. New contract test: `tests/skills/test-pyramid.contract.sh` probes 70% mutation threshold from references/ file.
+
 ### Added
 - 2026-07-20 — `platform/` skills (12), `observability/` stack skills (3 — completes the 7-skill domain), and `platform-engineer` agent (Chunk 15)
 - 2026-07-20 — `data-analytics/` skills (7) and `data-engineer` agent (Chunk 16) — completes the 13-agent roster defined in `.claude-plugin/plugin.json`
