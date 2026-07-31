@@ -61,3 +61,46 @@ for the visual treatment of each option — the modal itself owns the
 classification workflow (fragment-specific), while the badge's visual
 representation of a sensitivity level is shared across every fragment that
 displays one.
+
+---
+
+## Domain Mapping Tables (Local Components)
+
+For each Read Model and Command in **one fragment's** domain there is a
+corresponding Local component in that fragment. These are the mapping
+tables a fragment's component inventory is derived from — every Read Model
+gets a display component, every Command gets an entry-point component:
+
+| Read Model | Component | Level |
+|---|---|---|
+| `DataAssetListView` | `DataAssetTable` | Organism |
+| `ComplianceGapReportView` | `ComplianceGapReport` | Organism |
+
+| Command | Component | Level |
+|---|---|---|
+| `ClassifyDataAsset` | `ClassificationModal` | Organism |
+| `ConnectDataSource` | `ConnectSourceWizard` | Organism |
+
+A Local Organism may still depend on Shared Atoms/Molecules for its visual
+building blocks (see the `ClassificationModal` example above using the
+Shared `SensitivityBadge`) — Local vs. Shared is about where a component's
+*domain logic* lives, not whether it can consume shared UI primitives.
+
+---
+
+## Worked Component Inventory
+
+The frontend-engineer's work breakdown, with `Scope` a required column and
+Shared and Local components listed together. A Shared component's Priority
+reflects the earliest consuming fragment's need — it is built once, ahead
+of whichever fragment needs it first:
+
+| Component | Level | Scope | Priority | Domain mapping | Dependencies |
+|---|---|---|---|---|---|
+| `SensitivityBadge` | Atom | Shared | P1 | SensitivityLevel value | None |
+| `DataAssetTable` | Organism | Local (data-assets) | P1 | DataAssetListView | `SensitivityBadge`, `Button` |
+| `ClassificationModal` | Organism | Local (data-assets) | P1 | ClassifyDataAsset | `SensitivityBadge`, `Modal` |
+| `ComplianceGapReport` | Organism | Local (compliance) | P2 | ComplianceGapReportView | `StatusBadge`, `Chart` |
+
+Priority 1 components are needed for the MVP slice; Priority 2 for the full
+feature set.
