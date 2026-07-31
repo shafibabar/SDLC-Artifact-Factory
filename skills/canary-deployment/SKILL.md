@@ -8,11 +8,12 @@ description: >
   multi-tenancy, and the boundary of what cannot canary (partitioned event
   consumers, schema changes) with fallback strategies. Used by the
   platform-engineer during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
-tags: [deploy, canary, progressive-delivery, linkerd, traffic-split, burn-rate, rollback]
+tags: [deploy, canary, progressive-delivery, linkerd, traffic-split, burn-rate, rollback, argo-rollouts]
+related: [progressive-delivery, kubernetes-workload-patterns, alerting-rules-design, slo-definition]
 ---
 
 # Canary Deployment
@@ -22,6 +23,8 @@ tags: [deploy, canary, progressive-delivery, linkerd, traffic-split, burn-rate, 
 **Canary Deployment** is the default progressive delivery strategy on this platform: a new version receives a small, increasing share of live traffic while automated gates watch it against the same Service Level Objectives (`slo-definition`) the stable version is held to. If the new version burns error budget faster than the gate allows, the rollout stops and reverts automatically — no human has to notice a dashboard trending red at 2 a.m.
 
 Where `blue-green-deployment` is a binary switch reserved for schema cutovers and instant-rollback needs, canary is gradual and reserved for the common case: an ordinary service release that traffic can be shifted onto in stages, each stage cheaper to abandon than the last. The agent's directive is explicit: canary, gated on SLO burn, is the default; big-bang deploys are forbidden in production.
+
+**Decision framework**: `progressive-delivery` owns the when-canary-vs-blue-green and when-to-add-feature-flags decision framework. This skill focuses on **how** to execute a canary rollout once the strategy is chosen.
 
 ---
 
@@ -49,7 +52,7 @@ spec:
           weight: 5
 ```
 
-The standard stage progression, each stage a values change (or an automated step-function if a rollout controller is in play — see below), with a **hold time** before advancing so the burn-rate windows below have enough signal:
+The standard stage progression, each stage a values change (or an automated step-function when Argo Rollouts is in play — see below), with a **hold time** before advancing so the burn-rate windows have enough signal:
 
 | Stage | Canary weight | Minimum hold | Advances if |
 |---|---|---|---|
@@ -62,7 +65,7 @@ Any gate breach at any stage **halts and reverts to 0% canary weight** immediate
 
 ### Automation note
 
-The stage progression above can run as manual, reviewed PRs to the weight values (consistent with every other GitOps change) for a Han-Solo-scale operator, or be automated with a lightweight rollout controller (e.g. Flagger, which drives Linkerd `HTTPRoute` weights directly from Prometheus queries) once the manual cadence becomes the bottleneck. Manual-via-PR is the frugal default; Flagger is the documented upgrade path, recorded as an ADR when adopted — it adds an operator to the cluster, which is exactly the kind of tooling decision that needs justification against the frugality constraint.
+The stage progression runs as manual, reviewed PRs (the frugal default for a Han Solo operator) or automated via **Argo Rollouts** — the GitOps-native upgrade path that drives Linkerd `HTTPRoute` weights from `AnalysisTemplate` results directly. Both are consistent with the GitOps change-as-PR discipline; Argo Rollouts adds an operator to the cluster — justify against frugality, record in an ADR when adopted.
 
 ---
 
@@ -77,35 +80,21 @@ Every stage gates on the same signals `alerting-rules-design` already pages on �
 | **p99 latency vs baseline** | Canary p99 vs stable p99, same window | Canary must not exceed stable's p99 by more than 20% | Every stage |
 | **Freshness (pipeline services)** | End-to-end freshness SLI computed for canary-tagged messages only | Must stay within the SLO target | Stage advance only, not continuous (freshness has a longer natural lag) |
 
-```yaml
-# rules/canary-gate-estate-scanner.yaml
-groups:
-  - name: canary-gate-estate-scanner
-    rules:
-      - alert: CanaryFastBurnBreach
-        expr: |
-          service:http_request_errors:ratio_rate5m{service="estate-scanner", slot="canary"}
-            > (14.4 * 0.005)
-        for: 5m
-        labels: { severity: page, action: auto-rollback }
-        annotations:
-          summary: "estate-scanner canary burning error budget at 14.4x — auto-reverting to 0%"
-          runbook_url: "runbooks/estate-scanner/canary-rollback.md"
-      - alert: CanaryLatencyRegression
-        expr: |
-          (
-            histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{service="estate-scanner", slot="canary"}[10m])))
-            /
-            histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{service="estate-scanner", slot="stable"}[10m])))
-          ) > 1.2
-        for: 10m
-        labels: { severity: page, action: auto-rollback }
-        annotations:
-          summary: "estate-scanner canary p99 is 20%+ worse than stable"
-          runbook_url: "runbooks/estate-scanner/canary-rollback.md"
-```
+**Automatic rollback on breach**: gate alert labels carry `action: auto-rollback` — the rollout controller (or the on-call running the manual cadence) reverts weight to 0% immediately. Every gate alert carries a `runbook_url` per `runbook-authoring`'s hygiene rule. Full gate rule YAML, AnalysisTemplate definitions, and the worked estate-scanner example: `references/argo-rollouts-canary.md`.
 
-**Automatic rollback on breach**: the `action: auto-rollback` label is what a rollout controller (or the on-call, if running the manual cadence) acts on — weight reverts to 0% canary, the alert's `runbook_url` documents the exact revert steps per `runbook-authoring`. This is the same alerting infrastructure the platform already runs; canary gates are not a second alerting system, they are `alerting-rules-design`'s rules scoped by the `slot` label.
+---
+
+## Argo Rollouts: GitOps-Native Canary Implementation
+
+**Argo Rollouts** is the recommended automation path when manual-via-PR becomes the bottleneck. Its `Rollout` CRD replaces the plain `Deployment` for any service using progressive delivery — see `kubernetes-workload-patterns` for the workload-type decision (stateless service without progressive delivery → `Deployment`; progressive delivery service → `Rollout`).
+
+A `Rollout` embeds the canary strategy — steps, weights, pauses — and attaches `AnalysisTemplate` CRDs via the `analyses` field on each step. At every step, Argo Rollouts creates an `AnalysisRun` that evaluates the Prometheus burn-rate query defined in the `AnalysisTemplate`. If the `AnalysisRun` fails (query result exceeds threshold for the configured duration), the `Rollout` auto-reverts to 0% canary weight without waiting for a human. This is the concrete GitOps-native implementation of the "SLO burn-rate gate that auto-rollbacks on breach" described in the gate table above.
+
+**Why `AnalysisTemplate` over a CI gate script**: gate criteria in an `AnalysisTemplate` live in Git — peer-reviewed, auditable, and GitOps-reconciled by Argo Rollouts, not a CI script that can be bypassed or modified mid-flight. A failed `AnalysisRun` is a versioned Kubernetes resource visible in `kubectl get analysisrun` and the Argo Rollouts UI; a failed CI step is a log artifact. This closes the GitOps coherence gap: the entire delivery strategy — traffic weights, hold times, gate thresholds — is now a Git-committable, pull-request-reviewable object.
+
+**Linkerd integration**: the Argo Rollouts Linkerd integration controller patches `HTTPRoute` backend weights at each step automatically — no manual `weight` field edits or PR merges required during a running rollout.
+
+For full `Rollout` + `AnalysisTemplate` YAML, the step-by-step promotion sequence, AnalysisRun lifecycle, and the complete estate-scanner worked example: **`references/argo-rollouts-canary.md`**.
 
 ---
 
@@ -133,47 +122,6 @@ The rule in one line: **canary needs a dial; if the workload only has a switch, 
 
 ---
 
-## Worked Example — Staged Rollout for estate-scanner
-
-Rolling out a change to `estate-scanner`'s document-fingerprinting logic (affects the `DocumentDiscovered` event payload's `content_hash` field — additive, so no schema exception applies):
-
-```yaml
-# deploy/clusters/tenants/tenant-canary/estate-scanner-canary-route.yaml
-apiVersion: policy.linkerd.io/v1beta3
-kind: HTTPRoute
-metadata: { name: estate-scanner }
-spec:
-  parentRefs: [{ name: estate-scanner, kind: Service }]
-  rules:
-    - backendRefs:
-        - { name: estate-scanner-stable, port: 8080, weight: 95 }
-        - { name: estate-scanner-canary, port: 8080, weight: 5 }
-```
-
-Gate rules scoped to this release, referencing the recorded series from `prometheus-metrics-design` and the SLO from `slo-definition`:
-
-```yaml
-groups:
-  - name: canary-gate-estate-scanner-fingerprint-release
-    rules:
-      - alert: CanaryFastBurnBreach
-        expr: service:http_request_errors:ratio_rate5m{service="estate-scanner", slot="canary"} > 0.072
-        for: 5m
-        labels: { severity: page, action: auto-rollback, stage: "5,25,50" }
-        annotations: { runbook_url: "runbooks/estate-scanner/canary-rollback.md" }
-      - alert: CanaryContentHashMismatch
-        expr: increase(estate_scanner_content_hash_mismatch_total{slot="canary"}[15m]) > 0
-        for: 5m
-        labels: { severity: page, action: auto-rollback, stage: "5,25,50" }
-        annotations:
-          summary: "Canary is producing content_hash values that disagree with stable on the same document set"
-          runbook_url: "runbooks/estate-scanner/canary-rollback.md"
-```
-
-Sequence: stage 1 (5%, 15 min hold) clean → stage 2 (25%, 30 min) clean → stage 3 (50%, 30 min) clean → stage 4 (100%, terminal) → `estate-scanner-canary` Deployment is relabeled `stable`, the old stable Deployment scales down. The `tenant-canary` wave completing cleanly is the gate for the `cd-pipeline` fleet-wave PR to `tenant-acme` and `tenant-globex`, where the same four-stage sequence runs again against each tenant's own traffic.
-
----
-
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -186,6 +134,7 @@ Sequence: stage 1 (5%, 15 min hold) clean → stage 2 (25%, 30 min) clean → st
 | Per-tenant waves | Canary tenant proves in-cluster canary before fleet wave promotes | Fleet-wide promotion skipping per-tenant canary |
 | Boundary respected | Partitioned consumers canary by partition share or fall back to blue-green; schema changes ride expand/contract | Partial-traffic canary attempted on a workload with no traffic dial |
 | Mesh-native | Linkerd `HTTPRoute`/`TrafficSplit` weights, no added ingress-layer canary controller unless justified by ADR | A second canary system duplicating what the mesh already provides |
+| GitOps-native gates | When Argo Rollouts is used, gate criteria live in `AnalysisTemplate` CRDs in Git — not CI scripts | Gate logic in a pipeline step that can be bypassed or modified without Git review |
 
 ---
 
@@ -196,7 +145,7 @@ Sequence: stage 1 (5%, 15 min hold) clean → stage 2 (25%, 30 min) clean → st
 - **Gates that only page** — an alert firing while the rollout controller (or the on-call, unprompted) keeps advancing weight anyway is theatre. The breach must halt and revert automatically, or a human must be the automation with an SLA tighter than the next stage's schedule.
 - **Skipping the fleet tenant's own canary** — trusting the canary tenant's clean result to greenlight every other tenant at 100% ignores that tenant workloads differ; the fleet wave promotes the *digest*, not an exemption from re-canarying.
 - **Canary weight left non-zero indefinitely** — a rollout stuck at 25% for weeks because nobody closed it out is neither rolled back nor rolled forward; it is undecided state that complicates the next release. Every canary terminates at 0% or 100%.
-- **A second alerting stack for canaries** — building bespoke canary dashboards and thresholds disconnected from `alerting-rules-design`'s SLO burn-rate rules duplicates work and can disagree with the numbers the rest of the platform trusts.
+- **Gate criteria in CI, not in Git** — an `AnalysisTemplate` CRD in Git is peer-reviewed and cannot be bypassed without a PR; a threshold check in a pipeline step can be commented out, skipped, or overridden with a re-run. Gate criteria belong in Git.
 - **Schema drift under partial traffic** — writing under a new schema shape at 5% canary while 95% of traffic writes the old shape is exactly the dual-schema problem `blue-green-deployment` forbids, just spread across a longer window. Expand first, always.
 
 ---
@@ -218,14 +167,20 @@ created: [date]
 
 ## Strategy Confirmation
 [Why canary fits this release — traffic-driven, no schema exception, no partition constraint]
+[Reference to progressive-delivery for the strategy selection rationale]
+
+## Workload Type
+[Rollout CRD (Argo Rollouts) or Deployment + manual HTTPRoute PRs — with frugality justification]
 
 ## Traffic Route
 charts/[service]/templates/canary-httproute.yaml
+[Or: Rollout CRD spec in charts/[service]/templates/rollout.yaml]
 
 ## Stage Plan
 | Stage | Weight | Hold time | Advance condition |
 
 ## Gate Rules
+[When Argo Rollouts: AnalysisTemplate CRD path in Git]
 prometheus/rules/canary-gate-[service]-[release].yaml
 [Fast-burn, error-vs-baseline, latency-vs-baseline, freshness thresholds]
 
