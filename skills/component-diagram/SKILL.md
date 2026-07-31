@@ -1,265 +1,130 @@
 ---
 name: component-diagram
 description: >
-  Teaches how to produce a C4 Level 3 Component Diagram — showing the internal
-  structure of a single container (service) as named components with defined
-  responsibilities. Component diagrams establish the package structure, the
-  layered architecture, and the dependency direction rules within a service before
-  code is written. They are the primary input to the backend-engineer's Go project
-  structure and the frontend-engineer's React component architecture. Used by the
-  enterprise-architect agent per service, after the Container Diagram is approved.
-version: 1.1.0
+  Teaches the enterprise-architect to produce a C4 Level 3 (Component) diagram
+  for a single service/container — decomposing it into the major structural
+  building blocks (handlers, application services, domain, repositories,
+  adapters, event publishers), their responsibilities, and the permitted
+  dependency directions between them. Covers the C4-L3 notation rules, the
+  layering and dependency-inversion constraints (Clean Architecture:
+  source-code dependencies point inward toward the domain), the mapping from Go
+  package structure to components, and the diagram artifact template. Used
+  during Design after the Container view is fixed, once a service's internal
+  structure is non-obvious enough to be worth drawing.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, c4, component-diagram, layered-architecture, go, solid]
+tags: [design, architecture, c4-model, component-diagram, documentation, layering, dependency-direction, clean-architecture]
+related: [container-diagram, system-context-diagram, go-project-structure, go-repository-pattern, go-service-layer, adr-authoring]
 ---
 
 # Component Diagram
 
-## Purpose
+## What This Diagram Shows
 
-The Component Diagram (C4 Level 3) zooms into a single container and shows its internal structure — the named components, their responsibilities, and the dependencies between them. A component is a grouping of related code with a defined interface and a clear responsibility.
+A C4 Level 3 Component diagram zooms into **exactly one container** — a single
+deployable service — and shows its *internal* structure: the named components
+inside it, each component's single responsibility, and the direction of the
+dependencies between them. It answers one question:
 
-The Component Diagram answers: **what are the logical building blocks inside this service, what does each one do, and in which direction do dependencies flow?**
+> What are the logical building blocks inside *this* service, what does each
+> one do, and in which direction do source-code dependencies flow?
 
-Component diagrams enforce SOLID principles at the architectural level before a single line of code is written.
+**Scope is one container, always.** If you find yourself drawing two services in
+one component diagram, you are drawing a Container diagram instead. One diagram
+per container is the discipline — see `container-diagram` for the level above
+and `system-context-diagram` for the level above that.
 
----
+**What it deliberately omits.** In *Documenting Software Architectures* terms
+this is a **layered module view**, not a runtime (component-and-connector)
+view. So it carries no runtime/process semantics: no request timelines, no
+"step 1 → step 2" call-sequence numbers, no message ordering, no deployment
+placement (that is the Container diagram's allocation concern). Adding a
+sequence number to this diagram is a category error. It shows *allowed-to-use*
+structure at compile time, nothing about what happens while the system runs.
 
-## Standard Layered Architecture for Go Services
+## Is It Even Worth Drawing?
 
-Every Go service in this plugin follows a layered architecture with strict dependency direction rules. The Component Diagram for a Go API service always uses this structure:
+A component diagram is worth the artifact **only when the internal structure is
+non-obvious** (Fairbanks; Richards & Ford). Every Go service in this repo uses
+the same four-layer skeleton, so a diagram that merely restates
+API→Application→Domain→Infrastructure adds nothing. Draw one when *this* service
+departs from the default in a way a reader must understand before touching code:
 
-```
-┌───────────────────────────────────────────────────────┐
-│ [Service Name] — Go, net/http + chi                   │
-│                                                       │
-│  ┌──────────────────────────────────────────────┐    │
-│  │  API Layer (handlers/)                       │    │
-│  │  HTTP handlers, request/response mapping,    │    │
-│  │  input validation, auth middleware           │    │
-│  └────────────────────┬─────────────────────────┘    │
-│                       │ calls                         │
-│  ┌────────────────────▼─────────────────────────┐    │
-│  │  Application Layer (application/)            │    │
-│  │  Command handlers, query handlers,           │    │
-│  │  orchestration — no domain logic here        │    │
-│  └────────────────────┬─────────────────────────┘    │
-│                       │ calls                         │
-│  ┌────────────────────▼─────────────────────────┐    │
-│  │  Domain Layer (domain/)                      │    │
-│  │  Aggregates, Domain Events, Commands,        │    │
-│  │  Value Objects, domain interfaces            │    │
-│  │  NO external dependencies                    │    │
-│  └────────────────────┬─────────────────────────┘    │
-│                       │ implemented by                │
-│  ┌────────────────────▼─────────────────────────┐    │
-│  │  Infrastructure Layer (infrastructure/)      │    │
-│  │  Repository implementations (PostgreSQL/pgx) │    │
-│  │  Outbox relay, event publisher (Redpanda)    │    │
-│  │  External service ACL adapters               │    │
-│  └──────────────────────────────────────────────┘    │
-│                                                       │
-└───────────────────────────────────────────────────────┘
-```
-
-**Dependency direction rule:** Dependencies flow inward only. The domain layer has no imports from infrastructure or API. The application layer imports from domain. Infrastructure imports from domain (to implement domain interfaces). API imports from application. This is the Dependency Inversion Principle applied at the architectural level.
-
----
-
-## Component Responsibilities
-
-### API Layer (`handlers/`)
-
-- Receives HTTP requests via chi router
-- Validates request structure (structural validation only — not business rules)
-- Maps request DTOs to Command or Query objects
-- Calls the Application layer
-- Maps Application layer responses to HTTP response DTOs
-- Returns HTTP responses
-- Handles authentication middleware (JWT validation via Linkerd or middleware)
-
-**Does NOT:** Contain any business logic. Does not call the Domain layer directly. Does not access databases.
-
-### Application Layer (`application/`)
-
-- Receives Commands and Queries from the API layer
-- Orchestrates the domain — loads the Aggregate from the repository, calls domain methods, saves back
-- Publishes Domain Events to the outbox table (via infrastructure — the Transactional Outbox)
-- Handles idempotency (checks command log)
-- **Command handlers:** one handler per Command; all in `application/commands/`
-- **Query handlers:** one handler per Read Model query; all in `application/queries/`
-
-**Does NOT:** Contain domain logic (invariants, business rules). Does not construct domain objects from raw data — the domain layer owns its own construction.
-
-### Domain Layer (`domain/`)
-
-- Aggregates and their methods (the only place invariants are enforced)
-- Value Objects (immutable, equality by value)
-- Domain Events (structs — the data the event carries)
-- Commands (structs — the data passed to Application handlers)
-- Domain interfaces (Repository interface, EventPublisher interface — implemented in Infrastructure)
-- Domain errors (business errors, not system errors)
-
-**Does NOT:** Import from any other layer. Has no external dependencies. Depends only on the Go standard library. This is what makes the domain testable in complete isolation.
-
-### Infrastructure Layer (`infrastructure/`)
-
-- PostgreSQL repository implementations (`infrastructure/postgres/`)
-- Outbox relay implementation (`infrastructure/outbox/`)
-- Redpanda event publisher (`infrastructure/events/`)
-- ACL adapters for external systems (`infrastructure/adapters/[external-name]/`)
-- Read Model projectors (`infrastructure/projectors/`)
-
-**Does NOT:** Contain business logic. Adapters translate between external models and domain types — the translation logic is in the ACL, not the domain.
-
----
-
-## Component Diagram for a Worker Service
-
-Background worker services (event consumers) follow a simpler structure:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ [Worker Name] — Go                                      │
-│                                                         │
-│  ┌────────────────────────────────────────────────┐    │
-│  │  Consumer Layer (consumer/)                    │    │
-│  │  Redpanda consumer group setup,                │    │
-│  │  message deserialization, idempotency check    │    │
-│  └────────────────────┬───────────────────────────┘    │
-│                       │ calls                           │
-│  ┌────────────────────▼───────────────────────────┐    │
-│  │  Application Layer (application/)              │    │
-│  │  Event handlers — one per consumed event type  │    │
-│  └────────────────────┬───────────────────────────┘    │
-│                       │ calls                           │
-│  ┌────────────────────▼───────────────────────────┐    │
-│  │  Domain Layer (domain/)                        │    │
-│  │  Domain objects and interfaces                 │    │
-│  └────────────────────┬───────────────────────────┘    │
-│                       │ implemented by                  │
-│  ┌────────────────────▼───────────────────────────┐    │
-│  │  Infrastructure Layer (infrastructure/)        │    │
-│  │  Repository implementations, external calls    │    │
-│  └────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
-## Go Package Structure
-
-The Component Diagram maps directly to the Go package structure:
-
-```
-[service-name]/
-├── cmd/
-│   └── server/
-│       └── main.go              ← wires everything together (DI)
-├── internal/
-│   ├── domain/                  ← Domain layer
-│   │   ├── [aggregate].go
-│   │   ├── events.go
-│   │   ├── commands.go
-│   │   ├── errors.go
-│   │   └── ports.go             ← repository and event publisher interfaces
-│   ├── application/             ← Application layer
-│   │   ├── commands/
-│   │   │   └── [command]_handler.go
-│   │   └── queries/
-│   │       └── [query]_handler.go
-│   ├── handlers/                ← API layer (or consumer/ for workers)
-│   │   ├── [resource]_handler.go
-│   │   └── middleware/
-│   └── infrastructure/          ← Infrastructure layer
-│       ├── postgres/
-│       │   └── [aggregate]_repository.go
-│       ├── outbox/
-│       │   └── relay.go
-│       ├── events/
-│       │   └── publisher.go
-│       └── adapters/
-│           └── [external-name]/
-│               ├── client.go    ← calls the external API
-│               └── translator.go ← maps external types to domain types
-└── api/
-    └── openapi.yaml             ← API contract
-```
-
----
-
-## SOLID at Component Level
-
-| Principle | How it is enforced |
+| Draw it when | Skip it when |
 |---|---|
-| **S** — Single Responsibility | One handler per Command; one component per layer responsibility |
-| **O** — Open/Closed | Domain interfaces in `ports.go` — new implementations added without changing the interface |
-| **L** — Liskov Substitution | Infrastructure implements domain interfaces; any implementation is substitutable |
-| **I** — Interface Segregation | Repository interface is specific to the domain — only the methods the domain actually needs |
-| **D** — Dependency Inversion | Domain defines interfaces; Infrastructure implements them; Application depends on the interface, not the implementation |
+| The service has an Anti-Corruption Layer wrapping a messy external system | The layering is the plain four-layer default with nothing unusual |
+| Multiple aggregates, projectors, or a saga coordinator live in one container | One aggregate, one repository, standard CRUD-plus-events shape |
+| A non-obvious dependency (a shared read-model, an internal port) needs review | The Go package tree already makes the structure self-evident |
+| A reviewer must see *why* two components are split before implementation | Nothing here would surprise an engineer reading `go-project-structure` |
 
----
+## The Standard Component Set
 
-## Quality Criteria
+A Go API service in this repo decomposes into these components. Each has **one**
+responsibility (SOLID's S). A component is a *grouping of related functionality
+behind an interface*, never a single struct — the full abstraction-level rule is
+in `references/c4-component-notation.md`.
 
-| Criterion | Pass | Fail |
+| Component | Package | Single responsibility |
 |---|---|---|
-| Layer separation | Four distinct layers with names matching the standard | Flat package structure with no layer separation |
-| Inward dependencies | No domain import of infrastructure or API | Domain importing from `infrastructure/` or `handlers/` |
-| Domain purity | Domain layer has no external library imports | Domain importing database drivers, HTTP libraries |
-| Interface in domain | Repository and EventPublisher interfaces defined in `domain/ports.go` | Interfaces defined in `infrastructure/` |
-| One handler per command | One Go file per Command handler | Handlers grouped by entity rather than by command |
-| ACL in infrastructure | External API translations in `infrastructure/adapters/` | External API types appearing in domain layer |
+| **HTTP Handler** | `handlers/` | Decode/validate the request, map DTO→Command/Query, call the application service, encode the response. No business logic. |
+| **Application Service** | `application/` | Orchestrate one use case: load the Aggregate, call its methods, save, enqueue the outbox event. No invariants of its own. |
+| **Domain Model** | `domain/` | Aggregates, Value Objects, Domain Events, and the port *interfaces*. The only place invariants live. Imports nothing but the standard library. |
+| **Repository** | `infrastructure/postgres/` | Persist and reconstitute Aggregates via `pgx`. A Humble Object — thin, logic-free, integration-tested. |
+| **Event Publisher** | `infrastructure/events/` | Relay Transactional Outbox rows to Redpanda. Implements a domain port. |
+| **External Adapter** | `infrastructure/adapters/<name>/` | Anti-Corruption Layer: translate an external system's types to/from domain types. |
 
----
+Worker (event-consumer) services swap the HTTP Handler for a **Consumer**
+component (Redpanda consumer group, deserialize, idempotency check); everything
+else is identical.
 
-## Anti-Patterns
+## The Dependency-Direction Rule
 
-| Anti-pattern | Why it fails | Correction |
-|---|---|---|
-| **Layered in name only** — the directories exist but `domain/` imports `pgx` or `chi` | The dependency rule is the architecture; without it the layers are cosmetic folders | Domain depends on the standard library only; enforce with a lint rule or import test in CI |
-| **Layer skipping** — a handler calls the repository directly "because it's just a read" | Idempotency, authorisation, and orchestration in the Application layer are silently bypassed | Handlers call Application handlers only; even trivial queries go through a query handler |
-| **God service struct** — one `DataAssetService` with every method for the entity | Single Responsibility dies first; the struct accretes dependencies until nothing is testable in isolation | One Command handler and one Query handler per operation, each with only the dependencies it uses |
-| **Interfaces defined in infrastructure** — `postgres/repository.go` declares its own interface | Inverts nothing: the domain now conforms to what the database code offers | Interfaces live in `domain/ports.go`, shaped by what the domain needs (Dependency Inversion) |
-| **Shared `models/` package** — one struct serves as HTTP DTO, domain type, and DB row | Every layer's concerns leak into one type; a JSON tag change alters the database mapping | Each layer owns its types; mapping functions at the boundaries are the cost of decoupling |
-| **`utils/` and `common/` dumping grounds** | Packages named for what they are not; dependencies flow everywhere and the diagram stops matching reality | Name packages by responsibility; if code has no owner layer, it has no defined responsibility yet |
-| **Anemic domain, fat application** — invariants enforced in Command handlers | The domain layer degenerates to data structs; business rules scatter and duplicate across handlers | Handlers orchestrate (load, call, save); every invariant lives on the Aggregate |
-| **Diagram as archaeology** — drawing the Component Diagram after implementation | The diagram documents accidents, and the package structure was never reviewed against SOLID | Produce the diagram before code; the backend-engineer scaffolds from it |
+This is the architecture — the rest is folders. Clean Architecture's
+**Dependency Rule**: *source-code dependencies point only inward, toward
+higher-level policy.* Concretely, in this repo's Go layers:
 
----
+- **Domain depends on nothing** (standard library only). It is the innermost
+  ring and knows nothing of HTTP, SQL, or Redpanda.
+- **Application** depends on Domain.
+- **Handlers** depend on Application.
+- **Infrastructure** depends on Domain — it *implements* domain interfaces.
 
-## Output Format
+The inward-pointing arrow from Infrastructure to Domain is achieved by
+**Dependency Inversion**: the interface (`Repository`, `EventPublisher`) is
+declared in `domain/`, and the infrastructure package implements it. The inner
+ring owns the abstraction; the outer ring conforms to it. The Dependency Rule is
+the architecture-wide invariant; Dependency Inversion is the one mechanism it
+uses at each inward-facing crossing — they are not synonyms, and
+`references/layering-and-dependency-rules.md` draws that distinction in full.
 
-```markdown
----
-name: component-diagram
-product: [product name]
-service: [service / container name]
-bounded-context: [bounded context name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: enterprise-architect
----
+Two forbidden arrows tell you the layering has collapsed: **`domain/` importing
+`pgx` or `chi`**, and a **handler importing `pgx` directly** (layer skipping).
+Both are covered — with a worked violation-and-fix and the fitness function that
+catches them in CI — in `references/layering-and-dependency-rules.md`.
 
-# Component Diagram: [Service Name]
+## Producing the Artifact
 
-## Diagram
-[ASCII diagram showing layers and dependencies]
+Draw the boundary box for the container, place each component inside it with its
+name/technology/responsibility, and draw only inward-pointing dependency arrows.
+Accompany the picture with an **element catalog** (a table of every component and
+its properties — the picture's boxes cannot carry a responsibility or an
+interface on their own) and a short **rationale** for any non-default split. The
+diagram is produced *before* code; the backend-engineer scaffolds the Go package
+tree from it, so a drift between the diagram and the tree is a defect in the
+diagram, not the code.
 
-## Components
+## References
 
-| Component | Package path | Responsibility | Dependencies |
-|---|---|---|---|
-
-## Go Package Structure
-[Directory tree]
-
-## SOLID Compliance Notes
-[Per-principle note on how this service's structure enforces SOLID]
-
-## Key Design Decisions
-[Non-obvious choices that deviate from the standard layered template, with rationale]
-```
+- **`references/c4-component-notation.md`** — full C4-L3 notation: box contents,
+  relationship arrows and labels, the abstraction level (component vs. class),
+  the container boundary box, and Clements' element/relation/property structure
+  for a documentation-package-complete view.
+- **`references/layering-and-dependency-rules.md`** — Clean Architecture's four
+  rings mapped onto this repo's Go layers, the Dependency Rule vs. Dependency
+  Inversion distinction, the interface-ownership mechanism, the forbidden
+  dependencies, a worked violation-and-fix, and the import fitness function.
+- **`references/diagram-template.md`** — the component diagram artifact template
+  (Mermaid and textual C4) plus a fully worked Component diagram for this repo's
+  DataAsset Management service.
