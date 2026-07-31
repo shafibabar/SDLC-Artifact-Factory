@@ -1,189 +1,160 @@
 ---
 name: compliance-design
 description: >
-  Teaches how to design Compliance as Code — translating regulatory and
-  framework controls (SOC 2, GDPR, ISO 27001) into automated, verifiable tests
-  that run in CI/CD. Covers control-to-code mapping, automated compliance checks,
-  the compliance evidence pipeline, and how compliance design connects to the
-  NFR specification's compliance requirements and the Quality phase's compliance
-  test suite. Used by the security-architect agent during the Design phase.
-version: 1.1.0
+  Teaches the security-architect to design compliance controls that are
+  automatable from the start — decomposing SOC 2 Trust Service Criteria
+  (CC-series), GDPR/CCPA, and ISO 27001 requirements into concrete, testable
+  controls, including the Separation of Duties control (author does not equal
+  approver) enforced in CI, risk-based control selection with a materiality /
+  enforcement-mode dimension (gate / monitor / record), the FIPPs to regulation
+  control mapping, and the Control Coverage Matrix artifact. Each control is
+  designed to be verified automatically (handoff to compliance-verification).
+  Used during Design for any regulated feature or the platform baseline.
+version: 2.0.0
 phase: design
 owner: security-architect
 created: 2026-06-25
-tags: [design, security, compliance, soc2, gdpr, iso27001, compliance-as-code]
+related: [compliance-verification, privacy-design, threat-modeling, security-architecture, access-control-model, glossary-management]
+tags: [design, compliance, soc2, gdpr, separation-of-duties, control-design, materiality, risk-based, fipps]
 ---
 
 # Compliance Design
 
 ## Purpose
 
-Compliance design translates regulatory requirements — SOC 2 controls, GDPR obligations, ISO 27001 clauses — into specific, verifiable system behaviours. The goal is Compliance as Code: every compliance requirement has an automated check that can be run in CI/CD, producing evidence that the requirement is met.
+Compliance design translates a regulatory or framework requirement — a SOC 2
+Trust Service Criterion, a GDPR obligation, an ISO 27001 clause — into a
+concrete control that a test can exercise automatically. The goal is not "a
+policy document exists"; it is that every in-scope requirement becomes a control
+whose satisfaction is machine-verifiable, whose evidence is produced by the
+pipeline as a byproduct of delivery, and whose failure has a defined consequence.
 
-Manual compliance audits are expensive, infrequent, and snapshot-based. Automated compliance checks are cheap, continuous, and produce real-time evidence.
+Design ends with a **Control Coverage Matrix** and control decompositions that
+hand off cleanly to `compliance-verification`, which implements the automated
+checks and the evidence pipeline. Design decides *what* the controls are, their
+materiality, and their enforcement mode; verification proves they operate.
 
 ---
 
-## Compliance Frameworks (First Product)
+## The Control-Design Method
 
-The first product targets three frameworks in the MVP:
+Every control follows the same three-step decomposition. This is the core
+loop — apply it to each in-scope requirement.
 
-| Framework | Scope | Key controls |
+1. **Requirement** — cite the real, standard requirement by name (SOC 2 CC6.1,
+   GDPR Article 32, ISO 27001 A.9.4.1). Never invent a control ID.
+2. **Control** — the specific, observable behaviour that satisfies it ("every
+   API endpoint rejects an unauthenticated request with 401").
+3. **Automatable test** — the check that proves the behaviour holds, expressed
+   so `compliance-verification` can implement it as a CI test or an IaC/plan
+   assertion, emitting evidence. If you cannot name the test at design time, the
+   control is not yet designed — it is a wish.
+
+**Design for automatability from the start.** A control worded "access is
+appropriately restricted" cannot be tested; "an actor without the
+`data-assets:write` permission receives 403" can. Author each control so its
+verification is obvious — a criterion co-owned with risk and audit (see
+`references/materiality-and-risk-selection.md`).
+
+---
+
+## Enforcement Mode — a First-Class Matrix Column
+
+Not every control blocks a release. Before decomposing a requirement, decide
+what happens **when the control fails**. Every control carries one of three
+enforcement modes:
+
+| Mode | On failure | Use for |
 |---|---|---|
-| **SOC 2 Type II** | Security, Availability, Confidentiality trust service criteria | CC6 (Logical and Physical Access), CC7 (System Operations), A1 (Availability) |
-| **GDPR** | Processing of EU personal data | Article 5 (principles), Article 25 (privacy by design), Article 32 (security), Article 30 (processing register) |
-| **ISO 27001** | Information security management system | A.9 (Access control), A.10 (Cryptography), A.12 (Operations security), A.16 (Incident management) |
+| **gate** | Blocks the pipeline / promotion | Material controls: cross-tenant isolation, encryption at rest, Separation of Duties, mTLS coverage |
+| **monitor** | Raises an alert, does not block | Controls best watched continuously in production for drift (retention windows, mTLS edge completeness) |
+| **record** | Emits evidence only | Controls that must be evidenced for the audit but need no active enforcement (change logs, provenance records) |
+
+Enforcement mode is not cosmetic metadata — it states, per control, the design
+decision about consequence. A `gate` control that fails must stop a `main`
+promotion; a `monitor` control rides this repo's Prometheus / OpenTelemetry
+stack and alerts on drift. It is a required column on the Coverage Matrix.
 
 ---
 
-## Control Decomposition
+## Risk-Based Selection and Materiality
 
-Each compliance control is decomposed into verifiable system behaviours:
+Do not decompose every in-scope requirement with equal weight. Select and
+weight controls by the **materiality** of the risk they address — the degree of
+harm if the control fails. In this product a cross-tenant data-exposure control
+is material enough to be a hard `gate`; a cosmetic lint rule is not. Materiality
+drives enforcement mode: the most material risks earn `gate`, the rest `monitor`
+or `record`.
 
-### SOC 2 CC6.1 — Logical Access Security
-
-**Control text:** The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.
-
-**Decomposition:**
-
-| Behaviour | Automated check | Evidence |
-|---|---|---|
-| All API endpoints require authentication | Security test: call endpoint without JWT → expect 401 | Test suite output |
-| Authentication tokens expire within 1 hour | JWT inspection test: verify `exp - iat ≤ 3600` | JWT audit log sample |
-| All service-to-service calls use mTLS | Linkerd edge report shows no plain-text connections | Linkerd CLI output |
-| Access control policy evaluated on every request | Integration test: call with insufficient permissions → expect 403 | Test suite output |
-
-### SOC 2 CC6.3 — Access Removal
-
-**Control text:** The entity removes access to information assets when individuals no longer require access.
-
-**Decomposition:**
-
-| Behaviour | Automated check | Evidence |
-|---|---|---|
-| User account termination revokes all active sessions | Integration test: terminate account; use previous JWT → expect 401 | Test suite output |
-| Offboarded users have no database access | Database query: no active credentials for terminated users | Database audit query |
-
-### GDPR Article 32 — Security of Processing
-
-**Control text:** Implement appropriate technical measures to ensure a level of security appropriate to the risk.
-
-**Decomposition:**
-
-| Behaviour | Automated check | Evidence |
-|---|---|---|
-| Data encrypted at rest | IaC check: encryption enabled on all PostgreSQL instances | OpenTofu plan output |
-| Data encrypted in transit | TLS certificate validity check; mTLS verification | Certificate audit |
-| Access logs retained for 7 years | Database query: oldest audit log entry ≥ 7 years ago | Audit retention query |
+This is a design-time judgment made with the second line (risk/compliance) and
+third line (audit) rather than after the fact — the three-lines-of-defense
+collaboration. Threat severity feeds it directly: a high-severity modeled threat
+from `threat-modeling` (crossing the physical tenant-isolation boundary) forces
+a `gate`-mode control. Full method, the materiality rubric, and the three-lines
+model: `references/materiality-and-risk-selection.md`.
 
 ---
 
-## Compliance as Code Implementation
+## Separation of Duties — a Required Baseline Control
 
-### Pattern: Infrastructure Compliance Tests (Terratest / OpenTofu)
-
-```go
-// Test that all PostgreSQL instances have encryption enabled
-func TestPostgresEncryptionAtRest(t *testing.T) {
-    // Load the OpenTofu plan
-    plan := terraform.InitAndPlan(t, &terraform.Options{
-        TerraformDir: "../infrastructure/terraform/tenant",
-    })
-
-    // Assert encryption is enabled on the RDS/Cloud SQL instance
-    resourceChanges := plan.ResourceChangesMap
-    for name, change := range resourceChanges {
-        if strings.Contains(name, "aws_db_instance") {
-            storageEncrypted := change.Change.After["storage_encrypted"]
-            assert.True(t, storageEncrypted.(bool),
-                "PostgreSQL instance %s must have storage_encrypted = true", name)
-        }
-    }
-}
-```
-
-### Pattern: API Security Compliance Tests (Go integration tests)
-
-```go
-// Test: all write endpoints require authentication
-func TestAllWriteEndpointsRequireAuth(t *testing.T) {
-    endpoints := []struct {
-        method string
-        path   string
-    }{
-        {"PATCH", "/v1/data-assets/test-id/classification"},
-        {"POST", "/v1/storage-sources"},
-        {"DELETE", "/v1/storage-sources/test-id"},
-    }
-
-    for _, ep := range endpoints {
-        t.Run(ep.method+" "+ep.path, func(t *testing.T) {
-            req := httptest.NewRequest(ep.method, ep.path, nil)
-            // No Authorization header
-            rr := httptest.NewRecorder()
-            handler.ServeHTTP(rr, req)
-            assert.Equal(t, http.StatusUnauthorized, rr.Code)
-        })
-    }
-}
-```
-
-### Pattern: Audit Log Compliance Tests
-
-```go
-// Test: every classification action is recorded in the audit log
-func TestClassificationCreatesAuditEntry(t *testing.T) {
-    // Arrange: classify a data asset
-    cmd := ClassifyDataAsset{DataAssetID: testAssetID, Level: Restricted}
-    err := handler.Handle(ctx, cmd)
-    require.NoError(t, err)
-
-    // Assert: audit log entry exists with correct fields
-    entry, err := auditRepo.FindByAggregate(ctx, testAssetID)
-    require.NoError(t, err)
-    assert.Equal(t, "DataAssetClassified", entry.EventType)
-    assert.Equal(t, testUserID, entry.ActorID)
-    assert.WithinDuration(t, time.Now(), entry.OccurredAt, 5*time.Second)
-    assert.NotEmpty(t, entry.NonRepudiationHash)
-}
-```
+Separation of Duties (**the change author does not equal the change approver**)
+is a core SOC 2 CC-series change-management control and a **required baseline
+control** for this platform — not optional, not feature-specific. It becomes
+real only when the pipeline enforces it mechanically, not when a policy document
+asserts it. In this repo's `feature/<n>-…` → PR → `main` flow, SoD is a
+`gate`-mode control enforced in GitHub Actions that emits an attestation to the
+evidence store. Full decomposition — what the gate compares, how it emits
+evidence, how it grounds in the branch flow — is in
+`references/control-catalogue.md`.
 
 ---
 
-## Compliance Evidence Pipeline
+## FIPPs — Map to the Principle Before the Regulation
 
-Compliance evidence must be collected automatically and stored in a tamper-evident audit store:
-
-```
-CI/CD Pipeline
-     │
-     ├── Run compliance test suite
-     │         │
-     │         ▼
-     │   Test output (JSON) → signed with Cosign → stored in evidence store
-     │
-     ├── Linkerd mTLS edge report → stored in evidence store
-     │
-     ├── Container image scan report → stored in evidence store
-     │
-     └── IaC compliance check output → stored in evidence store
-
-Evidence Store: append-only S3 bucket with object lock
-(Cannot be deleted or modified after upload)
-```
-
-At audit time, the compliance team presents the evidence store contents — automated tests, signed artefacts, and infrastructure audit reports — as the compliance evidence package.
+A control that satisfies GDPR Article 5 and CCPA §1798.100 is not two unrelated
+controls — it is one **Fair Information Practice Principle** (purpose
+limitation) expressed under two regimes. Map each privacy control back to its
+FIPP *before* mapping it forward to a regulation. This collapses duplicate rows,
+and — more valuably — a FIPP with zero controls is a visible gap the matrix
+surfaces. The FIPPs (notice, choice/consent, access/participation,
+integrity/security, enforcement/accountability, plus collection limitation,
+purpose specification, use limitation) are the common ancestor of GDPR, CCPA,
+and SOC 2's Privacy criteria. The FIPP → GDPR-article → CCPA-section table is in
+`references/coverage-matrix-template.md`. Privacy *lifecycle* controls are owned
+by `privacy-design`; compliance-design maps and evidences them.
 
 ---
 
-## Compliance Control Coverage Matrix
+## The Control Coverage Matrix
 
-| Control ID | Framework | Behaviour | Test | Evidence | Status |
-|---|---|---|---|---|---|
-| CC6.1 | SOC 2 | All endpoints authenticated | `TestAllEndpointsRequireAuth` | Test output | Designed |
-| CC6.3 | SOC 2 | Access revoked on termination | `TestAccountTerminationRevokesAccess` | Test output | Designed |
-| Art 32 | GDPR | Encryption at rest | `TestPostgresEncryptionAtRest` | IaC plan | Designed |
-| A.9.4.1 | ISO 27001 | Information access restriction | `TestABACEnforcementOnAllResources` | Test output | Designed |
+The Coverage Matrix is the completeness artifact — every in-scope requirement
+gets a row, even one whose status is "Not yet designed". Its columns:
+
+| Column | Holds |
+|---|---|
+| Control | Short control name |
+| Requirement ref | The real standard citation (SOC 2 CC6.1, GDPR Art 32, ISO A.9.4.1) |
+| FIPP | The underlying principle (privacy controls) |
+| Enforcement mode | gate / monitor / record |
+| Materiality | The risk weight driving the mode |
+| Test | The automatable check (handoff to compliance-verification) |
+| Evidence type | What the pipeline emits (test output, IaC plan, attestation) |
+| Status | Designed / Not yet designed |
+
+Full column definitions, a worked SOC 2 baseline matrix, and the FIPP mapping
+table: `references/coverage-matrix-template.md`.
+
+---
+
+## Reference Material
+
+- `references/control-catalogue.md` — SOC 2 CC-series, GDPR/CCPA, and ISO 27001
+  decomposed into concrete controls, each with enforcement mode and its
+  automatable test; the Separation-of-Duties control decomposed in full.
+- `references/materiality-and-risk-selection.md` — risk-based selection, the
+  materiality rubric, design-for-automatability, three-lines-of-defense.
+- `references/coverage-matrix-template.md` — the Coverage Matrix template, a
+  worked SOC 2 baseline matrix, and the FIPPs → GDPR/CCPA mapping table.
 
 ---
 
@@ -191,24 +162,32 @@ At audit time, the compliance team presents the evidence store contents — auto
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Control decomposition | Every in-scope control decomposed into verifiable behaviours | Controls accepted on faith with no verification |
-| Automated checks | Every behaviour has an automated test or IaC check | Manual-only verification |
-| Evidence pipeline | Compliance evidence collected and stored automatically | Evidence collected manually before each audit |
-| Coverage matrix | All in-scope controls appear in the matrix | Controls not in the matrix |
-| Tamper-evident evidence | Evidence store uses append-only storage with object lock | Evidence stored in mutable storage |
-| Continuous verification | Compliance checks run on every pipeline execution | Checks run once, shortly before the audit window |
+| Requirement citation | Every control cites a real standard clause by name | Invented control IDs or vague references |
+| Automatable by design | Every control names the test that proves it | "Appropriately restricted" wording with no testable behaviour |
+| Enforcement mode set | Every control declares gate / monitor / record | Failure consequence undefined |
+| Materiality-weighted | Controls selected and weighted by risk, not uniformly | Every control decomposed with equal weight |
+| SoD present | Separation of Duties is a baseline gate control | SoD absent or left to policy |
+| FIPP-mapped | Privacy controls map to a FIPP before a regulation | Duplicate rows for one principle; FIPP gaps invisible |
+| Matrix complete | Every in-scope requirement has a row | Orphan controls discovered at audit |
 
 ---
 
 ## Anti-Patterns
 
-- **Checkbox compliance.** Declaring a control "met" because a policy document exists, with no system behaviour that enforces it. Every control must decompose into behaviours a test can exercise.
-- **Screenshot evidence.** Collecting evidence by hand (console screenshots, exported spreadsheets) days before the audit. Screenshots are snapshot-based, unverifiable, and trivially staged. Evidence must be pipeline-generated and signed.
-- **Audit-week testing.** Running the compliance suite only when an audit approaches. SOC 2 Type II assesses operating effectiveness over the whole period — evidence must exist continuously, which means the suite runs on every pipeline execution.
-- **Mutable evidence store.** Storing evidence where it can be edited or deleted. Without object lock, the evidence proves nothing — an auditor must be able to trust that it was not altered after collection.
-- **Conflating compliance with security.** A passing compliance suite means the controls in scope are verified — not that the system is secure. Threat modeling and security testing remain separate obligations; compliance is the floor, not the ceiling.
-- **Orphan controls.** In-scope controls that never appear in the coverage matrix, discovered missing during the audit. The matrix is the completeness check: every in-scope control gets a row, even if its status is "Not yet designed".
-- **Testing the mock.** Compliance tests that assert against stubbed infrastructure (an in-memory database "encrypted at rest") prove nothing. Infrastructure controls must be checked against the real IaC plan or the running environment.
+- **Checkbox compliance.** Declaring a control "met" because a policy document
+  exists, with no system behaviour a test can exercise.
+- **Uniform decomposition.** Treating a cross-tenant-isolation control and a
+  cosmetic check with equal design weight — no materiality, no enforcement mode.
+- **SoD by policy.** Relying on a Slack-honored "someone else approves" norm
+  instead of a mechanically enforced author ≠ approver gate.
+- **Regulation-first mapping.** Mapping controls straight to article numbers
+  with no FIPP layer, so one principle appears as unrelated rows.
+- **Untestable controls.** Wording a control so vaguely ("access is
+  appropriately restricted") that no automated check can be written.
+- **Orphan controls.** In-scope requirements that never appear in the matrix,
+  discovered missing during the audit.
+- **Conflating compliance with security.** A passing compliance suite verifies
+  the controls in scope — not that the system is secure; compliance is the floor.
 
 ---
 
@@ -218,7 +197,7 @@ At audit time, the compliance team presents the evidence store contents — auto
 ---
 name: compliance-design
 product: [product name]
-frameworks: [SOC 2, GDPR, ISO 27001]
+frameworks: [SOC 2, GDPR, CCPA, ISO 27001]
 version: 1.0.0
 phase: design
 created: [date]
@@ -227,19 +206,14 @@ owner: security-architect
 
 # Compliance Design
 
-## In-Scope Controls
-[One section per framework with control list]
+## In-Scope Requirements   [per framework, with materiality noted]
+## Control Decomposition   [per control: requirement ref, behaviour, test, mode]
+## Separation of Duties Control   [the author != approver gate decomposition]
 
-## Control Decomposition
-[Per control: behaviours, automated checks, evidence]
+## Control Coverage Matrix
+| Control | Requirement ref | FIPP | Enforcement mode | Materiality | Test | Evidence type | Status |
+|---|---|---|---|---|---|---|---|
 
-## Compliance Control Coverage Matrix
-| Control ID | Framework | Behaviour | Test | Evidence location | Status |
-|---|---|---|---|---|---|
-
-## Evidence Pipeline Design
-[Architecture of the evidence collection and storage pipeline]
-
-## Compliance Test Suite Location
-`tests/compliance/` — [description of test organisation]
+## FIPP Mapping   [FIPP -> GDPR article -> CCPA section, for privacy controls]
+## Handoff to compliance-verification   [`tests/compliance/` tests + evidence types]
 ```
