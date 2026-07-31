@@ -1,179 +1,148 @@
 ---
 name: data-model-design
 description: >
-  Teaches how to design the physical and logical data models for a system —
-  mapping domain Aggregates to PostgreSQL relational schemas (consumed via pgx),
-  designing the Apache AGE graph model (vertices and edges) for relationship data,
-  deciding when polyglot persistence is justified (MongoDB for variable-schema
-  extraction output, Elasticsearch for search), indexing strategy, and how the
-  physical model enforces multi-tenancy. Translates the domain-modeler's conceptual
-  model into deployable schemas. Produced by the data-architect during the Design phase.
-version: 1.1.0
+  Teaches the data-architect to design a data model — the conceptual/logical/physical
+  progression (Hoberman), normalization to 3NF for transactional (OLTP) models,
+  dimensional star/snowflake modeling for analytical (OLAP) models (Kimball), the
+  OLTP-vs-OLAP model-shape decision, and PostgreSQL physical DDL patterns with pgx.
+  Used during Design whenever a service needs a persistent schema or an analytical mart.
+version: 2.0.0
 phase: design
 owner: data-architect
 created: 2026-06-25
-tags: [design, data-architecture, postgresql, pgx, apache-age, graph, polyglot, schema]
+tags: [design, data-architecture, data-modeling, normalization, dimensional-modeling, postgresql, er-diagram]
+related: [domain-modeling, read-model-design, data-pipeline-design, multi-tenancy-design, dashboard-specification, canonical-data-model, glossary-management]
 ---
 
 # Data Model Design
 
 ## Purpose
 
-The data model design translates the conceptual domain model — Aggregates, Entities, Value Objects, and Read Models produced by the domain-modeler — into concrete, deployable database schemas. The domain-modeler decides *what* concepts exist and how they relate in the business; the data-architect decides *how* they are physically stored, indexed, and partitioned.
+The data model design turns the conceptual domain model — Aggregates, Entities, Value
+Objects, Read Models produced by the domain-modeler — into concrete, deployable schemas.
+The domain-modeler decides *what* concepts exist; the data-architect decides *how* they
+are stored, keyed, constrained, indexed, and partitioned. The output is the authoritative
+schema the backend-engineer turns into migrations. A schema is a contract: changing it
+later means a migration, a backfill, and a coordinated deployment.
 
-This skill produces the authoritative schema definitions that the backend-engineer turns into migrations. A schema designed here is a contract: changing it later means a migration, a data backfill, and coordinated deployment.
-
----
-
-## The Aggregate-to-Schema Rule
-
-The Aggregate is the unit of consistency. The physical model preserves that boundary:
-
-1. **One Aggregate Root maps to one primary table.** The root's identity is the primary key.
-2. **Child Entities within the Aggregate map to child tables** with a foreign key to the root and `ON DELETE CASCADE`. They are never written independently of the root.
-3. **Value Objects are embedded** — as columns on the owning table, or as a `jsonb` column when the value object is composite and never queried by its parts.
-4. **References between Aggregates are by ID only** — a plain UUID column, never a foreign key across Aggregate boundaries. Cross-aggregate referential integrity is the domain's responsibility, not the database's.
-5. **One database per service** (the enterprise-architect's container rule). Tables for different Bounded Contexts never share a schema, and joins never cross a service boundary.
-
-### Example: DataAsset Aggregate → PostgreSQL
-
-```sql
--- Aggregate Root
-CREATE TABLE data_assets (
-    id                 UUID PRIMARY KEY,
-    tenant_id          UUID NOT NULL,
-    source_id          UUID NOT NULL,              -- reference to DataSource Aggregate (ID only)
-    file_path          TEXT NOT NULL,
-    file_format        TEXT NOT NULL,              -- Value Object: enum-like (PDF, DOCX, XLSX)
-    sensitivity_level  TEXT,                        -- Value Object: nullable until classified
-    classified_by      UUID,
-    classified_at      TIMESTAMPTZ,
-    version            BIGINT NOT NULL DEFAULT 1,   -- optimistic concurrency for the Aggregate
-    created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
-    deleted_at         TIMESTAMPTZ,                 -- soft delete; see data-retention-policy
-    CONSTRAINT sensitivity_valid CHECK (
-        sensitivity_level IS NULL OR
-        sensitivity_level IN ('Public','Internal','Confidential','Restricted')
-    )
-);
-
--- Child Entity within the same Aggregate (extracted entities belong to the asset)
-CREATE TABLE extracted_entities (
-    id             UUID PRIMARY KEY,
-    data_asset_id  UUID NOT NULL REFERENCES data_assets(id) ON DELETE CASCADE,
-    tenant_id      UUID NOT NULL,
-    entity_type    TEXT NOT NULL,                  -- PERSON, EMAIL, SSN, ACCOUNT_NUMBER, ...
-    confidence     NUMERIC(4,3) NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
-    location       JSONB NOT NULL,                 -- Value Object: page/offset, queried as a whole
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
--- The child FK column is always indexed: it serves ON DELETE CASCADE and intra-Aggregate loads
-CREATE INDEX idx_extracted_entities_asset ON extracted_entities (data_asset_id);
-```
-
-**Tenant-mismatch hardening (optional but cheap):** a plain single-column FK cannot stop a child row from pointing at a parent in *another* tenant if application code passes the wrong id. Making the FK composite makes that state unrepresentable:
-
-```sql
-ALTER TABLE data_assets ADD CONSTRAINT data_assets_id_tenant_uq UNIQUE (id, tenant_id);
-
--- extracted_entities then declares (in place of the single-column FK):
---   FOREIGN KEY (data_asset_id, tenant_id)
---     REFERENCES data_assets (id, tenant_id) ON DELETE CASCADE
-```
-
-**Note:** `extracted_entities` stores entity *type and location metadata only* — never the raw extracted value if it is sensitive PII. This is a privacy constraint from the security `privacy-design` skill: file contents are never persisted.
+Two model *shapes* are produced by this skill, for two different jobs, and they must never
+be confused: a **normalized (OLTP) model** for transactional Aggregate state, and a
+**dimensional (OLAP) model** for analytical marts that back dashboards and reports.
 
 ---
 
-## Optimistic Concurrency
+## The Conceptual → Logical → Physical Progression (Hoberman)
 
-Every Aggregate Root table carries a `version` column. Writes use a compare-and-swap on version to enforce the one-writer-per-aggregate-per-transaction rule without pessimistic locks:
+A model is built in three deliberate passes, each for a different audience. Skipping to
+physical DDL before the concepts and relationships are agreed is the central failure mode.
 
-```sql
-UPDATE data_assets
-   SET sensitivity_level = $1, version = version + 1, updated_at = now()
- WHERE id = $2 AND tenant_id = $3 AND version = $4
-   AND deleted_at IS NULL;
--- 0 rows affected → concurrent modification (or soft-deleted row) → retry or fail
-```
-
-Two details that make the compare-and-swap trustworthy:
-
-- **`tenant_id` stays in the `WHERE` even though `id` is globally unique.** The tenant filter is applied uniformly to every tenant-scoped statement — it is the application-layer backstop, not an optimisation.
-- **`AND deleted_at IS NULL` prevents resurrection.** Without it, a command racing a soft delete can happily mutate a "deleted" Aggregate. Zero rows affected is a single signal the command handler must treat as a conflict, whichever cause.
-
----
-
-## Multi-Tenancy in the Physical Model
-
-The first product uses **physical multi-tenancy** (separate namespace/deployment per tenant — see `multi-tenancy-design`). Even so, every tenant-scoped table carries an explicit `tenant_id` column. This is defence in depth:
-
-- The physical isolation prevents cross-tenant routing at the infrastructure layer.
-- The `tenant_id` column + parameterised query filter is the application-layer backstop (see security `access-control-model`).
-- Every index on a tenant-scoped table leads with `tenant_id`.
-
-```sql
-CREATE INDEX idx_data_assets_tenant_source ON data_assets (tenant_id, source_id);
-CREATE INDEX idx_data_assets_tenant_sensitivity ON data_assets (tenant_id, sensitivity_level)
-    WHERE deleted_at IS NULL;   -- partial index: active assets only
-```
-
----
-
-## The Graph Model (Apache AGE)
-
-The relationship graph — how data assets, entities, sources, and people connect across the estate — is stored in Apache AGE, a PostgreSQL extension providing openCypher graph queries. Using AGE (not a separate Neo4j deployment) keeps the graph in the same PostgreSQL instance: one fewer system to operate, frugal by default.
-
-**Graph design principles:**
-
-| Element | Rule |
-|---|---|
-| Vertex (node) | One vertex label per domain concept that participates in relationships: `DataAsset`, `Entity`, `DataSource`, `Person` |
-| Edge (relationship) | Named with a verb in the Ubiquitous Language: `CONTAINS`, `REFERENCES`, `OWNED_BY`, `DERIVED_FROM` |
-| Vertex properties | Minimal — an `id` that references the relational row, plus `tenant_id`. The graph holds structure; the relational store holds detail. |
-| Tenant isolation | Every vertex carries `tenant_id`; every query filters by it. Graph paths never cross tenants. |
-
-```cypher
--- A data asset contains extracted entities; entities may reference a person
-SELECT * FROM cypher('estate_graph', $$
-    MATCH (a:DataAsset {tenant_id: $tenant})-[:CONTAINS]->(e:Entity)-[:REFERENCES]->(p:Person)
-    WHERE a.id = $asset_id
-    RETURN p.id, count(e) AS mentions
-$$) AS (person_id agtype, mentions agtype);
-```
-
-**Relational ↔ graph consistency:** the relational store is the system of record. The graph is a projection kept current by a Projector that consumes Domain Events (`EntityExtracted`, `AssetClassified`) — see `read-model-design` and `data-pipeline-design`. The graph is replayable from events.
-
----
-
-## Polyglot Persistence — When to Use What
-
-Default to PostgreSQL. Add another store only when PostgreSQL is the wrong tool and the cost of operating a second store is justified. Document the decision as an ADR.
-
-| Store | Use when | Do not use when | First-product use |
+| Pass | Answers | Contains | Reviewer |
 |---|---|---|---|
-| **PostgreSQL + pgx** | Transactional Aggregates, the outbox, audit log, config — anything needing ACID | — (this is the default) | All Aggregate state, outbox, audit |
-| **Apache AGE** (in PostgreSQL) | Relationship traversal queries (paths, neighbourhoods) | Simple foreign-key lookups | The data estate relationship graph |
-| **MongoDB** | High-variability schema where fields differ per document and are not known ahead of time | Anything transactional or relational | Raw entity-extraction output / crawl metadata (variable per file format) — optional, behind a config flag |
-| **Elasticsearch** | Full-text search, ranking, alert storage with flexible querying | As a system of record | Document full-text index, compliance alert search |
+| **Conceptual (CDM)** | What the business talks about | ER-Entity names + relationship verb phrases; no keys, no types | Shafi (PM), in one sitting |
+| **Logical (LDM)** | The full rigorous structure | Every attribute, cardinality/optionality, primary/alternate/foreign keys, normalization | Technical, tech-independent |
+| **Physical (PDM)** | How this database stores it | PostgreSQL tables, types, indexes, deliberate denormalization | data-architect + backend-engineer |
 
-**Rule:** a non-PostgreSQL store is never a system of record for an Aggregate. It is always a projection or a derived index, rebuildable from PostgreSQL + the event log.
+**Before any `CREATE TABLE`,** produce a short CDM and read every relationship aloud as a
+sentence a non-technical reviewer can confirm in both directions: *"Each DataAsset may
+contain one or more Entities. Each Entity must belong to exactly one DataAsset."* The words
+*may/must* carry optionality; *one/one-or-more* carry cardinality. A relationship that
+cannot be read this way has been drawn, not validated. Give every ER-Entity and non-obvious
+attribute a real one-line definition (what qualifies, what is excluded) — not the name
+restated. Full CDM/LDM technique, the definition bar, and subtype/supertype modeling:
+`references/normalization-oltp.md`.
+
+> **Terminology collision — "Entity".** Hoberman's ER "Entity" (any business noun) is *not*
+> this repo's DDD `Entity` (identity + lifecycle inside an Aggregate). In conceptual/logical
+> work always say **ER-Entity** or **conceptual entity**, never bare "Entity". An ER
+> relationship between two Aggregates documents a business rule — it never licenses a foreign
+> key across an Aggregate boundary. The Aggregate rule below always wins over what a pure ER
+> model would draw.
 
 ---
 
-## Indexing Strategy
+## The Primary Decision: Normalize for OLTP, Dimensionalize for OLAP
 
-| Index need | Approach |
-|---|---|
-| Tenant-scoped lookups | Composite index leading with `tenant_id` |
-| Active-record queries | Partial index `WHERE deleted_at IS NULL` |
-| Foreign-key joins within an Aggregate | Index the child table's FK column |
-| Time-range queries (audit, scans) | B-tree on `(tenant_id, occurred_at)`; consider BRIN for append-only large tables |
-| Full-text | Do not use PostgreSQL FTS for the primary search surface — project to Elasticsearch |
+This is the first choice the skill forces, because the two shapes optimize for opposite things.
 
-Every index must justify its existence: it speeds a known query in a Read Model or Command. Speculative indexes are removed — they cost write throughput.
+| | Transactional model (OLTP) | Analytical model (OLAP / mart) |
+|---|---|---|
+| **Job** | Record and mutate Aggregate state correctly | Aggregate history for a dashboard/report |
+| **Shape** | Normalized to 3NF; one root table per Aggregate | Dimensional star: narrow fact + wide dimensions |
+| **Optimizes** | Write integrity, no update anomalies | Read comprehensibility + query speed |
+| **Redundancy** | Eliminated (each fact stored once) | Deliberately controlled (denormalized dimensions) |
+| **Authority** | System of record | Projection — rebuildable from events + OLTP |
+| **In this repo** | Every service's Aggregate schema | A Read Model backing `dashboard-specification` / `reporting-spec` |
+
+Default to the normalized OLTP model — it is what the vast majority of services need.
+Reach for a dimensional mart *only* when a Read Model exists specifically to be aggregated
+for analytics, and even then it stays a plain PostgreSQL table (this repo has no separate
+warehouse). Never apply dimensional modeling to operational Aggregate state; never leave a
+mart un-normalized "because it's easier". Decision detail, and when a mart is warranted
+versus a simple Read Model: `references/dimensional-oltp-olap.md`.
+
+---
+
+## Normalization in Brief (the OLTP shape)
+
+Normalize the transactional model to **3NF** before any denormalization decision:
+
+- **1NF** — atomic column values, no repeating groups; a repeating group becomes a child table.
+- **2NF** — 3NF prerequisite: no non-key attribute depends on only part of a composite key.
+- **3NF** — every non-key attribute depends on *the key, the whole key, and nothing but the
+  key*; no transitive dependency (a non-key attribute determined by another non-key attribute).
+
+Denormalization is a conscious, physical-layer-only, performance-justified exception — made
+*after* the logical model is fully normalized, never as a substitute for normalizing.
+Worked 1NF→BCNF walkthrough on a repo table, the anomalies each form removes, keys and
+referential integrity, and when denormalizing is justified: `references/normalization-oltp.md`.
+
+### The Aggregate-to-Schema Rule (this repo's OLTP mapping)
+
+Normalization is filtered through the DDD Aggregate boundary:
+
+1. **One Aggregate Root → one primary table**; the root's identity is the primary key.
+2. **Child Entities → child tables** with an FK to the root and `ON DELETE CASCADE`.
+3. **Value Objects are embedded** — columns, or a `jsonb` column when composite and never
+   queried by its parts.
+4. **Cross-Aggregate references are ID only** — a plain UUID, never an FK across the boundary.
+5. **One database per service** — tables of different Bounded Contexts never share a schema.
+
+Every Aggregate Root carries a `version` column for optimistic concurrency (compare-and-swap
+in the `WHERE`), and every tenant-scoped table carries an explicit `tenant_id`. Full DDL for
+these — the DataAsset worked schema, composite-FK tenant hardening, and the concurrency UPDATE
+— is in `references/physical-ddl-patterns.md`.
+
+---
+
+## Star Schema in Brief (the OLAP shape, Kimball)
+
+When a mart is warranted, build a **star schema** with the four-step process, in order:
+(1) pick the business process, (2) declare the **grain** as one literal sentence, (3) choose
+dimensions, (4) choose facts. The grain ("one row per data asset per sensitivity scan") is
+the first modeling step — every dimension and fact must fit that one sentence.
+
+- **Fact table** — narrow; foreign keys to dimensions plus numeric measures.
+- **Dimension tables** — wide, denormalized, flat (a *star*, not a snowflake); each uses a
+  **surrogate key**, not the source's natural key.
+- Classify every fact as **additive / semi-additive / non-additive** — a point-in-time count
+  sums across tenants but not across time.
+
+Fact-table types (transaction / periodic-snapshot / accumulating-snapshot), **Slowly Changing
+Dimension** Types 0–3, conformed dimensions and the bus matrix, and when this repo needs a
+mart versus a plain Read Model: `references/dimensional-oltp-olap.md`.
+
+---
+
+## Multi-Tenancy, Graph, and Polyglot (physical layer)
+
+The first product uses **physical multi-tenancy**, yet every tenant-scoped table still carries
+`tenant_id` and every index leads with it (defence in depth — see `multi-tenancy-design`). The
+estate relationship graph lives in **Apache AGE** (a PostgreSQL extension, not a separate
+Neo4j) as a *projection* rebuilt from Domain Events; the relational store is the system of
+record. Add a non-PostgreSQL store (Elasticsearch for full-text, MongoDB for variable-schema
+extraction output) only as a rebuildable projection with an ADR — never as a second system of
+record. PostgreSQL types, indexing strategy, partitioning for large tables, JSONB usage, the
+graph model, and polyglot selection: `references/physical-ddl-patterns.md`.
 
 ---
 
@@ -181,59 +150,35 @@ Every index must justify its existence: it speeds a known query in a Read Model 
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Aggregate boundary preserved | One root table per Aggregate; children cascade; cross-aggregate refs by ID only | Foreign keys spanning Aggregate boundaries |
-| Optimistic concurrency | Every Aggregate Root has a `version` column | Aggregates with no concurrency control |
-| Tenant column present | Every tenant-scoped table has `tenant_id`; every index leads with it | Tables relying solely on physical isolation |
-| Graph is a projection | Graph rebuildable from events; relational store is system of record | Graph holding authoritative state not in PostgreSQL |
-| Polyglot justified | Each non-PostgreSQL store has an ADR and is a projection only | A second store used as an Aggregate system of record |
-| No raw sensitive content stored | Extracted entity tables store metadata/type, not raw PII values | File contents or raw PII persisted |
-| Constraints encode invariants | Enum-like values and ranges guarded by CHECK constraints | Invariants enforced only in application code |
+| Progression followed | CDM relationship sentences confirmed before DDL | Straight to `CREATE TABLE` |
+| Correct shape chosen | OLTP normalized to 3NF; marts dimensional | A mart left un-normalized, or a dimensional operational schema |
+| Aggregate boundary preserved | One root table per Aggregate; cross-Aggregate refs by ID | FKs spanning Aggregate boundaries |
+| Grain declared for marts | Every fact table has a one-sentence grain | A fact table with no stated grain |
+| SCD type chosen | Each changeable dimension attribute has a documented SCD type | "Overwrite" the silent default where history is required |
+| Tenant column present | Every tenant-scoped table has `tenant_id`; indexes lead with it | Reliance on physical isolation alone |
+| Projections rebuildable | Graph/search/mart rebuildable from PostgreSQL + events | A projection holding authoritative state |
 
 ---
 
 ## Anti-Patterns
 
-- **Foreign keys across Aggregate boundaries.** An FK from `extracted_entities` to a `DataSource` table couples two consistency units at the database layer and blocks the one-database-per-service rule. Cross-Aggregate references are plain UUID columns; the domain enforces integrity.
-- **The generic entity table.** An EAV (`entity`, `attribute`, `value`) schema "so we never need migrations again". It trades every CHECK constraint, index, and type guarantee for a schema nobody can query or validate. Migrations are the cost of a real model — pay it.
-- **`jsonb` as schema escape hatch.** Reaching into a `jsonb` column with `->>` in hot queries or indexing its internals. If a value's parts are queried, constrained, or joined on, they are columns. `jsonb` is for composite Value Objects consumed whole (like `location`).
-- **A projection promoted to system of record.** The AGE graph, Elasticsearch index, or MongoDB collection quietly becoming the only place some fact lives. Every non-PostgreSQL store must be rebuildable from PostgreSQL plus the event log — if a rebuild would lose data, the invariant is already broken.
-- **The decorative version column.** A `version` column that exists but is not in the `WHERE` clause of updates. Optimistic concurrency lives in the compare-and-swap, not the column; without the predicate it is a row counter.
-- **Shared schema across Bounded Contexts.** Two services joining each other's tables "because they're in the same PostgreSQL anyway". That is the shared-database monolith with extra steps; contexts integrate through events and APIs, never through each other's tables.
-- **Speculative indexing.** Adding indexes for queries nobody has written. Each index taxes every write and vacuums; an index that cannot name the Read Model or Command it serves is removed.
-
----
+- **Skipping the conceptual pass.** Choosing column types and indexes before the business
+  relationships are agreed — the failure mode both Hoberman and Kimball name.
+- **Dimensional modeling on operational state.** A star schema where an Aggregate belongs —
+  destroys write integrity for a read optimization the OLTP path never needs.
+- **The un-normalized "mart".** A denormalized table with no grain, no fact-type, no
+  surrogate keys — a wide dump nobody can reconcile across reports.
+- **The generic entity (EAV) table.** Trading every CHECK constraint, index, and type for a
+  schema nobody can query. Migrations are the cost of a real model — pay it.
+- **`jsonb` as schema escape hatch.** Indexing into `->>` in hot queries. If a value's parts
+  are queried or joined, they are columns; `jsonb` is for whole-consumed Value Objects.
+- **The decorative `version` column.** Present but absent from the update `WHERE` — a row
+  counter, not optimistic concurrency.
+- **A projection promoted to system of record.** The AGE graph, Elasticsearch index, or a
+  mart becoming the only place a fact lives — if a rebuild would lose data, it is already broken.
 
 ## Output Format
 
-```markdown
----
-name: data-model-design
-product: [product name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: data-architect
----
-
-# Data Model Design
-
-## Aggregate → Table Mapping
-| Aggregate | Root table | Child tables | Store |
-|---|---|---|---|
-
-## Relational Schemas
-[CREATE TABLE per Aggregate, with constraints and indexes]
-
-## Graph Model (Apache AGE)
-| Vertex label | Properties | Source of truth |
-|---|---|---|
-| Edge label | From → To | Meaning |
-
-## Polyglot Persistence Decisions
-| Store | Data | Justification (ADR ref) |
-|---|---|---|
-
-## Indexing Plan
-| Table | Index | Query it serves |
-|---|---|---|
-```
+See `references/physical-ddl-patterns.md` for the full artifact template (Aggregate→Table
+mapping, relational schemas, dimensional marts with grain, graph model, polyglot decisions,
+and indexing plan).
