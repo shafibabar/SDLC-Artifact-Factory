@@ -1,173 +1,121 @@
 ---
 name: bounded-context-mapping
 description: >
-  Teaches how to define Bounded Contexts, draw their boundaries, and produce
-  a Context Map showing the relationships between contexts. Covers the six
-  context relationship patterns (Shared Kernel, Customer/Supplier, Conformist,
-  Anti-Corruption Layer, Open Host Service, Published Language), how to choose
-  the right relationship pattern, and what each pattern implies for service
-  design and team ownership. Used by the domain-modeler agent after Event
-  Storming, before service decomposition.
-version: 1.1.0
+  Teaches the domain-modeler to discover, define, and document Bounded Contexts — the explicit
+  boundaries within which a Ubiquitous Language is consistent and a model applies without
+  ambiguity. Covers the BC discovery procedure (linguistic fracture lines, team ownership, data
+  ownership, deployment independence), the BC definition artifact, the Context Map as the
+  system-level view of BC relationships, and how BC boundaries drive service decomposition
+  decisions in this platform. Used during Design whenever a new domain is modeled or an existing
+  boundary is challenged.
+version: 2.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: [design, ddd, bounded-context, context-map, service-design, architecture]
+tags: ["design","domain-modeling","bounded-context","context-map","ddd","subdomain","team-topology"]
+related: [context-map-patterns, subdomain-distillation, aggregate-design, event-storming, glossary-management]
 ---
 
 # Bounded Context Mapping
 
-## Purpose
+## What Is a Bounded Context
 
-A Bounded Context is an explicit boundary within which a particular Ubiquitous Language applies and a domain model is consistent. Outside that boundary, the same words may mean different things, and the model may look different.
+A Bounded Context (Evans, *Domain-Driven Design*, Ch. 14–15) is the explicit boundary within
+which a single Ubiquitous Language applies and a domain model is internally consistent. Inside
+the boundary, every term has one meaning and one model shape. Outside the boundary, the same
+term may carry a different meaning — that linguistic fracture is where one Bounded Context ends
+and another begins.
 
-Bounded Context Mapping produces two outputs:
-1. **The Bounded Context definitions** — what each context is, what it owns, and where its boundary lies
-2. **The Context Map** — how contexts relate to each other, and what relationship pattern governs each connection
+**Key principle: one model per Bounded Context; no model leaks across boundaries.** A concept
+that crosses a boundary must be explicitly translated — by an Anti-Corruption Layer, an Open
+Host Service, or another named Context Map pattern.
 
-The Context Map is the primary input to service decomposition: each Bounded Context is a candidate for one or more deployable services.
+Khononov (*Learning DDD*) adds precision: a Bounded Context boundary is driven by *linguistic
+and model-consistency* forces — where the Ubiquitous Language changes meaning. This is distinct
+from the transactional-consistency force that drives Aggregate boundaries (a finer granularity
+inside the same context) and from the deployment-independence force that shapes service
+boundaries (which usually, but need not exactly, align with Bounded Context boundaries).
 
 ---
 
-## Bounded Context Definition
+## Discovery Signals
 
-Every Bounded Context must be defined with:
+A Bounded Context boundary is justified by one or more of these four signals:
 
-| Attribute | Description |
+1. **Linguistic fracture line** — the same word means something different in this area than in
+   the adjacent area. The boundary is where the language changes. This is the primary signal;
+   all others are secondary confirmations.
+2. **Team ownership** — different teams own different capabilities. Drawing boundaries at
+   team-ownership lines prevents coupling across team boundaries and reflects Conway's Law.
+3. **Data ownership** — only the owning context may write to its master record; other contexts
+   consume events or Read Models. Where data ownership changes, a context boundary likely exists.
+4. **Deployment independence** — this capability must be deployed, scaled, and versioned
+   independently of adjacent capabilities. A deployment independence requirement is a service-
+   boundary signal that usually aligns with a Bounded Context boundary.
+
+Full facilitation procedure — including the linguistic-fracture-line technique step-by-step, the
+data-ownership exercise, and the "one BC or two?" decision tree — is in
+`references/bc-discovery-guide.md`.
+
+---
+
+## BC Definition Artifact
+
+Every discovered Bounded Context must be documented with five required fields before any
+service-decomposition decision is made:
+
+| Field | What it captures |
 |---|---|
-| **Name** | A name from the Ubiquitous Language — not a technical name ("UserService") but a domain name ("Identity & Access") |
-| **Responsibility** | What this context is responsible for — one sentence |
-| **Boundary justification** | Why the boundary is here — language change, team ownership, or distinct deployment need |
-| **Owned Aggregates** | The Aggregates that live inside this context |
-| **Owned Domain Events** | The Domain Events emitted by Aggregates in this context |
-| **Incoming dependencies** | Which other contexts this context consumes data or events from |
-| **Outgoing dependencies** | Which other contexts depend on this context |
-| **Team / ownership** | Who owns this context (important for relationship pattern selection) |
+| **Name** | A name from the Ubiquitous Language — a domain noun, not a technical name ("DataAsset Management", not "AssetService") |
+| **Ubiquitous Language excerpt** | 5–10 key terms that have specific, bounded meanings inside this context — terms that would mean something different in an adjacent context |
+| **Owned Aggregates** | The Aggregate Roots that live inside this context and whose invariants this context enforces |
+| **Owned Domain Events** | The Domain Events this context emits — the facts it publishes for other contexts to consume |
+| **Team / service owner** | Who owns this context and which deployable service embodies it in this platform |
+
+Full fill-in template and worked example (DataAsset Management BC with its Ubiquitous Language
+terms, Aggregates, and events) in `references/bc-definition-artifact.md`.
 
 ---
 
-## Bounded Context Boundaries
+## Context Map
 
-Boundaries are justified by one or more of:
+The Context Map is the system-level view of all Bounded Contexts and the relationship pattern
+governing each connection between them. Draw it after BCs are defined and before
+service-decomposition decisions are finalised.
 
-1. **Language change** — the word "File" means something different here than in the adjacent context. The boundary is where the language changes.
-2. **Invariant isolation** — the rules governing a concept here are different from the rules in the adjacent context. Different rules → different model → different context.
-3. **Team ownership** — different teams own different parts of the domain. Boundaries at team ownership lines prevent coupling across team boundaries.
-4. **Deployment independence** — the system must deploy this capability independently from adjacent capabilities. Deployment independence requires a context boundary.
-5. **Change rate isolation** — one area changes frequently; another rarely. Boundary prevents churn in one from destabilising the other.
+The Context Map captures for each connection: which contexts are involved, which is upstream and
+which is downstream, and the single named relationship pattern that governs that connection.
 
----
+**Relationship patterns — select exactly one per connection:**
 
-## Context Relationship Patterns
+| Pattern | When to use |
+|---|---|
+| **Anti-Corruption Layer (ACL)** | Downstream protects itself from an upstream model it does not control. **Default for all external integrations in this platform** (Google Drive, AWS S3, Office 365). |
+| **Open Host Service (OHS)** | Upstream publishes a stable, versioned API consumed by many downstreams |
+| **Published Language (PL)** | Shared event or schema format crossing context boundaries; usually combined with OHS |
+| **Customer / Supplier** | Upstream has obligations to one specific downstream; Consumer-Driven Contracts enforce the agreement |
+| **Conformist** | Downstream adopts the upstream model as-is — only when that model is genuinely good enough to adopt without distortion |
+| **Shared Kernel** | Two contexts share a small, explicitly agreed-upon model subset — high coordination cost, use sparingly |
+| **Partnership** | Two contexts succeed or fail together; plan all changes jointly |
+| **Separate Ways** | Contexts deliberately do not integrate — record the absence to make it explicit on the map |
+| **Big Ball of Mud** | A legacy region with no coherent model — draw a boundary around it, protect everything else with an ACL |
 
-Once Bounded Contexts are defined, the relationship between each pair of connected contexts must be named. There are six canonical patterns:
-
-### 1. Shared Kernel
-
-Two teams share a small, explicitly agreed-upon subset of the domain model. Changes to the shared kernel require agreement from both teams.
-
-**When to use:** When two contexts are genuinely tightly coupled and the coupling is intentional and manageable.
-**Risk:** The shared kernel becomes a bottleneck. Any change requires coordination. Use sparingly — prefer ACL or OHS instead.
-
----
-
-### 2. Customer / Supplier
-
-One context (the Customer) depends on another (the Supplier). The Supplier has obligations to the Customer — it should not change its interface without consulting the Customer.
-
-**When to use:** When a clear upstream/downstream dependency exists and the upstream team is willing to negotiate.
-**Implementation:** Consumer-Driven Contract tests enforce the Supplier's obligations.
+Full diagram conventions, notation for each pattern, and worked multi-BC example (DataAsset
+Management + Compliance Intelligence + Reporting) in `references/context-map-template.md`.
 
 ---
 
-### 3. Conformist
-
-One context simply conforms to the model of another context — it does not negotiate. The downstream team accepts the upstream model as-is.
-
-**When to use:** When the upstream team has no incentive to cooperate (e.g., a third-party API or a legacy system with no owner).
-**Risk:** The downstream model becomes polluted with concepts that belong to the upstream. Consider ACL if the upstream model is poor.
-
----
-
-### 4. Anti-Corruption Layer (ACL)
-
-The downstream context isolates itself from the upstream model by building a translation layer — the ACL — that converts the upstream model into the downstream's own Ubiquitous Language.
-
-**When to use:** When the upstream model is significantly different from the downstream model, or when the upstream is a legacy system or third-party API with a poor model.
-**Implementation:** A dedicated package/module containing adapters, translators, and mappers. The rest of the downstream context never sees the upstream model directly.
-**This plugin's default:** ACL is the default pattern for all third-party integrations (Google Drive API, AWS S3 API, Office 365 API). The upstream vendor models must not leak into the domain model.
-
----
-
-### 5. Open Host Service (OHS)
-
-One context publishes a well-defined protocol — an API — that any other context can consume. The OHS team is responsible for keeping the protocol stable and backward-compatible.
-
-**When to use:** When many contexts need to integrate with one context. Rather than each pair negotiating privately, the upstream publishes a standard interface.
-**Implementation:** OpenAPI specification; versioned; Consumer-Driven Contract tests between the OHS and each consumer.
-
----
-
-### 6. Published Language (PL)
-
-A shared language (event schema, data model) is published and used by multiple contexts. Often combined with OHS — the OHS publishes using the Published Language.
-
-**When to use:** When event-driven integration is used across many contexts. The event schema is the Published Language.
-**Implementation:** JSON Schema or Avro schema registered in a schema registry. All producers and consumers validate against the schema.
-
----
-
-### Remaining Literature Patterns
-
-Three further patterns exist in the DDD literature and may appear on a Context Map, though they apply rarely in a greenfield system:
-
-- **Partnership** — two contexts (and teams) succeed or fail together; interfaces evolve jointly with mutual planning. Use only when neither side can be upstream of the other.
-- **Separate Ways** — two contexts deliberately do not integrate at all; duplication is cheaper than coupling. A legitimate, explicit choice — record it on the map so the absence of a connection is known to be intentional.
-- **Big Ball of Mud** — a region with no coherent model (typically legacy). Draw a boundary around it on the map and protect everything else from it with an ACL; do not try to name relationships *within* it.
-
----
-
-## Context Map Diagram
-
-The Context Map is expressed as a diagram showing all Bounded Contexts and the relationship pattern between each connected pair.
-
-```
-┌─────────────────────┐              ┌──────────────────────────┐
-│  Storage            │              │  Classification           │
-│  Integration        │──OHS/PL─────▶│  Engine                  │
-│  Context            │              │  Context                  │
-│                     │              │                          │
-│  [Google Drive ACL] │              │  [DataAsset Aggregate]   │
-│  [AWS S3 ACL]       │              │  [SensitivityLevel VO]   │
-└─────────────────────┘              └──────────────────────────┘
-         │                                        │
-         │ PL (Domain Events)                     │ PL (Domain Events)
-         ▼                                        ▼
-┌─────────────────────┐              ┌──────────────────────────┐
-│  Compliance         │◀─Customer/───│  Graph                   │
-│  Intelligence       │  Supplier    │  Context                 │
-│  Context            │              │                          │
-│                     │              │  [EntityRelationship]    │
-│  [ComplianceGap]    │              │  [KnowledgeGraph]        │
-│  [AuditRecord]      │              └──────────────────────────┘
-└─────────────────────┘
-```
-
-Direction of the arrow = direction of dependency. Upstream is on the left or top; downstream is on the right or bottom.
-
----
-
-## Selecting the Right Pattern
+## Pattern Selection
 
 | Situation | Recommended pattern |
 |---|---|
-| Integrating with a third-party API (Google Drive, S3) | ACL — always |
-| Two internal contexts with negotiating teams | Customer/Supplier with Consumer-Driven Contracts |
-| Many consumers of one core context | OHS + PL |
+| Third-party API (Google Drive, AWS S3) | ACL — always |
+| Two internal contexts, both teams willing to negotiate | Customer/Supplier + Consumer-Driven Contracts |
+| Many consumers of one context | OHS + PL |
 | Legacy system with no maintainable model | ACL |
-| Tight coupling between two contexts that must change together | Shared Kernel (last resort) |
-| Event-driven integration across contexts | PL (event schemas) |
-| Third-party service with no control over changes | Conformist (if model is tolerable) or ACL (if model is poor) |
+| Event-driven integration across contexts | PL (event schemas via schema registry) |
+| Upstream model is tolerable to adopt wholesale | Conformist — only if no linguistic distortion results |
+| Tight co-evolution between two contexts | Shared Kernel as last resort; prefer Customer/Supplier |
 
 ---
 
@@ -176,75 +124,32 @@ Direction of the arrow = direction of dependency. Upstream is on the left or top
 | Criterion | Pass | Fail |
 |---|---|---|
 | Named contexts | All contexts have Ubiquitous Language names | Technical names ("UserService", "FileDB") |
-| Boundary justification | Every boundary is justified by language change, team ownership, or deployment need | Arbitrary boundaries with no justification |
-| All relationships named | Every connection between contexts has a named pattern | Unnamed "depends on" relationships |
-| ACL for third-party | All external system integrations use ACL | External API models leaking into domain model |
-| Consumer-Driven Contracts | All Customer/Supplier relationships have contract test plans | Verbal agreements only |
-| Event schemas as PL | All cross-context events use a Published Language schema | Untyped or undocumented event payloads crossing boundaries |
+| Boundary justified | Every boundary is justified by at least one discovery signal | Arbitrary boundary, no justification stated |
+| All relationships named | Every context connection has a named pattern | Unnamed "depends on" lines |
+| ACL for external systems | All third-party integrations use ACL | Vendor model leaking into domain model |
+| Consumer-Driven Contracts | All Customer/Supplier relationships have a contract test plan | Verbal agreements only |
+| Published Language schemas | All cross-context events use a registered schema | Untyped or undocumented payloads crossing boundaries |
 
 ---
 
 ## Anti-Patterns
 
-| Anti-pattern | Why it fails | Correction |
-|---|---|---|
-| **Context per Aggregate** — every Aggregate is declared its own "context" | Boundaries stop following language; integration overhead explodes | A Bounded Context holds a whole consistent model — usually several Aggregates sharing one Ubiquitous Language |
-| **Shared database across contexts** | The schema becomes an unnamed, unmanaged Shared Kernel; every migration is a cross-context breaking change | Each context owns its persistence; integrate through Domain Events or an OHS |
-| **Technical layers as contexts** ("API context", "Database context") | Layers share one language — there is no linguistic boundary between them | Draw boundaries where the language changes, not where the technology changes |
-| **Shared Kernel by default** — sharing model code because it is convenient | Every change requires two-team coordination; the kernel grows until both contexts are coupled everywhere | Default to ACL or OHS/PL; Shared Kernel only for a small, explicitly agreed subset |
-| **Bidirectional Customer/Supplier** — each context claims the other as its supplier | Upstream/downstream is undefined; nobody owns the contract | Re-draw the boundary, or acknowledge a Partnership and plan changes jointly |
-| **Conformist to a poor vendor model** | Vendor concepts (e.g. Google Drive `File` resources) leak into and distort the domain model | Use an ACL — Conformist is only acceptable when the upstream model is genuinely good enough to adopt |
-| **Unnamed relationships** — lines on the map with no pattern | The costs and obligations of the dependency are undecided, so they are discovered in production | Every connection carries exactly one named pattern and an implementation note |
-
----
-
-## Output Format
-
-```markdown
----
-name: context-map
-product: [product name]
-version: 1.0.0
-phase: design
-created: [date]
-owner: domain-modeler
----
-
-# Context Map
-
-## Bounded Contexts
-
-### [Context Name]
-| Attribute | Value |
+| Anti-pattern | Correction |
 |---|---|
-| **Responsibility** | [one sentence] |
-| **Boundary justification** | [language change / team / deployment] |
-| **Owned Aggregates** | [list] |
-| **Owned Domain Events** | [list] |
-| **Upstream dependencies** | [contexts this consumes from] |
-| **Downstream dependents** | [contexts that consume from this] |
-
-[Repeat for each context]
+| **Context per Aggregate** — every Aggregate is its own BC | A BC holds a whole consistent model with several Aggregates sharing one Ubiquitous Language |
+| **Shared database across contexts** | Each context owns its persistence; integrate via Domain Events or OHS |
+| **Technical layers as contexts** ("API context", "DB context") | Draw boundaries where the language changes, not where technology changes |
+| **Shared Kernel by default** | Default to ACL or OHS/PL; Shared Kernel only for a small, explicitly agreed subset |
+| **God Context** — one context absorbs the entire domain | Split on linguistic fracture lines; a 1:1 BC-to-domain is almost never correct |
+| **Nano-Context** — one BC per Aggregate or per table | Aggregates are a transactional-consistency mechanism inside a BC, not a BC sizing unit |
 
 ---
 
-## Context Relationships
+## References
 
-| Upstream Context | Downstream Context | Pattern | Implementation |
-|---|---|---|---|
-
----
-
-## Context Map Diagram
-[ASCII diagram showing all contexts and their relationships]
-
----
-
-## Anti-Corruption Layers
-| ACL | Upstream | Translates | Implementation location |
-|---|---|---|---|
-
-## Published Language Schemas
-| Schema | Used by | Format | Registry |
-|---|---|---|---|
-```
+| File | Contains |
+|---|---|
+| `references/bc-discovery-guide.md` | BC discovery workshop facilitation, linguistic fracture line technique step-by-step, data ownership exercise, "one BC or two?" decision tree |
+| `references/bc-definition-artifact.md` | Complete BC definition template, worked example (DataAsset Management BC), versioning a BC definition when the boundary changes |
+| `references/context-map-template.md` | Context Map diagram conventions, notation for each pattern, worked multi-BC example with DataAsset + Compliance + Reporting BCs |
+| `references/service-decomposition.md` | How BC boundaries translate to service boundaries in this platform, the one-BC-one-service default, exceptions for merging or splitting |
