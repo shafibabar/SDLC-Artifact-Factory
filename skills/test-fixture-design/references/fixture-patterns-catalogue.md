@@ -180,6 +180,43 @@ func TestAccessDenied_WhenAssetIsArchived(t *testing.T) {
 }
 ```
 
+Object Mothers can span multiple domain types. A tenant-level mother creates a
+fully-configured tenant record in the repository — useful when the test is about
+tenant-scoped behavior, not about the asset inside it:
+
+```go
+// internal/test/mothers/tenants.go
+
+package mothers
+
+import (
+    "context"
+    "testing"
+    "github.com/google/uuid"
+    "github.com/jackc/pgx/v5/pgxpool"
+    "acme/internal/domain"
+    "acme/internal/infrastructure/postgres"
+)
+
+// SeedActiveTenant inserts a fully-configured, active tenant into the database
+// and registers cleanup. Use when the test is about behavior that applies to
+// any active tenant (not about the tenant's specific configuration).
+// Returns the tenant ID for use in further fixture setup.
+func SeedActiveTenant(t *testing.T, pool *pgxpool.Pool) uuid.UUID {
+    t.Helper()
+    id := uuid.New()
+    repo := postgres.NewTenantRepository(pool)
+    err := repo.Save(context.Background(), domain.NewTenant(id, "test-tenant", domain.TenantStatusActive))
+    if err != nil {
+        t.Fatalf("SeedActiveTenant: %v", err)
+    }
+    t.Cleanup(func() {
+        _, _ = pool.Exec(context.Background(), "DELETE FROM tenants WHERE id = $1", id)
+    })
+    return id
+}
+```
+
 ---
 
 ## t.Cleanup Teardown
