@@ -1,164 +1,123 @@
 ---
 name: okr-authoring
 description: >
-  Teaches how to write well-formed OKRs (Objectives and Key Results) — covering
-  the structure of good Objectives, the criteria for measurable Key Results,
-  cascading from company to product level, OKR health checks, and the most common
-  failure modes. Used by the product-strategist agent after roadmap direction is
-  established, to define the measurable outcomes the Strategy phase commits to.
-version: 1.1.0
+  Author OKRs during Strategy — an aspirational qualitative Objective plus 2-5
+  measurable Key Results. Apply the outcome-not-output rule (a Key Result
+  measures a change in customer or business behavior, never a shipped feature,
+  launch, or roadmap item), grade Key Results on a 0.0-1.0 scale with the ~0.7
+  aspirational sweet spot, set quarterly cadence with weekly check-ins, and
+  cascade/align product OKRs to company Objectives. Reject an output masquerading
+  as a Key Result ("launch the onboarding flow", "ship the connector",
+  "features shipped: 10"). Sets the measurable goals downstream discovery
+  (impact-mapping, story-mapping) traces back to.
+version: 2.0.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
-tags: [strategy, okr, metrics, product-metrics, north-star, outcome-driven]
+related: [impact-mapping, story-mapping, vision-statement, roadmap-now-next-later, methodology-review, glossary-management]
+tags: [strategy, okr, objectives, key-results, outcomes, goal-setting]
 ---
 
 # OKR Authoring
 
 ## Purpose
 
-OKRs (Objectives and Key Results) translate the vision and roadmap direction into measurable commitments. They answer: **what are we trying to achieve, and how will we know we achieved it?**
+OKRs translate vision and roadmap direction into measurable commitments. They answer: **what are we trying to achieve, and how will we know we achieved it?** OKRs are an alignment mechanism, not a task list and not a performance-review tool.
 
-OKRs are not a task list. They are not a performance review tool. They are an alignment mechanism — ensuring that all product, engineering, design, and go-to-market work is pointed at the same outcomes.
+From the glossary: **OKRs** — a goal-setting framework pairing a qualitative Objective with measurable Key Results, used to align and focus effort at organisational and team levels.
 
-From the canonical glossary: **OKRs** — a goal-setting framework that pairs a qualitative Objective with measurable Key Results, used to align and focus effort at organisational and team levels.
+The discipline this skill enforces is Cagan's empowered-team stance (`inspired-cagan`): a team is handed a **Key Result to move — an outcome with a target and a deadline — not a feature list**. A KR-driven team is structurally incapable of being a "feature factory". Lemay (`product-management-in-practice-lemay`) sharpens this: phrase each Key Result as a *falsifiable hypothesis* — "we believe [action] will cause [outcome], measured by [signal]" — not a stated future fact.
 
 ---
 
 ## Structure
 
 ```
-Objective
-  └── Key Result 1
-  └── Key Result 2
+Objective  (qualitative, inspiring, time-bound direction)
+  ├── Key Result 1  (measurable outcome — behavior change)
+  ├── Key Result 2
   └── Key Result 3
-  └── [Optional] Initiatives — what we'll do to achieve the KRs
+      [Initiatives — what we'll do to move the KRs; may change mid-cycle]
 ```
 
-**Maximum per cycle:** 3 Objectives, 3–5 Key Results per Objective.
+**Ceiling per cycle:** 3 Objectives, 2-5 Key Results each. More than that is a focus failure, not a scheduling one — "the essence of strategy is saying no" (Cagan).
 
 ---
 
-## Writing Good Objectives
+## The Central Discipline: Outcome, Not Output
 
-An Objective is a qualitative, inspiring, time-bound statement of direction.
+This is the one rule that most OKR sets get wrong. A Key Result measures **what changed for the customer or the business**, never **what the team shipped**.
 
-| Criterion | Description |
+| This is an OUTPUT (reject as a KR) | This is an OUTCOME (valid KR) |
 |---|---|
-| **Qualitative** | Does not contain numbers. Numbers belong in Key Results. |
-| **Inspiring** | A team member reading it understands why it matters. |
-| **Time-bound** | Has a defined period (quarterly, half-year, annual). |
-| **Outcome-oriented** | Describes a destination, not an activity. |
-| **Achievable but ambitious** | Set at ~70% confidence of achievement. 100% confident = not ambitious enough. |
+| "Launch the improved onboarding flow" | "80% of trial users reach first compliance-gap discovery within 30 min of setup" |
+| "Ship the Google Drive connector" | "Median time from connection to full classification ≤ 30 min" |
+| "Features shipped: 10" | "Flagged compliance gaps resolved within 5 days rises from 40% to 70%" |
 
-**Good Objective:** "Make it effortless for any SMB to understand their data compliance posture within hours of deploying the product."
+The test: **if the team shipped exactly what the KR names but nothing changed for users, could the KR still be marked done?** If yes, it is an output — rewrite it as the behavior change the output was meant to cause. A shipped-but-abandoned onboarding wizard fails an outcome KR regardless of effort spent; that is the point. This is the same discipline `impact-mapping` enforces ("feature usage is not an impact") and that downstream discovery traces back to.
 
-**Bad Objective:** "Launch the onboarding improvements and the Google Drive connector." — This is a task list, not an Objective.
+Outputs are not worthless — they become **Initiatives** (bets on how to move a KR), which live below the KRs and are allowed to change mid-cycle.
 
-**Bad Objective:** "Improve the product." — Not inspiring, not specific, not time-bound.
+Full quality tests for Objectives and Key Results, and the honest-baseline rule: `references/okr-rules-and-grading.md`.
 
 ---
 
-## Writing Good Key Results
+## Grading: 0.0-1.0
 
-A Key Result is a measurable outcome that proves the Objective was achieved.
+Key Results are scored continuously, not pass/fail. At cycle end each KR gets a grade from **0.0 to 1.0** (achievement against target), and the Objective's grade is the average of its KRs.
 
-| Criterion | Test |
-|---|---|
-| **Measurable** | Can be expressed as a number or a binary (achieved/not achieved) |
-| **Outcome-based** | Measures what changed for the user, not what the team did |
-| **Owned** | One team or person is accountable for it |
-| **Independently verifiable** | Can be checked without asking the team whether they "feel" it was achieved |
-| **Not gameable** | Cannot be technically achieved while the spirit of the OKR is missed |
+- **~0.7 is the target, not 1.0.** OKRs are set aspirationally: a full set landing near 0.7 means the ambition was calibrated right. Consistently scoring 1.0 means the targets were sandbagged.
+- A grade is a **learning signal**, not a verdict on the team — a 0.4 that surfaces a wrong assumption is more useful than a safe 1.0.
 
-**Good KR:** "80% of trial users reach their first compliance gap discovery within 30 minutes of setup."
-
-**Bad KR:** "Launch the improved onboarding flow." — This is an output (task completed), not an outcome (what changed for users).
-
-**Bad KR:** "Improve user satisfaction." — Unmeasurable without defining the metric and target.
-
-**Bad KR:** "Number of features shipped: 10." — Measures output, not outcome.
+What each grading band means (0.0-0.3 / 0.4-0.6 / 0.7-1.0), the sandbagging-vs-moonshot tension, and how to grade a binary KR: `references/okr-rules-and-grading.md`.
 
 ---
 
-## Distinguishing Objectives from Key Results from Initiatives
+## Cadence and Alignment
 
-| Term | Type | Contains | Example |
-|---|---|---|---|
-| **Objective** | Direction | Qualitative aspiration | "Be the most trusted private-deployment data intelligence platform for SMBs" |
-| **Key Result** | Measurement | Specific metric + target + time | "NPS > 50 from paying customers by end of Q3" |
-| **Initiative** | Action | What we plan to do | "Build automated SOC 2 evidence collection" |
-
-Initiatives are how we plan to hit Key Results. They may change. The Key Results should not change within a cycle unless fundamental assumptions are invalidated.
+- **Set quarterly**, review with a lightweight **weekly check-in** (update confidence, flag blockers) — set-and-forget is the most common failure mode.
+- **Cascade:** every product OKR names the company Objective it supports. For a solo operator (Shafi), product and company OKRs are one set — document them once.
+- **Confidence, not just target:** each KR carries a running confidence (start ~70%) that moves week to week and is the earliest signal a KR is off track.
 
 ---
 
-## Cascade and Alignment
+## Step-by-Step
 
-Product OKRs must align to company-level OKRs. Each product OKR should answer: "Which company Objective does this support?"
+1. Read the vision and roadmap. Objectives translate roadmap themes into time-bound aspirations.
+2. Draft ≤3 Objectives — qualitative, inspiring, no numbers.
+3. For each, draft 2-5 Key Results. For every KR ask: *"If this metric hits this target, is the Objective genuinely accomplished?"* and *"Is this a behavior change or a shipped thing?"*
+4. Convert any output-shaped KR into the outcome it was meant to cause; demote the output to an Initiative.
+5. Set baselines honestly (see references) and targets at ~70% confidence.
+6. Run the health check (below).
+7. Name the North Star Metric; confirm it is consistent with the KRs.
+8. Link each roadmap item to at least one Key Result so downstream discovery can trace it.
 
-If a product team produces OKRs with no company-level Objective they support, the OKRs are either misaligned or the company-level OKRs are incomplete.
-
-For a solo product (Shafi as sole operator), the product OKRs and company OKRs are the same. Document them as one set.
-
----
-
-## Step-by-Step Production
-
-1. **Read the vision and roadmap.** The Objectives translate the roadmap themes into time-bound aspirations.
-
-2. **Draft no more than 3 Objectives.** Each should map to a major roadmap theme or a critical business outcome for the period.
-
-3. **For each Objective, draft 3–5 Key Results.** Ask for each one: "If we achieve this metric at this level, is the Objective genuinely accomplished?"
-
-4. **Run the health check** (see below).
-
-5. **Identify the North Star Metric.** From the canonical glossary: the single metric that best captures the core value delivered to customers. It should be derivable from or consistent with the Key Results.
-
-6. **Link each OKR to the roadmap.** Every roadmap item should trace to at least one Key Result.
-
----
-
-## Worked Example
-
-One Objective for the first product (Data Estate Mapping and Compliance Intelligence), Q3 2026:
-
-**Objective 1 — Prove that an SMB can go from zero to a trustworthy compliance picture in a single session.**
-
-*Roadmap link: Now — "Frictionless Onboarding"*
-
-| Key Result | Metric | Baseline | Target | Owner | Confidence |
-|---|---|---|---|---|---|
-| KR1.1 | % of trial users who discover their first compliance gap within 30 minutes of connecting a storage source | n/a (pre-launch) | 80% | Shafi | 70% |
-| KR1.2 | Median time from Google Drive connection to full sensitivity classification (estates ≤ 100k files) | n/a | ≤ 30 min | Shafi | 60% |
-| KR1.3 | % of design-partner deployments completed without any support contact | n/a | 3 of 3 | Shafi | 70% |
-
-**Why this passes:** the Objective is qualitative and time-bound; if all three KRs land, "zero to trustworthy compliance picture in one session" is genuinely accomplished; every KR is measurable from product telemetry with no self-assessment; and none can be gamed without actually delivering the onboarding outcome (shipping an onboarding wizard that users abandon fails KR1.1 regardless of effort spent).
+The artifact template and full worked outcome-vs-output examples grounded in this product: `references/okr-template-and-examples.md`.
 
 ---
 
 ## OKR Health Check
 
-For each Objective, answer all five questions. Fail on any one = revise.
+For each Objective, all five must pass — fail any one, revise:
 
-1. Is this Objective qualitative (no numbers)?
-2. Would a team member reading this understand why it matters?
-3. If we achieve all Key Results, does the Objective feel genuinely accomplished?
-4. Are all Key Results outcome-based (not task lists)?
+1. Is the Objective qualitative (no numbers)?
+2. Would a team member reading it understand why it matters?
+3. If all Key Results land, is the Objective genuinely accomplished?
+4. Is every Key Result an outcome (behavior change), not an output (task/launch/feature count)?
 5. Can every Key Result be measured without asking the team to self-assess?
 
 ---
 
-## Common Failure Modes
+## Anti-Patterns
 
-| Failure | Description | Fix |
+| Anti-pattern | Why it fails | Fix |
 |---|---|---|
-| **KRs are tasks** | "Launch feature X", "Hire 2 engineers" | Replace with the outcome the task is meant to produce |
-| **Too many OKRs** | 6+ Objectives, 20+ KRs | Ruthlessly cut to 3 Objectives, 3–5 KRs each |
-| **Sandbagging** | KRs set so low they are guaranteed | Set targets at ~70% confidence; 100% = too easy |
-| **Vanity KRs** | Metrics that look good but do not measure value | Replace with metrics directly tied to user outcomes |
-| **No accountability** | No owner assigned to each KR | Every KR has exactly one accountable owner |
-| **Set and forgotten** | OKRs written but never reviewed | Schedule monthly check-ins; update confidence scores |
+| **Output as a KR** | "Launch X" / "ship Y" measures effort, not change | Rewrite as the behavior change; demote the output to an Initiative |
+| **Roadmap masquerading as OKRs** | A feature-and-date list handed down as "KRs" makes a feature team (Cagan) | Express each as an outcome to move, not a solution to build |
+| **Sandbagging** | Targets guaranteed to hit; grades cluster at 1.0 | Calibrate to ~0.7 aspirational; 100% confidence = too easy |
+| **Vanity KR** | Looks good, measures no real value | Tie to a customer/business behavior |
+| **Too many OKRs** | 4+ Objectives, 20+ KRs — no focus | Cut ruthlessly to ≤3 / 2-5 |
+| **Set and forgotten** | Written, never revisited | Weekly check-in; update confidence |
 
 ---
 
@@ -166,65 +125,18 @@ For each Objective, answer all five questions. Fail on any one = revise.
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Objective count | ≤ 3 per cycle | 4 or more Objectives |
-| KR count | 3–5 per Objective | 1–2 KRs (under-specified) or 6+ (unfocused) |
+| Objective count | ≤3 per cycle | 4+ |
+| KR count | 2-5 per Objective | 1 (under-specified) or 6+ (unfocused) |
 | Objective form | Qualitative, time-bound, no numbers | Contains a metric, or is a task list |
-| KR form | Every KR has metric, baseline, target, owner, and confidence | Any of the five fields missing |
-| Outcome orientation | Every KR measures a change for users or the business | Any KR that is a task, launch, or feature count |
-| Ambition | Targets set at ~70% confidence | Targets at 100% confidence (sandbagged) or below 30% (fantasy) |
-| North Star Metric | Named, and consistent with the Key Results | Absent, or contradicted by the KRs |
-| Health check | All 5 questions answered for every Objective | Health check skipped or partially applied |
+| KR fields | Metric, baseline, target, owner, confidence all present | Any missing |
+| Outcome orientation | Every KR is a behavior change | Any KR is a task/launch/feature count |
+| Ambition | Targets at ~70% confidence, ~0.7 target grade | Sandbagged (1.0) or fantasy (<0.3) |
+| North Star Metric | Named, consistent with KRs | Absent or contradicted |
+| Health check | All 5 answered per Objective | Skipped or partial |
 
 ---
 
-## Output Format
+## References
 
-```markdown
----
-name: okr-set
-product: [product name]
-cycle: [Q3 2026 / H2 2026 / Annual 2026]
-version: 1.0.0
-phase: strategy
-created: [date]
-owner: product-strategist
-north-star-metric: [single metric]
----
-
-# OKRs — [Cycle]
-
-## North Star Metric
-
-[Single metric that best captures core value delivered]
-Current baseline: [value] | Target: [value] | By: [date]
-
----
-
-## Objective 1 — [Qualitative statement]
-
-*Roadmap link: [Now/Q3 theme name]*
-
-| Key Result | Metric | Baseline | Target | Owner | Confidence |
-|---|---|---|---|---|---|
-| KR1.1 | | | | | |
-| KR1.2 | | | | | |
-| KR1.3 | | | | | |
-
-**Initiatives (how we plan to achieve this):**
-- [Initiative 1]
-- [Initiative 2]
-
----
-
-## Objective 2 — [Qualitative statement]
-[Repeat structure]
-
-## Objective 3 — [Qualitative statement]
-[Repeat structure]
-
----
-
-## OKR Health Check
-
-[Checklist: all 5 health check questions answered for each Objective]
-```
+- `references/okr-rules-and-grading.md` — Objective/Key-Result quality tests, honest-baseline rule, the 0.0-1.0 grading method with per-band meaning, quarterly + weekly cadence, sandbagging-vs-moonshot tension.
+- `references/okr-template-and-examples.md` — the OKR artifact template plus worked outcome-based examples for this product, each contrasted with its output anti-example.
