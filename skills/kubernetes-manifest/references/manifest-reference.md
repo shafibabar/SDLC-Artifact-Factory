@@ -353,6 +353,59 @@ Blue-green requires two `Service` objects (`compliance-engine-active` and `compl
 
 ---
 
+## PodDisruptionBudget and Topology Spread — Worked Example
+
+A multi-replica service needs both a PodDisruptionBudget (so voluntary disruptions — node drains, cluster upgrades — take at most one replica at a time) and a topology spread constraint (so replicas do not co-schedule onto one node and disrupt together). `minAvailable`/`maxUnavailable` must leave enough capacity for the SLO (`slo-definition`) during a rolling node upgrade.
+
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: estate-scanner }
+spec:
+  maxUnavailable: 1                # node drains/upgrades take one replica at a time
+  selector: { matchLabels: { app.kubernetes.io/name: estate-scanner } }
+---
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway   # DoNotSchedule only where node count guarantees satisfiability
+    labelSelector: { matchLabels: { app.kubernetes.io/name: estate-scanner } }
+```
+
+---
+
+## NetworkPolicy Worked Example — Default-Deny plus Per-Service Allow
+
+Every tenant namespace starts closed with a `default-deny` policy selecting all pods for both Ingress and Egress; each flow is then re-opened as an explicit, reviewable allow that mirrors the Container Diagram. A new architecture arrow is a new NetworkPolicy rule in a reviewed PR.
+
+```yaml
+# default-deny — applied to every namespace:
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny }
+spec: { podSelector: {}, policyTypes: [Ingress, Egress] }
+---
+# per-service allow — mirrors the Container Diagram:
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: estate-scanner }
+spec:
+  podSelector: { matchLabels: { app.kubernetes.io/name: estate-scanner } }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from: [{ podSelector: { matchLabels: { app.kubernetes.io/name: ingress-gateway } } }]
+      ports: [{ port: 8080 }]
+  egress:
+    - to: [{ podSelector: { matchLabels: { app.kubernetes.io/name: postgres } } }]
+      ports: [{ port: 5432 }]
+    - to: [{ podSelector: { matchLabels: { app.kubernetes.io/name: redpanda } } }]
+      ports: [{ port: 9092 }]
+    - ports: [{ port: 53, protocol: UDP }]   # DNS
+    - ports: [{ port: 443 }]                 # external APIs
+```
+
+---
+
 ## Output Format Template
 
 Produces the workload standards record and per-service rendered-manifest audits:
