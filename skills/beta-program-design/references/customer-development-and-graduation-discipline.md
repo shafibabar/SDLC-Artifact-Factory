@@ -39,3 +39,35 @@ Blank's discipline underneath this check: no fact about a customer exists until 
 When compiling closed-beta evidence for `acceptance-sign-off`, add a check distinct from the per-participant usability affirmation: did onboarding this participant use the same documented steps as the previous one, with the same effort and support level — or did each participant require bespoke, founder-led hand-holding?
 
 This matters because Blank's actual Customer Validation test is not "does the product work for these customers" — it is repeatability: proving a documented, repeatable process converts a *new* prospect, using people other than the one who built the relationship, before real money is spent scaling demand generation. Three participants who each affirm "yes, it works" after three different ad hoc onboarding paths is Customer-Discovery-grade evidence (confirms product/problem fit) — it is not yet Customer-Validation-grade evidence (a repeatable process). A closed beta that only re-confirms design partners like the product, without checking whether the process that got them there would work identically for a fourth participant nobody has hand-held, has not actually completed this stage's real test.
+
+## Worked Example — Closed Beta for the Classification Pipeline (3 Design Partners)
+
+A filled-in closed-beta record showing how the four-stage structure, participant selection, rollout mechanics, unrelaxed security posture, feedback cadence, and evidence-based graduation criteria come together for one release slice:
+
+```markdown
+## Beta Program — Classification Pipeline Closed Beta
+
+**Stage:** Closed beta
+**Participants:** Northwind Compliance Co. (Maya Chen), Ridgeline Analytics
+  (compliance lead TBD-named), Harborview Legal Group (compliance lead TBD-named)
+**Selection rationale:** All three match the ICP (mid-market, regulated industry,
+  active Google Drive estate); all three have a named IT/compliance contact with
+  decision authority; all three accepted the beta agreement's rough-edges clause.
+
+**Rollout mechanic:** Each tenant on its own canary wave (`canary-deployment`),
+  release flag `classification.pipeline.enabled=true` scoped to these three
+  tenant ids only (`feature-flag-design`).
+
+**Feedback cadence:** Bi-weekly structured check-in (every other Tuesday);
+  ad hoc reports via shared Slack channel, triaged same business day.
+
+**Data handling:** Unchanged SOC 2 CC6/CC7/A1 posture; confirmed in the signed
+  beta agreement with each participant's named contact.
+
+**Graduation criteria for this stage:**
+- UAT-001 through UAT-004 pass across all three tenants (`uat-plan`)
+- Zero open Critical/High defects
+- All three named contacts affirm usability in the closing check-in
+
+**Exit decision:** Feeds `acceptance-sign-off`; if met, program advances to open beta.
+```
