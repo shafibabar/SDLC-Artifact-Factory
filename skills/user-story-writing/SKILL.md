@@ -1,93 +1,135 @@
 ---
 name: user-story-writing
 description: >
-  Teaches how to write well-formed user stories — using the correct format, the
-  INVEST criteria for story quality, how to write stories that lead naturally to
-  testable acceptance criteria, story splitting techniques, and common anti-patterns.
-  User stories are the atomic unit of the backlog and the input to the acceptance-criteria
-  skill. Used by the requirements-analyst agent during the Ideate phase.
-version: 1.1.0
+  Teaches the requirements-analyst to write user stories — the role-goal-benefit
+  format (As a / I want / so that), the INVEST quality criteria (Independent,
+  Negotiable, Valuable, Estimable, Small, Testable), story-splitting patterns for
+  stories that are too big, and the coupling to acceptance criteria. Used during
+  Ideate to capture requirements as small, testable, valuable increments.
+version: 2.0.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, user-stories, backlog, invest, agile, product-discovery]
+tags: [ideate, requirements, user-story, invest, story-splitting, connextra, acceptance-criteria]
+related: [acceptance-criteria, epic-definition, user-persona, moscow-prioritization, example-mapping, glossary-management]
 ---
 
 # User Story Writing
 
 ## Purpose
 
-A user story is the smallest unit of product work that delivers value to a specific user. It is not a task, a technical requirement, or a feature specification — it is a description of what a user needs to accomplish and why, written in a way that enables a conversation about how to build it.
-
-A user story is a promise of a conversation — the acceptance criteria that follow it close the loop by defining when the promise has been kept.
+A user story is the smallest unit of product work that delivers value to a specific
+user. It is not a task, a technical requirement, or a feature specification — it is a
+description of what a user needs to accomplish and why, written in a way that enables a
+conversation about how to build it. This skill governs how the `requirements-analyst`
+writes stories during Ideate, decomposing epics into small, testable, valuable
+increments.
 
 ---
 
-## The Standard Format
+## The Role-Goal-Benefit Format
+
+The canonical Connextra-style template (named for the team that popularized it):
 
 ```
 As a [persona or role],
 I want to [action or capability],
 so that [outcome or benefit].
-
-Acceptance Criteria: [defined separately, see acceptance-criteria skill]
 ```
 
-**Important distinctions:**
-- "As a" names a **persona or role** — not "a user" (too generic), not a system ("As the API")
-- "I want to" names an **action** — something the user does, not something the system does ("I want the system to...")
-- "so that" names the **outcome** — what changes for the user as a result of accomplishing the action
+**The three slots each have a rule:**
+- **As a** names a *persona or role* — never "a user" (too generic), never a system
+  ("As the API"). Prefer a named persona from `user-persona`; if none exists yet, run
+  the lightweight role-brainstorming fallback (see `references/invest-criteria.md`).
+- **I want to** names an *action the user takes* — not something the system does
+  ("I want the system to...").
+- **so that** names the *outcome* — what concretely changes for the user.
+
+### Why the "so that" matters most
+
+The benefit clause is the slot most often written badly and the one that carries the
+most value. A "so that" is only doing its job when it names a concrete change in the
+user's world — time saved, risk avoided, a decision enabled, a blocker removed — not a
+restatement of the want ("so that I can export the report") and not a product benefit
+("so that the product has more data"). Apply the **"so what?" test**: keep asking "so
+what?" of the benefit until the answer names a real-world change, not the feature
+itself. If a story's benefit collapses under that test, its value is unproven —
+escalate rather than build.
 
 ---
 
-## INVEST Criteria
+## Card, Conversation, Confirmation (the Three Cs)
 
-Every user story must pass all six INVEST criteria before it enters the backlog:
+Ron Jeffries' Three Cs, popularized by Mike Cohn (*User Stories Applied*, 2004), are
+*why* the story is deliberately short:
 
-| Letter | Criterion | What it means | Fail condition |
-|---|---|---|---|
-| **I** | Independent | The story can be developed and delivered without depending on another in-flight story | Story A must be done before Story B can start |
-| **N** | Negotiable | The story describes a need, not a solution — the "how" is negotiable | Story specifies implementation details |
-| **V** | Valuable | The story delivers value to a real user (not a developer convenience) | Story only has internal technical value |
-| **E** | Estimable | The team can form a rough view of the effort required | Story is too vague or too large to estimate |
-| **S** | Small | The story can be completed within a single sprint | Story will take multiple sprints if not split |
-| **T** | Testable | The story can be verified — it will have unambiguous acceptance criteria | "The system should be better" — not testable |
-
-When a story fails an INVEST criterion, the required action is:
-
-| Fails | Action |
-|---|---|
-| Not Independent | Identify the dependency; either reorder or refactor to remove the coupling |
-| Not Negotiable | Rewrite without specifying implementation; move solution details to a spike or technical note |
-| Not Valuable | Escalate to Shafi — if this story isn't valuable to a user, should it exist? |
-| Not Estimable | Split or investigate (spike story) to reduce uncertainty |
-| Not Small | Split using the decomposition strategies from `epic-definition` |
-| Not Testable | Write at least one acceptance criterion before considering the story ready |
-
----
-
-## Story Quality Anti-Patterns
-
-| Anti-Pattern | Example | Problem |
+| C | What it is | In this repo |
 |---|---|---|
-| Solution story | "As a user, I want a REST endpoint that returns JSON..." | Specifies the solution, not the need |
-| Persona-free story | "As a user, I want to..." | "User" is not a persona — which user? |
-| System actor | "As the classification engine, I want to..." | Systems don't have wants; this is a technical task |
-| Benefit-free story | "As a Compliance Officer, I want to export a report." | Why? The "so that" must be substantive |
-| Epic masquerading as a story | A story with 15 acceptance criteria or that will take multiple sprints | Split it |
-| Task masquerading as a story | "Set up the database schema" | No user actor, no user value — this is a technical task |
+| **Card** | The short written story — a token, not a spec | The `As a / I want / so that` text |
+| **Conversation** | Where the real detail is negotiated, over time | Shafi's review + the analyst reasoning through perspectives |
+| **Confirmation** | The conditions that prove the conversation was delivered | The `acceptance-criteria` artifact |
+
+A story is **a promise of a conversation** — the card intentionally defers detail.
+Writing a fully-detailed card is a failure mode, not thoroughness: it means the
+conversation never happened, or got frozen into text too early. The acceptance criteria
+are the **Confirmation** leg — they close the loop by defining when the promise has been
+kept. This is the coupling to `acceptance-criteria`: the story is the promise, the AC is
+the confirmation.
+
+---
+
+## INVEST — the Quality Bar
+
+Every story must pass all six INVEST criteria (Bill Wake; the core of Cohn's book)
+before it enters the backlog:
+
+- **I — Independent**: deliverable without waiting on another in-flight story.
+- **N — Negotiable**: describes a need, not a chosen solution — the "how" stays open.
+- **V — Valuable**: delivers value to a real user, not a developer convenience.
+- **E — Estimable**: the team can form a rough view of the effort.
+- **S — Small**: completable within a single sprint; if not, split it.
+- **T — Testable**: verifiable via unambiguous acceptance criteria.
+
+Each letter, how to test a story against it, and the fix when it fails — plus the
+anti-pattern catalogue (technical-task stories, blank "so that", persona-free "As a
+user", system-as-actor) — are in `references/invest-criteria.md`. Consult it whenever a
+story is borderline on any letter.
+
+---
+
+## When a Story Is Too Big — Split It
+
+A story that fails **Small** (or **Estimable**) must be split into INVEST-compliant
+children, not planned as-is. Splitting is a first-class, continuous technique, not a
+last resort. The named patterns:
+
+| Pattern | Split by |
+|---|---|
+| **SPIDR** (Cohn) | Spikes, Paths, Interfaces, Data, Rules |
+| By workflow step | Each step of a multi-step process |
+| By CRUD operation | Separate Create / Read / Update / Delete |
+| By business-rule variation | One story per rule (discount tier, compliance threshold) |
+| Happy path first | Success scenario first; edge/error cases as follow-ons |
+| Simple then complex | Ship the common case; defer the rare/hard case |
+| Split by verb before noun | Decompose a compound action before splitting by data |
+
+Every pattern in depth — with a full worked split of an oversized "connect any storage
+source" repo story into INVEST-compliant stories — is in
+`references/story-splitting-patterns.md`.
 
 ---
 
 ## Story Writing Process
 
-1. **Source from epics.** Each story implements part of a parent epic. Use the epic's decomposition list as the starting point.
-2. **Name a specific persona.** Use the persona names from the `user-persona` output. Never use "user".
-3. **Write the want.** State what the persona wants to do — in their language, not engineering language.
-4. **Write the so that.** State the outcome they get. Ask: "if they could do this, what would be different for them?" That difference is the "so that".
-5. **Check INVEST.** Apply all six criteria. If any fail, refactor before continuing.
-6. **Tag the parent epic and linked job story.** Every story should know where it came from.
-7. **Write a one-line description** of what acceptance criteria will cover (detailed criteria are written by the `acceptance-criteria` skill).
+1. **Source from an epic.** Each story implements part of a parent epic
+   (`epic-definition`); start from the epic's decomposition list.
+2. **Name a specific persona** from `user-persona` — never "user".
+3. **Write the want** in the persona's own vocabulary, not engineering jargon.
+4. **Write the "so that"** and apply the "so what?" test until it names a real change.
+5. **Check INVEST** — all six. If any fail, refactor (or split) before continuing.
+6. **Tag the parent epic and job story** so every story is traceable upward.
+7. **Note what the acceptance criteria will cover** (detailed AC belongs to
+   `acceptance-criteria`).
 
 ---
 
@@ -101,48 +143,22 @@ From EPIC-002 ("Connect any supported storage source in under 5 minutes"):
 > I want to connect our company Google Drive by authorising it in a guided flow,
 > so that the estate scan can begin without me raising an IT ticket.
 
-**INVEST check:**
-- **Independent** — no other story must land first
-- **Negotiable** — OAuth is a constraint inherited from the security NFRs, but the flow design is entirely open
-- **Valuable** — removes Maya's stated adoption barrier ("anything requiring an engineering ticket")
-- **Estimable** — bounded to one provider, one flow
-- **Small** — single provider, happy path only; expired-token re-authentication is deliberately split out as US-003
-- **Testable** — success is observable: a connected storage source appears with status "scanning"
-
-**Source:** Job Story JS-001 · **Parent Epic:** EPIC-002 · **Priority:** Must
-
-Note the "so that": it names what changes for Maya (no IT ticket, scan starts now) — not a restatement of the want, and not a product benefit ("so that the product has more data").
-
----
-
-## Story Splitting Strategies
-
-When a story fails the Small criterion, use these splitting strategies:
-
-| Strategy | Technique |
-|---|---|
-| Happy path first | Write the basic success scenario as Story 1; error and edge cases as subsequent stories |
-| By data variation | If the story works on multiple data types (Drive / S3 / SharePoint), split by type |
-| By workflow step | If the story covers a multi-step process, split each step |
-| Read vs write | Separate viewing/reading stories from creating/editing stories |
-| With vs without configuration | Deliver the no-configuration-required version first; add configuration options in a follow-on story |
-| Spike story | When a story is not estimable due to technical uncertainty, create a time-boxed spike story whose output is knowledge, not software |
+The "so that" names what changes for Maya (no IT ticket, scan starts now) — not a
+restatement of the want, not a product benefit. INVEST holds because the story is one
+provider, happy path only; expired-token re-authentication is deliberately split out as
+US-003 (a *Paths* split — see the references). **Source:** Job Story JS-001 · **Parent
+Epic:** EPIC-002 · **Priority:** Must.
 
 ---
 
 ## Story Hierarchy
 
-```
-Business Goal (OKR KR)
-     └── Impact (HOW on the impact map)
-              └── Epic (EPIC-001)
-                   ├── US-001: [Story — primary workflow]
-                   ├── US-002: [Story — secondary user type]
-                   ├── US-003: [Story — error/edge case]
-                   └── US-004: [Story — configuration/admin]
-```
+Every story must trace upward. If the trace breaks at any level, the story's inclusion
+is unjustified:
 
-Every story at the bottom must be traceable back up to the business goal. If the trace breaks at any level, the story's inclusion is unjustified.
+```
+Business Goal (OKR KR) → Impact → Epic (EPIC-001) → US-001 … US-00n
+```
 
 ---
 
@@ -150,12 +166,12 @@ Every story at the bottom must be traceable back up to the business goal. If the
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Named persona | Specific persona or role from the persona list | "As a user" |
-| Action-oriented want | Describes what the user does | "I want the system to..." |
-| Substantive benefit | "so that" describes real change for the user | "so that I can use the feature" |
-| INVEST compliance | All six criteria pass | Any criterion fails |
-| Epic linkage | Linked to a parent epic | Orphan story with no epic parent |
-| Job story linkage | References the job story that motivated it (where applicable) | No connection to JTBD analysis |
+| Named persona | Specific persona/role | "As a user" |
+| Action-oriented want | What the user does | "I want the system to..." |
+| Substantive benefit | Survives the "so what?" test | "so that I can use the feature" |
+| INVEST compliance | All six pass | Any letter fails |
+| Epic linkage | Linked to a parent epic | Orphan story |
+| AC promised | Names what Confirmation will cover | No path to acceptance criteria |
 
 ---
 
@@ -174,11 +190,8 @@ owner: requirements-analyst
 # User Story Backlog
 
 ## Backlog Summary
-
 | ID | Title | Epic | Persona | Priority | Size |
 |---|---|---|---|---|---|
-
----
 
 ## Stories by Epic
 
@@ -186,18 +199,11 @@ owner: requirements-analyst
 
 #### US-001: [Short title]
 **Story:**
-As a [Persona Name],
-I want to [action],
-so that [outcome].
+As a [Persona Name], I want to [action], so that [outcome].
 
 **Source:** Job Story JS-[ID] / Impact Map EPIC-[ID]
 **Parent Epic:** EPIC-001
 **Priority:** Must / Should / Could / Won't
-**INVEST check:** [INVEST — pass / note any exceptions]
-**Acceptance criteria:** [Defined separately in acceptance-criteria artifact — see AC-001]
-
----
-
-#### US-002: [Short title]
-[Repeat]
+**INVEST check:** [pass / note any exceptions]
+**Acceptance criteria:** [Defined separately — see AC-001]
 ```
