@@ -285,3 +285,16 @@ venv must be built inside the `build` stage against the image's own platform, ne
 the developer's machine (host wheels may be the wrong OS/arch). `tests/`, `__pycache__/`, and the
 tool caches are excluded because they are run by `pytest`/`ruff`/`mypy` (`python-tooling`), never
 by the container build, and have no reason to cross into the Docker daemon's context.
+
+---
+
+## Anti-Patterns
+
+- **Single-stage `pip install`** — ships `build-essential`, the resolver, and caches; multiplies size and attack surface.
+- **`FROM python:3.12` (full) in production** — ~1GB where slim gets the same runtime in ~120–200MB.
+- **Unpinned / un-hashed install** — a build that resolves differently tomorrow than today; the lockfile exists precisely to prevent this.
+- **`COPY . .` before installing dependencies** — every source edit re-resolves and re-downloads every wheel.
+- **Shell-form `ENTRYPOINT`** — `sh` becomes PID 1; `uvicorn` never receives `SIGTERM`; every deploy hard-kills instead of draining.
+- **`gunicorn`-with-workers as PID 1 expecting clean signals** — either run one `uvicorn`, or add an init; do not assume multi-worker + single-PID signal correctness for free.
+- **A `HEALTHCHECK` instruction in the image** — this platform deliberately omits it; liveness and readiness are Kubernetes probes (`kubernetes-manifest`), not baked into the image (`dockerfile-patterns`).
+- **Copying a `.venv` built on the host** — a host venv may hold wrong-platform wheels; always build the venv inside the `build` stage.
