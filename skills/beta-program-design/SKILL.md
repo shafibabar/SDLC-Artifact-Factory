@@ -17,7 +17,7 @@ description: >
   scripts/scaffold-beta-program-design.sh /
   scripts/validate-beta-program-design.sh. Used by the requirements-analyst
   during Customer Validation.
-version: 2.0.0
+version: 2.1.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -136,38 +136,6 @@ Before choosing, name which hypothesis is suspect. "Extend" and "remediate" both
 
 ---
 
-## Worked Example — Closed Beta for the Classification Pipeline (3 Design Partners)
-
-```markdown
-## Beta Program — Classification Pipeline Closed Beta
-
-**Stage:** Closed beta
-**Participants:** Northwind Compliance Co. (Maya Chen), Ridgeline Analytics
-  (compliance lead TBD-named), Harborview Legal Group (compliance lead TBD-named)
-**Selection rationale:** All three match the ICP (mid-market, regulated industry,
-  active Google Drive estate); all three have a named IT/compliance contact with
-  decision authority; all three accepted the beta agreement's rough-edges clause.
-
-**Rollout mechanic:** Each tenant on its own canary wave (`canary-deployment`),
-  release flag `classification.pipeline.enabled=true` scoped to these three
-  tenant ids only (`feature-flag-design`).
-
-**Feedback cadence:** Bi-weekly structured check-in (every other Tuesday);
-  ad hoc reports via shared Slack channel, triaged same business day.
-
-**Data handling:** Unchanged SOC 2 CC6/CC7/A1 posture; confirmed in the signed
-  beta agreement with each participant's named contact.
-
-**Graduation criteria for this stage:**
-- UAT-001 through UAT-004 pass across all three tenants (`uat-plan`)
-- Zero open Critical/High defects
-- All three named contacts affirm usability in the closing check-in
-
-**Exit decision:** Feeds `acceptance-sign-off`; if met, program advances to open beta.
-```
-
----
-
 ## Quality Criteria
 
 | Criterion | Pass | Fail |
@@ -237,4 +205,5 @@ owner: requirements-analyst
 
 - **Starting a new beta program record** — copy `assets/beta-program-design-template.md`, or run `scripts/scaffold-beta-program-design.sh` to generate one pre-filled with the product and release-slice metadata.
 - **Checking a beta program record mechanically** — run `scripts/validate-beta-program-design.sh` to check Stage validity, non-empty Participants, an unchanged SOC 2 CC6/CC7/A1 Data Handling Statement, and both Graduation Criteria dimensions present.
+- **Wanting a fully worked closed-beta record** (the three-design-partner Classification Pipeline example) — see the worked example in `references/customer-development-and-graduation-discipline.md`.
 - **Going deeper on earlyvangelist screening, the pivot decision framework, or the outside-the-building check** — read `references/customer-development-and-graduation-discipline.md`.
