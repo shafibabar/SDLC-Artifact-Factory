@@ -15,6 +15,9 @@ owner: product-strategist
 created: 2026-06-24
 related: [competitive-analysis, vision-statement, business-model-canvas, user-persona, glossary-management, methodology-review]
 tags: [strategy, gtm, positioning, pricing, channels, launch, product-discovery]
+produces: go-to-market-strategy
+domain: strategy
+status: stable
 ---
 
 # Go-to-Market Strategy
