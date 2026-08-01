@@ -4,7 +4,7 @@
 
 **Author:** Shafi Babar | **Version:** 0.1.0 | **Status:** Active Development
 
-> **Active work:** the **Architecture Review campaign** is under way — making the platform's component relationships and standards machine-explicit and self-enforcing (manifests as enriched frontmatter, a derived catalog, declarative workflow specs, and a consistency linter). The governance foundation (P1) is merged — component-frontmatter schemas + a consistency linter gate (`scripts/lint-all.sh`, CI-enforced) — and skill manifest enrichment (P2) is complete: all 186 skills now declare `produces`/`domain`/`status`, which drove broken cross-references to 0 and orphan skills to 0 and made the relationship linter blocking. See [`ARCHITECTURE-REVIEW-CAMPAIGN.md`](ARCHITECTURE-REVIEW-CAMPAIGN.md) for the plan and resumable status.
+> **Active work:** the **Architecture Review campaign** is under way — making the platform's component relationships and standards machine-explicit and self-enforcing (manifests as enriched frontmatter, a derived catalog, declarative workflow specs, and a consistency linter). The governance foundation (P1) is merged — component-frontmatter schemas + a consistency linter gate (`scripts/lint-all.sh`, CI-enforced) — skill manifest enrichment (P2) is complete (all 186 skills declare `produces`/`domain`/`status`, driving broken cross-references and orphan skills to 0), and the derived component catalog (P3) is live — [`generated/catalog.json`](generated/catalog.json) is derived from component frontmatter, committed for review, and gated on staleness so it can never drift from the tree. See [`ARCHITECTURE-REVIEW-CAMPAIGN.md`](ARCHITECTURE-REVIEW-CAMPAIGN.md) for the plan and resumable status.
 
 ---
 
