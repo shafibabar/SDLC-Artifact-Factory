@@ -14,6 +14,9 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: ["design","domain-modeling","event-storming","domain-events","outbox","event-naming","cdc"]
+produces: domain-event-catalog
+domain: domain-modeling
+status: stable
 related:
   - aggregate-design
   - bounded-context-mapping
