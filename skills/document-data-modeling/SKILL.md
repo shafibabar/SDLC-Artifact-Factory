@@ -15,6 +15,9 @@ phase: design
 owner: data-architect
 created: 2026-07-31
 tags: [design, data-architecture, document-model, mongodb, schema-design, embedding, nosql]
+produces: document-data-model
+domain: data
+status: stable
 related: [data-model-design, data-classification, go-mongodb-repository, canonical-data-model]
 ---
 
