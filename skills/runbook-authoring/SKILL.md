@@ -15,6 +15,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, runbooks, on-call, incident-response, escalation, drills]
+produces: runbook
+domain: platform
+status: stable
 ---
 
 # Runbook Authoring
