@@ -19,6 +19,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, typescript, vite, project-structure, tree-shaking, microfrontend]
+produces: react-app-skeleton
+domain: frontend
+status: stable
 related: [microfrontend-architecture, typescript-types, react-component-design, react-component-testing, react-observability]
 ---
 
