@@ -13,6 +13,9 @@ phase: design
 owner: ux-architect
 created: 2026-06-25
 tags: [design, ux, information-architecture, card-sorting, tree-testing, taxonomy, navigation, labeling]
+produces: information-architecture
+domain: ux
+status: stable
 related: [user-journey-mapping, ux-flow-design, event-storming-facilitation, glossary-management, jtbd-analysis]
 ---
 
