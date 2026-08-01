@@ -19,6 +19,9 @@ phase: implement
 owner: data-engineer
 created: 2026-07-20
 tags: [implement, data-engineering, pipeline, idempotency, checkpointing, dead-letter-queue, exactly-once, lineage, go]
+produces: pipeline-stage-worker
+domain: data
+status: stable
 related: [data-pipeline-design, data-lineage-design, go-event-consumer, go-service-skeleton, opentelemetry-instrumentation, data-quality-rules]
 ---
 
