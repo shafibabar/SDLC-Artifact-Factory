@@ -13,6 +13,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, kubernetes, workload, securitycontext, networkpolicy, probes, linkerd, pdb, init-container, argo-rollouts]
+produces: kubernetes-manifest
+domain: platform
+status: stable
 ---
 
 # Kubernetes Manifest
