@@ -17,6 +17,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, observability, prometheus, metrics, red-method, use-method, cardinality, histogram, recording-rules, federation]
+produces: prometheus-metrics-design
+domain: observability
+status: stable
 related: [slo-definition, alerting-rules-design, opentelemetry-instrumentation, distributed-tracing-design, health-check-design]
 ---
 
