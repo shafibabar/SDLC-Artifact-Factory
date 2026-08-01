@@ -15,6 +15,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, blue-green, progressive-delivery, rollback, cutover, expand-contract]
+produces: cutover-plan
+domain: platform
+status: stable
 related: [canary-deployment, progressive-delivery, alerting-rules-design, cd-pipeline, go-migration]
 ---
 
