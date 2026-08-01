@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shafibabar/SDLC-Artifact-Factory/schemas/workflow.schema.json",
+  "title": "Workflow Spec",
+  "description": "The FORWARD CONTRACT for P7's declarative phase workflows (Architecture Review Campaign charter §2 decision 1: workflows-as-data, Claude-as-interpreter; §3 Workflow spec is a Descriptor). A workflow spec is DATA a thinned command reads and Claude interprets — there is no workflow engine on this platform, so this schema is DECLARATIVE ONLY. It describes WHAT a phase requires (entry conditions, ordered stages with their producing agent and artifacts, gates, completion artifacts) and NEVER HOW to control execution. Imperative control-flow fields (retry, rollback, checkpoint, loop, if/then) are explicitly disallowed at every level: rollback is git, resume/checkpoint state is sdlc-context.json, and gates are enforced by hooks — none of that is ever encoded here as if a real engine consumed it (charter §6). No instances exist yet; this defines the shape P7 will author to.",
+  "type": "object",
+  "required": ["name", "phase", "stages", "completion"],
+  "additionalProperties": false,
+  "$comment": "additionalProperties:false at every level below is what makes the imperative-field ban enforceable: a stray retry/rollback/checkpoint/loop/if/then is rejected as an unknown property wherever it appears, not merely at the root.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The workflow's identifier — component naming convention, a domain/action noun."
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The SDLC phase this workflow drives (e.g. 'Design', 'Implement'). One of the eight phases in CLAUDE.md's phase pipeline."
+    },
+    "entry_conditions": {
+      "type": "object",
+      "description": "What must already be true before this workflow may begin. Declarative preconditions only — a list of artifacts that must exist and be complete, checked by Claude against sdlc-context.json. Not a guard expression, not control flow.",
+      "additionalProperties": false,
+      "properties": {
+        "requires_complete": {
+          "type": "array",
+          "description": "Artifact names (or phase-gate outputs) that must already be complete for entry to be permitted.",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "description": "The ordered stages of the workflow. Ordering plus per-stage depends_on edges declare the dependency graph (charter §6); Claude resolves execution order at runtime. A stage names the single agent that produces its artifacts.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "agent"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stage identifier, unique within the workflow. Referenced by other stages' depends_on and by gates' after/before."
+          },
+          "agent": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The one agent (role-noun, agents/<name>.md) that owns and produces this stage's artifacts. One agent per stage — no overlap (CLAUDE.md Agent Behaviour Rules)."
+          },
+          "produces": {
+            "type": "array",
+            "description": "The artifact name(s) this stage produces — the same names other stages reference in depends_on and that completion.artifacts_required draws from.",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "depends_on": {
+            "type": "array",
+            "description": "Stage id(s) that must complete before this stage. Declares an edge in the derived dependency graph — declarative data, not a loop or conditional.",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "array",
+      "description": "Phase/stage gates. Each gate is positioned relative to a stage (after or before) and declares its KIND — a semantic 'approval' (human, e.g. Shafi) or a mechanical 'hook' (deterministic enforcement, charter §6). A gate DECLARES a checkpoint; it never encodes what to do on failure (that is not workflow data — rollback is git, block is a hook exit code).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "after": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stage id this gate is evaluated after."
+          },
+          "before": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stage id this gate is evaluated before."
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["approval", "hook"],
+            "description": "'approval' = a semantic/human gate; 'hook' = a mechanical, deterministic gate enforced by a hook (never by prose)."
+          },
+          "enforce": {
+            "type": "string",
+            "minLength": 1,
+            "description": "For a 'hook' kind, the hook name that enforces this gate (e.g. 'pre-phase-advance', 'tdd-gate'). A reference to an enforcer, not an inline rule."
+          }
+        }
+      }
+    },
+    "completion": {
+      "type": "object",
+      "description": "What must exist for the workflow to be considered complete — the exit contract. Declarative: a list of required artifacts, checked against sdlc-context.json. Not a control-flow terminator.",
+      "required": ["artifacts_required"],
+      "additionalProperties": false,
+      "properties": {
+        "artifacts_required": {
+          "type": "array",
+          "description": "Artifact name(s) that must all exist and pass validation for this workflow/phase to be complete.",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

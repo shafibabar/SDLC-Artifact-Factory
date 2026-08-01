@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shafibabar/SDLC-Artifact-Factory/schemas/skill.schema.json",
+  "title": "Skill Frontmatter",
+  "description": "Formalizes the YAML frontmatter block of every skills/<name>/SKILL.md file, per CLAUDE.md's Component Frontmatter table. Validates SHAPE only — the required, ordered field set (name, description, version, phase, owner, created, tags) plus their formats. additionalProperties is true because frontmatter may carry forward-compatible fields (related, produces, domain, status, and others introduced by later campaign phases) that this base schema deliberately does not close off.",
+  "type": "object",
+  "required": ["name", "description", "version", "phase", "owner", "created", "tags"],
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "The skill's directory name and canonical identifier. Matches the plugin-wide component naming convention (lowercase, hyphen-separated) from CLAUDE.md's Naming Conventions table."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The literal discovery/matching surface a skill fires on — not a human-facing summary. Per skill-authoring-standards, this is the trigger text Claude Code matches prompts against."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version (MAJOR.MINOR.PATCH). Bumps follow the two-surface rule in skill-authoring-standards: a description change that alters what matches is MAJOR; body content without trigger change is MINOR; wording fixes are PATCH."
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The SDLC phase this skill's expertise applies to (Strategy, Ideate, Design, Implement, Data, Quality, Deploy, Customer Validation) — or a cross-cutting label. A free-form string; not enumerated here."
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The role or agent accountable for this skill's content."
+    },
+    "created": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO-8601 date the skill was created."
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "description": "A non-empty list of lowercase-hyphen classification tags (e.g. logical skill_domains membership)."
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "description": "Optional. Other skill names this skill's body references in prose. Not part of the required, ordered schema; retrofit as-you-go per skill-authoring-standards."
+    },
+    "produces": {
+      "description": "Optional. The artifact(s) applying this skill yields — a single artifact name or a list of them.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      ]
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. The logical skill_domains grouping this skill belongs to (a tag, never a filesystem path)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["experimental", "stable", "complete"],
+      "description": "Optional. Maturity of the skill's content."
+    }
+  }
+}
