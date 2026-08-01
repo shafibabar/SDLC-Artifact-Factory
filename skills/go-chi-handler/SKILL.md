@@ -22,6 +22,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, chi, net-http, handler, dto, validation, error-mapping, json]
+produces: go-http-handler
+domain: backend
+status: stable
 related: [go-error-handling, go-middleware, go-domain-model, go-service-layer, go-project-structure, go-service-skeleton, health-check-design, api-contract-design]
 ---
 
