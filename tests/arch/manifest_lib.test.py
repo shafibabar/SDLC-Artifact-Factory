@@ -151,13 +151,34 @@ check(
 )
 
 # --- optional fields default correctly where absent --------------------------
-check(
-    "absent optional 'produces' is None (P2 not yet run)",
-    all(r["produces"] is None for r in skills),
+# P2 (Skill Manifest Enrichment) is complete: all 186 skills now author
+# produces/domain/status, so the absent-optional-field contract can no longer be
+# pinned to a real skill that happens to lack them. It is pinned to a synthetic
+# frontmatter fixture instead — the parser contract is unchanged — and the real
+# tree now asserts the stronger post-P2 invariant.
+_absent_optionals = m.parse_frontmatter(
+    "---\n"
+    "name: synthetic-skill\n"
+    "description: Synthetic frontmatter pinning the absent-optional-field contract.\n"
+    "version: 1.0.0\n"
+    "phase: design\n"
+    "owner: domain-modeler\n"
+    "created: 2026-08-01\n"
+    "tags: [synthetic]\n"
+    "---\n"
 )
 check(
-    "absent optional 'status' is None where not authored",
-    any(r["status"] is None for r in skills),
+    "absent optional 'produces'/'status'/'domain' parse as absent (synthetic fixture)",
+    _absent_optionals.get("produces") is None
+    and _absent_optionals.get("status") is None
+    and _absent_optionals.get("domain") is None,
+)
+check(
+    "REAL: P2 complete — every skill authors produces + domain + status",
+    all(
+        r["produces"] is not None and r["domain"] is not None and r["status"] is not None
+        for r in skills
+    ),
 )
 
 # --- agents: authored fields + derived acceptance test -----------------------
