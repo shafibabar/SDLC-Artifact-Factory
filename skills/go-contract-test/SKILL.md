@@ -24,6 +24,9 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, quality, contract-test, consumer-driven, openapi, schema, pact, provider-state, can-i-deploy]
+produces: go-contract-test
+domain: testing
+status: stable
 related: [go-integration-test, go-unit-test, api-contract-design, context-map-patterns, event-schema-design, go-openapi-codegen, test-pyramid]
 ---
 
