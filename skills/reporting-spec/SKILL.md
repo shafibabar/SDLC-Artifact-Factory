@@ -12,6 +12,9 @@ phase: data
 owner: data-engineer
 created: 2026-07-20
 tags: [data, analytics, reporting, report-parameters, scheduling, read-model]
+produces: report-specification
+domain: data
+status: stable
 related: [dashboard-specification, data-storytelling, data-classification, data-model-design, analytics-requirements, compliance-design]
 ---
 
