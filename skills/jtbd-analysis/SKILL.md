@@ -14,6 +14,9 @@ phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
 tags: [strategy, requirements, jobs-to-be-done, job-statement, customer-motivation, discovery]
+produces: jtbd-analysis
+domain: discovery
+status: stable
 related: [user-persona, user-story-writing, moscow-prioritization, business-model-canvas, impact-mapping]
 ---
 
