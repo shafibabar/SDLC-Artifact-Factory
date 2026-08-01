@@ -12,6 +12,9 @@ phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
 tags: [strategy, requirements, impact-map, outcomes, actors, goal, deliverables]
+produces: impact-map
+domain: discovery
+status: stable
 related: [okr-authoring, user-persona, jtbd-analysis, epic-definition, moscow-prioritization, story-mapping]
 ---
 
