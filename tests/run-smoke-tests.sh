@@ -12,7 +12,11 @@
 #   tests/run-smoke-tests.sh --agent backend-engineer
 #   tests/run-smoke-tests.sh --changed [ref]      # default ref: HEAD
 #
-# Categories: skills agents commands hooks scripts schemas
+# Categories: skills agents commands hooks scripts schemas arch
+#
+# The 'arch' category is the governance-gate test view — the same schema +
+# arch tests scripts/lint-all.sh runs as BLOCKING (tests/arch/*.test.py plus
+# tests/schemas/*.schema.test.py).
 #
 # --skill/--agent/--changed resolve to a specific set of test files instead
 # of a whole category: a skill's own contract test plus every agent's
@@ -27,7 +31,7 @@ set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-ALL_CATEGORIES=(skills agents commands hooks scripts schemas)
+ALL_CATEGORIES=(skills agents commands hooks scripts schemas arch)
 
 TOTAL_PASS=0
 TOTAL_FAIL=0
@@ -149,6 +153,25 @@ else
   fi
 
   for category in "${CATEGORIES[@]}"; do
+    # 'arch' is the governance-gate view: it is not a single tests/<name>
+    # directory but the exact set scripts/lint-all.sh treats as BLOCKING —
+    # the arch tests plus the component-schema tests. Special-cased here so a
+    # full run and `run-smoke-tests.sh arch` both exercise the gate's tests.
+    if [[ "$category" == "arch" ]]; then
+      echo "=== arch ==="
+      shopt -s nullglob
+      files=("$REPO_ROOT"/tests/arch/*.test.py "$REPO_ROOT"/tests/schemas/*.schema.test.py)
+      shopt -u nullglob
+      if [[ ${#files[@]} -eq 0 ]]; then
+        echo "(no tests in this category yet)"
+      else
+        for file in "${files[@]}"; do
+          run_file "$file"
+        done
+      fi
+      echo
+      continue
+    fi
     dir="$REPO_ROOT/tests/$category"
     if [[ ! -d "$dir" ]]; then
       echo "Unknown category: $category (expected one of: ${ALL_CATEGORIES[*]})" >&2
