@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, asyncpg, repository, postgres, outbox, optimistic-concurrency, tenant, protocol, fake]
+produces: python-repository-implementation
+domain: backend
+status: stable
 related: [go-repository-pattern, python-domain-model, python-service-layer, python-migration]
 ---
 
