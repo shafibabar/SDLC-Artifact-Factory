@@ -19,6 +19,9 @@ phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
 tags: [customer-validation, sign-off, go-no-go, canary, release-gate]
+produces: acceptance-sign-off-record
+domain: validation
+status: stable
 related: [skill-authoring-standards, uat-plan, feedback-template]
 ---
 
