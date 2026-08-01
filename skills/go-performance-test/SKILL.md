@@ -22,6 +22,9 @@ phase: quality
 owner: test-strategist
 created: 2026-06-25
 tags: [quality, go, performance, benchmark, benchstat, regression, baseline, ci-gate, performance-budget]
+produces: performance-regression-gate
+domain: testing
+status: stable
 related: [go-performance-optimization, go-makefile, go-load-test, slo-definition, multi-tenancy-design, test-pyramid]
 ---
 
