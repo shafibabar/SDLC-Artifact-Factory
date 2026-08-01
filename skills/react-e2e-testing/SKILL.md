@@ -149,8 +149,8 @@ positives from font-rendering drift across CI runners. In scope only for
 pages that are both high-consequence when visually broken (the
 compliance gap-report view, whose exported PDF an auditor receives) and
 visually stable. Uses Playwright's built-in `toHaveScreenshot()` — no
-paid visual-regression service, per Budget and Frugality. Full reasoning:
-`references/flakiness-and-visual-regression-standard.md`.
+paid visual-regression service, per CLAUDE.md § Budget and Frugality.
+Full reasoning: `references/flakiness-and-visual-regression-standard.md`.
 
 ---
 
