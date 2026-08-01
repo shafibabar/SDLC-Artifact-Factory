@@ -16,6 +16,9 @@ phase: design
 owner: security-architect
 created: 2026-06-25
 tags: [design, security, threat-modeling, stride, data-flow-diagram, trust-boundary, attack-tree, risk]
+produces: threat-model
+domain: security
+status: stable
 related: [security-architecture, access-control-model, zero-trust-design, privacy-design, security-implementation, compliance-design, compliance-verification, methodology-review, glossary-management]
 ---
 
