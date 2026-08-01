@@ -6,10 +6,19 @@
 #   * exists at scripts/lint-all.sh;
 #   * is executable (the CI job and the arch smoke view both exec it directly);
 #   * exits 0 on the current integration branch — i.e. every BLOCKING step
-#     (schema + arch tests, lint-manifests) is green, and the report-only
-#     steps (lint-duplication, lint-relationships) never gate;
-#   * still emits the dynamic P2 backlog note for lint-relationships (proving
-#     the reporting-only-for-now wiring is present, not silently dropped).
+#     (schema + arch tests, lint-manifests, lint-relationships, catalog
+#     staleness) is green, and the report-only step (lint-duplication) never
+#     gates;
+#   * still emits the dynamic broken-ref count for lint-relationships, and
+#     labels that step BLOCKING (it was REPORTING ONLY until P2 drove the count
+#     to 0 — the label is pinned so a silent regression is caught);
+#   * runs the P3 catalog-staleness step and reports the committed catalog
+#     current, with the verdict enumerating every blocking check.
+#
+# NOTE ON WHERE THIS FILE RUNS: it is executed by tests/run-smoke-tests.sh's
+# 'arch' category, NOT by scripts/lint-all.sh itself. The gate's step 1 globs
+# tests/arch/*.test.py deliberately — globbing *.test.sh there would make the
+# gate run this file, which runs the gate, recursing without end.
 #
 # Prints PASS:/FAIL: lines; exits 0 iff every assertion passed.
 # Standalone-runnable:  bash tests/arch/lint-all.test.sh
@@ -55,19 +64,45 @@ else
   bad "verdict reports BLOCKING checks green" "expected verdict PASS line absent"
 fi
 
-# 5. the P2 backlog note is present with a numeric broken-ref count
-if grep -qE "lint-relationships: [0-9]+ broken 'related:' ref\(s\) — tracked P2 backlog" <<<"$GATE_OUT"; then
-  ok "dynamic lint-relationships P2 backlog note present"
+# 5. the dynamic broken-ref note is present with a numeric count. P2 drove the
+#    count to 0 and flipped this step to BLOCKING, so the note's wording changed
+#    from "tracked P2 backlog" to "enforced since P2 close-out" — the count
+#    itself must still be reported dynamically, not hard-coded.
+if grep -qE "lint-relationships: [0-9]+ broken 'related:' ref\(s\) — enforced since P2 close-out" <<<"$GATE_OUT"; then
+  ok "dynamic lint-relationships broken-ref count present"
 else
-  bad "dynamic lint-relationships P2 backlog note present" "note missing or not dynamic"
+  bad "dynamic lint-relationships broken-ref count present" "note missing or not dynamic"
 fi
 
-# 6. relationship step is reporting-only for now — its FAIL result must NOT
-#    change the gate's exit code (already asserted by #3, but pin the intent)
-if grep -q "REPORTING ONLY" <<<"$GATE_OUT"; then
-  ok "lint-relationships labelled REPORTING ONLY"
+# 6. the relationship step is BLOCKING since P2 close-out (it was REPORTING ONLY
+#    while the backlog stood). Pin the label so a silent regression to
+#    report-only is caught.
+if grep -qE "STEP 4/5[[:space:]]+lint-relationships\.py[[:space:]]+\[BLOCKING\]" <<<"$GATE_OUT"; then
+  ok "lint-relationships labelled BLOCKING"
 else
-  bad "lint-relationships labelled REPORTING ONLY" "label absent"
+  bad "lint-relationships labelled BLOCKING" "label absent or still REPORTING ONLY"
+fi
+
+# 7. the P3 catalog-staleness step runs, is labelled BLOCKING, and reports the
+#    committed catalog as current on a green tree
+if grep -qE "STEP 5/5[[:space:]]+build-catalog\.py --check[[:space:]]+\[BLOCKING\]" <<<"$GATE_OUT"; then
+  ok "catalog staleness step present and labelled BLOCKING"
+else
+  bad "catalog staleness step present and labelled BLOCKING" "step 5 banner absent"
+fi
+
+if grep -q "catalog is current" <<<"$GATE_OUT"; then
+  ok "committed catalog reported current"
+else
+  bad "committed catalog reported current" "catalog reported stale on a clean tree"
+fi
+
+# 8. the verdict names every blocking check, so a step added without being
+#    surfaced in the summary is caught
+if grep -qE "PASS: all BLOCKING checks green .*lint-relationships, catalog" <<<"$GATE_OUT"; then
+  ok "verdict enumerates the blocking checks incl. catalog"
+else
+  bad "verdict enumerates the blocking checks incl. catalog" "verdict does not name the catalog step"
 fi
 
 echo "TOTAL: $pass passed, $fail failed"

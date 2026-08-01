@@ -160,7 +160,14 @@ else
     if [[ "$category" == "arch" ]]; then
       echo "=== arch ==="
       shopt -s nullglob
-      files=("$REPO_ROOT"/tests/arch/*.test.py "$REPO_ROOT"/tests/schemas/*.schema.test.py)
+      # *.test.py + the component-schema tests are exactly what lint-all.sh runs
+      # as BLOCKING. The shell arch tests (*.test.sh — e.g. lint-all.test.sh,
+      # the gate's own contract test) are added HERE and deliberately NOT to the
+      # gate's step 1: the gate globbing *.test.sh would make it run
+      # lint-all.test.sh, which runs the gate, recursing without end. Running
+      # them here is what keeps them from rotting unnoticed.
+      files=("$REPO_ROOT"/tests/arch/*.test.py "$REPO_ROOT"/tests/schemas/*.schema.test.py
+             "$REPO_ROOT"/tests/arch/*.test.sh)
       shopt -u nullglob
       if [[ ${#files[@]} -eq 0 ]]; then
         echo "(no tests in this category yet)"
