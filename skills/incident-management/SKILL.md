@@ -7,6 +7,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-31
 tags: ["deploy","incident-response","postmortem","blameless","on-call","reliability","sre"]
+produces: blameless-postmortem
+domain: platform
+status: stable
 ---
 
 # Incident Management
