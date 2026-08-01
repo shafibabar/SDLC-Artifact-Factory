@@ -14,6 +14,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-07-22
 tags: [cross-cutting, miro, notation, diagramming, visualization, governance]
+produces: miro-board-spec
+domain: governance
+status: stable
 ---
 
 # Miro Board Notation
