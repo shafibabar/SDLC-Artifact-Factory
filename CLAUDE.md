@@ -16,6 +16,8 @@ This file is read on every session. It encodes the non-negotiable rules every ag
 2. Check `build_checklist` in that file — find the first incomplete item. That is where work continues.
 3. If Shafi has not said "go" on the next chunk — do not build. Discuss the plan, get approval, then build.
 
+**Active campaign:** the **Architecture Review campaign** is in progress — its cold-start source of truth is `ARCHITECTURE-REVIEW-CAMPAIGN.md` (master charter) plus the `architecture_review_campaign` block in `sdlc-context.json` (live position: active parent, integration branch, child checklist). On resume, read the charter, then that block, then the GitHub Project board, then continue from the first incomplete child. This campaign introduces new component concepts (declarative **workflow specs**, enriched **manifests** = frontmatter, a derived **catalog**, a consistency **linter**, `shared-references/`); as each lands, the Component Architecture / Layout / Frontmatter sections of this file are updated to match reality.
+
 ---
 
 ## Who Shafi Is
