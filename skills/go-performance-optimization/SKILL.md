@@ -28,6 +28,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, performance, allocation, escape-analysis, sync-pool, pprof, benchmark, algorithmic-complexity, execution-time]
+produces: go-benchmark
+domain: backend
+status: stable
 related: [go-domain-model, go-event-publisher, go-concurrency-patterns, go-makefile, go-performance-test, go-error-handling]
 ---
 
