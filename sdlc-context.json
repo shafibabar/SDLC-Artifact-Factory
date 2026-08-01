@@ -11,11 +11,15 @@
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
     "charter": "ARCHITECTURE-REVIEW-CAMPAIGN.md",
-    "status": "P1 IN PROGRESS — parent #780; wave 1 DONE (6/10: parser + 5 schemas merged to integration; tests green; manifest.py records validate against the schemas); wave 2 + 2 linter/schema fixes DONE (11/12); manifests GREEN (0 violations); lint-relationships found 11 real broken related: refs -> tracked P2 backlog; duplication report -> P4 backlog (generated/duplication-report.md); wave 3 (CI integration) executing",
+    "status": "P1 COMPLETE — merged to main (parent #780 closed). Governance gate live: scripts/lint-all.sh green (schemas + arch tests + lint-manifests blocking & 0 violations; lint-duplication + lint-relationships reporting). .github/workflows/governance.yml + arch smoke category wired. NEXT: P2 (Skill Manifest Enrichment).",
     "started": "2026-08-01",
     "absorbs_epic": "#777 (agent refactor) folded into parent P5",
-    "active_parent": "P1",
-    "integration_branch": "arch-review/p1-governance-foundation",
+    "active_parent": "P2 (next; P1 complete)",
+    "integration_branch": null,
+    "p1_complete": true,
+    "p2_backlog_broken_related_refs": ["bounded-context-mapping->event-storming", "container-diagram->deployment-diagram", "data-model-design->domain-modeling", "domain-storytelling->event-storming", "environment-config->platform-engineering", "multi-tenancy-design->zero-trust-architecture", "okr-authoring->roadmap-now-next-later", "secrets-management->gitops-practice", "system-context-diagram->event-storming", "ubiquitous-language->event-storming", "user-journey-mapping->service-blueprinting"],
+    "p2_note": "11 broken related: refs (fix each in its skill's P2 child); 48 orphan skills (no agent + no domain) resolve as P2 adds domain: and P5 wires skills into agents; run scripts/lint-relationships.py for the live list. lint-relationships flips to BLOCKING once broken-refs hit 0.",
+    "p4_backlog": "generated/duplication-report.md — 13 recurring blocks + 7 CLAUDE.md restatements",
     "p1_children": {
       "wave1_parser": "#781", "wave1_schemas": ["#782 skill", "#783 agent", "#784 command", "#785 hook", "#786 workflow"],
       "wave2_linters": ["#787 lint-manifests", "#788 lint-relationships", "#789 lint-duplication"],
@@ -23,7 +27,7 @@
       "waves": "1 (parser+schemas, independent) → 2 (linters, need wave 1) → 3 (CI, needs wave 2)"
     },
     "parents": [
-      { "id": "P1", "parent_issue": "#780", "title": "Governance Foundation — Manifest Schemas + Consistency Linter", "integration_branch": "arch-review/p1-governance-foundation", "est_children": 12, "children_done": 11, "status": "in-progress (wave 3 — CI)" },
+      { "id": "P1", "parent_issue": "#780", "title": "Governance Foundation — Manifest Schemas + Consistency Linter", "integration_branch": "arch-review/p1-governance-foundation", "est_children": 12, "children_done": 12, "status": "complete — merged to main" },
       { "id": "P2", "title": "Skill Manifest Enrichment (produces/domain/status)", "est_children": 186, "status": "not-started" },
       { "id": "P3", "title": "Derived Component Catalog + CI Integration", "est_children": 3, "status": "not-started" },
       { "id": "P4", "title": "Skill De-duplication & Repointing", "est_children": 150, "status": "not-started" },
@@ -1175,6 +1179,21 @@
         "9 dependency-ordered parents (P1 Governance Foundation [schemas+linter] → P2 Skill Manifest Enrichment → P3 Derived Catalog → P4 Skill De-duplication · P5 Agent Deep Refactor [ABSORBS #777] · P6 Hook Deep Refactor · P7 Command Refactor & Workflow-as-Data → P8 Test & Schema Hardening → P9 Catalog-driven Generation). ~380-450 child issues total, ONE per artifact, NO grouping.",
         "Execution model (Shafi-directed): each child issue handed to a FRESH agent with full context to minimise main-conversation compactions; deep-refactor authorised for agents/hooks/commands/tests/schemas ('better now than never'); thoroughness over economy (issue/refactor counts explicitly not a concern). Housekeeping expanded to four files (CLAUDE.md, README.md, sdlc-context.json, CHANGELOG.md) before every major commit. Branch hierarchy: child → integration (arch-review/<Pn>-<slug>) → main. Non-negotiables: detailed parent/child descriptions; detailed commit message on EVERY commit however small; test bundled with artifact (TDD).",
         "GATE: no issues created and no execution started this chunk. Awaiting Shafi's go on the committed charter before creating the ~390 issues and cutting P1's integration branch."
+      ]
+    },
+    {
+      "chunk": 68,
+      "title": "Architecture Review P1 — Governance Foundation COMPLETE (parent #780, merged to main)",
+      "status": "complete",
+      "date": "2026-08-01",
+      "deliverables": [
+        "First parent of the Architecture Review campaign executed and merged. Integration branch arch-review/p1-governance-foundation → main. Per-child fresh-agent execution on the integration branch (child → integration → main hierarchy), 12 child issues (#781-790 + 2 fix children #800-801), all closed.",
+        "WAVE 1 (6): scripts/arch/manifest.py (shared frontmatter parser — normalizes YAML dates to ISO strings, derives filesystem facts; 48-assertion test incl. PyYAML-vs-minimal-parser equivalence) + schemas/{skill,agent,command,hook,workflow}.schema.json (Draft 2020-12 frontmatter contracts; workflow schema is the P7 forward contract, forbids imperative retry/rollback fields).",
+        "WAVE 2 (3): scripts/lint-manifests.py (schema-validates every component — BLOCKING), lint-relationships.py (broken related:/skills: refs, mandatory cross-cutting skills, orphan warnings), lint-duplication.py (recurring blocks + CLAUDE.md restatements → generated/duplication-report.md). Each with a bundled test.",
+        "FIX CHILDREN (2, surfaced by the wave-2 first run): #800 removed cycle-detection over related: (it's a bidirectional see-also, inherently cyclic — reported 267 false cycles; DAG/cycle validation deferred to the artifact-dependency graph P2/P7 build); #801 relaxed command.schema argument-hint to accept string OR array (4 commands legitimately use a list).",
+        "WAVE 3 (1): scripts/lint-all.sh — the governance gate (schema+arch tests + lint-manifests BLOCKING & green; lint-duplication + lint-relationships REPORTING). Wired into tests/run-smoke-tests.sh (arch category) and .github/workflows/governance.yml (runs on PR). Verified: lint-all.sh exits 0; ~190 schema/arch assertions green; lint-manifests 0 violations across 186 skills / 13 agents / 15 commands / hooks.",
+        "REAL FINDINGS (the linter earned its keep on first run): 11 broken related: refs (recorded as the P2 backlog in the architecture_review_campaign block; each fixed in its skill's P2 child; lint-relationships flips to BLOCKING once the count hits 0), 48 orphan skills (no agent + no domain — resolve as P2 adds domain: and P5 wires skills into agents), 13 duplication clusters + 7 CLAUDE.md restatements (the P4 backlog in generated/duplication-report.md).",
+        "Four-file housekeeping done on the integration→main merge: CLAUDE.md gained a 'Governance gate' section + Layout entries for the schemas/parser/linters/gate; README active-work note; this chunk entry + campaign state (P1 complete, active_parent → P2, backlogs recorded); CHANGELOG entry. NEXT: P2 — Skill Manifest Enrichment (produces/domain/status), 186 children."
       ]
     }
   ],

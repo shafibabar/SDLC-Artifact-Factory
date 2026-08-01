@@ -59,6 +59,11 @@ scripts/                          Shell scripts backing command-type hooks and c
 scripts/github-project/           Python scripts (plan_start.py, exec_start.py, exec_complete.py, etc.) invoked by .claude/commands/ to manage GitHub Project board state during skill refactors
 schemas/sdlc-config.schema.json   Formalizes sdlc-config-management's shape — Draft 2020-12, tested
 schemas/sdlc-manifest.schema.json Formalizes artifact-manifest's per-product instance shape — tested
+schemas/{skill,agent,command,hook,workflow}.schema.json  Component-frontmatter contracts (Arch Review P1) — validated by the governance gate
+scripts/arch/manifest.py          Shared frontmatter parser (Arch Review P1) — imported by the linters and (P3) the catalog
+scripts/lint-manifests.py lint-relationships.py lint-duplication.py  The three consistency linters (Arch Review P1)
+scripts/lint-all.sh               The governance gate — run by tests/run-smoke-tests.sh (arch) and .github/workflows/governance.yml
+ARCHITECTURE-REVIEW-CAMPAIGN.md   Master charter for the active Architecture Review campaign (cold-start source of truth)
 mcp/ lsp/ monitors/               Deferred — .gitkeep placeholders
 bin/ output-styles/ themes/       Deferred — .gitkeep placeholders
 research/<domain-cluster>/        Book-derived reference material informing future skill/agent refactors — not a Skill/Agent/Command itself, just source material consulted during a refactor session
@@ -99,6 +104,16 @@ python3 tests/schemas/sdlc-config.test.py
 `skills`, `agents`, `commands`, and `hooks` tests load this repo live via `claude --plugin-dir $REPO_ROOT -p ...` (see `tests/lib/harness.sh`) — they need the `claude` CLI on `PATH`, make real model calls, and default to a 90s per-invocation timeout (override with `SMOKE_TEST_TIMEOUT`). `scripts` tests pipe synthetic JSON directly at a `scripts/*.sh` file's stdin — no LLM call. `schemas` tests need `python3` with `jsonschema` installed and validate both known-good and deliberately-invalid instances against the Draft 2020-12 schemas.
 
 Each refactored skill must have a corresponding contract test at `tests/skills/<name>.contract.sh` — a single `smoke_test_skill` call that probes a non-obvious fact grounded in the skill's content (not a generic "does this skill exist?" check). Currently 63 of 142 skills have one; every skill touched during a refactor must add its own before the PR merges.
+
+### Governance gate (Architecture Review campaign, P1)
+
+The repo now has a **machine-readable governance layer** — the keystone of the Architecture Review campaign (`ARCHITECTURE-REVIEW-CAMPAIGN.md`). It is data + validators, not a runtime tier:
+
+- **Manifest = component frontmatter** is the single source of truth. `schemas/{skill,agent,command,hook}.schema.json` (Draft 2020-12) validate each component's frontmatter shape; `schemas/workflow.schema.json` is the forward contract P7's declarative workflow specs author to. `scripts/arch/manifest.py` is the shared frontmatter parser (normalizes YAML dates, derives filesystem facts) that all tooling imports.
+- **Three linters** (`scripts/lint-*.py`): `lint-manifests` (schema-validates every component — **blocking**), `lint-relationships` (broken `related:`/`skills:` refs, mandatory cross-cutting skills, orphan warnings — **reporting until P2 clears the backlog, then blocking**), `lint-duplication` (recurring blocks + CLAUDE.md restatements → `generated/duplication-report.md`, the P4 backlog — **report-only**).
+- **The gate:** `scripts/lint-all.sh` runs the schema+arch tests and the three linters with that blocking/reporting policy and exits non-zero only on a blocking failure. It is wired into `tests/run-smoke-tests.sh` (the `arch` category) and `.github/workflows/governance.yml` (runs on PR). A PR that breaks a schema or introduces a manifest violation fails the gate.
+
+Cycle/DAG validation is **not** run over `related:` (a bidirectional see-also); it belongs to the artifact-dependency graph that P2 (`produces:`) and P7 (workflow `depends_on`) build.
 
 Under non-interactive `-p` invocation, slash commands only resolve in their namespaced form (`/<plugin-name>:<command>`, e.g. `/sdlc-artifact-factory:sdlc-status`) — the bare form (`/sdlc-status`) that works interactively returns "Unknown command" under `-p`. `smoke_test_command_contains` in the harness auto-namespaces, so individual command test files can keep using the bare form.
 

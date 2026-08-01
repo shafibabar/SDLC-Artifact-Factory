@@ -4,7 +4,7 @@
 
 **Author:** Shafi Babar | **Version:** 0.1.0 | **Status:** Active Development
 
-> **Active work:** the **Architecture Review campaign** is under way — making the platform's component relationships and standards machine-explicit and self-enforcing (manifests as enriched frontmatter, a derived catalog, declarative workflow specs, and a consistency linter). See [`ARCHITECTURE-REVIEW-CAMPAIGN.md`](ARCHITECTURE-REVIEW-CAMPAIGN.md) for the plan and the resumable status.
+> **Active work:** the **Architecture Review campaign** is under way — making the platform's component relationships and standards machine-explicit and self-enforcing (manifests as enriched frontmatter, a derived catalog, declarative workflow specs, and a consistency linter). The governance foundation (P1) is merged — component-frontmatter schemas + a consistency linter gate (`scripts/lint-all.sh`, CI-enforced). See [`ARCHITECTURE-REVIEW-CAMPAIGN.md`](ARCHITECTURE-REVIEW-CAMPAIGN.md) for the plan and resumable status.
 
 ---
 
