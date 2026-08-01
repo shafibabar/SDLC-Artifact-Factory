@@ -15,6 +15,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, multi-tenancy, tenant-isolation, data-isolation, physical-isolation, soc2, provisioning]
+produces: multi-tenancy-design
+domain: architecture
+status: stable
 related:
   - data-model-design
   - data-pipeline-design
@@ -22,7 +25,7 @@ related:
   - gitops-workflow
   - environment-config
   - event-driven-patterns
-  - zero-trust-architecture
+  - zero-trust-design
 ---
 
 # Multi-Tenancy Design
