@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shafibabar/SDLC-Artifact-Factory/schemas/agent.schema.json",
+  "title": "Agent Frontmatter",
+  "description": "Formalizes CLAUDE.md's canonical Agent frontmatter schema for the plugin's own agent files at agents/<name>.md. Validates SHAPE ONLY — the presence, type, and ordering intent of the required frontmatter fields, plus the non-negotiable rule that every agent's skills list includes both glossary-management and methodology-review. It does not validate the agent's Markdown body, only the parsed YAML frontmatter block presented as a JSON object.",
+  "type": "object",
+  "required": [
+    "name",
+    "description",
+    "role",
+    "version",
+    "phase",
+    "owner",
+    "created",
+    "inputs",
+    "outputs",
+    "skills",
+    "tools",
+    "tags"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "The agent's canonical name, matching the naming convention and equal to the agents/<name>.md filename stem."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The agent's discovery/matching surface — what it is and when it fires."
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A one-line role identity (role-noun) for the agent."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+      "description": "Semantic version MAJOR.MINOR.PATCH."
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One or more SDLC phases the agent spans (e.g. 'implement' or 'implement, quality')."
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO-8601 creation date (YYYY-MM-DD)."
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "The artifacts/signals this agent consumes."
+    },
+    "outputs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "The artifacts this agent produces."
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "description": "The skills this agent applies. Must be non-empty and, per CLAUDE.md, must include both glossary-management and methodology-review.",
+      "allOf": [
+        {
+          "contains": { "const": "glossary-management" },
+          "description": "Every agent's skills list must include glossary-management."
+        },
+        {
+          "contains": { "const": "methodology-review" },
+          "description": "Every agent's skills list must include methodology-review."
+        }
+      ]
+    },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Real Claude Code tools the agent may use (e.g. Bash). May be empty for agents that run no shell commands."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "produces": {
+      "description": "Optional forward-compat field reserved for the Architecture Review campaign; shape unconstrained here."
+    },
+    "domain": {
+      "description": "Optional forward-compat field (logical skill-domain tag); shape unconstrained here."
+    },
+    "status": {
+      "description": "Optional forward-compat field (lifecycle status); shape unconstrained here."
+    },
+    "capability": {
+      "description": "Optional forward-compat field; shape unconstrained here."
+    }
+  }
+}
