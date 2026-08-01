@@ -11,6 +11,9 @@ phase: strategy
 owner: product-strategist
 created: 2026-06-24
 tags: [strategy, stakeholders, communication, product-discovery]
+produces: stakeholder-map
+domain: strategy
+status: stable
 ---
 
 # Stakeholder Mapping
