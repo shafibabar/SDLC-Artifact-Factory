@@ -45,6 +45,14 @@ check("allowed-tools as a single string", {
     "description": "Show current SDLC status.",
     "allowed-tools": "Read",
 }, True)
+check("argument-hint as a single string", {
+    "description": "Author an ADR.",
+    "argument-hint": "<decision-title>",
+}, True)
+check("argument-hint as an array of strings", {
+    "description": "Author an ADR for a decision in a phase.",
+    "argument-hint": ["<decision-title>", "<phase>"],
+}, True)
 
 # --- Negative cases ---
 check("missing description", {"argument-hint": "<x>"}, False)
