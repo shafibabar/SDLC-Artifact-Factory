@@ -22,6 +22,9 @@ related:
   - privacy-design
   - glossary-management
 tags: [implement, security, owasp, input-validation, authentication, authorization, abac, secure-coding, audit-log, go]
+produces: go-security-controls
+domain: security
+status: stable
 ---
 
 # Security Implementation
