@@ -38,6 +38,17 @@ WHAT IT DOES (report-only — always exits 0):
         hard-coded), so the linter stays honest as CLAUDE.md evolves. The
         legitimate home skill for each standard is allow-listed and never flagged.
 
+        NOT a restatement: a DEFINITION. Naming a methodology and saying what it
+        means is vocabulary, not a mandate — the normative force is what CLAUDE.md
+        owns, not the subject matter. The methodologies check therefore requires
+        the enforcement framing ("mandatory", "non-negotiable", "is a defect") to
+        sit in the SAME PASSAGE as the methodology it enforces
+        (METHODOLOGY_ENFORCEMENT_WINDOW lines), not merely somewhere in the same
+        corpus. This is a rule about text shape, not about which skill is
+        speaking: a glossary row defining "Behavior-Driven Development" is exempt
+        in every skill, and a genuine mandate is still caught in every skill —
+        including inside the glossary home itself.
+
         NOT a restatement: a block that CITES its CLAUDE.md home. Pointing at
         the home and quoting briefly with attribution is exactly the required
         behaviour, so a finding is suppressed when every occurrence of the
@@ -379,6 +390,15 @@ UBIQUITOUS_DUMP_THRESHOLD = 10
 # how many of the five methodologies must co-occur (with an enforcement marker)
 # to count as restating the non-negotiable-methodology standard.
 METHODOLOGY_QUORUM = 4
+# How far an enforcement marker may sit from a methodology mention and still be
+# read as enforcing IT. Calibrated against CLAUDE.md's own § Non-Negotiable
+# Methodology, where the "mandatory ... is a defect" sentence is 8 lines above
+# the table's last methodology row and the "Non-Negotiable" heading is 10 lines
+# above it: a skill that reproduces that passage verbatim is still caught. A
+# marker further away than one passage is enforcing something else — e.g. an
+# unrelated glossary row calling a postmortem "mandatory" — and says nothing
+# about the methodologies named elsewhere in the corpus.
+METHODOLOGY_ENFORCEMENT_WINDOW = 10
 # how many lines either side of a signature line count as "immediate context"
 # when looking for a citation of the standard's CLAUDE.md home.
 CITATION_CONTEXT_LINES = 2
@@ -413,6 +433,35 @@ def cites_claude_md(lines: list[str], indices: list[int]) -> bool:
         if not any(_CITATION_RE.search(ln) for ln in lines[lo:hi]):
             return False
     return True
+
+
+def mandated_methodologies(lines: list[str], methodologies, marker_indices: list[int]):
+    """Methodologies that are actually FRAMED AS MANDATORY in this text. Pure.
+
+    A methodology name only evidences a restatement of CLAUDE.md § Non-Negotiable
+    Methodology when the enforcement framing is in the same passage — i.e. within
+    METHODOLOGY_ENFORCEMENT_WINDOW lines of the mention. Defining "Test-Driven
+    Development" as a term, in a corpus that happens to call something else
+    "mandatory" forty lines away, is a definition, not a mandate.
+
+    Returns (methodology names in CLAUDE.md order, sorted mandate line indices).
+    """
+    if not marker_indices:
+        return [], []
+    low = [ln.lower() for ln in lines]
+    found: dict[str, None] = {}
+    hit_lines: set[int] = set()
+    for meth in methodologies:
+        if not meth:
+            continue
+        probe = meth.lower()
+        for i, ln in enumerate(low):
+            if probe not in ln:
+                continue
+            if any(abs(i - j) <= METHODOLOGY_ENFORCEMENT_WINDOW for j in marker_indices):
+                found[meth] = None
+                hit_lines.add(i)
+    return list(found), sorted(hit_lines)
 
 
 def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
@@ -464,11 +513,16 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
                 })
 
         # 3. The five non-negotiable methodologies framed as mandatory.
+        #    A DEFINITION is not a RESTATEMENT: the enforcement framing must sit
+        #    in the same passage as the methodology it enforces, not merely
+        #    somewhere in the same corpus. Only those co-located mentions count
+        #    toward the quorum, and only they are checked for a citation — a
+        #    mandate that attributes itself to CLAUDE.md is compliant however
+        #    many times the methodology is also merely named elsewhere.
         if name not in STANDARD_HOME_SKILLS["methodologies"]:
-            present = [mth for mth in methods if mth and mth in low]
-            marker_hit = any(mk in low for mk in markers)
-            idx = _signature_line_indices(lines, present, fold_case=True)
-            if len(present) >= METHODOLOGY_QUORUM and marker_hit and not cites_claude_md(lines, idx):
+            marker_idx = _signature_line_indices(lines, markers, fold_case=True)
+            present, idx = mandated_methodologies(lines, methods, marker_idx)
+            if len(present) >= METHODOLOGY_QUORUM and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "non-negotiable methodologies",
