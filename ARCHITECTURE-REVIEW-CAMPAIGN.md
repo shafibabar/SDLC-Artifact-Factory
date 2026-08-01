@@ -71,7 +71,7 @@ validates against); some later parents may interleave once P1/P3 exist.
 | # | Parent | Scope of children (one per artifact, no grouping) | Est. children |
 |---|---|---|---|
 | **P1** | **Governance Foundation — Manifest Schemas + Consistency Linter** | one child per schema (skill/agent/command/hook/workflow) + one per linter (manifest, relationship, duplication) + CI wiring | ~10 |
-| **P2** | **Skill Manifest Enrichment** (`produces`/`domain`/`status`) | one child per skill | 186 |
+| **P2** ✅ | **Skill Manifest Enrichment** (`produces`/`domain`/`status`) — *complete;* also drove broken `related:` refs 11→0 and orphans 48→0, flipping `lint-relationships` to blocking | one child per skill | 186 (+2 fix) |
 | **P3** | **Derived Component Catalog + CI Integration** | build-catalog script + catalog + CI + snapshot test | ~3 |
 | **P4** | **Skill De-duplication & Repointing** (delete restatements → CLAUDE.md/cross-cutting; repoint validation → scripts/hooks; extract `shared-references/`) | one child per skill flagged by the P1 duplication linter | ~120–186 |
 | **P5** | **Agent Deep Refactor** (absorbs epic #777) | one child per agent — behavioral directives, manifest fields, owns/does-not-own, description-as-trigger-surface, acceptance test (run it) | 13 |
@@ -185,7 +185,7 @@ tape.
 | Parent | Integration branch | Status | Children done / total | Merged to main |
 |---|---|---|---|---|
 | P1 | `arch-review/p1-governance-foundation` | **complete — merged to main** (parent #780; incl. 2 fix children) | 12 / 12 | ✅ |
-| P2 | — | not started | 0 / 186 | — |
+| P2 | `arch-review/p2-skill-manifest-enrichment` | **complete — merged to main** (parent #805; incl. 2 fix children) | 188 / 188 | ✅ |
 | P3 | — | not started | 0 / ~3 | — |
 | P4 | — | not started | 0 / ~150 | — |
 | P5 | — | not started | 0 / 13 | — |

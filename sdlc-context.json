@@ -3,45 +3,135 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-08-01",
-    "updated_by": "Chunk 67 — ARCHITECTURE REVIEW CAMPAIGN chartered (v0). After five architecture reviews (workflows, capability registry, internal libraries, manifests, and the consolidated responsibility matrix), the campaign to make the platform's relationships + standards machine-explicit and self-enforcing is planned and its resumable structure is committed: ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter — the cold-start source of truth) + the architecture_review_campaign block below. Locked decisions: workflows-as-data/Claude-as-interpreter; relationship-model over capability-registry; manifests = enriched frontmatter + derived catalog; libraries rejected (dedup by deletion+repointing); the consistency linter is the keystone. 9 dependency-ordered parents (P1 Governance Foundation [schemas+linter], P2 Skill Manifest Enrichment, P3 Derived Catalog, P4 Skill De-duplication, P5 Agent Deep Refactor [ABSORBS epic #777], P6 Hook Deep Refactor, P7 Command Refactor & Workflow-as-Data, P8 Test & Schema Hardening, P9 Catalog-driven Generation); ~380-450 child issues total, one per artifact, NO grouping. Execution model: per-child fresh-agent handoff (minimises main-conversation compactions). Housekeeping: CLAUDE.md + README.md + sdlc-context.json + CHANGELOG.md before every major commit. Branch hierarchy: child → integration (arch-review/<Pn>-<slug>) → main. Non-negotiables: detailed parent/child descriptions, detailed commit message on every commit, test bundled with artifact. Epic #777 (agent refactor, product-strategist 1/13 done) is FOLDED into P5. STATUS: charter committed; issue creation + execution GATED on Shafi's go.",
+    "updated_by": "Architecture Review P2 (Skill Manifest Enrichment) COMPLETE — parent #805 merged to main. All 186 skills author produces/domain/status; broken related: refs 11->0; orphan skills 48->0; lint-relationships flipped to BLOCKING. Next: P3 (Derived Component Catalog + CI Integration).",
     "_prev_updated_by": "Chunk 66 — Agent refactor campaign (epic #777), STARTED — bringing all 13 agents current with the refactored/new skill roster (Chunks 52-65) and new research, one agent at a time (SDLC phase order), each its own branch/PR, reviewed before the next. AGENT 1/13 — product-strategist (#778, v1.1.0→2.0.0): added user-persona + jtbd-analysis + impact-mapping to skills: (strategy-phase discovery skills it uses; requirements-analyst owns them, shared) → 13 skills; added a Behavioral Directives index (numbered principles each citing an owning skill) reflecting the v2.0.0 skill content (JTBD/Mom-Test discovery, Dunford positioning + Moore chasm/beachhead, outcome-not-output KRs + impact mapping, mission-vs-vision, 9-block-vs-Lean-Canvas); reconciled the Methodology table; rewrote description as a trigger surface; added tests/agents/product-strategist.acceptance.sh — and RAN it: PASS (the agent produced a real vision + mission and applied the mission-vs-vision distinction end-to-end). The platform-engineer (Chunk 52) Behavioral-Directives shape is the template. Remaining agents: requirements-analyst, domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, backend-engineer (largest), security-engineer, data-engineer, test-strategist; frontend-engineer + platform-engineer already current (light check).",
     "_history_note": "Full per-chunk history lives in build_checklist below. This session (Chunks 52-63): (A) skill-authoring-standards refactor campaign — Chunk 52 (DevOps books — 6 new skills + 22 refactors + 1 agent), 53 (domain-modeling — 8), 54 (architecture — 6), 55 (security — 6 books + 6 skills), 56 (data — 11), 57 (discovery/strategy — 9), 58 (UX — 3), 59 (7 medium fixes), 60 (final 10 audit closeout), 61 (body-length polish of 8). Contract-test coverage 63/142 → 148/148. (B) Chunk 62 — tech-stack gap closure (epic #678): 5 research files + 10 new skills (MongoDB/RabbitMQ/Conductor/gRPC/Kong) + 2 multi-cloud refactors; #695 python spike delivered as a proposal. 148→158 skills. (C-E) Python backend suite (epics #713/#739/#758, all closed) — the full go-*-mirrored python-* roster: Chunk 63 Tier 1 (Cosmic Python research + 11 MVP skills), Chunk 64 Tier 2 (pytest research + 8 messaging/testing skills), Chunk 65 Tier 3 (9 parity skills — grpc/amqp/mongo + e2e/mutation/load/chaos/performance, no research phase). 158→186 skills, 158→186 tests. MILESTONE: 28 python-* = 28 go-* skills, full FastAPI-vs-Go backend parity. (F) Chunk 66 — agent refactor campaign started (epic #777): the 13 agents, written before this session's skill work, are being brought current one at a time in SDLC phase order; agent 1/13 product-strategist done (v2.0.0, acceptance test written AND passing)."
   },
-
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
     "charter": "ARCHITECTURE-REVIEW-CAMPAIGN.md",
-    "status": "P1 COMPLETE — merged to main (parent #780 closed). Governance gate live: scripts/lint-all.sh green (schemas + arch tests + lint-manifests blocking & 0 violations; lint-duplication + lint-relationships reporting). .github/workflows/governance.yml + arch smoke category wired. NEXT: P2 (Skill Manifest Enrichment).",
+    "status": "P2 COMPLETE — merged to main (parent #805 closed). All 186 skills author produces/domain/status. Broken 'related:' refs 11->0 and orphan skills 48->0, so lint-relationships flipped REPORTING->BLOCKING in scripts/lint-all.sh (verified by injected-broken-ref negative test). Governance gate green. NEXT: P3 (Derived Component Catalog + CI Integration).",
     "started": "2026-08-01",
     "absorbs_epic": "#777 (agent refactor) folded into parent P5",
-    "active_parent": "P2 (next; P1 complete)",
+    "active_parent": "P3 (next; P1 + P2 complete)",
     "integration_branch": null,
     "p1_complete": true,
-    "p2_backlog_broken_related_refs": ["bounded-context-mapping->event-storming", "container-diagram->deployment-diagram", "data-model-design->domain-modeling", "domain-storytelling->event-storming", "environment-config->platform-engineering", "multi-tenancy-design->zero-trust-architecture", "okr-authoring->roadmap-now-next-later", "secrets-management->gitops-practice", "system-context-diagram->event-storming", "ubiquitous-language->event-storming", "user-journey-mapping->service-blueprinting"],
-    "p2_note": "11 broken related: refs (fix each in its skill's P2 child); 48 orphan skills (no agent + no domain) resolve as P2 adds domain: and P5 wires skills into agents; run scripts/lint-relationships.py for the live list. lint-relationships flips to BLOCKING once broken-refs hit 0.",
+    "p2_note": "CLOSED. Broken related: refs 0; orphan skills 0. lint-relationships is now BLOCKING. domain is authored on all 186 skills using the 14-value vocabulary recorded in p2_complete.",
     "p4_backlog": "generated/duplication-report.md — 13 recurring blocks + 7 CLAUDE.md restatements",
     "p1_children": {
-      "wave1_parser": "#781", "wave1_schemas": ["#782 skill", "#783 agent", "#784 command", "#785 hook", "#786 workflow"],
-      "wave2_linters": ["#787 lint-manifests", "#788 lint-relationships", "#789 lint-duplication"],
+      "wave1_parser": "#781",
+      "wave1_schemas": [
+        "#782 skill",
+        "#783 agent",
+        "#784 command",
+        "#785 hook",
+        "#786 workflow"
+      ],
+      "wave2_linters": [
+        "#787 lint-manifests",
+        "#788 lint-relationships",
+        "#789 lint-duplication"
+      ],
       "wave3_ci": "#790",
       "waves": "1 (parser+schemas, independent) → 2 (linters, need wave 1) → 3 (CI, needs wave 2)"
     },
     "parents": [
-      { "id": "P1", "parent_issue": "#780", "title": "Governance Foundation — Manifest Schemas + Consistency Linter", "integration_branch": "arch-review/p1-governance-foundation", "est_children": 12, "children_done": 12, "status": "complete — merged to main" },
-      { "id": "P2", "title": "Skill Manifest Enrichment (produces/domain/status)", "est_children": 186, "status": "not-started" },
-      { "id": "P3", "title": "Derived Component Catalog + CI Integration", "est_children": 3, "status": "not-started" },
-      { "id": "P4", "title": "Skill De-duplication & Repointing", "est_children": 150, "status": "not-started" },
-      { "id": "P5", "title": "Agent Deep Refactor (absorbs #777)", "est_children": 13, "status": "not-started" },
-      { "id": "P6", "title": "Hook Deep Refactor", "est_children": 7, "status": "not-started" },
-      { "id": "P7", "title": "Command Refactor & Workflow-as-Data", "est_children": 24, "status": "not-started" },
-      { "id": "P8", "title": "Test & Schema Infrastructure Hardening", "est_children": 15, "status": "not-started" },
-      { "id": "P9", "title": "Catalog-driven Generation", "est_children": 5, "status": "not-started" }
+      {
+        "id": "P1",
+        "parent_issue": "#780",
+        "title": "Governance Foundation — Manifest Schemas + Consistency Linter",
+        "integration_branch": "arch-review/p1-governance-foundation",
+        "est_children": 12,
+        "children_done": 12,
+        "status": "complete — merged to main"
+      },
+      {
+        "id": "P2",
+        "title": "Skill Manifest Enrichment (produces/domain/status)",
+        "est_children": 188,
+        "status": "complete — merged to main",
+        "parent_issue": "#805",
+        "integration_branch": "arch-review/p2-skill-manifest-enrichment",
+        "children_done": 188
+      },
+      {
+        "id": "P3",
+        "title": "Derived Component Catalog + CI Integration",
+        "est_children": 3,
+        "status": "not-started"
+      },
+      {
+        "id": "P4",
+        "title": "Skill De-duplication & Repointing",
+        "est_children": 150,
+        "status": "not-started"
+      },
+      {
+        "id": "P5",
+        "title": "Agent Deep Refactor (absorbs #777)",
+        "est_children": 13,
+        "status": "not-started"
+      },
+      {
+        "id": "P6",
+        "title": "Hook Deep Refactor",
+        "est_children": 7,
+        "status": "not-started"
+      },
+      {
+        "id": "P7",
+        "title": "Command Refactor & Workflow-as-Data",
+        "est_children": 24,
+        "status": "not-started"
+      },
+      {
+        "id": "P8",
+        "title": "Test & Schema Infrastructure Hardening",
+        "est_children": 15,
+        "status": "not-started"
+      },
+      {
+        "id": "P9",
+        "title": "Catalog-driven Generation",
+        "est_children": 5,
+        "status": "not-started"
+      }
     ],
     "order": "P1 → P2 → P3 → (P4 · P5 · P6 · P7) → P8 → P9",
     "execution_model": "per-child fresh-agent handoff with full context; child branch → integration branch (arch-review/<Pn>-<slug>) → main",
-    "non_negotiables": ["one child issue per artifact, no grouping", "detailed parent + child issue descriptions", "detailed commit message on every commit", "test bundled with its artifact (TDD)", "four-file housekeeping (CLAUDE.md, README.md, sdlc-context.json, CHANGELOG.md) before every major commit"]
+    "non_negotiables": [
+      "one child issue per artifact, no grouping",
+      "detailed parent + child issue descriptions",
+      "detailed commit message on every commit",
+      "test bundled with its artifact (TDD)",
+      "four-file housekeeping (CLAUDE.md, README.md, sdlc-context.json, CHANGELOG.md) before every major commit"
+    ],
+    "p2_complete": {
+      "parent_issue": "#805",
+      "integration_branch": "arch-review/p2-skill-manifest-enrichment",
+      "children": 188,
+      "note": "One child issue + branch + PR per skill (186), plus 2 fix children (#1178 manifest_lib arch test, #1180 lint-relationships arch test + gate flip). Fields authored immediately after tags:. produces is a per-skill judgement (only 27 skills named their artifact in an ## Output Format template); python-*/react-* mirror their go-* counterparts; stack-neutral artifacts (dockerfile, makefile, schema-migration, load-test-suite, mutation-report, performance-regression-gate) are shared across stacks.",
+      "domain_vocabulary": {
+        "architecture": 12,
+        "backend": 41,
+        "data": 14,
+        "discovery": 9,
+        "domain-modeling": 13,
+        "frontend": 13,
+        "governance": 8,
+        "observability": 8,
+        "platform": 18,
+        "security": 9,
+        "strategy": 8,
+        "testing": 24,
+        "ux": 4,
+        "validation": 5
+      },
+      "status_vocabulary": {
+        "stable": 186
+      }
+    }
   },
-
   "project": {
     "name": "SDLC Artifact Factory",
     "repository": "SDLC-Artifact-Factory",
@@ -53,7 +143,6 @@
     "type": "Claude Code plugin",
     "description": "A Claude Code plugin that takes a problem statement and drives a product through its full SDLC lifecycle — Strategy → Ideate → Design → Implement → Data → Quality → Deploy → Customer Validation — producing real, reviewable, methodology-compliant artifacts at every phase."
   },
-
   "working_agreements": {
     "operator": "Shafi Babar. Product Manager. Solo operator (Han Solo). Not a programmer. Provides problem statements, reviews artifacts, approves each chunk before proceeding.",
     "claude_role": "Principal engineer. Does all implementation — skills, agents, commands, hooks, tools, code generation. Shafi approves; Claude builds.",
@@ -63,7 +152,6 @@
     "budget_posture": "Frugal. Open-source preferred. No paid APIs, no expensive tooling. Process and methodology are the investment, not tooling.",
     "timeline": "Iterative. No deadlines. Quality over speed."
   },
-
   "methodology": {
     "non_negotiables": [
       "Domain-Driven Design (DDD) — Ubiquitous Language, Bounded Contexts, Domain Events, Aggregates",
@@ -74,18 +162,29 @@
     ],
     "enforcement": "Absence of an applicable methodology in any artifact is a defect, not a warning. Phase gate hooks enforce compliance before advancing.",
     "event_driven_patterns": [
-      "Transactional Outbox", "Change Data Capture", "Dead Letter Queue",
-      "Circuit Breaker", "Retry and Backoff", "Idempotency",
-      "Event Choreography", "Eventual Consistency", "Immutable Events"
+      "Transactional Outbox",
+      "Change Data Capture",
+      "Dead Letter Queue",
+      "Circuit Breaker",
+      "Retry and Backoff",
+      "Idempotency",
+      "Event Choreography",
+      "Eventual Consistency",
+      "Immutable Events"
     ],
     "design_principles": [
-      "API-First Design", "Contract-First Design", "Consumer-Driven Contracts",
-      "Separation of Concerns", "Single Responsibility", "DRY",
-      "Zero Trust Architecture", "Security by Design", "Privacy by Design",
+      "API-First Design",
+      "Contract-First Design",
+      "Consumer-Driven Contracts",
+      "Separation of Concerns",
+      "Single Responsibility",
+      "DRY",
+      "Zero Trust Architecture",
+      "Security by Design",
+      "Privacy by Design",
       "Principle of Least Privilege"
     ]
   },
-
   "tech_stack": {
     "_note": "These are the default target-stack decisions. Parameterized per product at /sdlc-start time. Saved to sdlc-config.json per product.",
     "confirmed": {
@@ -106,7 +205,6 @@
     "pending": [],
     "sdlc_start_questionnaire": "Interactive questionnaire at /sdlc-start saves answers to sdlc-config.json per product. Allows per-product overrides of defaults above."
   },
-
   "first_product": {
     "name": "Data Estate Mapping and Compliance Intelligence",
     "codename": "TBD",
@@ -114,19 +212,35 @@
     "core_value": "Maps an organisation's data estate across storage systems, extracts entities, builds a relationship graph, and provides compliance intelligence — with zero data ever leaving customer infrastructure.",
     "architecture_style": "Event-driven microservices with physical tenant isolation",
     "pipeline": "Worker nodes at customer storage → Message Queue → File Processing → Entity Extraction → Graph Update → Compliance Rule Engine → Alert + Audit",
-    "key_patterns": ["Transactional Outbox", "Dead Letter Queue", "Circuit Breaker", "Consumer group isolation", "Golden Record", "Master Data Management", "ACID + Eventual Consistency (graph layer)"],
+    "key_patterns": [
+      "Transactional Outbox",
+      "Dead Letter Queue",
+      "Circuit Breaker",
+      "Consumer group isolation",
+      "Golden Record",
+      "Master Data Management",
+      "ACID + Eventual Consistency (graph layer)"
+    ],
     "deployment_model": "Option A: one-click deploy to customer's own AWS/Azure/GCP. Option B: managed private cloud with dedicated tenant, no data commingling.",
     "security": "Zero Trust, OAuth 2.0 + JWT, mTLS via Linkerd, ABAC claim-based authorization, API-First (UI is first-party API consumer only)",
     "mvp_scope": {
-      "file_formats": ["PDF", "DOCX", "XLSX"],
-      "storage_connectors": ["Google Drive", "AWS S3"],
-      "compliance_frameworks": ["SOC 2 — CC6, CC7, A1"],
+      "file_formats": [
+        "PDF",
+        "DOCX",
+        "XLSX"
+      ],
+      "storage_connectors": [
+        "Google Drive",
+        "AWS S3"
+      ],
+      "compliance_frameworks": [
+        "SOC 2 — CC6, CC7, A1"
+      ],
       "out_of_scope": "Remediation workflows (post-MVP)"
     },
     "test_strategy": "TDD as default. Test layers: Unit, Integration, Contract, E2E, Extraction quality, Security.",
     "status": "Not yet started — plugin must be built first."
   },
-
   "plugin_architecture": {
     "pattern": "workflow-first",
     "description": "Commands drive phases. Phases activate agents. Agents draw on skills for expertise and scripts (via Bash) for atomic actions. Hooks enforce governance automatically, calling scripts or consulting skills directly. Artifacts are outputs of the workflow, not the inputs.",
@@ -141,80 +255,246 @@
       "LSP": "Code intelligence — pending."
     }
   },
-
   "agents": [
-    { "name": "product-strategist",   "skill_domains": ["strategy"],              "status": "complete" },
-    { "name": "requirements-analyst", "skill_domains": ["discovery", "validation"], "status": "complete — validation skills pending Chunk 17" },
-    { "name": "domain-modeler",        "skill_domains": ["domain-modeling"],        "status": "complete" },
-    { "name": "enterprise-architect",  "skill_domains": ["architecture"],           "status": "complete" },
-    { "name": "ux-architect",          "skill_domains": ["ux"],                     "status": "complete" },
-    { "name": "data-architect",        "skill_domains": ["data-architecture"],      "status": "complete" },
-    { "name": "data-engineer",         "skill_domains": ["data-analytics"],         "status": "complete" },
-    { "name": "security-architect",    "skill_domains": ["security (design)"],      "status": "complete" },
-    { "name": "security-engineer",     "skill_domains": ["security (implementation)"], "status": "complete" },
-    { "name": "backend-engineer",      "skill_domains": ["backend-engineering", "observability (instrumentation)"], "status": "complete" },
-    { "name": "frontend-engineer",     "skill_domains": ["frontend-engineering"],   "status": "complete" },
-    { "name": "test-strategist",       "skill_domains": ["test-engineering"],       "status": "complete" },
-    { "name": "platform-engineer",     "skill_domains": ["platform", "observability (stack)"], "status": "complete" },
-    { "name": "ai-ml-architect",       "skill_domains": ["ml (TBD)"],               "status": "deferred — added when a product requires ML" }
+    {
+      "name": "product-strategist",
+      "skill_domains": [
+        "strategy"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "requirements-analyst",
+      "skill_domains": [
+        "discovery",
+        "validation"
+      ],
+      "status": "complete — validation skills pending Chunk 17"
+    },
+    {
+      "name": "domain-modeler",
+      "skill_domains": [
+        "domain-modeling"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "enterprise-architect",
+      "skill_domains": [
+        "architecture"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "ux-architect",
+      "skill_domains": [
+        "ux"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "data-architect",
+      "skill_domains": [
+        "data-architecture"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "data-engineer",
+      "skill_domains": [
+        "data-analytics"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "security-architect",
+      "skill_domains": [
+        "security (design)"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "security-engineer",
+      "skill_domains": [
+        "security (implementation)"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "backend-engineer",
+      "skill_domains": [
+        "backend-engineering",
+        "observability (instrumentation)"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "frontend-engineer",
+      "skill_domains": [
+        "frontend-engineering"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "test-strategist",
+      "skill_domains": [
+        "test-engineering"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "platform-engineer",
+      "skill_domains": [
+        "platform",
+        "observability (stack)"
+      ],
+      "status": "complete"
+    },
+    {
+      "name": "ai-ml-architect",
+      "skill_domains": [
+        "ml (TBD)"
+      ],
+      "status": "deferred — added when a product requires ML"
+    }
   ],
-
   "_skill_domains_note": "As of D016, skills/ is flat (skills/<name>/SKILL.md) — real Claude Code discovery does not support domain nesting. Each entry's 'path' field below is a LOGICAL grouping only (the skills that conceptually belong to this domain), not a real filesystem path. Domain identity lives in each skill's own frontmatter (tags, phase) and in this array — nowhere on disk.",
   "skill_domains": [
     {
       "domain": "strategy",
       "path": "skills/strategy/ (logical grouping only — see _skill_domains_note)",
       "owner": "product-strategist",
-      "planned_skills": ["vision-statement", "mission-statement", "gtm-strategy", "roadmap-authoring", "okr-authoring", "stakeholder-mapping", "competitive-analysis", "business-model-canvas"],
+      "planned_skills": [
+        "vision-statement",
+        "mission-statement",
+        "gtm-strategy",
+        "roadmap-authoring",
+        "okr-authoring",
+        "stakeholder-mapping",
+        "competitive-analysis",
+        "business-model-canvas"
+      ],
       "status": "complete"
     },
     {
       "domain": "discovery",
       "path": "skills/discovery/ (logical grouping only — see _skill_domains_note)",
       "owner": "requirements-analyst",
-      "planned_skills": ["requirements-analysis", "nfr-specification", "user-story-writing", "epic-definition", "acceptance-criteria", "impact-mapping", "jtbd-analysis", "example-mapping", "user-persona", "story-mapping", "moscow-prioritization"],
+      "planned_skills": [
+        "requirements-analysis",
+        "nfr-specification",
+        "user-story-writing",
+        "epic-definition",
+        "acceptance-criteria",
+        "impact-mapping",
+        "jtbd-analysis",
+        "example-mapping",
+        "user-persona",
+        "story-mapping",
+        "moscow-prioritization"
+      ],
       "status": "complete"
     },
     {
       "domain": "domain-modeling",
       "path": "skills/domain-modeling/ (logical grouping only — see _skill_domains_note)",
       "owner": "domain-modeler",
-      "planned_skills": ["ubiquitous-language", "bounded-context-mapping", "domain-event-catalog", "aggregate-design", "command-catalog", "read-model-design", "event-storming-facilitation", "domain-storytelling", "context-map-patterns"],
+      "planned_skills": [
+        "ubiquitous-language",
+        "bounded-context-mapping",
+        "domain-event-catalog",
+        "aggregate-design",
+        "command-catalog",
+        "read-model-design",
+        "event-storming-facilitation",
+        "domain-storytelling",
+        "context-map-patterns"
+      ],
       "status": "complete"
     },
     {
       "domain": "architecture",
       "path": "skills/architecture/ (logical grouping only — see _skill_domains_note)",
       "owner": "enterprise-architect",
-      "planned_skills": ["system-context-diagram", "container-diagram", "component-diagram", "adr-authoring", "api-contract-design", "integration-design", "multi-tenancy-design", "cqrs-pattern", "event-driven-patterns"],
+      "planned_skills": [
+        "system-context-diagram",
+        "container-diagram",
+        "component-diagram",
+        "adr-authoring",
+        "api-contract-design",
+        "integration-design",
+        "multi-tenancy-design",
+        "cqrs-pattern",
+        "event-driven-patterns"
+      ],
       "status": "complete"
     },
     {
       "domain": "security",
       "path": "skills/security/ (logical grouping only — see _skill_domains_note)",
       "owner": "security-architect (design) + security-engineer (implementation)",
-      "planned_skills": ["threat-modeling", "security-architecture", "access-control-model", "secrets-management", "privacy-design", "compliance-design", "zero-trust-design", "security-implementation", "compliance-verification"],
+      "planned_skills": [
+        "threat-modeling",
+        "security-architecture",
+        "access-control-model",
+        "secrets-management",
+        "privacy-design",
+        "compliance-design",
+        "zero-trust-design",
+        "security-implementation",
+        "compliance-verification"
+      ],
       "status": "complete"
     },
     {
       "domain": "ux",
       "path": "skills/ux/ (logical grouping only — see _skill_domains_note)",
       "owner": "ux-architect",
-      "planned_skills": ["ux-flow-design", "information-architecture", "ui-component-spec", "user-journey-mapping"],
+      "planned_skills": [
+        "ux-flow-design",
+        "information-architecture",
+        "ui-component-spec",
+        "user-journey-mapping"
+      ],
       "status": "complete"
     },
     {
       "domain": "data-architecture",
       "path": "skills/data-architecture/ (logical grouping only — see _skill_domains_note)",
       "owner": "data-architect",
-      "planned_skills": ["data-model-design", "data-pipeline-design", "data-lineage-design", "data-classification", "data-retention-policy", "canonical-data-model", "event-schema-design"],
+      "planned_skills": [
+        "data-model-design",
+        "data-pipeline-design",
+        "data-lineage-design",
+        "data-classification",
+        "data-retention-policy",
+        "canonical-data-model",
+        "event-schema-design"
+      ],
       "status": "complete"
     },
     {
       "domain": "backend-engineering",
       "path": "skills/backend-engineering/ (logical grouping only — see _skill_domains_note)",
       "owner": "backend-engineer",
-      "planned_skills": ["go-project-structure", "go-service-skeleton", "go-chi-handler", "go-domain-model", "go-repository-pattern", "go-event-publisher", "go-event-consumer", "go-service-layer", "go-middleware", "go-migration", "go-dockerfile", "go-makefile", "go-openapi-codegen", "go-concurrency-patterns", "go-error-handling", "go-performance-optimization"],
+      "planned_skills": [
+        "go-project-structure",
+        "go-service-skeleton",
+        "go-chi-handler",
+        "go-domain-model",
+        "go-repository-pattern",
+        "go-event-publisher",
+        "go-event-consumer",
+        "go-service-layer",
+        "go-middleware",
+        "go-migration",
+        "go-dockerfile",
+        "go-makefile",
+        "go-openapi-codegen",
+        "go-concurrency-patterns",
+        "go-error-handling",
+        "go-performance-optimization"
+      ],
       "_skills_note": "16 skills. go-concurrency-patterns, go-error-handling, go-performance-optimization added in Chunk 12 from Shafi's Go Backend & Observability Engineer behavioral blueprint (mechanical sympathy, leak-free concurrency, errors-as-values, profiling).",
       "status": "complete"
     },
@@ -222,7 +502,22 @@
       "domain": "frontend-engineering",
       "path": "skills/frontend-engineering/ (logical grouping only — see _skill_domains_note)",
       "owner": "frontend-engineer",
-      "planned_skills": ["react-project-structure", "react-component-design", "typescript-types", "react-state-management", "react-api-client", "react-routing", "react-graph-visualization", "react-dashboard-components", "react-accessibility", "react-dockerfile", "react-component-testing", "react-e2e-testing", "react-performance-optimization", "react-observability"],
+      "planned_skills": [
+        "react-project-structure",
+        "react-component-design",
+        "typescript-types",
+        "react-state-management",
+        "react-api-client",
+        "react-routing",
+        "react-graph-visualization",
+        "react-dashboard-components",
+        "react-accessibility",
+        "react-dockerfile",
+        "react-component-testing",
+        "react-e2e-testing",
+        "react-performance-optimization",
+        "react-observability"
+      ],
       "_skills_note": "14 skills. react-performance-optimization and react-observability added in Chunk 13 from Shafi's React+TypeScript Frontend Engineer behavioral blueprint (critical rendering path, RUM/Core Web Vitals, OTel Web with W3C traceparent propagation, error boundaries).",
       "status": "complete"
     },
@@ -230,7 +525,20 @@
       "domain": "test-engineering",
       "path": "skills/test-engineering/ (logical grouping only — see _skill_domains_note)",
       "owner": "test-strategist",
-      "planned_skills": ["test-pyramid", "bdd-feature-file", "go-unit-test", "mock-generation", "test-fixture-design", "go-integration-test", "go-contract-test", "go-mutation-test", "go-e2e-test", "go-performance-test", "go-load-test", "go-chaos-test"],
+      "planned_skills": [
+        "test-pyramid",
+        "bdd-feature-file",
+        "go-unit-test",
+        "mock-generation",
+        "test-fixture-design",
+        "go-integration-test",
+        "go-contract-test",
+        "go-mutation-test",
+        "go-e2e-test",
+        "go-performance-test",
+        "go-load-test",
+        "go-chaos-test"
+      ],
       "_scope_note": "12 skills (was 13 planned). Chunk 14 dropped go-security-test and go-compliance-test (owned by security-engineer via security-implementation + compliance-verification — avoiding overlap) and added test-pyramid (the shift-left/shift-right strategy spine). Organized around Shafi's shift-left (prevent bugs) / shift-right (validate resilience) objective; frugal tooling per Shafi's filtered SDET blueprint.",
       "status": "complete"
     },
@@ -238,7 +546,15 @@
       "domain": "observability",
       "path": "skills/observability/ (logical grouping only — see _skill_domains_note)",
       "owner": "backend-engineer (instrumentation) + platform-engineer (stack)",
-      "planned_skills": ["opentelemetry-instrumentation", "prometheus-metrics-design", "structured-logging-design", "distributed-tracing-design", "health-check-design", "slo-definition", "alerting-rules-design"],
+      "planned_skills": [
+        "opentelemetry-instrumentation",
+        "prometheus-metrics-design",
+        "structured-logging-design",
+        "distributed-tracing-design",
+        "health-check-design",
+        "slo-definition",
+        "alerting-rules-design"
+      ],
       "_split_note": "Domain co-owned. Instrumentation skills (opentelemetry-instrumentation, distributed-tracing-design, structured-logging-design, health-check-design) built in Chunk 12 by backend-engineer. Stack skills (prometheus-metrics-design, slo-definition, alerting-rules-design) built in Chunk 15 by platform-engineer.",
       "status": "complete — instrumentation (Chunk 12) + stack (Chunk 15)"
     },
@@ -246,7 +562,26 @@
       "domain": "platform",
       "path": "skills/platform/ (logical grouping only — see _skill_domains_note)",
       "owner": "platform-engineer",
-      "planned_skills": ["ci-pipeline", "cd-pipeline", "dockerfile-patterns", "helm-chart", "opentofu-module", "kubernetes-manifest", "environment-config", "feature-flag-design", "blue-green-deployment", "canary-deployment", "disaster-recovery-plan", "runbook-authoring", "dora-metrics", "kubernetes-workload-patterns", "incident-management", "platform-engineering-design", "gitops-workflow", "progressive-delivery"],
+      "planned_skills": [
+        "ci-pipeline",
+        "cd-pipeline",
+        "dockerfile-patterns",
+        "helm-chart",
+        "opentofu-module",
+        "kubernetes-manifest",
+        "environment-config",
+        "feature-flag-design",
+        "blue-green-deployment",
+        "canary-deployment",
+        "disaster-recovery-plan",
+        "runbook-authoring",
+        "dora-metrics",
+        "kubernetes-workload-patterns",
+        "incident-management",
+        "platform-engineering-design",
+        "gitops-workflow",
+        "progressive-delivery"
+      ],
       "_campaign_note": "6 new skills added in Chunk 52 (DevOps & Platform Engineering research campaign, #461): dora-metrics, kubernetes-workload-patterns, incident-management, platform-engineering-design, gitops-workflow, progressive-delivery. All 12 original skills also refactored for depth in the same campaign.",
       "status": "complete — 12 original (Chunk 15) + 6 new (Chunk 52)"
     },
@@ -254,33 +589,71 @@
       "domain": "data-analytics",
       "path": "skills/data-analytics/ (logical grouping only — see _skill_domains_note)",
       "owner": "data-engineer",
-      "planned_skills": ["analytics-requirements", "dashboard-specification", "reporting-spec", "data-storytelling", "data-quality-rules", "data-pipeline-implementation", "metrics-instrumentation-plan"],
+      "planned_skills": [
+        "analytics-requirements",
+        "dashboard-specification",
+        "reporting-spec",
+        "data-storytelling",
+        "data-quality-rules",
+        "data-pipeline-implementation",
+        "metrics-instrumentation-plan"
+      ],
       "status": "complete"
     },
     {
       "domain": "validation",
       "path": "skills/validation/ (logical grouping only — see _skill_domains_note)",
       "owner": "requirements-analyst",
-      "planned_skills": ["uat-plan", "uat-scenario", "beta-program-design", "feedback-template", "acceptance-sign-off"],
+      "planned_skills": [
+        "uat-plan",
+        "uat-scenario",
+        "beta-program-design",
+        "feedback-template",
+        "acceptance-sign-off"
+      ],
       "status": "complete"
     },
     {
       "domain": "governance",
       "path": "skills/governance/ (logical grouping only — see _skill_domains_note)",
       "owner": "factory internals — hooks and commands",
-      "planned_skills": ["artifact-manifest", "methodology-review", "risk-register", "value-stream-map", "sdlc-config-management", "glossary-management", "ddd-agent-handoff"],
+      "planned_skills": [
+        "artifact-manifest",
+        "methodology-review",
+        "risk-register",
+        "value-stream-map",
+        "sdlc-config-management",
+        "glossary-management",
+        "ddd-agent-handoff"
+      ],
       "status": "complete"
     }
   ],
-
   "commands": {
     "_note": "Phase driver commands activate the right agents in sequence, enforce entry conditions, and produce the full artifact set for that phase.",
-    "phase_drivers": ["sdlc-start", "sdlc-strategy", "sdlc-ideate", "sdlc-design", "sdlc-implement", "sdlc-data", "sdlc-quality", "sdlc-deploy", "sdlc-validate"],
-    "navigation": ["sdlc-status", "sdlc-next"],
-    "cross_cutting": ["sdlc-event-storm", "sdlc-adr", "sdlc-review", "sdlc-artifact"],
+    "phase_drivers": [
+      "sdlc-start",
+      "sdlc-strategy",
+      "sdlc-ideate",
+      "sdlc-design",
+      "sdlc-implement",
+      "sdlc-data",
+      "sdlc-quality",
+      "sdlc-deploy",
+      "sdlc-validate"
+    ],
+    "navigation": [
+      "sdlc-status",
+      "sdlc-next"
+    ],
+    "cross_cutting": [
+      "sdlc-event-storm",
+      "sdlc-adr",
+      "sdlc-review",
+      "sdlc-artifact"
+    ],
     "status": "planned"
   },
-
   "hooks": {
     "_note": "Real Claude Code hooks in hooks/hooks.json (PreToolUse, PostToolUse), not settings.json. Live-verified: loaded via claude --plugin-dir and triggered with real tool calls, not just read for coherence. 9 originally planned hooks became 7 real ones — see decision D014 for why.",
     "built": [
@@ -294,7 +667,6 @@
     ],
     "status": "complete"
   },
-
   "scripts": {
     "_note": "Plain shell scripts under scripts/, invoked directly by hooks.json's command-type handlers or by command prompts via Bash. Not a Claude Code discovery mechanism — 'Tools' in real Claude Code vocabulary means MCP-exposed tools specifically, which this is not.",
     "built": [
@@ -313,7 +685,6 @@
     ],
     "status": "partial — 6 hook-backing scripts built and live-tested; 4 standalone utility scripts deferred until a command/agent actually needs them"
   },
-
   "build_checklist": [
     {
       "chunk": 1,
@@ -323,8 +694,11 @@
       "deliverables": [
         "All plugin directories created (skills/[15 domains], agents/, commands/, hooks/, tools/, mcp/, lsp/, monitors/, output-styles/, themes/, bin/, scripts/, schemas/)",
         ".claude-plugin/plugin.json (stub)",
-        ".mcp.json (stub)", ".lsp.json (stub)", "settings.json (stub)",
-        "CHANGELOG.md", "LICENSE"
+        ".mcp.json (stub)",
+        ".lsp.json (stub)",
+        "settings.json (stub)",
+        "CHANGELOG.md",
+        "LICENSE"
       ]
     },
     {
@@ -332,14 +706,21 @@
       "title": "sdlc-context.json — factory memory and session state",
       "status": "complete",
       "date_completed": "2026-06-24",
-      "deliverables": ["sdlc-context.json"]
+      "deliverables": [
+        "sdlc-context.json"
+      ]
     },
     {
       "chunk": 3,
       "title": "Plugin manifest + CLAUDE.md + settings.json",
       "status": "complete",
       "date_completed": "2026-06-24",
-      "deliverables": [".claude-plugin/plugin.json (full)", "CLAUDE.md", "settings.json (full)", ".lsp.json (stub)"]
+      "deliverables": [
+        ".claude-plugin/plugin.json (full)",
+        "CLAUDE.md",
+        "settings.json (full)",
+        ".lsp.json (stub)"
+      ]
     },
     {
       "chunk": 4,
@@ -356,7 +737,10 @@
       "title": "strategy/ skills + product-strategist agent",
       "status": "complete",
       "date_completed": "2026-06-24",
-      "deliverables": ["8 SKILL.md files in skills/strategy/", "agents/product-strategist.md"]
+      "deliverables": [
+        "8 SKILL.md files in skills/strategy/",
+        "agents/product-strategist.md"
+      ]
     },
     {
       "chunk": 6,
@@ -542,43 +926,66 @@
       "chunk": 15,
       "title": "platform/ + observability (stack) skills + platform-engineer agent",
       "status": "complete",
-      "deliverables": ["12 SKILL.md files in skills/platform/", "3 SKILL.md files added to skills/observability/ (stack — completes the 7-skill domain)", "agents/platform-engineer.md"]
+      "deliverables": [
+        "12 SKILL.md files in skills/platform/",
+        "3 SKILL.md files added to skills/observability/ (stack — completes the 7-skill domain)",
+        "agents/platform-engineer.md"
+      ]
     },
     {
       "chunk": 16,
       "title": "data-analytics/ skills + data-engineer agent",
       "status": "complete",
-      "deliverables": ["7 SKILL.md files in skills/data-analytics/", "agents/data-engineer.md"]
+      "deliverables": [
+        "7 SKILL.md files in skills/data-analytics/",
+        "agents/data-engineer.md"
+      ]
     },
     {
       "chunk": 17,
       "title": "validation/ skills (owned by requirements-analyst)",
       "status": "complete",
-      "deliverables": ["5 SKILL.md files in skills/validation/", "agents/requirements-analyst.md extended with Customer Validation phase ownership"]
+      "deliverables": [
+        "5 SKILL.md files in skills/validation/",
+        "agents/requirements-analyst.md extended with Customer Validation phase ownership"
+      ]
     },
     {
       "chunk": 18,
       "title": "governance/ skills (factory internals)",
       "status": "complete",
-      "deliverables": ["Remaining 4 SKILL.md files, then flattened out of skills/governance/ into skills/ directly (D016)"]
+      "deliverables": [
+        "Remaining 4 SKILL.md files, then flattened out of skills/governance/ into skills/ directly (D016)"
+      ]
     },
     {
       "chunk": 19,
       "title": "All commands (phase drivers + cross-cutting) — real slash commands + meta-doc corrections",
       "status": "complete",
-      "deliverables": ["15 real commands in commands/*.md, verified via claude --plugin-dir + live invocation", "CLAUDE.md/README.md/plugin.json/settings.json corrected to real Claude Code mechanics", "tools/ renamed to scripts/ throughout", "agents/<role>/AGENT.md restructured to flat agents/<role>.md (D013) — a second, larger instance of the same discovery issue (skills/) deferred, see open_questions Q001"]
+      "deliverables": [
+        "15 real commands in commands/*.md, verified via claude --plugin-dir + live invocation",
+        "CLAUDE.md/README.md/plugin.json/settings.json corrected to real Claude Code mechanics",
+        "tools/ renamed to scripts/ throughout",
+        "agents/<role>/AGENT.md restructured to flat agents/<role>.md (D013) — a second, larger instance of the same discovery issue (skills/) deferred, see open_questions Q001"
+      ]
     },
     {
       "chunk": 20,
       "title": "All hooks (phase gates + governance) + backing scripts",
       "status": "complete",
-      "deliverables": ["hooks/hooks.json with 7 real hook bindings (9 originally planned consolidated to 7, D014)", "6 backing scripts, individually and live-tested — 2 real bugs found and fixed during testing (D014)"]
+      "deliverables": [
+        "hooks/hooks.json with 7 real hook bindings (9 originally planned consolidated to 7, D014)",
+        "6 backing scripts, individually and live-tested — 2 real bugs found and fixed during testing (D014)"
+      ]
     },
     {
       "chunk": 21,
       "title": "Schemas (sdlc-config, sdlc-manifest)",
       "status": "complete",
-      "deliverables": ["schemas/sdlc-config.schema.json — validated against skills/sdlc-config-management's worked example plus 6 negative test cases", "schemas/sdlc-manifest.schema.json — validated against skills/artifact-manifest's worked example plus 9 negative test cases, using the real jsonschema library, not just written and assumed correct"]
+      "deliverables": [
+        "schemas/sdlc-config.schema.json — validated against skills/sdlc-config-management's worked example plus 6 negative test cases",
+        "schemas/sdlc-manifest.schema.json — validated against skills/artifact-manifest's worked example plus 9 negative test cases, using the real jsonschema library, not just written and assumed correct"
+      ]
     },
     {
       "chunk": 22,
@@ -1195,268 +1602,394 @@
         "REAL FINDINGS (the linter earned its keep on first run): 11 broken related: refs (recorded as the P2 backlog in the architecture_review_campaign block; each fixed in its skill's P2 child; lint-relationships flips to BLOCKING once the count hits 0), 48 orphan skills (no agent + no domain — resolve as P2 adds domain: and P5 wires skills into agents), 13 duplication clusters + 7 CLAUDE.md restatements (the P4 backlog in generated/duplication-report.md).",
         "Four-file housekeeping done on the integration→main merge: CLAUDE.md gained a 'Governance gate' section + Layout entries for the schemas/parser/linters/gate; README active-work note; this chunk entry + campaign state (P1 complete, active_parent → P2, backlogs recorded); CHANGELOG entry. NEXT: P2 — Skill Manifest Enrichment (produces/domain/status), 186 children."
       ]
+    },
+    {
+      "chunk": 69,
+      "title": "Architecture Review P2 — Skill Manifest Enrichment COMPLETE (parent #805, merged to main)",
+      "status": "complete",
+      "date": "2026-08-01",
+      "deliverables": [
+        "Second parent of the Architecture Review campaign executed and merged. Integration branch arch-review/p2-skill-manifest-enrichment → main, child → integration → main hierarchy, one child issue + branch + PR per artifact (no grouping). 188 children total: 186 skills + 2 fix children (#1178, #1180). 100 children were completed in earlier sessions; 88 were completed in this one.",
+        "Every one of the 186 skills now authors three non-derivable manifest fields immediately after tags: — produces (the artifact noun the skill yields), domain (one of 14 logical groupings; a tag, never a filesystem path), status (stable on all 186). These are the consumed inputs to the P3 derived catalog and the artifact-dependency graph.",
+        "produces was a per-skill judgement, not a mechanical derivation: only 27 of the enriched skills named their artifact in an ## Output Format template, so the remainder were read individually and named. python-* and react-* skills mirror their established go-* counterparts (go-chi-handler → go-http-handler ⇒ python-fastapi-handler → python-http-handler); stack-neutral artifacts stay neutral and are deliberately shared across stacks (dockerfile, makefile, schema-migration, load-test-suite, mutation-report, performance-regression-gate).",
+        "domain vocabulary (14 values, live counts): backend 41, testing 24, platform 18, data 14, domain-modeling 13, frontend 13, architecture 12, discovery 9, security 9, governance 8, observability 8, strategy 8, validation 5, ux 4. Rule: domain follows the owning agent except where subject matter overrides (test skills → testing, instrumentation → observability).",
+        "Two campaign backlogs closed as a side effect: broken 'related:' refs 11 → 0, and orphan skills 48 → 0 (an orphan is a skill with no owning agent AND no domain — declaring domain on every skill eliminated the category, exactly as the P2 note predicted).",
+        "Consequently lint-relationships flipped REPORTING → BLOCKING in scripts/lint-all.sh (its exit code had been discarded via `|| true`; it is now captured and gates). Verified by a negative test: injecting a bogus related: target into helm-chart made the gate exit 1 with the blocking marker; the injection was reverted and the tree confirmed clean.",
+        "Two arch tests that snapshotted the pre-P2 tree were re-pinned to the post-P2 invariant WITHOUT weakening them — the absent-optional-field parser contract moved to a synthetic frontmatter fixture (manifest_lib 46→48 passing) and the broken-ref detection stayed covered by untouched synthetic fixtures (lint-relationships 26→28 passing). Real-tree coverage strictly increased: both now assert the post-P2 invariants.",
+        "Whole governance gate green: bash scripts/lint-all.sh → exit 0 (schema+arch tests, lint-manifests 0 violations across 186 skills / 13 agents / 15 commands / hooks, lint-relationships 0 broken refs, lint-duplication report-only)."
+      ],
+      "next": "P3 — Derived Component Catalog + CI Integration (~3 children: build-catalog script, the generated catalog, CI wiring + snapshot test). P3 consumes the produces/domain/status fields P2 authored."
     }
   ],
-
   "decisions": [
     {
       "id": "D001",
       "date": "2026-06-24",
       "decision": "Plugin uses top-level directory structure (Option B — plugin spec layout)",
       "rationale": "Matches the Claude Code plugin specification exactly. Correct for distribution. MCP/LSP/monitors/themes follow the plugin manifest contract.",
-      "alternatives_rejected": ["Option A (.claude/ layout) — better for solo dev auto-discovery but wrong for a distributable plugin", "Option C (both) — premature; add distribution packaging when needed"]
+      "alternatives_rejected": [
+        "Option A (.claude/ layout) — better for solo dev auto-discovery but wrong for a distributable plugin",
+        "Option C (both) — premature; add distribution packaging when needed"
+      ]
     },
     {
       "id": "D002",
       "date": "2026-06-24",
       "decision": "Architecture pattern is workflow-first, not artifact-first",
       "rationale": "Commands drive phases. Agents activate within phases. Artifacts are outputs of the workflow. The previous build was artifact-first — a knowledge library, not a factory.",
-      "alternatives_rejected": ["Artifact-first — the old approach. Produced documents but no orchestration."]
+      "alternatives_rejected": [
+        "Artifact-first — the old approach. Produced documents but no orchestration."
+      ]
     },
     {
       "id": "D003",
       "date": "2026-06-24",
       "decision": "Skills organized by knowledge domain, not SDLC phase",
       "rationale": "DDD, TDD, BDD apply across multiple phases. Phase-locked skills cause duplication or get skipped when the phase doesn't match. Domain organization makes skills reusable across phases.",
-      "alternatives_rejected": ["Phase-locked skills (strategy/, ideate/, design/, implement/ etc.) — used in old build, caused duplication"]
+      "alternatives_rejected": [
+        "Phase-locked skills (strategy/, ideate/, design/, implement/ etc.) — used in old build, caused duplication"
+      ]
     },
     {
       "id": "D004",
       "date": "2026-06-24",
       "decision": "13 active agents, 1 deferred (ai-ml-architect)",
       "rationale": "Every role named in SDLC-artifact-factory.md §1 is represented. data-engineer and security-engineer added from previous roster of 12 — they were missing from the initial plan. Each agent has single, non-overlapping responsibility.",
-      "alternatives_rejected": ["12 agents — was missing data-engineer and security-engineer"]
+      "alternatives_rejected": [
+        "12 agents — was missing data-engineer and security-engineer"
+      ]
     },
     {
       "id": "D005",
       "date": "2026-06-24",
       "decision": "backend-engineer, frontend-engineer, and test-strategist produce full-range outputs including actual runnable code and executable tests",
       "rationale": "Shafi confirmed agents must produce real outputs — not just design documents. backend-engineer produces runnable Go code. frontend-engineer produces runnable React+TS code. test-strategist produces executable test files. All three also produce design and documentation outputs.",
-      "alternatives_rejected": ["Design-only outputs — insufficient; the plugin must produce shippable artifacts"]
+      "alternatives_rejected": [
+        "Design-only outputs — insufficient; the plugin must produce shippable artifacts"
+      ]
     },
     {
       "id": "D006",
       "date": "2026-06-24",
       "decision": "Frontend stack: React + TypeScript",
       "rationale": "The first product requires graph visualization (Obsidian-style) and compliance dashboards. React has mature graph libraries (D3, Cytoscape, Sigma.js). Component-level reactivity suits dashboards. HTMX+templ would create ongoing pain for the graph view.",
-      "alternatives_rejected": ["HTMX + templ — insufficient for complex graph visualization", "Vue — viable but React has richer graph library ecosystem"]
+      "alternatives_rejected": [
+        "HTMX + templ — insufficient for complex graph visualization",
+        "Vue — viable but React has richer graph library ecosystem"
+      ]
     },
     {
       "id": "D007",
       "date": "2026-06-24",
       "decision": "MCPs deferred — defined per product at /sdlc-start time",
       "rationale": "MCP servers are product-specific integration points. Building them as plugin-level defaults would be premature and potentially wrong for different products.",
-      "alternatives_rejected": ["Pre-built MCPs for GitHub, Jira, Google Drive — premature for a generic factory"]
+      "alternatives_rejected": [
+        "Pre-built MCPs for GitHub, Jira, Google Drive — premature for a generic factory"
+      ]
     },
     {
       "id": "D008",
       "date": "2026-06-24",
       "decision": "sdlc-context.json is the session memory — read at the start of every session",
       "rationale": "Context window compaction and new sessions lose conversation history. This file must be self-sufficient to restore full project context, architecture decisions, and build position.",
-      "alternatives_rejected": ["Relying on Claude's memory files only — insufficient for full architectural context"]
+      "alternatives_rejected": [
+        "Relying on Claude's memory files only — insufficient for full architectural context"
+      ]
     },
     {
       "id": "D009",
       "date": "2026-07-19",
       "decision": "Canonical component frontmatter schemas — SKILL.md: name/description/version/phase/owner/created/tags; AGENT.md: name/description/role/version/phase/owner/created/inputs/outputs/skills/tools/tags. Emitted artifact templates use the key 'name:', never 'artifact:'.",
       "rationale": "Three incompatible frontmatter shapes had emerged across build chunks (CLAUDE.md artifact standard, README component specs, on-disk reality). One machine-readable schema per component type restores introspectability and lets governance hooks validate uniformly.",
-      "alternatives_rejected": ["Keeping the lean Gen-2/3 agent frontmatter (name/description/version/phase/tags) — loses machine-readable inputs/outputs/skills/tools wiring", "Renaming CLAUDE.md's required 'name' field to 'artifact' — would ripple into every governance rule"]
+      "alternatives_rejected": [
+        "Keeping the lean Gen-2/3 agent frontmatter (name/description/version/phase/tags) — loses machine-readable inputs/outputs/skills/tools wiring",
+        "Renaming CLAUDE.md's required 'name' field to 'artifact' — would ripple into every governance rule"
+      ]
     },
     {
       "id": "D010",
       "date": "2026-07-19",
       "decision": "Behavioral Directives in agents are an accepted pattern: a compressed index of imperative bullets, each citing the owning skill. Decision criteria/tables in skills are knowledge, not reasoning.",
       "rationale": "Codifies two boundary clarifications to the component anti-pattern rules. Directives whose substance is absent from the cited skill remain defects — the substance moves into the skill.",
-      "alternatives_rejected": ["Strict reading — stripping all directive content from agents into skills; loses the at-a-glance engineering contract without reducing duplication"]
+      "alternatives_rejected": [
+        "Strict reading — stripping all directive content from agents into skills; loses the at-a-glance engineering contract without reducing duplication"
+      ]
     },
     {
       "id": "D011",
       "date": "2026-07-19",
       "decision": "Content improvement campaign before Chunk 15: full per-file pass over all skills, agents, and repo metadata, delivered as five batch PRs.",
       "rationale": "A stronger model became available; three parallel audits found generational drift in agents, frontmatter schism, stale metadata, dead references, and terminology drift. Fixing before building Chunk 15 prevents propagating the drift into new components.",
-      "alternatives_rejected": ["Targeted fixes only — audit sampled ~20% of skills, so unsampled files would get no fresh scrutiny", "Single campaign PR — a ~120-file diff is not PM-reviewable in one sitting"]
+      "alternatives_rejected": [
+        "Targeted fixes only — audit sampled ~20% of skills, so unsampled files would get no fresh scrutiny",
+        "Single campaign PR — a ~120-file diff is not PM-reviewable in one sitting"
+      ]
     },
     {
       "id": "D012",
       "date": "2026-07-20",
       "decision": "Chunk 19 rebuilt commands/hooks conceptual spec (COMMAND.md/HOOK.md, invented lifecycle events, 'Tools' component) into real, verified Claude Code mechanics: commands/*.md slash commands, hooks/hooks.json, scripts/*.sh. Verified by loading this repo as a session plugin (`claude --plugin-dir`) and inspecting `claude plugin details` output plus one live command invocation, not just by reading the files for coherence.",
       "rationale": "The original commands/hooks/tools design (Chunks 1-3) predated any real Claude Code mechanics research and used fictional structure. Real testing caught concrete errors (invalid plugin.json fields, a YAML-breaking argument-hint) that static review would have missed.",
-      "alternatives_rejected": ["Continue conceptual spec documents — the plugin would remain unrunnable indefinitely"]
+      "alternatives_rejected": [
+        "Continue conceptual spec documents — the plugin would remain unrunnable indefinitely"
+      ]
     },
     {
       "id": "D013",
       "date": "2026-07-20",
       "decision": "Agents restructured from agents/<role>/AGENT.md (nested) to agents/<role>.md (flat) — folded into Chunk 19's PR. Confirmed empirically: a nested AGENT.md is not discovered by Claude Code's real agent-discovery mechanism; a flat <name>.md is.",
       "rationale": "Discovered while live-testing Chunk 19's commands via `claude plugin details` — Agents (0) despite 13 real agent files existing. Isolated the root cause with a controlled test copy before changing anything. Mechanical fix (file relocation only, no content change), low risk, same root-cause class as the commands/hooks fix already underway.",
-      "alternatives_rejected": ["Defer to a separate PR — rejected only for this specific fix since it was small, mechanical, and directly related; the same testing methodology surfaced a second, much larger issue (see open_questions) which WAS deferred"]
+      "alternatives_rejected": [
+        "Defer to a separate PR — rejected only for this specific fix since it was small, mechanical, and directly related; the same testing methodology surfaced a second, much larger issue (see open_questions) which WAS deferred"
+      ]
     },
     {
       "id": "D014",
       "date": "2026-07-20",
       "decision": "Chunk 20's 9 originally-planned hooks consolidated to 7 real hooks.json entries: pre-phase-advance, pre-code-generation, and pre-implement collapsed into one pre-phase-advance hook (PreToolUse/Agent, gates any agent invocation on its phase's prerequisite artifacts) once bound to a real event — they were the identical check under three names. methodology-compliance-check implemented as an agent-type handler (not a script) since judging methodology compliance is inherently interpretive; the other 6 are command-type handlers backed by real scripts/*.sh.",
       "rationale": "Real Claude Code PreToolUse fires per tool call (e.g. every Agent dispatch), not per abstract 'phase' or 'code generation' event — there is no way to bind 3 separately-named hooks to 3 different real triggers when they'd all fire on the same event and check the same thing. Confirmed the tool name for subagent dispatch is 'Agent' with tool_input.subagent_type identifying which agent, by triggering a real dispatch and inspecting the hook's stdin JSON.",
-      "alternatives_rejected": ["Keep 9 separate hooks.json entries that run identical logic 3x on every Agent call — wasteful and dishonest about what they actually do", "Make methodology-compliance-check a command-type script — rejected, methodology judgment is not reliably reducible to regex/deterministic checks (see the terminology-drift-detector script's own documented limitation on this)"]
+      "alternatives_rejected": [
+        "Keep 9 separate hooks.json entries that run identical logic 3x on every Agent call — wasteful and dishonest about what they actually do",
+        "Make methodology-compliance-check a command-type script — rejected, methodology judgment is not reliably reducible to regex/deterministic checks (see the terminology-drift-detector script's own documented limitation on this)"
+      ]
     },
     {
       "id": "D015",
       "date": "2026-07-20",
       "decision": "All 6 hook-backing scripts hardened after live testing surfaced 3 real bugs: naming-convention-enforcer's extraction regex silently let invalid names through instead of catching them (restrictive character class used for extraction, not just validation); post-artifact-created resolved the manifest path from cwd instead of the written file's own path, missing writes outside cwd; none of the 6 scripts protected their outermost JSON parse, so malformed stdin crashed with a Python traceback instead of failing open.",
       "rationale": "Each bug was found by actually invoking the hook with a real or synthetic trigger and checking the outcome, not by reading the script. The naming-convention bug in particular would have silently shipped a non-functional governance check — a live end-to-end test (create a badly-named file, confirm it's rejected) caught what a code read did not.",
-      "alternatives_rejected": ["Ship without live-testing each script individually — rejected per the standing practice this session established in Chunk 19 (D012)"]
+      "alternatives_rejected": [
+        "Ship without live-testing each script individually — rejected per the standing practice this session established in Chunk 19 (D012)"
+      ]
     },
     {
       "id": "D016",
       "date": "2026-07-20",
       "decision": "All 136 skills restructured from skills/<domain>/<name>/SKILL.md to flat skills/<name>/SKILL.md, resolving Q001. Zero name collisions across the former 15 domains (verified before moving — no renames needed). Domain grouping preserved only as a logical tag in this file's skill_domains array (each entry's path field now explicitly notes it is not a real filesystem path) and in each skill's own phase/tags frontmatter — not as a directory structure.",
       "rationale": "The domain-nested structure was confirmed empirically (Chunk 19 testing) to be undiscoverable by Claude Code — the exact same class of bug as the agents/<role>/AGENT.md issue (D013), just affecting ~10x more files. Fixed as its own dedicated PR per explicit direction, after Chunks 19 and 20 shipped, rather than blocking those on this larger, purely mechanical fix.",
-      "alternatives_rejected": ["Keep domain subdirectories and find a manifest-level override — researched during Q001's investigation, no working override found", "Rename colliding skills to preserve some domain info in the name — unnecessary, zero collisions existed"]
+      "alternatives_rejected": [
+        "Keep domain subdirectories and find a manifest-level override — researched during Q001's investigation, no working override found",
+        "Rename colliding skills to preserve some domain info in the name — unnecessary, zero collisions existed"
+      ]
     },
     {
       "id": "D017",
       "date": "2026-07-20",
       "decision": "schemas/sdlc-config.schema.json and schemas/sdlc-manifest.schema.json (Draft 2020-12) formalize skills/sdlc-config-management and skills/artifact-manifest's already-documented Output Format shapes exactly, rather than inventing a new shape. sdlc-manifest.schema.json validates only the per-product manifest INSTANCE, not the master artifact-type catalog (which stays a prose table, extended over time — type is a free-form pattern, not a closed enum, to avoid needing a schema update on every new artifact-producing skill).",
       "rationale": "Both governance skills already had complete, worked JSON examples in their Output Format sections from when they were written (Chunk 18) — the schema's job was to encode what was already specified, not design something new. Tested against the real jsonschema library (Draft202012Validator): both skills' exact worked examples validate cleanly, and a battery of deliberately invalid instances (missing required fields, bad enums, malformed dates/semver/slugs, unknown fields, empty traceability refs) are all correctly rejected — 15 negative cases total across both schemas.",
-      "alternatives_rejected": ["Also schema-ize the type catalog as a closed enum — rejected per the skill's own statement that the catalog is a representative cross-section extended over time; a closed enum would need updating on every new artifact-producing skill"]
+      "alternatives_rejected": [
+        "Also schema-ize the type catalog as a closed enum — rejected per the skill's own statement that the catalog is a representative cross-section extended over time; a closed enum would need updating on every new artifact-producing skill"
+      ]
     },
     {
       "id": "D018",
       "date": "2026-07-21",
       "decision": "Skill/agent smoke tests split into a Contract tier (a fast, cheap LLM-answered question about one documented fact — what the 6 broken *.fixture.sh files became once fixed) and a new Acceptance tier (a live agent dispatch that must actually invoke the named skill and produce the real work product — a written artifact or real code — validated structurally and, where a toolchain exists, mechanically). Contract stays the fast canary; Acceptance proves the agent can do its job, not just recite facts about it. Selection for --skill/--agent/--changed and the new automatic hook derives from agents' existing frontmatter skills: list (grepped for ownership) rather than a second, hand-maintained tag system.",
       "rationale": "The prior six skills/agents test files were pure two-variable shell fixtures that never sourced tests/lib/harness.sh — run-smoke-tests.sh's glob picked them up and silently reported 0 passed/0 failed, not a failure. Separately, even a fixed Q&A test (\"what's the word limit?\") never proves an agent can invoke a skill and produce its real output — Shafi's explicit objection. Reusing the skills: frontmatter block (already the single source of truth for which agent owns which skill) for selection avoids a second manifest that would drift from it; git diff --name-only drives change-based selection, the same idea as jest --onlyChanged / nx affected.",
-      "alternatives_rejected": ["A hand-maintained tag/manifest file mapping skills to owning agents and to test tiers — rejected: agents/*.md's skills: list already is that mapping; a second copy would just drift out of sync with it."]
+      "alternatives_rejected": [
+        "A hand-maintained tag/manifest file mapping skills to owning agents and to test tiers — rejected: agents/*.md's skills: list already is that mapping; a second copy would just drift out of sync with it."
+      ]
     },
     {
       "id": "D019",
       "date": "2026-07-21",
       "decision": "Every live agent dispatch in tests/lib/harness.sh's smoke_test_acceptance (and tests/hooks/hooks-wiring.test.sh, fixed alongside) uses --permission-mode auto, not bypassPermissions or acceptEdits.",
       "rationale": "Found by live testing: --permission-mode bypassPermissions maps to --dangerously-skip-permissions, which Claude Code refuses to honor when the process runs as root (this environment does) — this was silently causing hooks-wiring.test.sh's second case to fail (the dispatch errored before attempting the write, so the file predictably never landed, and the test's first case — file absent after a blocked write — happened to read as a pass for the wrong reason). --permission-mode acceptEdits auto-accepts Write/Edit but still blocks Bash approval; several agents in this plugin declare tools: [Bash] only (backend-engineer, frontend-engineer — no Write tool at all, so they create files via Bash heredocs), and under acceptEdits those agents hang or error indefinitely waiting for a Bash approval that never arrives in a headless -p session. auto grants both non-interactively and was confirmed to still enforce this repo's PreToolUse/PostToolUse hooks correctly.",
-      "alternatives_rejected": ["bypassPermissions/--dangerously-skip-permissions — rejected: refused outright when running as root, which this environment does", "acceptEdits — rejected: leaves Bash-only agents unable to create files non-interactively"]
+      "alternatives_rejected": [
+        "bypassPermissions/--dangerously-skip-permissions — rejected: refused outright when running as root, which this environment does",
+        "acceptEdits — rejected: leaves Bash-only agents unable to create files non-interactively"
+      ]
     },
     {
       "id": "D020",
       "date": "2026-07-22",
       "decision": "skills/ddd-agent-handoff replaces the originally proposed 'ddd-orchestrator' concept (a 14-role sub-agent network with its own references/assets/guidelines subtree and an embedded pytest test suite). Built instead as a single flat cross-cutting skill (phase: cross-cutting, owner: factory-governance, matching glossary-management/methodology-review) containing only an Agent Boundary Matrix (pointing to the 11 real agents and their existing skills) and a short Handoff Protocol. No new agents were created.",
       "rationale": "The 14 draft roles mapped onto this repo's existing 13 agents with zero true gaps once corrected — several draft rows were mislabeled (e.g. Context Map work belongs to domain-modeler, not enterprise-architect) or collapsed onto the same agent (DevOps+Platform -> platform-engineer; Security+Compliance -> security-architect/security-engineer). Separately, ~7 of the proposed reference files (ddd_glossary, ubiquitous_language, context_mapping_patterns, cqrs_event_sourcing, saga_patterns, event_storming_template, adr_template) duplicated content already owned by existing skills (aggregate-design, ubiquitous-language, context-map-patterns/bounded-context-mapping, cqrs-pattern, event-driven-patterns, event-storming-facilitation, adr-authoring) — recreating them would have created a second, competing source of truth for DDD terminology in a repo with a terminology-drift-detector hook. The draft's procedural 'Triage Algorithm' was also dropped as reasoning/decision-making that belongs in an Agent, not a Skill, per this repo's Component Architecture rule; the Agent Boundary Matrix (a selection-criteria table) was kept since CLAUDE.md explicitly allows that as Skill knowledge. Full analysis recorded on GitHub issue #48.",
-      "alternatives_rejected": ["Scaffold the meta-prompt literally (skill.md, pytest test suite, 14 fresh roles) — rejected: wrong filename/frontmatter shape for this repo's verified auto-discovery, and a test convention (embedded pytest) that contradicts CLAUDE.md's 'skills have no build step or test suite' rule", "Keep the 14 conceptual roles as a separate taxonomy layered on top of the 13 agents — rejected: an unnecessary second vocabulary for the same 13 agents, adding indirection with no benefit", "Build the full references/assets/guidelines package anyway alongside the 7 pre-existing overlapping skills — rejected: creates duplicate/competing DDD terminology"]
+      "alternatives_rejected": [
+        "Scaffold the meta-prompt literally (skill.md, pytest test suite, 14 fresh roles) — rejected: wrong filename/frontmatter shape for this repo's verified auto-discovery, and a test convention (embedded pytest) that contradicts CLAUDE.md's 'skills have no build step or test suite' rule",
+        "Keep the 14 conceptual roles as a separate taxonomy layered on top of the 13 agents — rejected: an unnecessary second vocabulary for the same 13 agents, adding indirection with no benefit",
+        "Build the full references/assets/guidelines package anyway alongside the 7 pre-existing overlapping skills — rejected: creates duplicate/competing DDD terminology"
+      ]
     },
     {
       "id": "D021",
       "date": "2026-07-22",
       "decision": "Established the skill-refactor campaign's per-skill procedure using ddd-agent-handoff as the first case: one parent GitHub issue per skill, dependency-ordered sub-issues (one per references/assets file plus a final rewrite-SKILL.md step and a housekeeping step), and a mandatory gap-check against real industry practice (here: Team Topologies' three interaction modes, and Eric Evans' Domain-Driven Design directly) before finalizing the design. When the gap-check surfaces a genuinely missing skill (subdomain-distillation, for Evans Part IV Distillation) rather than misplaced content, pull it into the same plan as its own MVP-scoped sub-issue if a dependent file needs to reference it, instead of leaving it as an unscheduled idea.",
       "rationale": "Shafi's stated goal for this campaign is skills that are 'result-oriented for a proper software organization,' not prose — a mechanical progressive-disclosure split alone doesn't guarantee that; checking against a named, credible industry standard (here, the source text DDD itself is named after) is what caught two real gaps (Core/Supporting/Generic Subdomain classification as the primary mode-selection input; the operational-pause vs. breakthrough-triggered-refactor distinction for resumed sessions) that a generic 'add more detail' pass would likely have missed. Pulling subdomain-distillation in as an MVP sub-issue (rather than deferring it) avoided handoff-protocol.md shipping with a pointer to a skill that didn't exist yet.",
-      "alternatives_rejected": ["Defer subdomain-distillation as a queued idea for its own future session — rejected once handoff-protocol.md's Mode Selection Criteria was designed to depend on it; a real dependency should not ship broken", "Skip the Evans gap-check and treat the Team-Topologies-anchored design as sufficient — rejected: Shafi explicitly asked to check against the source text before treating the plan as done, and it surfaced two real gaps, not just polish"]
+      "alternatives_rejected": [
+        "Defer subdomain-distillation as a queued idea for its own future session — rejected once handoff-protocol.md's Mode Selection Criteria was designed to depend on it; a real dependency should not ship broken",
+        "Skip the Evans gap-check and treat the Team-Topologies-anchored design as sufficient — rejected: Shafi explicitly asked to check against the source text before treating the plan as done, and it surfaced two real gaps, not just polish"
+      ]
     },
     {
       "id": "D022",
       "date": "2026-07-22",
       "decision": "Standardize on Miro for visual/board-style artifacts across skills and agents, but as structured board specs only for now (a new miro-board-notation skill defining Miro's real element vocabulary — sticky note, shape, frame, connector, text — and a two-table spec format), not a live API/MCP integration. The same MVP-dependency-pull pattern from D021 applied again: miro-board-notation was pulled into the subdomain-distillation refactor plan as its own sub-issue (#69) because 3 dependent files (a Wardley Map, a Domain Vision Board, and the classification canvas) needed it to exist.",
       "rationale": "Checked via claude mcp list before writing any Miro-related content: no Miro MCP/API connection exists in this environment, and this repo's mcp/ directory is an explicitly deferred placeholder per CLAUDE.md. Writing diagrams as Miro-vocabulary board specs now costs nothing extra (they're still buildable by hand or readable as structured tables) and means zero rework once a real Miro connection exists later — the alternative (plain prose diagrams now, retrofit to Miro's vocabulary later) would require rewriting every visual artifact this campaign produces in the meantime.",
-      "alternatives_rejected": ["Wire up a live Miro MCP/API connection now — rejected per Shafi's explicit choice; no account/token readiness signal was given, and premature integration risks building against the wrong API shape before more skills actually need to render boards", "Keep diagrams as plain prose/tables with no Miro-specific vocabulary — rejected: defeats the stated goal of standardizing on Miro, and would require retrofitting every visual artifact produced during this campaign later"]
+      "alternatives_rejected": [
+        "Wire up a live Miro MCP/API connection now — rejected per Shafi's explicit choice; no account/token readiness signal was given, and premature integration risks building against the wrong API shape before more skills actually need to render boards",
+        "Keep diagrams as plain prose/tables with no Miro-specific vocabulary — rejected: defeats the stated goal of standardizing on Miro, and would require retrofitting every visual artifact produced during this campaign later"
+      ]
     },
     {
       "id": "D023",
       "date": "2026-07-22",
       "decision": "Adopt micro-frontend architecture for this plugin's frontend (shell + independently-deployable remotes, one per Bounded-Context-aligned fragment, composed via Module Federation over Vite) as a deliberate decision, not an inferred default. Triggered by a question about where CSS/styling strategy should live; escalated into a full architecture pivot once Shafi confirmed the organizational precondition every source book gates adoption on (multiple teams needing independent release cadence) — Shafi stated this repo anticipates multiple future products and teams contributing.",
       "rationale": "The research this campaign already produced (research/micro-frontends/, 4 books) concluded a solo-operator, single-product context does NOT meet the bar for micro-frontends per every book's own decision framework -- Claude flagged this tension explicitly before proceeding rather than silently building content contradicting the repo's own prior research. Shafi's clarification (multiple future products/teams) resolved it: team count, not codebase size, is the actual trigger per Mezzalira, and that precondition is now real for this repo's stated future, even though only one frontend-engineer agent builds every fragment today.",
-      "alternatives_rejected": ["Proceed without flagging the tension against the existing research -- rejected: would have built skill content contradicting conclusions already on record in the same repo, undermining the research's credibility", "Defer the architecture decision until multiple teams actually exist -- rejected per Shafi's explicit instruction to adopt it from the beginning, anticipating the future need rather than retrofitting later"]
+      "alternatives_rejected": [
+        "Proceed without flagging the tension against the existing research -- rejected: would have built skill content contradicting conclusions already on record in the same repo, undermining the research's credibility",
+        "Defer the architecture decision until multiple teams actually exist -- rejected per Shafi's explicit instruction to adopt it from the beginning, anticipating the future need rather than retrofitting later"
+      ]
     },
     {
       "id": "D024",
       "date": "2026-07-22",
       "decision": "End the plan-start/plan-exit GitHub Project ceremony (parent issue + numbered sub-issues via save_draft/plan_exit) for future individual skill refactors. Skill refactors continue directly -- read the current skill, gap-check against research/industry sources, design a progressive-disclosure split, rewrite, commit -- without a new parent issue + sub-issue set per skill. Already-open sub-issues from in-flight plans (this chunk's #90-#98) were still completed via the existing exec-start/exec-complete flow rather than abandoned mid-flight, since abandoning already-created GitHub tracking would leave orphaned issues.",
       "rationale": "Shafi's explicit instruction, given after two full campaign cycles (ddd-agent-handoff issue #54, subdomain-distillation issue #68) and mid-way through a third (this chunk, issue #89): the plan/execute ceremony's value was establishing a repeatable, well-understood procedure (per D021's per-skill process) -- once demonstrated and understood, repeating the ceremony for every additional skill adds overhead without adding safety, given the process itself (gap-check against real sources, progressive disclosure, verification) is what's load-bearing, not the GitHub issue tracking around it.",
-      "alternatives_rejected": ["Keep using plan-start/plan-exit for every future skill -- rejected per Shafi's explicit instruction once momentum and shared understanding were established", "Also abandon the already-open #90-#98 sub-issues' tracking retroactively -- rejected: they were already created and tracked; finishing them via the existing lightweight exec-start/exec-complete flow avoided orphaning GitHub state for no benefit"]
+      "alternatives_rejected": [
+        "Keep using plan-start/plan-exit for every future skill -- rejected per Shafi's explicit instruction once momentum and shared understanding were established",
+        "Also abandon the already-open #90-#98 sub-issues' tracking retroactively -- rejected: they were already created and tracked; finishing them via the existing lightweight exec-start/exec-complete flow avoided orphaning GitHub state for no benefit"
+      ]
     },
     {
       "id": "D025",
       "date": "2026-07-23",
       "decision": "Re-introduced GitHub issue/sub-issue tracking (reversing D024's default, for this case) using a new pattern: an issue-level integration branch with its own draft PR, sub-issue branches cut from and PRs targeting that integration branch (not main) via exec_start.py's new --base flag, merged into the integration branch by Claude in sequence as each sub-issue completes, with only the single integration-branch-to-main PR left for Shafi to review and merge. Used for the acceptance-sign-off refactor (issue #110, sub-issues #112-#115, integration PR #111).",
       "rationale": "Shafi explicitly requested 'detailed issues and sub-issues and relevant PRs' for this refactor and asked that it be 'done automatically,' with only one final PR requiring his review -- a different, heavier-weight shape than D024's default direct-commit process, requested for this specific case rather than a reversal of D024 generally. The issue-level-branch pattern satisfies both asks at once: full GitHub tracking/traceability per sub-issue, but a single review/merge point for Shafi rather than one per sub-issue.",
-      "alternatives_rejected": ["Merge every sub-issue PR directly into main as in the original D021-era process -- rejected: contradicts 'I will review and merge the final PR,' which implies exactly one PR for Shafi to handle, not one per sub-issue", "Skip GitHub issues entirely per D024's default -- rejected: contradicts this specific request for 'detailed issues and sub-issues,' which D024 did not forbid for cases where Shafi explicitly asks for it again"]
+      "alternatives_rejected": [
+        "Merge every sub-issue PR directly into main as in the original D021-era process -- rejected: contradicts 'I will review and merge the final PR,' which implies exactly one PR for Shafi to handle, not one per sub-issue",
+        "Skip GitHub issues entirely per D024's default -- rejected: contradicts this specific request for 'detailed issues and sub-issues,' which D024 did not forbid for cases where Shafi explicitly asks for it again"
+      ]
     },
     {
       "id": "D026",
       "date": "2026-07-23",
       "decision": "For issue-level-integration-branch plans (D025 pattern), do not call plan_status.py done when sub-issue work finishes merging into the integration branch -- only after Shafi has actually merged the final integration-branch-to-main PR. The parent GitHub issue itself still auto-closes correctly via its 'Closes #N' body text at that real merge; this decision only concerns the Project board's Status field, which plan_status.py done updates.",
       "rationale": "Direct correction from Shafi for issue #120: 'the parent issue should not be closed until the main PR is merged by me.' Investigation showed issue #110's actual GitHub close had in fact fired at the correct time (Shafi's real merge of PR #111) -- the real mistake was calling plan_status.py done immediately once sub-issues landed on the integration branch, before that merge, which prematurely marked the Project board Status as Done while the final PR was still awaiting Shafi's review.",
-      "alternatives_rejected": ["Leave the timing as-is on the theory that the GitHub issue-close mechanism is what actually matters -- rejected: Shafi's feedback was about the signal the Project board Status field sends, not just the issue-close event, and a premature Done status is still a misleading signal even if the issue itself closes correctly later"]
+      "alternatives_rejected": [
+        "Leave the timing as-is on the theory that the GitHub issue-close mechanism is what actually matters -- rejected: Shafi's feedback was about the signal the Project board Status field sends, not just the issue-close event, and a premature Done status is still a misleading signal even if the issue itself closes correctly later"
+      ]
     },
     {
       "id": "D027",
       "date": "2026-07-23",
       "decision": "Introduce Architecture Principle as a new, distinct output artifact type (a per-product PRINCIPLES.md catalog, owned by enterprise-architect via adr-authoring) alongside the existing ADR artifact type -- durable, cross-cutting guidance that many future ADRs cite, as opposed to a single point-in-time decision. Scoped narrowly: taught inside adr-authoring's own references/architecture-principles.md (format template, generalization test, storage convention, one illustrative worked example), not spun off into a separate skill file.",
       "rationale": "Fundamentals of Software Architecture Ch. 18 (research/software-architecture/fundamentals-of-software-architecture-richards-ford.md) was the only research source that named adr-authoring as a primary refactor target, and its one genuine gap was exactly this missing distinction -- several ADR-worthy items already in this repo (e.g., integration-design's 'asynchronous is the default' prose rule) are really principles, not decisions, and adr-authoring had no separate authoring path for them, risking durable guidance getting buried and silently lost inside a single ADR's Rationale if that ADR is ever superseded. Kept inside adr-authoring rather than a new skill because the artifact is small (one companion format + template) and no other skill or agent currently needs to reference Principle-authoring mechanics independently of ADR-authoring -- the MVP-dependency-pull threshold from D021 (pull in a new skill only when a real dependent need exists) was not met.",
-      "alternatives_rejected": ["Spin off a separate architecture-principle-authoring skill -- rejected: no dependent skill/agent needs Principle mechanics independently of adr-authoring today; would add a discovery/maintenance surface for a companion concept this small", "Retroactively formalize this repo's own existing conventions (CLAUDE.md's tables, integration-design's prose rule) as named Principle records now -- rejected as out of scope for a single-skill content refactor; recorded as open question Q003 for Shafi to decide separately", "Leave the decision-vs-principle distinction as prose-only guidance inside adr-authoring's Rationale section with no dedicated artifact type -- rejected: the book's own gap analysis is specifically that this needs a distinct, citable artifact, not just advice to write better ADRs"]
+      "alternatives_rejected": [
+        "Spin off a separate architecture-principle-authoring skill -- rejected: no dependent skill/agent needs Principle mechanics independently of adr-authoring today; would add a discovery/maintenance surface for a companion concept this small",
+        "Retroactively formalize this repo's own existing conventions (CLAUDE.md's tables, integration-design's prose rule) as named Principle records now -- rejected as out of scope for a single-skill content refactor; recorded as open question Q003 for Shafi to decide separately",
+        "Leave the decision-vs-principle distinction as prose-only guidance inside adr-authoring's Rationale section with no dedicated artifact type -- rejected: the book's own gap analysis is specifically that this needs a distinct, citable artifact, not just advice to write better ADRs"
+      ]
     },
     {
       "id": "D028",
       "date": "2026-07-23",
       "decision": "Adopt a formalized scripts/ and assets/ subdirectory convention for individual skills (skills/<name>/scripts/*.sh, skills/<name>/assets/*), alongside the existing references/ progressive-disclosure tier -- codified in a new cross-cutting skill, skill-authoring-standards, and a short new CLAUDE.md section. A skill-owned script is invoked by the agent applying that skill (via the Bash tool, at a path the skill's own body names), distinct from the pre-existing repo-root scripts/ convention (hook- or command-invoked) -- same Scripts = Actions rule, different invocation context. adr-authoring (rebuilt v3.0.0) is the first real skill to use this shape: assets/adr-template.md (copyable) plus scripts/scaffold-adr.sh and scripts/validate-adr.sh (deterministic generation/validation), each with its own tests/scripts/*.test.sh.",
       "rationale": "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md established the three-tier progressive disclosure rubric (metadata/body/references) already correctly practiced by several skills, but found no repo precedent for scripts/assets since this repo had never used them -- Shafi explicitly asked for skills to move beyond prose-only templates into scripts that actually generate and validate artifacts (documents, code, test suites, reviews), matching the real Claude Agent Skills format's scripts/+assets/ convention rather than this repo's own invented shape. Scoped to skill-authoring-standards (not a new component type in CLAUDE.md's closed Component Architecture table) because scripts/assets are sub-parts of the existing Skill component, not a new top-level component -- the existing Scripts = Actions rule already governs the behavior, only the location and caller differ.",
-      "alternatives_rejected": ["Leave scripts/assets undocumented and let each skill invent its own ad hoc convention as the need arises -- rejected: exactly the 'imitate whichever skill was refactored most recently' problem skill-authoring-standards exists to end, and the whole point of doing this now is to establish one citable convention before more skills adopt it inconsistently", "Treat skill-owned scripts as a new top-level component type distinct from the existing repo-root Scripts -- rejected: the underlying rule (atomic, deterministic, stateless, single-purpose) is identical; only the invocation context differs, which does not warrant a new row in CLAUDE.md's Component Architecture table", "Retrofit scripts/assets onto the other ~140 existing skills as part of this same chunk -- rejected: applying the new standard happens going forward, per refactor session, not as a retrofit-everything chunk, matching this repo's established forward-apply pattern for other skill-shape changes"]
+      "alternatives_rejected": [
+        "Leave scripts/assets undocumented and let each skill invent its own ad hoc convention as the need arises -- rejected: exactly the 'imitate whichever skill was refactored most recently' problem skill-authoring-standards exists to end, and the whole point of doing this now is to establish one citable convention before more skills adopt it inconsistently",
+        "Treat skill-owned scripts as a new top-level component type distinct from the existing repo-root Scripts -- rejected: the underlying rule (atomic, deterministic, stateless, single-purpose) is identical; only the invocation context differs, which does not warrant a new row in CLAUDE.md's Component Architecture table",
+        "Retrofit scripts/assets onto the other ~140 existing skills as part of this same chunk -- rejected: applying the new standard happens going forward, per refactor session, not as a retrofit-everything chunk, matching this repo's established forward-apply pattern for other skill-shape changes"
+      ]
     },
     {
       "id": "D029",
       "date": "2026-07-24",
       "decision": "Establish research/domain-driven-design/ as a new research cluster (Evans' Domain-Driven Design, Vernon's Implementing Domain-Driven Design / Effective Aggregate Design, Khononov's Learning Domain-Driven Design), researched as a prerequisite phase before extensively rebuilding skills/aggregate-design/SKILL.md, rather than writing the rebuild from general LLM knowledge of these widely-known books. Corrected aggregate-design's prior header framing ('these rules are non-negotiable') to match Vernon's own explicitly-not-absolutist stance, with a documented, criteria-gated exception process replacing false absolutism.",
       "rationale": "Shafi asked for an extensive rebuild of aggregate-design including 'every possible information, practice, decision, nuance' from the DDD Aggregate literature, split across multiple references/ files with explicit decision-tree structure. Checking research/ first (per this repo's own established discipline) found no dedicated research existed for the actual foundational DDD Aggregate texts, despite aggregate-design's existing five rules clearly summarizing them -- writing exhaustive content without first researching the primary sources would be exactly the 'memory-sourced content' anti-pattern requirements-analysis already names as a defect. Vernon's research (research/domain-driven-design/implementing-ddd-vernon.md) surfaced the non-negotiable-vs-Vernon's-real-position gap as the single most consequential finding of the whole rebuild -- a repo-authored skill had drifted to a stricter position than its own primary source actually holds.",
-      "alternatives_rejected": ["Write the rebuild directly from general knowledge of Evans/Vernon/Khononov without a dedicated research pass, given how widely known these books are -- rejected: this is precisely the 'memory-sourced' risk this repo's own requirements-analysis skill names as a defect, and the non-negotiable-vs-Vernon's-real-position finding would likely have been missed without the dedicated, grounded research pass that specifically re-examined the existing skill's claims against the source", "Keep the DDD research folded into the existing software-architecture cluster rather than a new dedicated cluster -- rejected: DDD tactical/strategic design is a distinct discipline from general software architecture, and a dedicated cluster keeps the three foundational DDD texts discoverable together for whichever skill needs them next (bounded-context-mapping, subdomain-distillation, domain-event-catalog all cite DDD literature and could benefit from the same cluster later)", "Merge Khononov's Business Logic Design Pattern gate and Event Sourcing content into the originally-planned reference file structure rather than absorbing them into existing files (d7's go-implementation-patterns.md, d8's decision-trees-and-worksheets.md) -- rejected as unnecessary: both additions fit naturally into already-planned files without requiring new sub-issues or GitHub issue renumbering after issues were already created"]
+      "alternatives_rejected": [
+        "Write the rebuild directly from general knowledge of Evans/Vernon/Khononov without a dedicated research pass, given how widely known these books are -- rejected: this is precisely the 'memory-sourced' risk this repo's own requirements-analysis skill names as a defect, and the non-negotiable-vs-Vernon's-real-position finding would likely have been missed without the dedicated, grounded research pass that specifically re-examined the existing skill's claims against the source",
+        "Keep the DDD research folded into the existing software-architecture cluster rather than a new dedicated cluster -- rejected: DDD tactical/strategic design is a distinct discipline from general software architecture, and a dedicated cluster keeps the three foundational DDD texts discoverable together for whichever skill needs them next (bounded-context-mapping, subdomain-distillation, domain-event-catalog all cite DDD literature and could benefit from the same cluster later)",
+        "Merge Khononov's Business Logic Design Pattern gate and Event Sourcing content into the originally-planned reference file structure rather than absorbing them into existing files (d7's go-implementation-patterns.md, d8's decision-trees-and-worksheets.md) -- rejected as unnecessary: both additions fit naturally into already-planned files without requiring new sub-issues or GitHub issue renumbering after issues were already created"
+      ]
     },
     {
       "id": "D030",
       "date": "2026-07-24",
       "decision": "Reorganize alerting-rules-design's top-level framing around Google's Four Golden Signals (Latency, Traffic, Errors, Saturation) and add a generic, resource-agnostic Saturation alert pattern, rather than leaving Saturation implicit or pipeline-specific-only. Correct the burn-rate table's citation to name two distinct sources precisely: the 2016 SRE book for the error-budget/burn-rate concept, the 2018 SRE Workbook for the specific 14.4x/6x/1x multiplier table -- never crediting one book with the other's content.",
       "rationale": "research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md found the skill's existing content was correct but under-attributed: the burn-rate table's exact numbers are a 2018 SRE Workbook artifact this 2016 book only conceptually enables, and Latency/Traffic/Errors were implicitly present via SLO burn while Saturation had no generic treatment at all -- only pipeline-specific DLQ/lag indicators existed, which are freshness-specific, not a reusable pattern. Fixing attribution and adding the missing fourth signal turns received constants into auditable, correctly-sourced content without changing anything that was already correct.",
-      "alternatives_rejected": ["Leave the burn-rate table citation as-is (uncited) since the numbers themselves are correct and citation is a documentation-quality concern, not a correctness bug -- rejected: CLAUDE.md's artifact standards require traceability, and an uncited received constant cannot be recomputed if the SLO window ever changes, which is a real, not merely cosmetic, gap", "Build a full generic saturation-alerting skill or expand prometheus-metrics-design instead of adding the pattern inside alerting-rules-design -- rejected: prometheus-metrics-design already computes the saturation ratio as a dashboard query; the gap is specifically that no alert reads it, which is alerting-rules-design's domain, not a new metrics-design concern", "Build a standalone postmortem-authoring skill now, since two independent research sources (this book and the DevOps Handbook) both flagged it as a real gap -- rejected as out of scope for this issue; noted as a follow-up candidate in the parent issue's body rather than built here, keeping this rebuild's scope to alerting-rules-design's own domain"]
+      "alternatives_rejected": [
+        "Leave the burn-rate table citation as-is (uncited) since the numbers themselves are correct and citation is a documentation-quality concern, not a correctness bug -- rejected: CLAUDE.md's artifact standards require traceability, and an uncited received constant cannot be recomputed if the SLO window ever changes, which is a real, not merely cosmetic, gap",
+        "Build a full generic saturation-alerting skill or expand prometheus-metrics-design instead of adding the pattern inside alerting-rules-design -- rejected: prometheus-metrics-design already computes the saturation ratio as a dashboard query; the gap is specifically that no alert reads it, which is alerting-rules-design's domain, not a new metrics-design concern",
+        "Build a standalone postmortem-authoring skill now, since two independent research sources (this book and the DevOps Handbook) both flagged it as a real gap -- rejected as out of scope for this issue; noted as a follow-up candidate in the parent issue's body rather than built here, keeping this rebuild's scope to alerting-rules-design's own domain"
+      ]
     },
     {
       "id": "D031",
       "date": "2026-07-24",
       "decision": "Cite analytics-requirements' vanity-metric checklist as Croll & Yoskovitz's actionable-vs-vanity-metric framework (Lean Analytics, 2013) and add a clarifying distinction between the book's One Metric That Matters (OMTM -- stage-relative, deliberately rotating as the business's single biggest risk changes) and this repo's North Star Metric (okr-authoring -- fixed for the duration of an OKR cycle). Do not add OMTM as a new canonical glossary term at this time.",
       "rationale": "research/data-and-analytics/lean-analytics-croll-yoskovitz.md found the skill's existing five-point checklist independently reinvents most of the book's own framework without citing it, and separately found that OMTM and North Star Metric are superficially similar but genuinely distinct on one load-bearing dimension (durability vs. disposability) -- a reader who assumed they were the same term under different names would be wrong in a way that matters for how a requirement's priority argument should be read. The research file itself explicitly cautioned that adding OMTM to the canonical glossary is premature on the strength of one skill's cross-reference alone, since this repo has not adopted stage-based rotating focus as a standing practice -- that caution was followed rather than overridden.",
-      "alternatives_rejected": ["Add OMTM to the canonical glossary now, on the theory that any term explained in a skill body should also be glossaried -- rejected per the research file's own explicit caution: a term mentioned once for clarification purposes is not the same as a term this repo's artifacts actually use as a working concept, and premature glossary entries dilute the glossary's signal", "Treat OMTM and North Star Metric as interchangeable and merge the concepts rather than distinguishing them -- rejected: the two differ on a dimension (fixed-per-cycle vs. deliberately rotating) that changes how a requirement's priority argument should be read, so merging them would silently discard real information the research surfaced", "Propose a Lean Analytics stage-framework (Empathy/Stickiness/Virality/Revenue/Scale) skill or practice, since the book's OMTM concept is normally paired with it -- rejected as a poor fit for this repo's single, non-viral B2B product, per the research file's own Candidate New Skills/Agents section"]
+      "alternatives_rejected": [
+        "Add OMTM to the canonical glossary now, on the theory that any term explained in a skill body should also be glossaried -- rejected per the research file's own explicit caution: a term mentioned once for clarification purposes is not the same as a term this repo's artifacts actually use as a working concept, and premature glossary entries dilute the glossary's signal",
+        "Treat OMTM and North Star Metric as interchangeable and merge the concepts rather than distinguishing them -- rejected: the two differ on a dimension (fixed-per-cycle vs. deliberately rotating) that changes how a requirement's priority argument should be read, so merging them would silently discard real information the research surfaced",
+        "Propose a Lean Analytics stage-framework (Empathy/Stickiness/Virality/Revenue/Scale) skill or practice, since the book's OMTM concept is normally paired with it -- rejected as a poor fit for this repo's single, non-viral B2B product, per the research file's own Candidate New Skills/Agents section"
+      ]
     },
     {
       "id": "D032",
       "date": "2026-07-24",
       "decision": "Extend api-contract-design with four patterns from JJ Geewax's API Design Patterns: a named custom-method escape hatch (POST /{resource}:verb) alongside the existing 'Verb endpoints' anti-pattern; a fully-specified Operation resource shape for the 202 Accepted status-check response, reusing the skill's existing ErrorResponse.error object by reference rather than redefining a new error type; a resource-revisions (etag/If-Match) optimistic-concurrency mechanism distinct from the existing 409 Conflict business-rule row; and a field-mask convention clarifying PATCH partial-update semantics. Explicitly declined to change the skill's existing per-field-query-parameter filtering convention to match the book's filter-expression-string approach.",
       "rationale": "research/software-architecture/api-design-patterns-geewax.md found api-contract-design had zero primary-source grounding despite being the authoritative contract between backend-engineer and frontend-engineer, and identified four specific, narrow gaps where the skill's existing conventions left a real question unanswered (most consequentially, what a 202 Accepted status URL actually returns when polled) rather than broad disagreement with anything already built. Declined the filtering-convention change because implementing a filter-expression grammar is real engineering cost CLAUDE.md's Budget and Frugality principle would weigh against without a concrete need for compound/boolean filter logic -- the research file itself frames the skill's existing named-parameter approach as a deliberate, defensible choice, not an oversight to fix.",
-      "alternatives_rejected": ["Migrate the skill's filtering convention to Geewax's single filter-expression-string parameter to match the book more closely -- rejected: this is real, unjustified implementation cost against a frugal, single-operator context with no concrete need for compound filter logic yet; the research file itself argues against this change", "Treat this as a modest, single-file content addition like the analytics-requirements precedent rather than a genuine multi-file rebuild -- rejected: the skill was already 323 lines before any additions, past the split threshold on its own, and the four new patterns (each with worked YAML examples) add substantial, cohesive new content that reads far better as a dedicated references/ file than crammed into an already-long single file", "Adopt Geewax's full Google-AIP-style API design system (gRPC/Protocol-Buffers-oriented conventions, the complete google.rpc.Status error model) wholesale -- rejected: most of that ground is irrelevant to this repo's REST/OpenAPI-only stack; only the REST-applicable subset (custom methods, LRO shape, revisions, field masks) closes an actual gap"]
+      "alternatives_rejected": [
+        "Migrate the skill's filtering convention to Geewax's single filter-expression-string parameter to match the book more closely -- rejected: this is real, unjustified implementation cost against a frugal, single-operator context with no concrete need for compound filter logic yet; the research file itself argues against this change",
+        "Treat this as a modest, single-file content addition like the analytics-requirements precedent rather than a genuine multi-file rebuild -- rejected: the skill was already 323 lines before any additions, past the split threshold on its own, and the four new patterns (each with worked YAML examples) add substantial, cohesive new content that reads far better as a dedicated references/ file than crammed into an already-long single file",
+        "Adopt Geewax's full Google-AIP-style API design system (gRPC/Protocol-Buffers-oriented conventions, the complete google.rpc.Status error model) wholesale -- rejected: most of that ground is irrelevant to this repo's REST/OpenAPI-only stack; only the REST-applicable subset (custom methods, LRO shape, revisions, field masks) closes an actual gap"
+      ]
     },
     {
       "id": "D033",
       "date": "2026-07-24",
       "decision": "Adopt six canonical labels (discovery, agent, skill, bug, documentation, enhancement -- multiple allowed per item) as mandatory on every issue, sub-issue, and PR in the SKILL GEN Project. Retroactively labeled all 249 existing issues/PRs by title-pattern classification, spot-checked and verified 249/249 correct. Enforced going forward by requiring --labels on plan_start.py and save_draft.py add (validated before any GitHub mutation runs), with exec_start.py mirroring a sub-issue's labels onto its PR rather than asking for a separate choice. Commits are explicitly out of scope -- GitHub has no commit-label mechanism, and Shafi confirmed conventional-commit prefixes are not wanted either.",
       "rationale": "Shafi asked for consistent, retroactive-and-future labeling across the project's issues/sub-issues/PRs/commits. Applying the fix uncovered a second GraphQL 'Projects (classic)' deprecation bug beyond the one skill-refactor.md already warns about for gh issue edit body edits: gh pr edit --add-label fails outright on this repo (exit 1, label never applied) via the same deprecated-field GraphQL path, while gh issue edit --add-label works. Standardized both the retroactive script and the new project.py/gh.py tooling on the REST labels endpoint (gh api repos/<owner>/<repo>/issues/<n>/labels, which treats PRs as issues) instead, since it is confirmed reliable for both and removes the split-path inconsistency entirely.",
-      "alternatives_rejected": ["Use gh pr edit --add-label for PR labeling as originally implemented -- rejected after empirical failure: it returns exit 1 and never applies the label on this repo, the same category of GraphQL Projects-classic bug skill-refactor.md already documents for gh issue edit body edits", "Let exec_start.py pass --label flags directly on gh pr create -- rejected as an unverified assumption riding on the same buggy code path; replaced with applying labels via the proven-reliable REST endpoint immediately after PR creation, using the sub-issue's already-set labels as the single source of truth", "Treat commits as in-scope via conventional-commit-style prefixes (feat:/fix:/etc.) -- rejected per Shafi's explicit answer: commits are skipped entirely rather than inventing a parallel, unrequested convention"]
+      "alternatives_rejected": [
+        "Use gh pr edit --add-label for PR labeling as originally implemented -- rejected after empirical failure: it returns exit 1 and never applies the label on this repo, the same category of GraphQL Projects-classic bug skill-refactor.md already documents for gh issue edit body edits",
+        "Let exec_start.py pass --label flags directly on gh pr create -- rejected as an unverified assumption riding on the same buggy code path; replaced with applying labels via the proven-reliable REST endpoint immediately after PR creation, using the sub-issue's already-set labels as the single source of truth",
+        "Treat commits as in-scope via conventional-commit-style prefixes (feat:/fix:/etc.) -- rejected per Shafi's explicit answer: commits are skipped entirely rather than inventing a parallel, unrequested convention"
+      ]
     },
     {
       "id": "D034",
       "date": "2026-07-24",
       "decision": "Rebuild artifact-manifest (Chunk 41, issue #251) as an evidence-based restructuring of its own existing content -- thin SKILL.md + references/artifact-type-catalog.md + references/manifest-worked-example.md + assets/manifest-instance-template.json -- rather than a content addition grounded in new book research, since Wave 1 discovery (sub-issue #252) confirmed no book in the 50-book research/ corpus is squarely about software/documentation artifact registries or traceability matrices. Declined a skill-owned scaffold/validate script for this skill: schemas/sdlc-manifest.schema.json and tests/schemas/sdlc-manifest.test.py already formalize and test the per-product instance shape, so a script would duplicate existing coverage rather than fill a gap.",
       "rationale": "Every prior skill-refactor effort's Wave 1 discovery either found a genuinely new book to research or confirmed an existing book's coverage already applied to the target skill. This is the first case where discovery confirmed neither -- the skill's actual subject matter (a plugin-internal artifact registry) sits outside every researched cluster's scope, including the data-governance-and-mdm cluster's closest tangential content (DAMA-DMBOK Ch. 12 Metadata Management, Loshin's MDM ID/lifecycle concepts), which are both scoped to governing data assets, not SDLC/documentation artifacts. Proceeding without forcing a false-positive research grounding, and instead restructuring the skill's own already-sound content into the shape sibling governance skills (ddd-agent-handoff, glossary-management, methodology-review) already settled on, keeps the skill-authoring-standards rebuild honest about what discovery actually found, per the standing 'calibrated honesty' norm (see the research-books-inventory memory's note on the 16-book batch's low-candidate-count books).",
-      "alternatives_rejected": ["Force-fit DAMA-DMBOK's Metadata Management chapter as grounding content for artifact-manifest, since it is the closest thematic match in the corpus -- rejected: that chapter's own Applies To table already scopes its findings to data-asset-governance skills (data-classification, canonical-data-model, etc.), not to this skill, and citing it here would misattribute content the skill's rebuild did not actually derive from it", "Skip the rebuild entirely since no new research grounds it -- rejected: the skill was still a flat 195-line file past the point where sibling governance skills already adopted progressive disclosure, and the skill-authoring-standards shape rubric applies independent of whether a specific rebuild happens to be research-driven", "Add a skill-owned scaffold/validate script pair to match every prior rebuilt skill's pattern -- rejected as scope creep: this skill's output is validated by an existing JSON Schema (schemas/sdlc-manifest.schema.json) and existing test (tests/schemas/sdlc-manifest.test.py) already, so a redundant script would duplicate coverage rather than close a real gap"]
+      "alternatives_rejected": [
+        "Force-fit DAMA-DMBOK's Metadata Management chapter as grounding content for artifact-manifest, since it is the closest thematic match in the corpus -- rejected: that chapter's own Applies To table already scopes its findings to data-asset-governance skills (data-classification, canonical-data-model, etc.), not to this skill, and citing it here would misattribute content the skill's rebuild did not actually derive from it",
+        "Skip the rebuild entirely since no new research grounds it -- rejected: the skill was still a flat 195-line file past the point where sibling governance skills already adopted progressive disclosure, and the skill-authoring-standards shape rubric applies independent of whether a specific rebuild happens to be research-driven",
+        "Add a skill-owned scaffold/validate script pair to match every prior rebuilt skill's pattern -- rejected as scope creep: this skill's output is validated by an existing JSON Schema (schemas/sdlc-manifest.schema.json) and existing test (tests/schemas/sdlc-manifest.test.py) already, so a redundant script would duplicate coverage rather than close a real gap"
+      ]
     },
     {
       "id": "D035",
       "date": "2026-07-24",
       "decision": "Rebuild bdd-feature-file (Chunk 42, issue #266) as a modest content addition -- one new references/ file, one scaffold/validate script pair, one asset template -- grounded in new research/testing/specification-by-example-adzic.md (Gojko Adzic) plus consolidation of four already-existing tangential research files. Added the Three Amigos naming (Crispin & Gregory's finding, sharpened by Adzic's checkable Specification Workshop definition-of-ready), the missing half of Living Documentation's actual definition (Adzic's most consequential finding for this skill), the Key Examples minimality principle, and one Anti-Patterns row for untended specification growth. Added 5 new canonical glossary terms (Feature File, Given/When/Then, Living Documentation, Scenario, Specification Workshop) closing a completeness gap: three of the five were already named in CLAUDE.md's own canonical Testing ubiquitous-language table but had no standalone glossary headword.",
       "rationale": "Wave 1 discovery's #268 sub-issue confirmed the skill already fully implements Ken Pugh's ATDD declarative-vs-imperative point (a provenance note, not new content) and that Cohn/Lee/Jorgensen's research has no direct finding for this skill. The #267 sub-issue's new Adzic research found the skill's existing Living Documentation section was a faithful but partial implementation of Adzic's own, more precise definition -- the section already captured 'current because tested in CI' but never named the second half (mechanically deriving a browsable documentation artifact from the executed suite), which is the actual payoff Adzic's practice is named for. This is the second skill-refactor effort (after artifact-manifest, D034) where Wave 1's two discovery sub-issues split cleanly into 'confirm existing coverage' and 'new book research' running in the same wave, rather than one sub-issue serving both jobs -- appropriate here because a genuine, well-justified new-book target existed (an already-used-but-uncredited glossary term) alongside real existing tangential coverage worth consolidating first.",
-      "alternatives_rejected": ["Treat the Three Amigos naming gap alone as sufficient grounds for the rebuild, skipping new Adzic research -- rejected: 'Specification by Example' was already a load-bearing, cited glossary term with no source book ever researched, and BDD is a non-negotiable CLAUDE.md methodology with (until this chunk) zero primary-source grounding for the skill that implements it -- the same category of gap api-contract-design's rebuild (D032) closed for its own domain", "Fold the Key Examples minimality principle into the existing Golden Triangle section as a rule change rather than a complementary addition -- rejected: the two operate on different axes (breadth-of-angles vs economy-of-examples-per-angle) per the research file's own explicit finding; conflating them would misrepresent Adzic's actual, narrower claim", "Skip the scaffold/validate script pair since the content findings were modest -- rejected: unlike artifact-manifest (where an existing JSON Schema and test already covered validation), bdd-feature-file's .feature output had no existing mechanical check anywhere, and the Golden-Triangle-tag/imperative-leakage/multi-When checks are all genuinely new, checkable ground worth automating"]
+      "alternatives_rejected": [
+        "Treat the Three Amigos naming gap alone as sufficient grounds for the rebuild, skipping new Adzic research -- rejected: 'Specification by Example' was already a load-bearing, cited glossary term with no source book ever researched, and BDD is a non-negotiable CLAUDE.md methodology with (until this chunk) zero primary-source grounding for the skill that implements it -- the same category of gap api-contract-design's rebuild (D032) closed for its own domain",
+        "Fold the Key Examples minimality principle into the existing Golden Triangle section as a rule change rather than a complementary addition -- rejected: the two operate on different axes (breadth-of-angles vs economy-of-examples-per-angle) per the research file's own explicit finding; conflating them would misrepresent Adzic's actual, narrower claim",
+        "Skip the scaffold/validate script pair since the content findings were modest -- rejected: unlike artifact-manifest (where an existing JSON Schema and test already covered validation), bdd-feature-file's .feature output had no existing mechanical check anywhere, and the Golden-Triangle-tag/imperative-leakage/multi-When checks are all genuinely new, checkable ground worth automating"
+      ]
     },
     {
       "id": "D036",
       "date": "2026-07-24",
       "decision": "Rebuild beta-program-design (Chunk 43, issue #282) as a modest content addition -- one new references/ file, one scaffold/validate script pair, one asset template -- grounded in new research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md (Steve Blank's Customer Development methodology) plus consolidation of three already-existing tangential research files. Added two new Participant Selection criteria (credible reference for stage-expansion, per Moore; evidence of prior self-funded effort, per Blank's earlyvangelist condition 2), a third Graduation Criteria outcome (pivot, alongside extend/remediate), and an explicit outside-the-building check before a qualitative graduation bar is marked met. Added 5 new canonical glossary terms (Customer Development, Customer Validation, Earlyvangelist, Get Out of the Building, Pivot), including a bidirectional disambiguation between the new Customer Validation entry and the existing Product Validation entry, since Blank's research file explicitly flagged the two as a near-duplicate collision risk if added carelessly.",
       "rationale": "Wave 1 discovery's #284 sub-issue confirmed the skill already correctly delegates anti-leading-question discipline to feedback-template (a non-gap) and surfaced one real, modest gap from Moore's Crossing the Chasm (the credible-reference criterion) that the book's own Applies To table had never checked against this specific skill. The #283 sub-issue's new Blank research found the single most consequential fact this repo's skill-refactor campaign has surfaced to date: CLAUDE.md's own 'Customer Validation' phase name -- used across the entire eight-phase model, not just this one skill -- is literally Steve Blank's Customer Development terminology, never once researched despite being load-bearing repo-wide. The research confirmed this skill's four internal stages map cleanly as a subdivision within Blank's single Customer Validation stage (not a conflation of multiple Blank stages), which is a validating finding, not a defect -- but it also surfaced three genuine, additive content gaps (a second Participant Selection criterion distinct from Moore's, the pivot outcome, and the outside-the-building check) that no prior discovery pass had found because no prior pass had researched Blank's methodology at all.",
-      "alternatives_rejected": ["Treat this as purely a provenance/naming exercise (confirm the phase name traces to Blank, add glossary terms, stop there) since the stage-mapping check came back clean -- rejected: Blank's earlyvangelist and pivot concepts are genuinely separate, checkable content beyond the naming confirmation, and the research file's own Actionable Techniques section gives concrete, adoptable techniques (the self-funded-effort screening question, the segment/problem/solution/process diagnostic) that would be a real loss to leave uncaptured just because the headline finding was a confirmation rather than a correction", "Merge the new 'credible reference' and 'prior self-funded effort' Participant Selection criteria into one combined row since both come from early-customer-screening research -- rejected per the Blank research file's own explicit reasoning: the two predict different things (self-funded effort predicts whether feedback reflects real motivated pain; credible reference predicts whether the resulting endorsement transfers to open beta), so collapsing them would lose a real distinction the research surfaced", "Leave the Customer Validation and Product Validation glossary entries as originally drafted without adding a cross-reference in Product Validation's own text -- rejected: a one-directional disambiguation (only the new entry pointing at the old one) would let a reader who looks up Product Validation first miss the distinction entirely; both entries now cross-reference each other"]
+      "alternatives_rejected": [
+        "Treat this as purely a provenance/naming exercise (confirm the phase name traces to Blank, add glossary terms, stop there) since the stage-mapping check came back clean -- rejected: Blank's earlyvangelist and pivot concepts are genuinely separate, checkable content beyond the naming confirmation, and the research file's own Actionable Techniques section gives concrete, adoptable techniques (the self-funded-effort screening question, the segment/problem/solution/process diagnostic) that would be a real loss to leave uncaptured just because the headline finding was a confirmation rather than a correction",
+        "Merge the new 'credible reference' and 'prior self-funded effort' Participant Selection criteria into one combined row since both come from early-customer-screening research -- rejected per the Blank research file's own explicit reasoning: the two predict different things (self-funded effort predicts whether feedback reflects real motivated pain; credible reference predicts whether the resulting endorsement transfers to open beta), so collapsing them would lose a real distinction the research surfaced",
+        "Leave the Customer Validation and Product Validation glossary entries as originally drafted without adding a cross-reference in Product Validation's own text -- rejected: a one-directional disambiguation (only the new entry pointing at the old one) would let a reader who looks up Product Validation first miss the distinction entirely; both entries now cross-reference each other"
+      ]
     },
     {
       "id": "D037",
       "date": "2026-07-25",
       "decision": "Rebuild all 13 react-* frontend-engineering skills (Chunk 44, issue #326 -- provisional numbering, see that chunk's note_on_numbering) as a grouped campaign sibling to the go-* rebuild (D037's chunk number collides with the Go campaign's own D037 for the same reason -- both branches were cut from main before either PR merged; resolve at merge time per the established Chunk 39/40 precedent). Two new React books researched in parallel with the Go campaign's four (Learning React -- Banks & Porcello; React Design Patterns and Best Practices -- Roldan), landing in a new research/frontend-engineering/ cluster. Fixed two real, independently-verified bugs in react-graph-visualization (a useMemo-vs-useRef lifetime bug on a mutated graphology instance; a cleanup effect referencing an out-of-scope worker variable from a disconnected snippet), added eslint-plugin-react-hooks mechanical enforcement to react-project-structure and agents/frontend-engineer.md, and rewrote react-component-design's render-props section to correctly frame custom hooks as the more idiomatic default while preserving render props for its genuine use case (caller-controlled rendering). One of four groups (cross-cutting) closed with zero file changes -- all research hits were positive confirmations, not gaps.",
       "rationale": "Same grouped-campaign rationale as the sibling Go decision (D037's Go entry): batching 13 skills into 4 cluster sub-issues instead of 13 independent campaigns kept the GitHub footprint tractable while preserving full discovery-before-implementation rigor. The confirm-coverage sub-issue's finding (#329) is itself notable: unlike the Go campaign, which found a real backlog of previously-researched-but-unapplied content, this campaign found the React domain's existing skills already largely reflect both new books' guidance correctly on first read -- a genuinely different, calibrated-honest outcome from the sibling campaign, not a copy-pasted process producing an artificially similar-shaped result. The react-graph-visualization bug fix is the campaign's highest-value finding specifically because it was independently re-verified by direct file read (not trusted from the research agent's self-report alone) before being treated as real -- consistent with this whole two-wave process's standing 'verify, don't just trust the agent' discipline.",
-      "alternatives_rejected": ["Treat the cross-cutting group's lack of findings as a signal to skip that sub-issue entirely rather than running it and reporting zero changes -- rejected: running the sub-issue and documenting a genuine 'nothing applies here' finding is itself valuable, auditable evidence that the group was actually checked, not silently skipped; matches the Go campaign's own tooling-group precedent (#313) for the identical situation", "Fix react-graph-visualization's two bugs as two separate, minimal patches to the existing three scattered snippets rather than consolidating into one worked example -- rejected: the root cause of the second bug (worker out of scope) was structural, not a typo -- three snippets describing one interdependent lifecycle will keep drifting apart under future edits unless consolidated into a single source of truth for that lifecycle, which is what was done", "Wait for the Go campaign's PR to merge to main before starting the React campaign, avoiding the chunk-number collision entirely -- rejected: PR #325 was deliberately left open for Shafi's own review per this repo's standing default, with no defined timeline for when that review happens; blocking the React campaign on an indefinite wait would contradict the explicit instruction to proceed autonomously through both domains now, and the chunk-collision-at-merge-time pattern is already an established, low-cost resolution path in this repo's history"]
+      "alternatives_rejected": [
+        "Treat the cross-cutting group's lack of findings as a signal to skip that sub-issue entirely rather than running it and reporting zero changes -- rejected: running the sub-issue and documenting a genuine 'nothing applies here' finding is itself valuable, auditable evidence that the group was actually checked, not silently skipped; matches the Go campaign's own tooling-group precedent (#313) for the identical situation",
+        "Fix react-graph-visualization's two bugs as two separate, minimal patches to the existing three scattered snippets rather than consolidating into one worked example -- rejected: the root cause of the second bug (worker out of scope) was structural, not a typo -- three snippets describing one interdependent lifecycle will keep drifting apart under future edits unless consolidated into a single source of truth for that lifecycle, which is what was done",
+        "Wait for the Go campaign's PR to merge to main before starting the React campaign, avoiding the chunk-number collision entirely -- rejected: PR #325 was deliberately left open for Shafi's own review per this repo's standing default, with no defined timeline for when that review happens; blocking the React campaign on an indefinite wait would contradict the explicit instruction to proceed autonomously through both domains now, and the chunk-collision-at-merge-time pattern is already an established, low-cost resolution path in this repo's history"
+      ]
     },
     {
       "id": "D038",
@@ -1473,17 +2006,26 @@
       "date": "2026-07-25",
       "decision": "Rebuild all 24 go-* backend-engineering skills (Chunk 47, issue #298) as one grouped, autonomous campaign, per Shafi's explicit instruction to run recursively across every go-*/react-* skill without per-step confirmation. Scaled the established single-skill two-wave GitHub process to domain scale by batching related skills into 7 implementation sub-issues (one per skill cluster: core service, domain/data, event-driven, cross-cutting, tooling, testing part 1, testing part 2) instead of one campaign per skill -- same discovery-before-implementation rigor, coarser GitHub-issue granularity only. Four new Go books researched via parallel background agents (a deliberate parallelization of independent, non-cross-dependent research, matching the precedent already set by the 2026-07-23/24 pure-research book-batch chunks). Verified two prior book-batch findings (CORS, http.Server timeouts) were catalogued but never applied, and closed them along with everything the four new books found -- most consequentially, the nil-concrete-value-in-a-non-nil-error-interface footgun in go-error-handling, verified against a live-installed Go 1.23.4 toolchain rather than reasoned about abstractly. (Renumbered from D037 to D039 at merge time -- both go-* and react-* campaigns used D037 on their respective branches before either merged to main; react-* merged first and kept D037.)",
       "rationale": "The literal instruction ('spawn agents to re-read the books for go and react, then refactor each of the skills') was interpreted as a single shared grounding pass per language followed by applying it across every skill in that language's roster. Running the full single-skill-scale GitHub ceremony independently per skill was rejected: ~170 GitHub artifacts for one domain would be disproportionate overhead relative to the actual per-skill work involved. Grouping by related skill cluster preserves full discovery-before-implementation rigor and per-skill verification while keeping the campaign's GitHub footprint tractable -- a scale adaptation to the mechanics of an already-proven process, not a departure from its discipline.",
-      "alternatives_rejected": ["Run 24 fully independent single-skill campaigns -- rejected: infeasible at the time budget implied and would produce ~170 sub-issues/PRs for the Go domain alone", "Skip GitHub tracking entirely reverting to D024's no-ceremony default -- rejected: Shafi invoked /skill-refactor specifically, and the two-wave GitHub-tracked process is this repo's active convention for every skill rebuild", "Run the Go and React domain campaigns concurrently on separate branches -- rejected after empirically hitting the constraint: the local ghp tooling only supports one active plan at a time via local state.json", "Manufacture equally-deep content for every group regardless of what research actually found -- rejected: two groups had no direct research finding and were reported honestly as shape-only work"]
+      "alternatives_rejected": [
+        "Run 24 fully independent single-skill campaigns -- rejected: infeasible at the time budget implied and would produce ~170 sub-issues/PRs for the Go domain alone",
+        "Skip GitHub tracking entirely reverting to D024's no-ceremony default -- rejected: Shafi invoked /skill-refactor specifically, and the two-wave GitHub-tracked process is this repo's active convention for every skill rebuild",
+        "Run the Go and React domain campaigns concurrently on separate branches -- rejected after empirically hitting the constraint: the local ghp tooling only supports one active plan at a time via local state.json",
+        "Manufacture equally-deep content for every group regardless of what research actually found -- rejected: two groups had no direct research finding and were reported honestly as shape-only work"
+      ]
     },
     {
       "id": "D040",
       "date": "2026-07-26",
       "decision": "Corrected Chunk 47's grouped go-* rebuild (7 skill-cluster sub-issues) into 24 individual per-skill sub-issues (#344-#368), each with its own dedicated branch, executed sequentially against the same existing issue-298-go-skills integration branch and parent issue #298 -- not a new campaign. (Renumbered from D038 to D040 at merge time -- the go-* correction decision used D038 on the integration branch, but main's D038 is the react-* individual rebuild decision which merged first.)",
       "rationale": "Shafi reviewed Chunk 47's grouped-cluster pass and rejected it explicitly: SKILL.md files ran past the skill-authoring-standards ~150-line progressive-disclosure target, Output Format sections were bare file/folder listings instead of real per-artifact engineering standards, and Quality Criteria sections were small tables instead of genuinely comprehensive, mechanically-checkable standards. He stated directly that GitHub-issue/PR count is not a cost he is optimizing for and instructed one dedicated sub-issue and branch per skill regardless of count. Every skill was rebuilt again on top of (not discarding) Chunk 47's real technical fixes -- e.g. the nil-interface footgun, the drainOnce preallocation fix, the CORS/timeout completions were all preserved and deepened, not reverted.",
-      "alternatives_rejected": ["Leave Chunk 47's grouped depth as final and treat Shafi's feedback as guidance for future campaigns only -- rejected: he explicitly asked for this exact campaign's output to be corrected", "Start a fresh integration branch/parent issue for the correction -- rejected: issue #298 and issue-298-go-skills were still open and unmerged, so reusing them avoided a second parallel PR against the same 24 files", "Batch the 24 corrections into fewer sub-issues again for efficiency -- rejected outright per Shafi's explicit instruction; this was the exact grouping decision he was correcting.", "Discard Chunk 47's real technical fixes and rebuild from the pre-Chunk-47 baseline -- rejected: those fixes were independently verified correct and had no bearing on the depth complaint"]
+      "alternatives_rejected": [
+        "Leave Chunk 47's grouped depth as final and treat Shafi's feedback as guidance for future campaigns only -- rejected: he explicitly asked for this exact campaign's output to be corrected",
+        "Start a fresh integration branch/parent issue for the correction -- rejected: issue #298 and issue-298-go-skills were still open and unmerged, so reusing them avoided a second parallel PR against the same 24 files",
+        "Batch the 24 corrections into fewer sub-issues again for efficiency -- rejected outright per Shafi's explicit instruction; this was the exact grouping decision he was correcting.",
+        "Discard Chunk 47's real technical fixes and rebuild from the pre-Chunk-47 baseline -- rejected: those fixes were independently verified correct and had no bearing on the depth complaint"
+      ]
     }
   ],
-
   "open_questions": [
     {
       "id": "Q001",
@@ -1507,7 +2049,6 @@
       "raised_during": "Chunk 31, adr-authoring skill refactor"
     }
   ],
-
   "anti_patterns": [
     "Skill that reasons or decides — reasoning belongs in an Agent",
     "Agent that stores large domain knowledge — knowledge belongs in Skills",
