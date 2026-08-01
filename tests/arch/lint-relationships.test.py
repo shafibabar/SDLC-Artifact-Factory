@@ -191,9 +191,11 @@ check(
     real["agent_missing_mandatory"] == [],
 )
 
-# Broken 'related:' targets ARE present today (pre-existing tech debt that
-# P2/P4/P5 resolves). Assert the linter *surfaces* them well-formed and marks
-# the run a hard failure — without pretending the tree is already clean.
+# P2 (Skill Manifest Enrichment) drove the real tree clean: broken 'related:'
+# refs 11 -> 0, and orphan skills 48 -> 0 (every skill now authors domain:).
+# The real-tree assertions therefore pin the post-P2 invariant — a clean tree is
+# NOT a hard failure. The linter's ability to DETECT breakage is unaffected and
+# stays covered by the synthetic-fixture checks above, which are untouched.
 check(
     "REAL: broken 'related:' findings are well-formed {skill,target} records",
     all(set(f.keys()) == {"skill", "target"} for f in real["broken_skill_related"]),
@@ -203,8 +205,12 @@ check(
     "cycles" not in real,
 )
 check(
-    "REAL: known pre-existing broken 'related:' refs make the run a hard failure (exit 1)",
-    real["hard_failure"] is True and len(real["broken_skill_related"]) > 0,
+    "REAL: P2 complete — 0 broken 'related:' refs, so the run is not a hard failure",
+    real["hard_failure"] is False and len(real["broken_skill_related"]) == 0,
+)
+check(
+    "REAL: P2 complete — 0 orphan skills (every skill authors a domain)",
+    real["orphans"] == [],
 )
 check(
     "REAL: counts block agrees with the finding lists",
@@ -222,8 +228,8 @@ proc = subprocess.run(
     capture_output=True, text=True, cwd=str(REPO_ROOT),
 )
 check(
-    "CLI exit code is 1 when the real tree has hard failures",
-    proc.returncode == 1,
+    "CLI exit code is 0 now that the real tree is clean (post-P2)",
+    proc.returncode == 0,
 )
 proc_json = subprocess.run(
     [sys.executable, str(MODULE_PATH), "--json"],
