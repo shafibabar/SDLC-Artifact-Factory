@@ -12,6 +12,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, integration-test, testcontainers, postgres, redpanda, asyncpg, aiokafka, alembic, pytest-asyncio, tenant]
+produces: python-integration-test
+domain: testing
+status: stable
 related: [go-integration-test, python-repository-pattern, python-migration, python-event-consumer]
 tools: [Bash]
 ---
