@@ -11,6 +11,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, load-test, locust, k6, slo, throughput, latency, backpressure, shift-right]
+produces: load-test-suite
+domain: testing
+status: stable
 related: [go-load-test, python-performance-test, slo-definition, nfr-specification]
 tools: [Bash]
 ---
