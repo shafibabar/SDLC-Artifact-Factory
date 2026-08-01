@@ -15,8 +15,11 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: ["design","domain-modeling","domain-storytelling","facilitation","actor","work-object","ubiquitous-language"]
+produces: domain-story
+domain: domain-modeling
+status: stable
 related:
-  - event-storming
+  - event-storming-facilitation
   - ubiquitous-language
   - bounded-context-mapping
   - acceptance-criteria
