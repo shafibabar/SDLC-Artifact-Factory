@@ -13,7 +13,10 @@ phase: ideate
 owner: ux-architect
 created: 2026-06-25
 tags: [ideate, ux, journey-map, touchpoints, moments-of-truth, service-blueprint, line-of-visibility]
-related: [user-persona, ux-flow-design, information-architecture, event-storming-facilitation, service-blueprinting, glossary-management]
+produces: user-journey-map
+domain: ux
+status: stable
+related: [user-persona, ux-flow-design, information-architecture, event-storming-facilitation, glossary-management]
 ---
 
 # User Journey Mapping
