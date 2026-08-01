@@ -26,6 +26,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, pgx, repository, postgres, outbox, optimistic-concurrency, tenant, transactions, error-translation]
+produces: go-repository-implementation
+domain: backend
+status: stable
 related: [go-domain-model, go-error-handling, go-project-structure, go-migration, go-integration-test, go-service-layer, multi-tenancy-design]
 ---
 
