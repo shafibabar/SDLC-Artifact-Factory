@@ -13,6 +13,9 @@ phase: design
 owner: ux-architect
 created: 2026-06-25
 tags: [design, ux, user-flow, task-flow, wireflow, screen-inventory, error-states, empty-states]
+produces: ux-flow
+domain: ux
+status: stable
 related: [user-journey-mapping, information-architecture, acceptance-criteria, user-persona]
 ---
 
