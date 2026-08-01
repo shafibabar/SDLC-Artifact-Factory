@@ -14,7 +14,10 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, c4-model, system-context, documentation, external-actors, system-boundary]
-related: [container-diagram, component-diagram, user-persona, event-storming, nfr-specification, glossary-management]
+produces: system-context-diagram
+domain: architecture
+status: stable
+related: [container-diagram, component-diagram, user-persona, event-storming-facilitation, nfr-specification, glossary-management]
 ---
 
 # System Context Diagram
