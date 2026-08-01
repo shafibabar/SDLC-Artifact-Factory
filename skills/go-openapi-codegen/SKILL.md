@@ -22,6 +22,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, openapi, codegen, oapi-codegen, contract-first, chi, kin-openapi, versioning]
+produces: go-openapi-generated-code
+domain: backend
+status: stable
 related: [api-contract-design, go-chi-handler, go-project-structure, go-middleware, go-makefile]
 ---
 
