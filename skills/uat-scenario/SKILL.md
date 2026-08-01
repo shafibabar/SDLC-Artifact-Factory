@@ -18,6 +18,9 @@ phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
 tags: [validation, uat, acceptance-testing, given-when-then, specification-by-example, exploratory]
+produces: uat-scenario
+domain: validation
+status: stable
 related: [acceptance-criteria, bdd-feature-file, uat-plan, feedback-template, acceptance-sign-off, risk-register]
 ---
 
