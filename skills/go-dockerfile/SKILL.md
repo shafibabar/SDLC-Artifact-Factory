@@ -23,6 +23,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, docker, multi-stage, distroless, non-root, security, container, image-size, buildkit]
+produces: dockerfile
+domain: backend
+status: stable
 related: [go-service-skeleton, go-makefile, kubernetes-manifest, security-architecture, secrets-management]
 ---
 
