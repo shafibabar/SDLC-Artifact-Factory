@@ -15,6 +15,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, typescript, types, discriminated-union, generics, parse-dont-validate]
+produces: typescript-type-modules
+domain: frontend
+status: stable
 related: [react-api-client, react-state-management, react-performance-optimization, ui-component-spec, microfrontend-architecture, glossary-management, methodology-review]
 ---
 
