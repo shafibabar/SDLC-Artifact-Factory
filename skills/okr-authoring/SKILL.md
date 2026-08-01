@@ -14,8 +14,11 @@ version: 2.0.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
-related: [impact-mapping, story-mapping, vision-statement, roadmap-now-next-later, methodology-review, glossary-management]
+related: [impact-mapping, story-mapping, vision-statement, roadmap-authoring, methodology-review, glossary-management]
 tags: [strategy, okr, objectives, key-results, outcomes, goal-setting]
+produces: okr
+domain: strategy
+status: stable
 ---
 
 # OKR Authoring
