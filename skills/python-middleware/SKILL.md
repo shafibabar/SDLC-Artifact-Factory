@@ -27,6 +27,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, middleware, fastapi, starlette, asgi, contextvars, jwt, rate-limit, cors]
+produces: python-http-middleware
+domain: backend
+status: stable
 related: [go-middleware, python-fastapi-handler, python-service-skeleton]
 ---
 
