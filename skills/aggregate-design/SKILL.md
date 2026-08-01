@@ -22,6 +22,9 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: [design, ddd, aggregate, entity, value-object, invariants, event-sourcing, go]
+produces: aggregate-design
+domain: domain-modeling
+status: stable
 related: [skill-authoring-standards, subdomain-distillation, bounded-context-mapping, cqrs-pattern, domain-event-catalog, go-domain-model, go-repository-pattern, access-control-model]
 ---
 
