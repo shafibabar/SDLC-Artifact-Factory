@@ -11,6 +11,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, contract-test, consumer-driven, openapi, event-schema, pytest, schema-conformance, no-broker]
+produces: python-contract-test
+domain: testing
+status: stable
 related: [go-contract-test, python-openapi-codegen, event-schema-design, api-contract-design]
 tools: [Bash]
 ---
