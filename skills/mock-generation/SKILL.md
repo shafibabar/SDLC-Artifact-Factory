@@ -17,6 +17,9 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, go, mocks, fakes, stubs, test-doubles, mockery, gomock, moq, interface-isolation, managed-dependency, unmanaged-dependency]
+produces: go-test-doubles
+domain: testing
+status: stable
 related: [go-unit-test, go-integration-test, go-project-structure, test-fixture-design, react-component-testing]
 ---
 
