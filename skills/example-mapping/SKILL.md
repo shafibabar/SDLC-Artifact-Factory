@@ -15,6 +15,9 @@ phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, example-mapping, bdd, acceptance-criteria, discovery, three-amigos]
+produces: example-map
+domain: testing
+status: stable
 ---
 
 # Example Mapping
