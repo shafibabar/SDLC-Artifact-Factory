@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, errors, exceptions, exception-chaining, raise-from, isinstance, domain-error, fastapi, exception-handler, boundary, logging]
+produces: python-error-handling
+domain: backend
+status: stable
 related: [go-error-handling, python-domain-model, python-fastapi-handler]
 ---
 
