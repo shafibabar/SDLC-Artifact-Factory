@@ -99,7 +99,7 @@ regression coverage only if it is both:
   re-recording is worse than no test).
 
 Use Playwright's own built-in screenshot assertion — no separate paid
-visual-regression service, consistent with the Budget and Frugality rule
+visual-regression service, applying CLAUDE.md § Budget and Frugality
 (open-source over paid tooling; every added dependency must justify its
 presence):
 
