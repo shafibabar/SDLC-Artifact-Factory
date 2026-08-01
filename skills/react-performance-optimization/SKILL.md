@@ -19,6 +19,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, performance, memoization, virtualization, code-splitting, profiling]
+produces: react-performance-optimization
+domain: frontend
+status: stable
 related: [react-routing, react-dashboard-components, react-state-management, react-api-client, react-observability]
 ---
 
