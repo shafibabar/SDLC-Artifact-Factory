@@ -10,6 +10,10 @@
 #                                       Was REPORT-only while P2's backlog stood; P2 drove
 #                                       broken refs 11 -> 0 and orphans 48 -> 0, so this
 #                                       check is now enforced (orphans stay a warning).
+#   5. build-catalog --check  BLOCKING   generated/catalog.json must match the component
+#                                       tree. Staleness is not a judgement call — it is a
+#                                       mechanical always-wrong condition with a
+#                                       one-command fix, so it gates (P3).
 #
 # The gate exits non-zero IFF a BLOCKING step failed. Report-only steps run,
 # print their findings, and never change the gate's exit code.
@@ -50,7 +54,7 @@ run_blocking_py() {
 # ---------------------------------------------------------------------------
 # Step 1 — Schema + arch tests  (BLOCKING)
 # ---------------------------------------------------------------------------
-section "STEP 1/4  Schema + arch tests            [BLOCKING]"
+section "STEP 1/5  Schema + arch tests            [BLOCKING]"
 shopt -s nullglob
 SCHEMA_TESTS=("$REPO_ROOT"/tests/schemas/*.schema.test.py)
 ARCH_TESTS=("$REPO_ROOT"/tests/arch/*.test.py)
@@ -67,7 +71,7 @@ fi
 # ---------------------------------------------------------------------------
 # Step 2 — Manifest linter  (BLOCKING)
 # ---------------------------------------------------------------------------
-section "STEP 2/4  lint-manifests.py               [BLOCKING]"
+section "STEP 2/5  lint-manifests.py               [BLOCKING]"
 "$PY" "$REPO_ROOT/scripts/lint-manifests.py"
 MANIFEST_RC=$?
 if [[ $MANIFEST_RC -ne 0 ]]; then
@@ -78,14 +82,14 @@ fi
 # ---------------------------------------------------------------------------
 # Step 3 — Duplication linter  (REPORT-ONLY, never fails)
 # ---------------------------------------------------------------------------
-section "STEP 3/4  lint-duplication.py             [REPORT-ONLY]"
+section "STEP 3/5  lint-duplication.py             [REPORT-ONLY]"
 "$PY" "$REPO_ROOT/scripts/lint-duplication.py" || true
 echo "(lint-duplication is report-only — its exit code never affects the gate.)"
 
 # ---------------------------------------------------------------------------
 # Step 4 — Relationship linter  (BLOCKING since P2 close-out)
 # ---------------------------------------------------------------------------
-section "STEP 4/4  lint-relationships.py           [BLOCKING]"
+section "STEP 4/5  lint-relationships.py           [BLOCKING]"
 REL_OUT="$("$PY" "$REPO_ROOT/scripts/lint-relationships.py" 2>&1)"
 REL_RC=$?
 echo "$REL_OUT"
@@ -104,11 +108,24 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# Step 5 — Derived catalog staleness  (BLOCKING, P3)
+# ---------------------------------------------------------------------------
+section "STEP 5/5  build-catalog.py --check            [BLOCKING]"
+"$PY" "$REPO_ROOT/scripts/arch/build-catalog.py" --check
+CATALOG_RC=$?
+if [[ $CATALOG_RC -ne 0 ]]; then
+  echo ">>> BLOCKING FAILURE (exit $CATALOG_RC): generated/catalog.json is stale"
+  echo "    A component's frontmatter changed without the catalog being rebuilt."
+  echo "    Fix: python3 scripts/arch/build-catalog.py && git add generated/catalog.json"
+  GATE_RC=1
+fi
+
+# ---------------------------------------------------------------------------
 # Verdict
 # ---------------------------------------------------------------------------
 section "GOVERNANCE GATE RESULT"
 if [[ $GATE_RC -eq 0 ]]; then
-  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests, lint-relationships)."
+  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests, lint-relationships, catalog)."
   echo "      Report-only checks ran; their findings above do not gate."
 else
   echo "FAIL: one or more BLOCKING checks failed (see >>> markers above)."
