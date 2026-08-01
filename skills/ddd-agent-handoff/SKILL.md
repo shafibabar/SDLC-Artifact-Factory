@@ -19,6 +19,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-07-22
 tags: [design, ddd, cross-cutting, governance, handoff, agents]
+produces: handoff-record
+domain: domain-modeling
+status: stable
 ---
 
 # DDD Agent Handoff
