@@ -15,6 +15,9 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: ["design","domain-modeling","commands","cqrs","aggregates","validation","command-handler"]
+produces: command-catalog
+domain: domain-modeling
+status: stable
 related: ["aggregate-design","domain-event-catalog","cqrs-pattern","api-contract-design"]
 ---
 
