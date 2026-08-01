@@ -11,6 +11,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, fastapi, docker, multi-stage, uv, slim, distroless, non-root, security, container, image-size, lockfile, kind]
+produces: dockerfile
+domain: backend
+status: stable
 related: [go-dockerfile, dockerfile-patterns, python-service-skeleton]
 tools: [Bash]
 ---
