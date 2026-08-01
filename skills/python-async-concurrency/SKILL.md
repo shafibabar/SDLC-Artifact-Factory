@@ -14,6 +14,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, asyncio, taskgroup, gil, processpool, cancellation, concurrency, coroutine, async]
+produces: python-concurrency-package
+domain: backend
+status: stable
 related: [go-concurrency-patterns, python-service-layer, python-event-consumer]
 ---
 
