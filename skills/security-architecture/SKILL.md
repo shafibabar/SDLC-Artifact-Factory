@@ -14,6 +14,9 @@ phase: design
 owner: security-architect
 created: 2026-06-25
 tags: [design, security, zero-trust, defense-in-depth, least-privilege, blast-radius, security-control-matrix, mtls, abac]
+produces: security-architecture
+domain: security
+status: stable
 related: [threat-modeling, zero-trust-design, access-control-model, security-implementation, compliance-design, compliance-verification, privacy-design]
 ---
 
