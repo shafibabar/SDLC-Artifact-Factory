@@ -22,6 +22,9 @@ phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
 tags: [customer-validation, beta-program, design-partners, canary, feature-flags, rollout]
+produces: beta-program
+domain: validation
+status: stable
 ---
 
 # Beta Program Design
