@@ -22,6 +22,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, routing, code-splitting, url-state, protected-routes, microfrontend, remote-load-failure, retry]
+produces: react-router-configuration
+domain: frontend
+status: stable
 related: [react-project-structure, microfrontend-architecture, react-state-management, react-accessibility, react-api-client, access-control-model]
 ---
 
