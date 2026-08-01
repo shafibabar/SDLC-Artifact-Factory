@@ -15,6 +15,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
 tags: [governance, risk, risk-register, risk-driven, mitigation, likelihood-impact]
+produces: risk-register
+domain: governance
+status: stable
 related: [adr-authoring, methodology-review, glossary-management, multi-tenancy-design, event-driven-patterns]
 ---
 
