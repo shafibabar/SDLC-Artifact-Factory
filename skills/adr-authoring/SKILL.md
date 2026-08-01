@@ -21,6 +21,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, adr, decision-records, trade-offs, principles, governance]
+produces: architecture-decision-record
+domain: architecture
+status: stable
 related: [skill-authoring-standards, nfr-specification]
 ---
 
