@@ -19,6 +19,9 @@ phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, acceptance-criteria, bdd, gherkin, testing, product-discovery]
+produces: acceptance-criteria-document
+domain: testing
+status: stable
 related: [skill-authoring-standards, example-mapping]
 ---
 
