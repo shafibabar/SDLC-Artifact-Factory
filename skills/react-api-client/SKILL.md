@@ -21,6 +21,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, openapi, typescript, fetch, jwt, tracing, api-client, error-mapping, retry, cancellation]
+produces: react-api-client
+domain: frontend
+status: stable
 related: [react-state-management, typescript-types, api-contract-design, go-chi-handler, go-openapi-codegen, go-error-handling, microfrontend-architecture]
 ---
 
