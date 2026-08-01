@@ -184,7 +184,7 @@ tape.
 
 | Parent | Integration branch | Status | Children done / total | Merged to main |
 |---|---|---|---|---|
-| P1 | `arch-review/p1-governance-foundation` | not started | 0 / ~10 | — |
+| P1 | `arch-review/p1-governance-foundation` | **in progress** (parent #780; wave 1 executing) | 0 / 10 | — |
 | P2 | — | not started | 0 / 186 | — |
 | P3 | — | not started | 0 / ~3 | — |
 | P4 | — | not started | 0 / ~150 | — |

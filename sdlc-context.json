@@ -11,13 +11,19 @@
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
     "charter": "ARCHITECTURE-REVIEW-CAMPAIGN.md",
-    "status": "chartered — issue creation + execution GATED on Shafi's go",
+    "status": "P1 IN PROGRESS — parent #780; wave 1 (parser + 5 schemas) executing on arch-review/p1-governance-foundation",
     "started": "2026-08-01",
     "absorbs_epic": "#777 (agent refactor) folded into parent P5",
-    "active_parent": null,
-    "integration_branch": null,
+    "active_parent": "P1",
+    "integration_branch": "arch-review/p1-governance-foundation",
+    "p1_children": {
+      "wave1_parser": "#781", "wave1_schemas": ["#782 skill", "#783 agent", "#784 command", "#785 hook", "#786 workflow"],
+      "wave2_linters": ["#787 lint-manifests", "#788 lint-relationships", "#789 lint-duplication"],
+      "wave3_ci": "#790",
+      "waves": "1 (parser+schemas, independent) → 2 (linters, need wave 1) → 3 (CI, needs wave 2)"
+    },
     "parents": [
-      { "id": "P1", "title": "Governance Foundation — Manifest Schemas + Consistency Linter", "integration_branch": "arch-review/p1-governance-foundation", "est_children": 10, "status": "not-started" },
+      { "id": "P1", "parent_issue": "#780", "title": "Governance Foundation — Manifest Schemas + Consistency Linter", "integration_branch": "arch-review/p1-governance-foundation", "est_children": 10, "children_done": 0, "status": "in-progress" },
       { "id": "P2", "title": "Skill Manifest Enrichment (produces/domain/status)", "est_children": 186, "status": "not-started" },
       { "id": "P3", "title": "Derived Component Catalog + CI Integration", "est_children": 3, "status": "not-started" },
       { "id": "P4", "title": "Skill De-duplication & Repointing", "est_children": 150, "status": "not-started" },
