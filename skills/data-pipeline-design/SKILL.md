@@ -15,6 +15,9 @@ phase: design
 owner: data-architect
 created: 2026-06-25
 tags: [design, data-architecture, pipeline, batch, streaming, fault-tolerance, elt, orchestration]
+produces: data-pipeline-design
+domain: data
+status: stable
 related: [data-pipeline-implementation, event-driven-patterns, data-lineage-design, metrics-instrumentation-plan, data-retention-policy, alerting-rules-design, domain-event-catalog]
 ---
 
