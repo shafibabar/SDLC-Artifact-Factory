@@ -42,7 +42,7 @@ Self-contained — loadable without reading `SKILL.md` first. This is the exhaus
 |---|---|---|---|
 | `_meta` | object | **Yes** | Versioning/tracking block, mirroring `sdlc-context.json`'s `_meta` convention. See sub-table below. |
 | `product` | string (minLength 1) | **Yes** | Human-readable product name (e.g. `"Data Estate Mapping and Compliance Intelligence"`). |
-| `product_slug` | string, pattern `^[a-z0-9]+(-[a-z0-9]+)*$` | **Yes** | Set once at `/sdlc-start`. Becomes the prefix in every artifact ID for this product (see `artifact-manifest`'s ID scheme). Same naming pattern all components use. |
+| `product_slug` | string, pattern `^[a-z0-9]+(-[a-z0-9]+)*$` | **Yes** | Set once at `/sdlc-start`. Becomes the prefix in every artifact ID for this product (see `artifact-manifest`'s ID scheme). The pattern is the component-naming one, adopted from its home at CLAUDE.md § Naming Conventions — read the rule there. |
 | `tech_stack_overrides` | object | No | Override-only map of Tech Stack Defaults rows this product sets differently. Absent/empty = every default used unchanged. |
 | `compliance_frameworks` | array of strings | No | Frameworks and control families the product must satisfy. |
 | `deployment_model` | string (minLength 1) | No | The specific deployment option this product/instance uses. |
@@ -188,7 +188,7 @@ The `methodology_parameters` object is empty: this product tunes none of the fac
 Before treating a `sdlc-config.json` as valid, confirm:
 
 - [ ] `_meta`, `product`, `product_slug` all present; no top-level field outside the permitted set.
-- [ ] `product_slug` matches `^[a-z0-9]+(-[a-z0-9]+)*$`.
+- [ ] `product_slug` matches `^[a-z0-9]+(-[a-z0-9]+)*$` — the adopted pattern named in the field table above, whose home is CLAUDE.md § Naming Conventions.
 - [ ] Every `tech_stack_overrides` key actually differs from its CLAUDE.md default (no restated defaults).
 - [ ] `optional_database`, if present, has all three of `included`, `value`, `rationale`.
 - [ ] Every `compliance_frameworks` entry names its control families, not just the framework.

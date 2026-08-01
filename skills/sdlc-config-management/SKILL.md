@@ -63,7 +63,7 @@ A methodology parameter is never used to weaken one of the five non-negotiables 
 
 ## Validation Against the Schema
 
-`sdlc-config.json` is formalized machine-readably as `schemas/sdlc-config.schema.json` (Draft 2020-12; see `settings.json → env.SDLC_CONFIG_SCHEMA`). The schema encodes the override-only shape directly: only `_meta`, `product`, and `product_slug` are required; every content field (`tech_stack_overrides`, `compliance_frameworks`, `deployment_model`, `methodology_parameters`) is optional, so a product that overrides nothing still validates. `product_slug` is constrained to the component-naming pattern `^[a-z0-9]+(-[a-z0-9]+)*$` because it becomes the prefix of every artifact ID (see `artifact-manifest`).
+`sdlc-config.json` is formalized machine-readably as `schemas/sdlc-config.schema.json` (Draft 2020-12; see `settings.json → env.SDLC_CONFIG_SCHEMA`). The schema encodes the override-only shape directly: only `_meta`, `product`, and `product_slug` are required; every content field (`tech_stack_overrides`, `compliance_frameworks`, `deployment_model`, `methodology_parameters`) is optional, so a product that overrides nothing still validates. `product_slug` deliberately adopts the same pattern component names use — `^[a-z0-9]+(-[a-z0-9]+)*$`, whose canonical home is **CLAUDE.md § Naming Conventions** — because it becomes the prefix of every artifact ID this plugin emits (see `artifact-manifest`).
 
 One validator caveat: JSON Schema's `format: date` is annotation-only unless the validator explicitly enables format assertion (e.g. `jsonschema`'s `FormatChecker`) — a schema-conformant validator that skips this silently accepts a malformed `_meta.last_updated`.
 
