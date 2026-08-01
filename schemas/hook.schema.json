@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shafibabar/SDLC-Artifact-Factory/schemas/hook.schema.json",
+  "title": "Hook Bindings",
+  "description": "Formalizes the STRUCTURE of hooks/hooks.json — the single file holding all of the plugin's real Claude Code hook bindings (see CLAUDE.md's 'Command and Hook Mechanics' section). A hooks file is a top-level object with an optional '_meta' documentation block and a mandatory 'hooks' map. The 'hooks' map's keys are valid Claude Code hook events; each event maps to an array of entries; each entry has a 'matcher' (tool name or regex) and a 'hooks' array of handlers; each handler declares a 'type' (command | prompt | agent) and carries the field that type needs — a 'command' handler names a script path, a 'prompt' handler carries a 'prompt' string, an 'agent' handler carries a 'prompt' that drives a subagent. This is a shape-only schema (P1 Governance Foundation): it validates structure, not the runtime behaviour of any hook.",
+  "type": "object",
+  "required": ["hooks"],
+  "additionalProperties": false,
+  "properties": {
+    "_meta": {
+      "type": "object",
+      "description": "Human-facing documentation block. Not read by Claude Code's hook loader; carries purpose/provenance notes.",
+      "properties": {
+        "purpose": { "type": "string", "minLength": 1 },
+        "last_updated": { "type": "string", "format": "date" }
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Map of hook event name to the list of entries bound to that event. Same schema as the 'hooks' key in settings.json.",
+      "minProperties": 1,
+      "propertyNames": {
+        "description": "Only real Claude Code hook events are permitted as keys — no invented events (see CLAUDE.md: no before-file-create/after-agent events ever existed).",
+        "enum": [
+          "PreToolUse",
+          "PostToolUse",
+          "UserPromptSubmit",
+          "Stop",
+          "SubagentStop",
+          "SessionStart",
+          "SessionEnd",
+          "PreCompact",
+          "Notification",
+          "PermissionRequest",
+          "PermissionDenied"
+        ]
+      },
+      "additionalProperties": {
+        "type": "array",
+        "description": "The entries bound to one event. Each entry pairs a matcher with one or more handlers.",
+        "items": { "$ref": "#/$defs/entry" }
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "description": "A single hook binding: a matcher plus the handlers that run when a matching tool is used.",
+      "required": ["matcher", "hooks"],
+      "additionalProperties": false,
+      "properties": {
+        "matcher": {
+          "type": "string",
+          "description": "Tool name or regex the event is scoped to (e.g. 'Write', 'Write|Edit', 'Agent')."
+        },
+        "hooks": {
+          "type": "array",
+          "description": "The ordered list of handlers to run for this entry.",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/handler" }
+        }
+      }
+    },
+    "handler": {
+      "type": "object",
+      "description": "One handler within an entry. Its 'type' selects which delivery field it must carry.",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The handler mechanism: 'command' runs a script (JSON on stdin, exit code = allow/block); 'prompt' is a single-turn LLM judgment; 'agent' is a full subagent driven by a prompt.",
+          "enum": ["command", "prompt", "agent"]
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to the script a 'command' handler runs (typically under ${CLAUDE_PLUGIN_ROOT}/scripts/)."
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The instruction a 'prompt' or 'agent' handler is invoked with."
+        },
+        "timeout": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Optional per-handler timeout in seconds."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "command" } } },
+          "then": {
+            "required": ["command"],
+            "not": { "required": ["prompt"] }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "prompt" } } },
+          "then": {
+            "required": ["prompt"],
+            "not": { "required": ["command"] }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "agent" } } },
+          "then": {
+            "required": ["prompt"],
+            "not": { "required": ["command"] }
+          }
+        }
+      ]
+    }
+  }
+}
