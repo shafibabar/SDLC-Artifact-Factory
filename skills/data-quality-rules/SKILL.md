@@ -14,6 +14,9 @@ phase: data
 owner: data-engineer
 created: 2026-07-20
 tags: [data, data-quality, dama, completeness, accuracy, validation, remediation, go]
+produces: data-quality-rules
+domain: data
+status: stable
 related: [data-classification, data-pipeline-design, data-pipeline-implementation, metrics-instrumentation-plan, data-lineage-design]
 ---
 
