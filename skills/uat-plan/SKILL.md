@@ -18,6 +18,9 @@ phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
 tags: [customer-validation, uat, acceptance-testing, moscow, canary, sign-off, design-partners, exploratory-testing]
+produces: uat-plan
+domain: validation
+status: stable
 ---
 
 # UAT Plan
