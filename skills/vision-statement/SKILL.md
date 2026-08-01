@@ -10,6 +10,9 @@ phase: strategy
 owner: product-strategist
 created: 2026-06-24
 tags: [strategy, vision, product-discovery, north-star]
+produces: vision-statement
+domain: strategy
+status: stable
 ---
 
 # Vision Statement
