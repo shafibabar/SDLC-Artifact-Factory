@@ -12,6 +12,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, performance, benchmark, pytest-benchmark, regression, baseline, ci-gate, throughput, async]
+produces: performance-regression-gate
+domain: testing
+status: stable
 related: [go-performance-test, python-performance-optimization, python-load-test]
 tools: [Bash]
 ---
