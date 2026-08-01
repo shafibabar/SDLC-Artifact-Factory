@@ -16,6 +16,9 @@ phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, requirements, prioritization, moscow, must-should-could, release-planning]
+produces: moscow-prioritized-backlog
+domain: discovery
+status: stable
 related: [user-story-writing, story-mapping, jtbd-analysis, requirements-analysis]
 ---
 
