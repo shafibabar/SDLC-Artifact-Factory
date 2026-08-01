@@ -565,7 +565,7 @@ echo "Next: run tofu plan in $OUTPUT_DIR — CI will do this automatically on th
     "service": {
       "type": "string",
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-      "description": "Service name — must match the Kubernetes service naming convention."
+      "description": "Service name — the platform's kebab-case form: lowercase alphanumerics joined by single hyphens. This is stricter than Kubernetes' own Service-name rule (an RFC 1035 label, `[a-z]([-a-z0-9]*[a-z0-9])?`, 63 chars max) on hyphens, but looser on the leading character and on length — also enforce those two limits wherever the value is used verbatim as a Kubernetes Service name."
     },
     "resource": {
       "type": "string",
