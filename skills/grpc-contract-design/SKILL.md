@@ -17,6 +17,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-07-31
 tags: [design, architecture, grpc, protobuf, contract-first, streaming, api]
+produces: grpc-service-contract
+domain: architecture
+status: stable
 related: [api-contract-design, go-grpc-handler, go-openapi-codegen, integration-design]
 ---
 
