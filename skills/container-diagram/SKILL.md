@@ -14,7 +14,10 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, c4-model, container-diagram, documentation, runtime-topology, viewtype, deployment]
-related: [system-context-diagram, component-diagram, deployment-diagram, integration-design, adr-authoring, glossary-management, methodology-review]
+produces: container-diagram
+domain: architecture
+status: stable
+related: [system-context-diagram, component-diagram, integration-design, adr-authoring, glossary-management, methodology-review]
 ---
 
 # Container Diagram
