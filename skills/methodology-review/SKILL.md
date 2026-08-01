@@ -11,6 +11,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
 tags: [ddd, tdd, bdd, solid, event-storming, governance, compliance, cross-cutting]
+produces: methodology-compliance-report
+domain: governance
+status: stable
 ---
 
 # Methodology Review
