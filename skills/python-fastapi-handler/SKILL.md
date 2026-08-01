@@ -11,6 +11,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, fastapi, pydantic, asyncpg, handler, dto, validation, error-mapping, async]
+produces: python-http-handler
+domain: backend
+status: stable
 related: [go-chi-handler, python-middleware, python-error-handling, python-openapi-codegen]
 ---
 
