@@ -15,6 +15,9 @@ phase: design
 owner: security-architect
 created: 2026-06-25
 tags: [design, privacy, privacy-by-design, pii, data-minimization, gdpr, consent, data-lifecycle, domain-primitive]
+produces: privacy-design
+domain: security
+status: stable
 related: [threat-modeling, access-control-model, secrets-management, compliance-design, compliance-verification, security-architecture, glossary-management]
 ---
 
