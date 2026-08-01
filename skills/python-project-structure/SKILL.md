@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, project-structure, clean-architecture, solid, protocols, import-linter]
+produces: python-service-skeleton
+domain: backend
+status: stable
 related: [go-project-structure, python-service-skeleton, python-domain-model]
 tools: [Bash]
 ---
