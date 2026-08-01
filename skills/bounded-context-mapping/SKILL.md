@@ -13,7 +13,10 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: ["design","domain-modeling","bounded-context","context-map","ddd","subdomain","team-topology"]
-related: [context-map-patterns, subdomain-distillation, aggregate-design, event-storming, glossary-management]
+produces: context-map
+domain: domain-modeling
+status: stable
+related: [context-map-patterns, subdomain-distillation, aggregate-design, event-storming-facilitation, glossary-management]
 ---
 
 # Bounded Context Mapping
