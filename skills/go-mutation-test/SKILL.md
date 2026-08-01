@@ -27,6 +27,9 @@ phase: quality
 owner: test-strategist
 created: 2026-06-25
 tags: [quality, go, mutation-testing, test-quality, mutation-score, gremlins, survived-mutant, coverage]
+produces: mutation-report
+domain: testing
+status: stable
 related: [go-unit-test, go-makefile, test-pyramid, sdlc-config-management]
 ---
 
