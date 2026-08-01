@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/shafibabar/SDLC-Artifact-Factory/schemas/command.schema.json",
+  "title": "Command Frontmatter",
+  "description": "Formalizes the YAML frontmatter shape of a plugin command file (commands/<name>.md), per CLAUDE.md's 'Command and Hook Mechanics' section. Commands are real Claude Code mechanics: their frontmatter is fixed by the platform, NOT by this plugin's Skill/Agent schema. The only fields Claude Code recognizes are `description` (required), `argument-hint`, `allowed-tools`, `model`, and `disable-model-invocation`. This schema validates SHAPE ONLY — it deliberately forbids Skill/Agent-only fields (name, version, phase, owner, created, tags, role, inputs, outputs, skills) that would signal a command file mistakenly authored against the wrong component schema.",
+  "type": "object",
+  "required": ["description"],
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Required. One-line summary of what the command does; surfaces in the command picker."
+    },
+    "argument-hint": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Hint text for the arguments the command expects (e.g. '<artifact-id>'), used to split positional $0/$1... input."
+    },
+    "allowed-tools": {
+      "description": "Optional. Restricts which tools the command's prompt may use. Either a single tool name or a list of tool names.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      ]
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional. Overrides the model used to run this command's prompt."
+    },
+    "disable-model-invocation": {
+      "type": "boolean",
+      "description": "Optional. When true, the command cannot be invoked by the model (SlashCommand tool) and is user-only."
+    }
+  }
+}
