@@ -27,6 +27,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, errors, error-wrapping, errors-is, errors-as, panic, recover, error-messages, error-taxonomy, logging, testing]
+produces: go-error-handling
+domain: backend
+status: stable
 related: [go-domain-model, go-repository-pattern, go-project-structure, go-service-layer, go-middleware, go-chi-handler, go-unit-test, go-concurrency-patterns]
 ---
 
