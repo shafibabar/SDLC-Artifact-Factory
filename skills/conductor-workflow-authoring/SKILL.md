@@ -21,6 +21,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, conductor, workflow, orchestration, task-worker, go]
+produces: conductor-workflow-definition
+domain: backend
+status: stable
 related: [workflow-orchestration, go-service-skeleton, event-driven-patterns, integration-design]
 tools: [Bash]
 ---
