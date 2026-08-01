@@ -26,6 +26,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, outbox, redpanda, kafka, event-publishing, at-least-once, relay, backpressure, idempotency, batching]
+produces: go-outbox-relay
+domain: backend
+status: stable
 related: [go-repository-pattern, go-event-consumer, go-concurrency-patterns, go-error-handling, go-service-skeleton, go-performance-optimization, go-migration, event-schema-design, data-pipeline-design, distributed-tracing-design, go-integration-test, multi-tenancy-design]
 ---
 
