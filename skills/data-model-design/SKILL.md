@@ -11,7 +11,10 @@ phase: design
 owner: data-architect
 created: 2026-06-25
 tags: [design, data-architecture, data-modeling, normalization, dimensional-modeling, postgresql, er-diagram]
-related: [domain-modeling, read-model-design, data-pipeline-design, multi-tenancy-design, dashboard-specification, canonical-data-model, glossary-management]
+produces: data-model
+domain: data
+status: stable
+related: [bounded-context-mapping, read-model-design, data-pipeline-design, multi-tenancy-design, dashboard-specification, canonical-data-model, glossary-management]
 ---
 
 # Data Model Design
