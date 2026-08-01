@@ -19,6 +19,9 @@ phase: design
 owner: security-architect
 created: 2026-06-25
 tags: [design, security, abac, access-control, authorisation, rbac, jwt, go]
+produces: access-control-model
+domain: security
+status: stable
 related: [skill-authoring-standards, subdomain-distillation, zero-trust-design]
 ---
 
