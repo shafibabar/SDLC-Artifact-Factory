@@ -16,6 +16,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-07-31
 tags: ["design","architecture","orchestration","saga","process-manager","choreography","workflow"]
+produces: workflow-orchestration-design
+domain: architecture
+status: stable
 related: ["event-driven-patterns","integration-design","conductor-workflow-authoring","cqrs-pattern"]
 ---
 
