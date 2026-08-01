@@ -17,6 +17,16 @@ WHAT IT DOES (report-only — always exits 0):
         so the report shows the block once with the full set of skills carrying
         it.
 
+        NOT duplication: the mandated ARTIFACT FRONTMATTER inside a skill's
+        `## Output Format` template. CLAUDE.md § Artifact Standards REQUIRES
+        every emitted artifact — and every Output Format template — to carry a
+        `name/version/phase/owner/created` block, so its recurrence across
+        skills is COMPLIANCE, not duplication. Those blocks are therefore
+        excluded at CORPUS-ASSEMBLY time (assemble_corpora ->
+        strip_artifact_frontmatter_templates) rather than post-filtered out of
+        the findings, which keeps the detectors themselves pure and unaware of
+        the exception.
+
     (b) RESTATEMENTS OF A CLAUDE.md STANDARD. CLAUDE.md is the always-on home
         for four standards a skill must POINT TO, never re-teach:
           * the naming-convention regex  ^[a-z0-9]+(-[a-z0-9]+)*$
@@ -27,6 +37,19 @@ WHAT IT DOES (report-only — always exits 0):
         The standards' signatures are parsed OUT OF CLAUDE.md at runtime (not
         hard-coded), so the linter stays honest as CLAUDE.md evolves. The
         legitimate home skill for each standard is allow-listed and never flagged.
+
+        NOT a restatement: a block that CITES its CLAUDE.md home. Pointing at
+        the home and quoting briefly with attribution is exactly the required
+        behaviour, so a finding is suppressed when every occurrence of the
+        standard's signature has `CLAUDE.md` within +/- CITATION_CONTEXT_LINES
+        lines. "Every", not "any": a skill that cites once but re-teaches the
+        standard again elsewhere uncited is still restating it.
+
+        The naming-convention check matches CLAUDE.md's LITERAL pattern only —
+        an unrelated regex that merely looks like a naming regex (e.g. a
+        Terraform `can(regex("^[a-z0-9]([a-z0-9-]{1,30}[a-z0-9])$", ...))`
+        tenant-id validation) is a different rule for a different purpose and
+        is not a restatement of this one.
 
   Both findings are written, ranked, to generated/duplication-report.md — this
   snapshot IS the P4 de-duplication backlog. The linter NEVER fails the build:
@@ -72,10 +95,29 @@ STANDARD_HOME_SKILLS = {
 
 
 # ---------------------------------------------------------------------------
-# Corpus assembly (filesystem — used by main(), not by the pure detectors)
+# Corpus assembly
+#
+# read_skill_corpus() is the only filesystem step (called from main()).
+# strip_artifact_frontmatter_templates() / assemble_corpora() are PURE text
+# transforms so the bundled test can drive the whole pipeline synthetically.
 # ---------------------------------------------------------------------------
 
 _FM_RE = re.compile(r"^﻿?---\s*\n.*?\n---\s*(?:\n|$)", re.DOTALL)
+
+# --- artifact-frontmatter template exclusion (CLAUDE.md § Artifact Standards) -
+# A `---` ... `---` block whose FIRST key is `name:` and which carries most of
+# the mandated artifact-frontmatter keys is the compliance template every skill
+# is REQUIRED to show; it is not cross-skill duplication.
+_FM_DELIM_RE = re.compile(r"^\s*---\s*$")
+# `key:` at (near) the left margin — the shape of a YAML mapping entry.
+_FM_KEY_RE = re.compile(r"^ {0,3}([A-Za-z_][A-Za-z0-9_-]*)\s*:(?:\s|$)")
+# The keys CLAUDE.md § Artifact Standards mandates alongside `name`.
+ARTIFACT_FM_MANDATED_KEYS = ("version", "phase", "owner", "created")
+# How many of those must be present for the block to read as the mandated
+# template rather than as an arbitrary `---`-delimited chunk of prose.
+ARTIFACT_FM_MIN_MANDATED_KEYS = 3
+# A template longer than this is not a frontmatter block; stop looking.
+ARTIFACT_FM_MAX_LINES = 40
 
 
 def strip_frontmatter(text: str) -> str:
@@ -83,10 +125,74 @@ def strip_frontmatter(text: str) -> str:
     return _FM_RE.sub("", text, count=1)
 
 
+def _scan_frontmatter_block(lines: list[str], start: int):
+    """If lines[start] opens an artifact-frontmatter template, return its end index.
+
+    `start` is the index of the opening `---`. Returns the index of the closing
+    `---`, or None if the block is not an artifact-frontmatter template. Pure.
+    """
+    keys: list[str] = []
+    i = start + 1
+    limit = min(len(lines), start + 1 + ARTIFACT_FM_MAX_LINES)
+    while i < limit:
+        line = lines[i]
+        if _FM_DELIM_RE.match(line):
+            if not keys or keys[0] != "name":
+                return None
+            mandated = sum(1 for k in ARTIFACT_FM_MANDATED_KEYS if k in keys)
+            return i if mandated >= ARTIFACT_FM_MIN_MANDATED_KEYS else None
+        m = _FM_KEY_RE.match(line)
+        if m:
+            keys.append(m.group(1).lower())
+        elif line.strip() and line[:1].isspace():
+            pass  # an indented continuation (list item / nested value) — allowed
+        else:
+            return None  # blank line or prose: not a frontmatter block
+        i += 1
+    return None
+
+
+def strip_artifact_frontmatter_templates(text: str) -> str:
+    """Remove mandated artifact-frontmatter template blocks from a corpus. Pure.
+
+    CLAUDE.md § Artifact Standards requires every artifact — and therefore every
+    skill's `## Output Format` template — to carry a
+    `name/version/phase/owner/created` frontmatter block. Its recurrence across
+    skills is compliance, not duplication, so it is excluded from the corpus
+    before any detector sees it. Everything else is left byte-for-byte intact.
+    """
+    lines = text.splitlines()
+    kept: list[str] = []
+    i = 0
+    while i < len(lines):
+        if _FM_DELIM_RE.match(lines[i]):
+            end = _scan_frontmatter_block(lines, i)
+            if end is not None:
+                i = end + 1
+                continue
+        kept.append(lines[i])
+        i += 1
+    return "\n".join(kept)
+
+
+def assemble_corpora(raw_corpus_by_skill: dict) -> dict:
+    """Apply every corpus-assembly exclusion to each skill's raw prose. Pure.
+
+    Excluding here (rather than post-filtering findings) keeps the detectors
+    themselves free of exception handling: they simply never see the mandated
+    boilerplate.
+    """
+    return {
+        name: strip_artifact_frontmatter_templates(text)
+        for name, text in raw_corpus_by_skill.items()
+    }
+
+
 def read_skill_corpus(record: dict) -> str:
     """Concatenate a skill's SKILL.md body + all its references/*.md prose.
 
     `record` is a manifest.load_skills() record; its 'dir' is repo-relative.
+    Returns the RAW corpus — run it through assemble_corpora() before detection.
     """
     skill_dir = REPO_ROOT / record["dir"]
     parts: list[str] = []
@@ -273,6 +379,40 @@ UBIQUITOUS_DUMP_THRESHOLD = 10
 # how many of the five methodologies must co-occur (with an enforcement marker)
 # to count as restating the non-negotiable-methodology standard.
 METHODOLOGY_QUORUM = 4
+# how many lines either side of a signature line count as "immediate context"
+# when looking for a citation of the standard's CLAUDE.md home.
+CITATION_CONTEXT_LINES = 2
+
+_CITATION_RE = re.compile(r"claude\.md", re.IGNORECASE)
+
+
+def _signature_line_indices(lines: list[str], needles, fold_case: bool) -> list[int]:
+    """Indices of the lines carrying any of `needles`. Pure.
+
+    `fold_case=False` keeps the match literal — used for the naming-convention
+    regex, which must match CLAUDE.md's exact pattern and nothing regex-shaped.
+    """
+    haystack = [ln.lower() for ln in lines] if fold_case else lines
+    probes = [n.lower() for n in needles] if fold_case else list(needles)
+    return [i for i, ln in enumerate(haystack) if any(p and p in ln for p in probes)]
+
+
+def cites_claude_md(lines: list[str], indices: list[int]) -> bool:
+    """True iff EVERY signature occurrence points at its CLAUDE.md home. Pure.
+
+    Quoting a standard with attribution to CLAUDE.md is the behaviour the
+    campaign asks for, so such an occurrence is not a restatement. The check is
+    "every occurrence", not "any": a skill that cites once and then re-teaches
+    the standard uncited elsewhere is still restating it.
+    """
+    if not indices:
+        return False
+    for i in indices:
+        lo = max(0, i - CITATION_CONTEXT_LINES)
+        hi = min(len(lines), i + CITATION_CONTEXT_LINES + 1)
+        if not any(_CITATION_RE.search(ln) for ln in lines[lo:hi]):
+            return False
+    return True
 
 
 def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
@@ -291,22 +431,30 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
     ul_terms = standards.get("ubiquitous_terms", [])
 
     for name in sorted(corpus_by_skill):
-        low = corpus_by_skill[name].lower()
+        text = corpus_by_skill[name]
+        low = text.lower()
+        lines = text.splitlines()
 
         # 1. Naming-convention regex restated verbatim.
-        if naming_regex and name not in STANDARD_HOME_SKILLS["naming_regex"] and naming_regex in corpus_by_skill[name]:
-            findings.append({
-                "skill": name,
-                "standard": "naming-convention regex",
-                "severity": "high",
-                "evidence": f"contains the literal regex `{naming_regex}`",
-                "repoint_to": "CLAUDE.md § Naming Conventions",
-            })
+        #    LITERAL match against CLAUDE.md's own pattern — a regex that merely
+        #    looks like a naming regex (a Terraform tenant-id validation, say) is
+        #    a different rule and must not be flagged as restating this one.
+        if naming_regex and name not in STANDARD_HOME_SKILLS["naming_regex"]:
+            idx = _signature_line_indices(lines, [naming_regex], fold_case=False)
+            if idx and not cites_claude_md(lines, idx):
+                findings.append({
+                    "skill": name,
+                    "standard": "naming-convention regex",
+                    "severity": "high",
+                    "evidence": f"contains the literal regex `{naming_regex}`",
+                    "repoint_to": "CLAUDE.md § Naming Conventions",
+                })
 
         # 2. Frugality rules restated.
         if name not in STANDARD_HOME_SKILLS["frugality"]:
             hits = [p for p in frug if p in low]
-            if hits:
+            idx = _signature_line_indices(lines, hits, fold_case=True)
+            if hits and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "frugality / budget rules",
@@ -319,7 +467,8 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
         if name not in STANDARD_HOME_SKILLS["methodologies"]:
             present = [mth for mth in methods if mth and mth in low]
             marker_hit = any(mk in low for mk in markers)
-            if len(present) >= METHODOLOGY_QUORUM and marker_hit:
+            idx = _signature_line_indices(lines, present, fold_case=True)
+            if len(present) >= METHODOLOGY_QUORUM and marker_hit and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "non-negotiable methodologies",
@@ -334,7 +483,8 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
         # 4. Ubiquitous Language glossary dumped into the skill.
         if name not in STANDARD_HOME_SKILLS["ubiquitous_language"]:
             present_terms = [t for t in ul_terms if t and t in low]
-            if len(present_terms) >= UBIQUITOUS_DUMP_THRESHOLD:
+            idx = _signature_line_indices(lines, present_terms, fold_case=True)
+            if len(present_terms) >= UBIQUITOUS_DUMP_THRESHOLD and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "Ubiquitous Language glossary",
@@ -384,7 +534,11 @@ def build_report(dup_clusters: list[dict], restatements: list[dict], skill_count
     lines.append(
         f"Blocks (window = {SHINGLE_WINDOW} normalized lines, merged) whose text "
         f"recurs across at least {MIN_SKILLS_FOR_DUP} skill corpora, ranked by how "
-        "many skills carry them. Consolidate each into one home and repoint."
+        "many skills carry them. Consolidate each into one home and repoint. "
+        "The mandated artifact-frontmatter template "
+        "(`name`/`version`/`phase`/`owner`/`created`, CLAUDE.md § Artifact "
+        "Standards) is excluded during corpus assembly — its recurrence is "
+        "compliance, not duplication."
     )
     lines.append("")
     if not dup_clusters:
@@ -404,7 +558,9 @@ def build_report(dup_clusters: list[dict], restatements: list[dict], skill_count
     lines.append(
         "Skills whose prose re-teaches a standard whose canonical home is "
         "CLAUDE.md. Per campaign decision #4, skills must **point to** these "
-        "homes, never restate them — delete the restatement and repoint."
+        "homes, never restate them — delete the restatement and repoint. A "
+        "block that already cites `CLAUDE.md` within two lines of every "
+        "occurrence is doing exactly that, and is not reported."
     )
     lines.append("")
     if not restatements:
@@ -428,7 +584,9 @@ def build_report(dup_clusters: list[dict], restatements: list[dict], skill_count
 
 def main() -> int:
     skills = manifest.load_skills()
-    corpus_by_skill = {r["name"]: read_skill_corpus(r) for r in skills}
+    # Read raw, then apply the corpus-assembly exclusions (mandated artifact
+    # frontmatter) before any detector sees the text.
+    corpus_by_skill = assemble_corpora({r["name"]: read_skill_corpus(r) for r in skills})
 
     dup_clusters = find_duplicate_blocks(corpus_by_skill)
 
