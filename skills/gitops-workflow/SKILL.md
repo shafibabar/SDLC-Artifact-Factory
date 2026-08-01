@@ -7,6 +7,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-31
 tags: ["deploy","gitops","flux","argocd","reconciliation","drift","declarative","environment-repo","sealed-secrets","sops"]
+produces: gitops-environment-repository
+domain: platform
+status: stable
 ---
 
 ## Purpose
