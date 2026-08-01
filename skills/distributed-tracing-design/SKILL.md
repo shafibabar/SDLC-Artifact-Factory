@@ -21,6 +21,9 @@ related:
   - go-event-publisher
   - go-event-consumer
 tags: [implement, observability, distributed-tracing, opentelemetry, span, context-propagation, sampling]
+produces: go-tracing-instrumentation
+domain: observability
+status: stable
 ---
 
 # Distributed Tracing Design
