@@ -14,6 +14,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, aiokafka, consumer, redpanda, kafka, idempotent, worker-pool, processpool, dlq, offset-commit, tenant]
+produces: python-event-consumer
+domain: backend
+status: stable
 related: [go-event-consumer, python-event-publisher, python-async-concurrency, python-repository-pattern]
 ---
 
