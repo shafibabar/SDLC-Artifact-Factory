@@ -14,6 +14,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, integration, synchronous, asynchronous, circuit-breaker, resilience, anti-corruption-layer, bulkhead, timeout]
+produces: integration-design
+domain: architecture
+status: stable
 related: [context-map-patterns, event-driven-patterns, event-schema-design, api-contract-design, go-contract-test, data-model-design]
 ---
 
