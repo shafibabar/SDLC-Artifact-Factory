@@ -17,6 +17,9 @@ phase: data
 owner: data-engineer
 created: 2026-07-20
 tags: [data, analytics, product-metrics, delivery-metrics, dora, instrumentation, traceability, activation, throughput, deploy]
+produces: metrics-instrumentation-plan
+domain: data
+status: stable
 ---
 
 # Metrics Instrumentation Plan
