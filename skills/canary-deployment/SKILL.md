@@ -13,6 +13,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, canary, progressive-delivery, linkerd, traffic-split, burn-rate, rollback, argo-rollouts]
+produces: canary-rollout-plan
+domain: platform
+status: stable
 related: [progressive-delivery, kubernetes-workload-patterns, alerting-rules-design, slo-definition]
 ---
 
