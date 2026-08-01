@@ -10,6 +10,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
 tags: [ddd, ubiquitous-language, glossary, governance, cross-cutting]
+produces: ubiquitous-language-glossary
+domain: governance
+status: stable
 ---
 
 # Glossary Management
