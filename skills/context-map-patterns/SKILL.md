@@ -14,6 +14,9 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: ["design","domain-modeling","context-map","integration-patterns","acl","open-host-service","partnership","conformist"]
+produces: pattern-selection-rationale
+domain: domain-modeling
+status: stable
 related: [bounded-context-mapping, go-contract-test, integration-design, event-driven-patterns]
 ---
 
