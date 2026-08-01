@@ -27,6 +27,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, mongodb, repository, go, aggregation, driver]
+produces: go-mongodb-repository
+domain: backend
+status: stable
 related: [go-repository-pattern, go-domain-model, document-data-modeling, go-migration]
 tools: [Bash]
 ---
