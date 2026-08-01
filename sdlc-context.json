@@ -11,11 +11,11 @@
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
     "charter": "ARCHITECTURE-REVIEW-CAMPAIGN.md",
-    "status": "P1 COMPLETE — merged to main (parent #780 closed). Governance gate live: scripts/lint-all.sh green (schemas + arch tests + lint-manifests blocking & 0 violations; lint-duplication + lint-relationships reporting). .github/workflows/governance.yml + arch smoke category wired. NEXT: P2 (Skill Manifest Enrichment).",
+    "status": "P2 IN PROGRESS — parent #805; enrich all 186 skills with produces/domain/status + fix 11 broken related: refs, on arch-review/p2-skill-manifest-enrichment. Pilot wave (11 broken-related skills + 2 orphans) executing.",
     "started": "2026-08-01",
     "absorbs_epic": "#777 (agent refactor) folded into parent P5",
-    "active_parent": "P2 (next; P1 complete)",
-    "integration_branch": null,
+    "active_parent": "P2",
+    "integration_branch": "arch-review/p2-skill-manifest-enrichment",
     "p1_complete": true,
     "p2_backlog_broken_related_refs": ["bounded-context-mapping->event-storming", "container-diagram->deployment-diagram", "data-model-design->domain-modeling", "domain-storytelling->event-storming", "environment-config->platform-engineering", "multi-tenancy-design->zero-trust-architecture", "okr-authoring->roadmap-now-next-later", "secrets-management->gitops-practice", "system-context-diagram->event-storming", "ubiquitous-language->event-storming", "user-journey-mapping->service-blueprinting"],
     "p2_note": "11 broken related: refs (fix each in its skill's P2 child); 48 orphan skills (no agent + no domain) resolve as P2 adds domain: and P5 wires skills into agents; run scripts/lint-relationships.py for the live list. lint-relationships flips to BLOCKING once broken-refs hit 0.",
@@ -28,7 +28,7 @@
     },
     "parents": [
       { "id": "P1", "parent_issue": "#780", "title": "Governance Foundation — Manifest Schemas + Consistency Linter", "integration_branch": "arch-review/p1-governance-foundation", "est_children": 12, "children_done": 12, "status": "complete — merged to main" },
-      { "id": "P2", "title": "Skill Manifest Enrichment (produces/domain/status)", "est_children": 186, "status": "not-started" },
+      { "id": "P2", "parent_issue": "#805", "title": "Skill Manifest Enrichment (produces/domain/status)", "integration_branch": "arch-review/p2-skill-manifest-enrichment", "est_children": 186, "children_done": 0, "status": "in-progress (pilot wave)", "domain_vocabulary": ["strategy","discovery","domain-modeling","architecture","backend","frontend","ux","data","security","testing","validation","platform","observability","governance"] },
       { "id": "P3", "title": "Derived Component Catalog + CI Integration", "est_children": 3, "status": "not-started" },
       { "id": "P4", "title": "Skill De-duplication & Repointing", "est_children": 150, "status": "not-started" },
       { "id": "P5", "title": "Agent Deep Refactor (absorbs #777)", "est_children": 13, "status": "not-started" },
