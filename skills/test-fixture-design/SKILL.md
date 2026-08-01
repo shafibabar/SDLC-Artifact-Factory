@@ -21,6 +21,9 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, go, fixtures, test-data, hermetic, builder, object-mother, test-data-builder, seeding, cleanup, testcontainers]
+produces: go-test-fixtures
+domain: testing
+status: stable
 related: [go-unit-test, go-integration-test, go-e2e-test, mock-generation]
 ---
 
