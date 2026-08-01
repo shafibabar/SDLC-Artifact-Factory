@@ -7,6 +7,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-31
 tags: ["deploy","metrics","dora","deployment-frequency","lead-time","mttr","change-failure-rate","delivery-performance"]
+produces: delivery-performance-configuration
+domain: platform
+status: stable
 ---
 
 # DORA Metrics
