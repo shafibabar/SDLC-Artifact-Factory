@@ -16,8 +16,11 @@ version: 2.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-related: [glossary-management, aggregate-design, bounded-context-mapping, context-map-patterns, event-storming, domain-storytelling]
 tags: [design, domain-modeling, ubiquitous-language, ddd, glossary, terminology-drift]
+produces: ubiquitous-language
+domain: domain-modeling
+status: stable
+related: [glossary-management, aggregate-design, bounded-context-mapping, context-map-patterns, event-storming-facilitation, domain-storytelling]
 ---
 
 # Ubiquitous Language
