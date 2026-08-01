@@ -17,6 +17,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, dashboard, charts, recharts, reporting, data-table, virtualization, accessibility, real-time]
+produces: react-dashboard-components
+domain: frontend
+status: stable
 related: [react-component-design, react-accessibility, react-performance-optimization, react-state-management, react-api-client, react-observability]
 ---
 
