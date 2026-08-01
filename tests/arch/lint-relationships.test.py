@@ -6,17 +6,19 @@ scripts/lint-relationships.py (P1.7, closes #788).
 Two kinds of assertions:
 
   1. SYNTHETIC records exercise the detectors precisely, independent of the live
-     tree — a deliberately broken 'related:' target must be flagged, a deliberate
-     2-node cycle (A related-> B, B related-> A) must be found, and an
+     tree — a deliberately broken 'related:' target must be flagged, a
+     bidirectional 'related:' pair (A related-> B, B related-> A) must NOT be
+     reported as a cycle (that DAG check was removed — 'related:' is inherently
+     bidirectional, so acyclicity is not a real requirement for it), and an
      orphan-only dataset must NOT raise a hard failure (orphans are warnings).
 
   2. REAL-REPO hard checks that are genuinely green today are asserted green: the
      agent-skills contract (every agent 'skills:' entry resolves to a real skill,
      and every agent carries the two mandatory cross-cutting skills). The broken
-     'related:' targets and cycles the linter finds on the real repo are KNOWN,
-     pre-existing findings that P4/P5 will resolve — the test asserts the linter
-     *reports* them (non-crashing, deterministic, well-formed) without pretending
-     the tree is already clean.
+     'related:' targets the linter finds on the real repo are KNOWN, pre-existing
+     findings that P2/P4/P5 will resolve — the test asserts the linter *reports*
+     them (non-crashing, deterministic, well-formed) without pretending the tree
+     is already clean.
 
 Prints PASS/FAIL lines; exits 0 iff every check passed. Standalone-runnable:
     python3 tests/arch/lint-relationships.test.py
@@ -87,32 +89,26 @@ check(
 )
 check("broken 'related:' target is a hard failure", res_broken["hard_failure"] is True)
 
-# (c) synthetic 2-node cycle --------------------------------------------------
-synth_skills_cycle = [
+# 'related:' cycle detection was intentionally REMOVED ------------------------
+# `related:` is a bidirectional see-also link, so a normal A<->B pair is
+# inherently "cyclic" and MUST NOT be reported as a defect (the old DAG check
+# raised 267 such false positives with no real defect behind any of them).
+# Acyclicity is a real requirement only on the artifact-dependency graph
+# (P2 produces: + P7 depends_on), which this linter does not build. So a
+# bidirectional related: pair must produce NO cycle finding and NO hard failure.
+synth_related_pair = [
     skill("aaa", related=["bbb"], domain="x"),
-    skill("bbb", related=["aaa"], domain="x"),
-    skill("ccc", related=["aaa"], domain="x"),  # feeds in but is not itself in a cycle
+    skill("bbb", related=["aaa"], domain="x"),  # legitimate bidirectional see-also
 ]
-res_cycle = L.run_checks(synth_skills_cycle, agents=[])
-cycles = res_cycle["cycles"]
-check("synthetic 2-node cycle is detected (exactly one)", len(cycles) == 1)
+res_pair = L.run_checks(synth_related_pair, agents=[])
 check(
-    "the detected cycle is aaa<->bbb (canonicalized, smallest first)",
-    cycles == [["aaa", "bbb"]],
+    "a bidirectional related: pair (A<->B) is NOT reported as a cycle",
+    "cycles" not in res_pair,
 )
-check("a cycle is a hard failure", res_cycle["hard_failure"] is True)
 check(
-    "the non-cyclic feeder skill 'ccc' is not part of the reported cycle",
-    "ccc" not in cycles[0],
+    "a bidirectional related: pair with valid targets is not a hard failure",
+    res_pair["hard_failure"] is False,
 )
-
-# find_cycles directly on a hand-built graph (longer cycle) -------------------
-graph = {"p": ["q"], "q": ["r"], "r": ["p"], "s": ["p"]}
-direct = L.find_cycles(graph)
-check("find_cycles finds the 3-node cycle p->q->r->p", direct == [["p", "q", "r"]])
-
-acyclic = {"a": ["b"], "b": ["c"], "c": []}
-check("find_cycles returns [] on a DAG", L.find_cycles(acyclic) == [])
 
 # (b) synthetic broken agent skill + missing mandatory ------------------------
 synth_skills_for_agents = [
@@ -173,7 +169,6 @@ clean = [
 clean_agents = [agent("a-one", ["s-one", "glossary-management", "methodology-review"])]
 res_clean = L.run_checks(clean, clean_agents)
 check("a fully clean synthetic set has no hard failure", res_clean["hard_failure"] is False)
-check("a clean set (s-one->s-two, no back edge) has no cycles", res_clean["cycles"] == [])
 
 
 # ===========================================================================
@@ -196,29 +191,24 @@ check(
     real["agent_missing_mandatory"] == [],
 )
 
-# Broken 'related:' targets and cycles ARE present today (pre-existing tech
-# debt that P4/P5 resolves). Assert the linter *surfaces* them well-formed and
-# marks the run a hard failure — without pretending the tree is already clean.
+# Broken 'related:' targets ARE present today (pre-existing tech debt that
+# P2/P4/P5 resolves). Assert the linter *surfaces* them well-formed and marks
+# the run a hard failure — without pretending the tree is already clean.
 check(
     "REAL: broken 'related:' findings are well-formed {skill,target} records",
     all(set(f.keys()) == {"skill", "target"} for f in real["broken_skill_related"]),
 )
 check(
-    "REAL: each reported cycle is a non-empty list of real skill names",
-    all(
-        isinstance(cyc, list) and len(cyc) >= 2
-        and all(isinstance(n, str) for n in cyc)
-        for cyc in real["cycles"]
-    ),
+    "REAL: 'related:' cycle detection is removed (no 'cycles' key on the result)",
+    "cycles" not in real,
 )
 check(
-    "REAL: known pre-existing findings mean the run is a hard failure (exit 1)",
-    real["hard_failure"] is True,
+    "REAL: known pre-existing broken 'related:' refs make the run a hard failure (exit 1)",
+    real["hard_failure"] is True and len(real["broken_skill_related"]) > 0,
 )
 check(
     "REAL: counts block agrees with the finding lists",
     real["counts"]["broken_skill_related"] == len(real["broken_skill_related"])
-    and real["counts"]["cycles"] == len(real["cycles"])
     and real["counts"]["orphans"] == len(real["orphans"]),
 )
 
