@@ -11,7 +11,7 @@
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
     "charter": "ARCHITECTURE-REVIEW-CAMPAIGN.md",
-    "status": "P2 IN PROGRESS — parent #805; enrich all 186 skills with produces/domain/status + fix 11 broken related: refs, on arch-review/p2-skill-manifest-enrichment. Pilot wave (11 broken-related skills + 2 orphans) executing.",
+    "status": "P2 IN PROGRESS — parent #805; enrich all 186 skills with produces/domain/status + fix 11 broken related: refs, on arch-review/p2-skill-manifest-enrichment. Pilot wave DONE (13/186): produces/domain/status added, all 11 broken related: refs FIXED (lint-relationships broken-refs 11->0), gate green (0 manifest violations). Domain taxonomy finalized (14-value closed vocab; function-wins rule: *-test/*-testing->testing, go-*/python-*->backend, react-*->frontend, else fixed non-prefixed map). Scaling the remaining 173 skills with pre-assigned domains.",
     "started": "2026-08-01",
     "absorbs_epic": "#777 (agent refactor) folded into parent P5",
     "active_parent": "P2",
@@ -28,7 +28,7 @@
     },
     "parents": [
       { "id": "P1", "parent_issue": "#780", "title": "Governance Foundation — Manifest Schemas + Consistency Linter", "integration_branch": "arch-review/p1-governance-foundation", "est_children": 12, "children_done": 12, "status": "complete — merged to main" },
-      { "id": "P2", "parent_issue": "#805", "title": "Skill Manifest Enrichment (produces/domain/status)", "integration_branch": "arch-review/p2-skill-manifest-enrichment", "est_children": 186, "children_done": 0, "status": "in-progress (pilot wave)", "domain_vocabulary": ["strategy","discovery","domain-modeling","architecture","backend","frontend","ux","data","security","testing","validation","platform","observability","governance"] },
+      { "id": "P2", "parent_issue": "#805", "title": "Skill Manifest Enrichment (produces/domain/status)", "integration_branch": "arch-review/p2-skill-manifest-enrichment", "est_children": 186, "children_done": 13, "status": "in-progress (scaling remaining 173)", "domain_vocabulary": ["strategy","discovery","domain-modeling","architecture","backend","frontend","ux","data","security","testing","validation","platform","observability","governance"] },
       { "id": "P3", "title": "Derived Component Catalog + CI Integration", "est_children": 3, "status": "not-started" },
       { "id": "P4", "title": "Skill De-duplication & Repointing", "est_children": 150, "status": "not-started" },
       { "id": "P5", "title": "Agent Deep Refactor (absorbs #777)", "est_children": 13, "status": "not-started" },
