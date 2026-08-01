@@ -88,7 +88,7 @@ and exact boundary class: `references/error-boundary-and-reporting-standard.md`
 
 **Tool: GlitchTip** (self-hosted, Sentry-ingestion-API-compatible) via the
 official `@sentry/react` SDK — open-source client against an open-source
-self-hosted backend, per the frugality constraint. Disable
+self-hosted backend, per CLAUDE.md § Budget and Frugality. Disable
 `browserTracingIntegration` — OTel Web (Standard 3) already owns tracing;
 running both double-instruments `fetch` and mints a second, uncorrelated span
 tree.

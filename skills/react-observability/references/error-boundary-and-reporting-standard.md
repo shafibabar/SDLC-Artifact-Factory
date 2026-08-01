@@ -77,11 +77,11 @@ backend §3 wires it to.
 
 ### Tool choice: GlitchTip, via the `@sentry/react` SDK
 
-Per the frugality constraint (open-source over paid tooling), point the
-official, MIT-licensed `@sentry/react` client SDK at a **self-hosted
-GlitchTip** instance rather than Sentry SaaS. GlitchTip implements
-Sentry's ingestion API, so the well-tested official SDK — automatic
-`window.onerror`/`unhandledrejection` capture, breadcrumbs,
+Per CLAUDE.md § Budget and Frugality (open-source over paid tooling),
+point the official, MIT-licensed `@sentry/react` client SDK at a
+**self-hosted GlitchTip** instance rather than Sentry SaaS. GlitchTip
+implements Sentry's ingestion API, so the well-tested official SDK —
+automatic `window.onerror`/`unhandledrejection` capture, breadcrumbs,
 `beforeSend` scrubbing, release tagging — works unmodified against it.
 This mirrors the platform's existing self-hosted-over-SaaS pattern
 (Prometheus/Grafana over a metrics SaaS, per `prometheus-metrics-design`)
