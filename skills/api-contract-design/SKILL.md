@@ -19,6 +19,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, api-first, openapi, contract-first, rest]
+produces: openapi-specification
+domain: architecture
+status: stable
 related: [skill-authoring-standards, command-catalog, read-model-design]
 ---
 

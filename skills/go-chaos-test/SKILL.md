@@ -25,6 +25,9 @@ phase: quality
 owner: test-strategist
 created: 2026-06-25
 tags: [quality, chaos, resilience, toxiproxy, chaos-mesh, circuit-breaker, retry, dlq, fault-injection, blast-radius, deadlock, livelock]
+produces: go-chaos-test
+domain: testing
+status: stable
 related: [go-load-test, go-concurrency-patterns, go-event-consumer, go-event-publisher, integration-design, canary-deployment, kubernetes-manifest, multi-tenancy-design, alerting-rules-design, glossary-management]
 ---
 

@@ -18,6 +18,9 @@ phase: data
 owner: data-engineer
 created: 2026-07-20
 tags: [data, analytics, requirements, metrics, okr, stakeholder-elicitation, vanity-metrics]
+produces: analytics-requirements-document
+domain: data
+status: stable
 related: [skill-authoring-standards, okr-authoring, dashboard-specification]
 ---
 

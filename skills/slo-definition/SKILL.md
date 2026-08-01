@@ -13,6 +13,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, observability, slo, sli, error-budget, burn-rate, reliability, dora, platform-engineering]
+produces: [service-slo-record, platform-slo-record]
+domain: observability
+status: stable
 related: [dora-metrics, nfr-specification, prometheus-metrics-design, alerting-rules-design, go-load-test]
 ---
 

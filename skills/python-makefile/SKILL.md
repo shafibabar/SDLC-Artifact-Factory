@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, makefile, taskfile, task-runner, uv, ruff, mypy, pytest, alembic, ci, ci-parity, freshness, kind, local-up]
+produces: makefile
+domain: backend
+status: stable
 related: [go-makefile, python-project-structure, python-unit-test, python-dockerfile]
 tools: [Bash]
 ---

@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, fastapi, asyncpg, application-layer, service-layer, unit-of-work, idempotency, taskgroup, contextvars, async]
+produces: python-cqrs-handlers
+domain: backend
+status: stable
 related: [go-service-layer, python-repository-pattern, python-domain-model, python-error-handling]
 ---
 

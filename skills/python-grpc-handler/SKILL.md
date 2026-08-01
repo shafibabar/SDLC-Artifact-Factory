@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, grpc, python, grpcio, asyncio, interceptor, streaming, server]
+produces: python-grpc-handler
+domain: backend
+status: stable
 related: [go-grpc-handler, grpc-contract-design, python-fastapi-handler, python-middleware]
 tools: [Bash]
 ---

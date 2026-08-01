@@ -12,6 +12,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, performance, profiling, py-spy, scalene, tracemalloc, gil, asyncio, processpool, asyncpg, allocation, async]
+produces: python-benchmark
+domain: backend
+status: stable
 related: [go-performance-optimization, python-async-concurrency, python-service-layer]
 tools: [Bash]
 ---

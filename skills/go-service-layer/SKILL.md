@@ -27,6 +27,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, cqrs, application-layer, command-handler, query-handler, transaction-boundary, idempotency, cache-aside, validation-boundary, errgroup, confinement]
+produces: go-cqrs-handlers
+domain: backend
+status: stable
 related: [go-repository-pattern, go-domain-model, go-chi-handler, go-error-handling, go-event-consumer, command-catalog, read-model-design, go-concurrency-patterns, multi-tenancy-design]
 ---
 

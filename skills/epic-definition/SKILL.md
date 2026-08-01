@@ -15,6 +15,9 @@ phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, requirements, epic, story-decomposition, acceptance-criteria, agile]
+produces: epic-list
+domain: discovery
+status: stable
 related: [user-story-writing, acceptance-criteria, impact-mapping, story-mapping, moscow-prioritization, glossary-management, methodology-review]
 ---
 

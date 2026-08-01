@@ -17,6 +17,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
 tags: [governance, artifact-manifest, traceability, registry, cross-cutting]
+produces: product-manifest
+domain: governance
+status: stable
 ---
 
 # Artifact Manifest

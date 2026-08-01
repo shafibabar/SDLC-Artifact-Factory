@@ -15,6 +15,9 @@ owner: requirements-analyst
 created: 2026-06-24
 related: [epic-definition, user-story-writing, user-persona, moscow-prioritization, impact-mapping, roadmap-authoring, acceptance-criteria]
 tags: [ideate, requirements, story-map, backbone, walking-skeleton, release-slicing, patton]
+produces: user-story-map
+domain: discovery
+status: stable
 ---
 
 # Story Mapping

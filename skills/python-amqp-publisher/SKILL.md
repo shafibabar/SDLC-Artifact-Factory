@@ -20,6 +20,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, python, rabbitmq, amqp, aio-pika, publisher, exchange, publisher-confirms, asyncio, durability, outbox]
+produces: python-amqp-publisher
+domain: backend
+status: stable
 related: [go-amqp-publisher, python-amqp-consumer, message-broker-selection, python-event-publisher]
 ---
 

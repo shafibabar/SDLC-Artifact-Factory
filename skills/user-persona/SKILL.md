@@ -15,6 +15,9 @@ owner: requirements-analyst
 created: 2026-06-24
 related: [jtbd-analysis, user-story-writing, gtm-strategy, stakeholder-mapping]
 tags: [strategy, requirements, persona, proto-persona, research-persona, user-research, discovery]
+produces: user-persona
+domain: discovery
+status: stable
 ---
 
 # User Persona

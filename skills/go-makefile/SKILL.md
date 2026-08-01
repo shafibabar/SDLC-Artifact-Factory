@@ -21,6 +21,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, makefile, ci, ci-parity, race-detector, lint, govulncheck, coverage, benchmark, fitness-function]
+produces: makefile
+domain: backend
+status: stable
 related: [go-project-structure, go-dockerfile, ci-pipeline, go-performance-test, test-pyramid]
 ---
 

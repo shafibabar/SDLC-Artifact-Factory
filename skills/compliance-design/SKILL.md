@@ -16,6 +16,9 @@ owner: security-architect
 created: 2026-06-25
 related: [compliance-verification, privacy-design, threat-modeling, security-architecture, access-control-model, glossary-management]
 tags: [design, compliance, soc2, gdpr, separation-of-duties, control-design, materiality, risk-based, fipps]
+produces: compliance-design
+domain: security
+status: stable
 ---
 
 # Compliance Design

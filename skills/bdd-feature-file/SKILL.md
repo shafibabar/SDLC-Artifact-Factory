@@ -20,6 +20,9 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, quality, bdd, gherkin, feature-file, godog, executable-spec, given-when-then]
+produces: gherkin-feature-file
+domain: testing
+status: stable
 ---
 
 # BDD Feature File

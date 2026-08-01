@@ -24,6 +24,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, state, tanstack-query, zustand, server-state, caching, microfrontend]
+produces: react-state-stores
+domain: frontend
+status: stable
 related: [microfrontend-architecture, react-performance-optimization, typescript-types, react-routing, react-component-design]
 ---
 

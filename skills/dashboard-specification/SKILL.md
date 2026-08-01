@@ -20,6 +20,9 @@ related:
   - ui-component-spec
   - data-pipeline-implementation
 tags: [data, analytics, dashboard, visualization, chart-selection, read-model, metrics]
+produces: dashboard-specification
+domain: data
+status: stable
 ---
 
 # Dashboard Specification

@@ -23,6 +23,9 @@ related:
   - zero-trust-design
   - event-schema-design
 tags: [design, data-governance, retention, deletion, legal-hold, archival, pii]
+produces: data-retention-policy
+domain: data
+status: stable
 ---
 
 # Data Retention Policy

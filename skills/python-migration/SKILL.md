@@ -22,6 +22,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, migration, alembic, asyncpg, postgresql, expand-contract, zero-downtime, backward-compatibility, forward-only, multi-tenancy]
+produces: schema-migration
+domain: backend
+status: stable
 related: [go-migration, python-repository-pattern]
 tools: [Bash]
 ---

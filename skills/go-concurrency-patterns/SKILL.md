@@ -27,6 +27,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, concurrency, goroutine, channel, errgroup, worker-pool, context, atomic, deadlock]
+produces: go-concurrency-package
+domain: backend
+status: stable
 related: [go-service-skeleton, go-event-publisher, go-event-consumer, go-service-layer, go-chaos-test, go-performance-optimization, go-makefile, go-load-test, health-check-design, go-middleware, go-error-handling]
 ---
 

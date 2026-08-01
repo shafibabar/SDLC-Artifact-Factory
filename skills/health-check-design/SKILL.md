@@ -13,6 +13,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, observability, health-check, liveness, readiness, kubernetes, probes]
+produces: health-check-endpoints
+domain: observability
+status: stable
 ---
 
 # Health Check Design

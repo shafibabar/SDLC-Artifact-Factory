@@ -23,6 +23,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, asyncpg, aiokafka, outbox, redpanda, kafka, event-publishing, at-least-once, relay, backpressure, idempotency, asyncio, tenant]
+produces: python-outbox-relay
+domain: backend
+status: stable
 related: [go-event-publisher, python-event-consumer, python-repository-pattern, domain-event-catalog]
 ---
 

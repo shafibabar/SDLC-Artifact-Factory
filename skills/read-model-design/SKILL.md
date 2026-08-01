@@ -6,6 +6,9 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: ["design","domain-modeling","cqrs","read-model","projections","denormalization","query-optimization"]
+produces: read-model
+domain: domain-modeling
+status: stable
 related: [cqrs-pattern, domain-event-catalog, aggregate-design, go-repository-pattern, data-model-design]
 ---
 

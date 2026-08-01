@@ -11,6 +11,9 @@ phase: strategy
 owner: product-strategist
 created: 2026-06-24
 tags: [strategy, competitive-analysis, positioning, differentiation, gtm]
+produces: competitive-analysis
+domain: strategy
+status: stable
 ---
 
 # Competitive Analysis

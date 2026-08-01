@@ -14,6 +14,9 @@ owner: data-architect
 created: 2026-06-25
 related: [data-pipeline-design, data-pipeline-implementation, canonical-data-model, data-classification, privacy-design, compliance-verification, data-retention-policy, glossary-management]
 tags: [design, data-governance, lineage, openlineage, impact-analysis, provenance, compliance]
+produces: data-lineage-design
+domain: data
+status: stable
 ---
 
 # Data Lineage Design

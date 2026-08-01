@@ -26,6 +26,9 @@ phase: quality
 owner: test-strategist
 created: 2026-06-25
 tags: [quality, go, load-test, k6, slo, throughput, latency, backpressure, circuit-breaker, shift-right]
+produces: load-test-suite
+domain: testing
+status: stable
 related: [go-performance-test, go-chaos-test, slo-definition, prometheus-metrics-design, integration-design, go-middleware, environment-config, go-e2e-test]
 ---
 

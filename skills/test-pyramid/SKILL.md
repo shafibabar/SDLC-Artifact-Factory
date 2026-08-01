@@ -13,6 +13,9 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, quality, testing, test-pyramid, shift-left, shift-right, strategy, coverage]
+produces: test-strategy
+domain: testing
+status: stable
 related: [bdd-feature-file, go-unit-test, mock-generation, test-fixture-design, go-integration-test, go-contract-test, go-mutation-test, go-e2e-test, go-performance-test, go-load-test, go-chaos-test, security-implementation, compliance-verification, uat-plan]
 ---
 

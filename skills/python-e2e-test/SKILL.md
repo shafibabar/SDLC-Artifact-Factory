@@ -11,6 +11,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, e2e, end-to-end, kind, httpx, aiokafka, flakiness, quarantine, ci, pytest]
+produces: python-e2e-test-suite
+domain: testing
+status: stable
 related: [go-e2e-test, python-integration-test, python-fastapi-handler, uat-scenario]
 tools: [Bash]
 ---

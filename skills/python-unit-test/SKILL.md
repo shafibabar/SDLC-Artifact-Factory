@@ -12,6 +12,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, pytest, unit-test, fixtures, parametrize, pytest-asyncio, fakes-over-mocks, aaa, coverage, four-pillars, tdd]
+produces: pytest-suite
+domain: testing
+status: stable
 related: [go-unit-test, python-domain-model, python-service-layer, test-fixture-design]
 tools: [Bash]
 ---

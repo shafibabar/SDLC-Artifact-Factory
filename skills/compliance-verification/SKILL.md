@@ -16,6 +16,9 @@ phase: quality
 owner: security-engineer
 created: 2026-06-25
 tags: [quality, compliance, soc2, attestation, control-gate, continuous-control-monitoring, evidence, audit, go]
+produces: compliance-verification-report
+domain: security
+status: stable
 related: [compliance-design, security-implementation, security-architecture, threat-modeling, privacy-design, glossary-management, methodology-review]
 ---
 

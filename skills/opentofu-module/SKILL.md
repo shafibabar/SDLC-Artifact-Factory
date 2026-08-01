@@ -13,6 +13,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, iac, opentofu, modules, tenant-stamp, opa, remote-state, drift, golden-path, self-service]
+produces: opentofu-module
+domain: platform
+status: stable
 ---
 
 # OpenTofu Module

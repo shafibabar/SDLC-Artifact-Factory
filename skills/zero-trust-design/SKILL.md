@@ -16,6 +16,9 @@ phase: design
 owner: security-architect
 created: 2026-06-25
 tags: [design, security, zero-trust, mtls, jwt, linkerd, encryption, mandatory]
+produces: zero-trust-design
+domain: security
+status: stable
 related: [security-architecture, security-implementation, access-control-model, threat-modeling, secrets-management]
 ---
 

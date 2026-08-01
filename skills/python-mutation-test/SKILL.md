@@ -11,6 +11,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, mutation-testing, test-quality, mutation-score, mutmut, cosmic-ray, survived-mutant, coverage, pytest]
+produces: mutation-report
+domain: testing
+status: stable
 related: [go-mutation-test, python-unit-test, test-pyramid]
 tools: [Bash]
 ---

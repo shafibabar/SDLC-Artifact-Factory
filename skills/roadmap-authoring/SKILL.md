@@ -12,6 +12,9 @@ phase: strategy
 owner: product-strategist
 created: 2026-06-24
 tags: [strategy, roadmap, product-discovery, okr, sequencing]
+produces: strategic-roadmap
+domain: strategy
+status: stable
 ---
 
 # Roadmap Authoring

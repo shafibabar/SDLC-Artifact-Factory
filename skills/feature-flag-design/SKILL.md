@@ -15,6 +15,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, feature-flags, progressive-delivery, kill-switch, entitlements, openfeature, trunk-based-development]
+produces: feature-flag-inventory
+domain: platform
+status: stable
 related: [ci-pipeline, progressive-delivery, canary-deployment, blue-green-deployment, environment-config]
 ---
 

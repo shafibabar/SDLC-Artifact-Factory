@@ -18,6 +18,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, accessibility, wcag, aria, keyboard, axe]
+produces: react-accessible-components
+domain: frontend
+status: stable
 related: [react-component-testing, react-component-design, react-dashboard-components, react-graph-visualization]
 ---
 

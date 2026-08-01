@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, ddd, aggregate, value-object, domain-event, invariants, dataclass, encapsulation]
+produces: python-domain-model
+domain: backend
+status: stable
 related: [go-domain-model, python-repository-pattern, python-service-layer]
 ---
 

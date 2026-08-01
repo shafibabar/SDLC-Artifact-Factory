@@ -25,6 +25,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, grpc, go, interceptor, streaming, server]
+produces: go-grpc-handler
+domain: backend
+status: stable
 related: [go-chi-handler, go-middleware, grpc-contract-design, go-service-skeleton]
 tools: [Bash]
 ---

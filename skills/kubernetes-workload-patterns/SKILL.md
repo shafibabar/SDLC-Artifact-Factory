@@ -7,6 +7,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-31
 tags: ["deploy","kubernetes","workload","deployment","statefulset","daemonset","job","cronjob","operator","keda","sidecar","init-container"]
+produces: workload-pattern-decisions
+domain: platform
+status: stable
 ---
 
 # Kubernetes Workload Patterns

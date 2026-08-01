@@ -16,6 +16,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-31
 tags: [deploy, platform, api-gateway, kong, edge, routing, rate-limiting, mesh]
+produces: api-gateway-design
+domain: architecture
+status: stable
 related: [kubernetes-manifest, gitops-workflow, zero-trust-design, environment-config]
 ---
 

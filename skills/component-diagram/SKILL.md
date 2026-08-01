@@ -16,6 +16,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, c4-model, component-diagram, documentation, layering, dependency-direction, clean-architecture]
+produces: component-diagram
+domain: architecture
+status: stable
 related: [container-diagram, system-context-diagram, go-project-structure, go-repository-pattern, go-service-layer, adr-authoring]
 ---
 

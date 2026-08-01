@@ -23,6 +23,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, project-structure, clean-architecture, solid, interfaces, generics]
+produces: go-service-skeleton
+domain: backend
+status: stable
 related: [go-error-handling, go-concurrency-patterns, go-unit-test, go-makefile, go-openapi-codegen, mock-generation, go-domain-model, go-repository-pattern, go-service-layer, go-chi-handler, component-diagram]
 ---
 

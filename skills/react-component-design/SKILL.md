@@ -19,6 +19,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, components, composition, custom-hooks, atomic-design, prop-design, discriminated-unions]
+produces: react-components
+domain: frontend
+status: stable
 related: [react-component-testing, react-accessibility, react-observability, react-state-management, react-project-structure]
 ---
 

@@ -21,6 +21,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, observability, alerting, alertmanager, burn-rate, slo, on-call, runbook, toil, saturation]
+produces: alerting-rules-design-document
+domain: observability
+status: stable
 related: [skill-authoring-standards, slo-definition, prometheus-metrics-design, runbook-authoring, health-check-design]
 ---
 

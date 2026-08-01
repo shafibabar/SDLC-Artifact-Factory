@@ -27,6 +27,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, migration, postgresql, goose, expand-contract, zero-downtime, backward-compatibility, concurrent-index, reversibility]
+produces: schema-migration
+domain: backend
+status: stable
 related: [go-repository-pattern, go-event-publisher, go-event-consumer, go-service-layer, multi-tenancy-design, data-model-design, glossary-management]
 ---
 

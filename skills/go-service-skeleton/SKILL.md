@@ -22,6 +22,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, main, lifecycle, graceful-shutdown, context, composition-root, signal-handling, readiness]
+produces: go-composition-root
+domain: backend
+status: stable
 related: [go-concurrency-patterns, go-error-handling, health-check-design, go-event-consumer, kubernetes-manifest]
 ---
 

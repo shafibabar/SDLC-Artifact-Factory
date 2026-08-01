@@ -25,6 +25,9 @@ phase: quality
 owner: test-strategist
 created: 2026-06-25
 tags: [quality, go, e2e, kind, ephemeral-environment, flakiness, quarantine, ci, shift-right]
+produces: go-e2e-test-suite
+domain: testing
+status: stable
 related: [go-integration-test, go-unit-test, multi-tenancy-design, environment-config, ci-pipeline, cd-pipeline, helm-chart, react-e2e-testing, test-pyramid, user-journey-mapping, distributed-tracing-design, disaster-recovery-plan]
 ---
 

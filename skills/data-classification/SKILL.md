@@ -15,6 +15,9 @@ phase: design
 owner: data-architect
 created: 2026-06-25
 tags: [design, data-governance, classification, sensitivity, tagging, pii, access-control]
+produces: data-classification-scheme
+domain: data
+status: stable
 related: [access-control-model, data-retention-policy, privacy-design, zero-trust-design, compliance-design, glossary-management]
 ---
 

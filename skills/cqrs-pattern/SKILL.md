@@ -14,6 +14,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: ["implement","cqrs","read-model","write-model","projections","event-sourcing","domain-modeling"]
+produces: cqrs-design
+domain: domain-modeling
+status: stable
 related: [domain-event-catalog, read-model-design, subdomain-distillation, aggregate-design, go-domain-model]
 ---
 

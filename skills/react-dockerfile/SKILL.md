@@ -23,6 +23,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, docker, multi-stage, nginx, vite, microfrontend, security, static]
+produces: dockerfile
+domain: frontend
+status: stable
 related: [go-dockerfile, react-project-structure, microfrontend-architecture, react-api-client, secrets-management, security-architecture]
 ---
 

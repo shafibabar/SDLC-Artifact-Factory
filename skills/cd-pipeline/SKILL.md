@@ -12,6 +12,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, cd, gitops, flux, promotion, rollback, reconciliation, drift, dora, cfr]
+produces: cd-pipeline-config
+domain: platform
+status: stable
 ---
 
 # CD Pipeline

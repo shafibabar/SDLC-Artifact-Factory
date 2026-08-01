@@ -17,6 +17,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-07-23
 tags: [skill-authoring, progressive-disclosure, governance, cross-cutting, meta]
+produces: skill-definition
+domain: governance
+status: stable
 related: [glossary-management, methodology-review]
 ---
 

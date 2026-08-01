@@ -18,6 +18,9 @@ phase: design
 owner: ux-architect
 created: 2026-06-25
 tags: [design, ux, ui-components, react, typescript, accessibility, component-spec, microfrontend]
+produces: ui-component-spec
+domain: ux
+status: stable
 ---
 
 # UI Component Specification

@@ -19,6 +19,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, e2e, playwright, user-journey, microfrontend, cross-remote, flakiness, testing]
+produces: react-e2e-test-suite
+domain: testing
+status: stable
 related: [react-component-testing, react-routing, microfrontend-architecture, go-e2e-test, react-accessibility]
 ---
 

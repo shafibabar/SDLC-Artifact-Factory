@@ -14,6 +14,9 @@ phase: data
 owner: data-engineer
 created: 2026-07-20
 tags: [data, analytics, data-storytelling, visualization, knaflic, narrative, preattentive-attributes]
+produces: data-story
+domain: data
+status: stable
 related: [domain-storytelling, dashboard-specification, reporting-spec, react-dashboard-components, analytics-requirements]
 ---
 

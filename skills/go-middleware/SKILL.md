@@ -27,6 +27,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, middleware, chi, recover, response-writer, telemetry, jwt, rate-limit, context-key]
+produces: go-http-middleware
+domain: backend
+status: stable
 related: [go-error-handling, go-chi-handler, go-concurrency-patterns, go-domain-model, security-implementation, opentelemetry-instrumentation, structured-logging-design]
 ---
 

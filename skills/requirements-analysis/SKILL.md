@@ -12,6 +12,9 @@ phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, requirements, functional-requirements, frd, traceability, product-discovery]
+produces: functional-requirements-document
+domain: discovery
+status: stable
 ---
 
 # Requirements Analysis

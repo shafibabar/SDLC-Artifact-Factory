@@ -20,6 +20,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, rabbitmq, amqp, consumer, go, dead-letter-exchange, prefetch]
+produces: go-amqp-consumer
+domain: backend
+status: stable
 related: [go-event-consumer, message-broker-selection, event-driven-patterns, go-amqp-publisher]
 tools: [Bash]
 ---

@@ -110,7 +110,7 @@ Each refactored skill must have a corresponding contract test at `tests/skills/<
 The repo now has a **machine-readable governance layer** — the keystone of the Architecture Review campaign (`ARCHITECTURE-REVIEW-CAMPAIGN.md`). It is data + validators, not a runtime tier:
 
 - **Manifest = component frontmatter** is the single source of truth. `schemas/{skill,agent,command,hook}.schema.json` (Draft 2020-12) validate each component's frontmatter shape; `schemas/workflow.schema.json` is the forward contract P7's declarative workflow specs author to. `scripts/arch/manifest.py` is the shared frontmatter parser (normalizes YAML dates, derives filesystem facts) that all tooling imports.
-- **Three linters** (`scripts/lint-*.py`): `lint-manifests` (schema-validates every component — **blocking**), `lint-relationships` (broken `related:`/`skills:` refs, mandatory cross-cutting skills, orphan warnings — **reporting until P2 clears the backlog, then blocking**), `lint-duplication` (recurring blocks + CLAUDE.md restatements → `generated/duplication-report.md`, the P4 backlog — **report-only**).
+- **Three linters** (`scripts/lint-*.py`): `lint-manifests` (schema-validates every component — **blocking**), `lint-relationships` (broken `related:`/`skills:` refs, mandatory cross-cutting skills, orphan warnings — **blocking since P2 close-out**, which drove broken refs 11 → 0 and orphans 48 → 0; orphans remain a non-gating warning), `lint-duplication` (recurring blocks + CLAUDE.md restatements → `generated/duplication-report.md`, the P4 backlog — **report-only**).
 - **The gate:** `scripts/lint-all.sh` runs the schema+arch tests and the three linters with that blocking/reporting policy and exits non-zero only on a blocking failure. It is wired into `tests/run-smoke-tests.sh` (the `arch` category) and `.github/workflows/governance.yml` (runs on PR). A PR that breaks a schema or introduces a manifest violation fails the gate.
 
 Cycle/DAG validation is **not** run over `related:` (a bidirectional see-also); it belongs to the artifact-dependency graph that P2 (`produces:`) and P7 (workflow `depends_on`) build.
@@ -267,6 +267,16 @@ The plugin's own components carry these canonical schemas — no other shapes ar
 Every agent's `skills:` list includes `glossary-management` and `methodology-review` in addition to its domain skills. Agents that run shell commands (build, test, scan) declare `tools: [Bash]`.
 
 A skill may additionally declare an optional `related:` field (a list of other skill names its body references in prose) — not part of the required, ordered schema above, and not required on every skill. See `skill-authoring-standards`.
+
+**Manifest fields (Arch Review P2 — complete).** Every skill additionally authors three manifest fields, placed immediately after `tags:`:
+
+| Field | Holds | Rule |
+|---|---|---|
+| `produces` | The artifact applying the skill yields — an artifact noun, not the skill's own name unless the two genuinely coincide (`adr-authoring` → `architecture-decision-record`). A list when a skill truly yields more than one (`slo-definition`). | Authored, never derived |
+| `domain` | The logical `skill_domains` grouping — a tag, never a filesystem path. One of: `architecture · backend · data · discovery · domain-modeling · frontend · governance · observability · platform · security · strategy · testing · ux · validation`. Follows the owning agent, except where subject matter overrides (test skills are `testing`, instrumentation skills are `observability`, regardless of owner). | Authored, never derived |
+| `status` | Maturity: `experimental` \| `stable` \| `complete`. | Authored, never derived |
+
+All 186 skills carry all three. These are the non-derivable, *consumed* inputs to the derived catalog (P3) and the artifact-dependency graph; everything derivable from the filesystem stays derived. Because every skill now declares a `domain`, the orphan-skill count is 0 and `lint-relationships` is **blocking** in the governance gate.
 
 ### Command and Hook Mechanics
 

@@ -15,6 +15,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-07-31
 tags: [design, architecture, messaging, broker, kafka, rabbitmq, amqp, log-vs-queue]
+produces: broker-selection-rationale
+domain: architecture
+status: stable
 related: [event-driven-patterns, go-event-publisher, go-event-consumer, go-amqp-publisher, go-amqp-consumer, integration-design]
 ---
 

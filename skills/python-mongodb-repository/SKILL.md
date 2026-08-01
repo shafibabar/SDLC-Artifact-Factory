@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, mongodb, repository, python, motor, aggregation, driver]
+produces: python-mongodb-repository
+domain: backend
+status: stable
 related: [go-mongodb-repository, document-data-modeling, python-repository-pattern, python-domain-model]
 ---
 
