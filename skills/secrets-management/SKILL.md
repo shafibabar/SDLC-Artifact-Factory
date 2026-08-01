@@ -13,7 +13,10 @@ phase: design
 owner: security-architect
 created: 2026-06-25
 tags: [design, security, secrets-management, vault, kubernetes, rotation, go, gitops, sops, sealed-secrets]
-related: [gitops-practice, kubernetes-manifest, cd-pipeline]
+produces: secrets-management-design
+domain: security
+status: stable
+related: [gitops-workflow, kubernetes-manifest, cd-pipeline]
 ---
 
 # Secrets Management
