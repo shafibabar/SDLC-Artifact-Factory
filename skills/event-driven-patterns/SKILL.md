@@ -14,6 +14,9 @@ phase: design
 owner: enterprise-architect
 created: 2026-06-25
 tags: [design, architecture, event-driven, choreography, orchestration, saga, idempotency, transactional-outbox, cdc, dead-letter-queue]
+produces: event-driven-pattern-decisions
+domain: architecture
+status: stable
 related: [integration-design, data-pipeline-design, event-schema-design, cqrs-pattern, container-diagram, context-map-patterns]
 ---
 
