@@ -21,6 +21,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, rabbitmq, amqp, consumer, python, aio-pika, dead-letter-exchange, prefetch]
+produces: python-amqp-consumer
+domain: backend
+status: stable
 related: [go-amqp-consumer, python-amqp-publisher, message-broker-selection, python-event-consumer]
 ---
 
