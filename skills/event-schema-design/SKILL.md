@@ -27,6 +27,9 @@ tags:
   - schema-versioning
   - schema-registry
   - backward-compatibility
+produces: event-schema
+domain: domain-modeling
+status: stable
 ---
 
 # Event Schema Design
