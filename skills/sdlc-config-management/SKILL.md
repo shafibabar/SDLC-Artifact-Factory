@@ -17,6 +17,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
 tags: [governance, configuration, sdlc-config, tech-stack, questionnaire, per-product]
+produces: sdlc-config
+domain: governance
+status: stable
 related: [artifact-manifest, methodology-review, skill-authoring-standards]
 ---
 
