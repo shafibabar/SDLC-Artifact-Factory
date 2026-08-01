@@ -3,17 +3,17 @@
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
     "last_updated": "2026-08-01",
-    "updated_by": "Architecture Review P2 (Skill Manifest Enrichment) COMPLETE — parent #805 merged to main. All 186 skills author produces/domain/status; broken related: refs 11->0; orphan skills 48->0; lint-relationships flipped to BLOCKING. Next: P3 (Derived Component Catalog + CI Integration).",
+    "updated_by": "Architecture Review P3 (Derived Component Catalog + CI Integration) COMPLETE — parent #1183 merged to main. generated/catalog.json committed and gated on staleness (lint-all.sh step 5, BLOCKING). Next: P4/P5/P6/P7, parallelizable.",
     "_prev_updated_by": "Chunk 66 — Agent refactor campaign (epic #777), STARTED — bringing all 13 agents current with the refactored/new skill roster (Chunks 52-65) and new research, one agent at a time (SDLC phase order), each its own branch/PR, reviewed before the next. AGENT 1/13 — product-strategist (#778, v1.1.0→2.0.0): added user-persona + jtbd-analysis + impact-mapping to skills: (strategy-phase discovery skills it uses; requirements-analyst owns them, shared) → 13 skills; added a Behavioral Directives index (numbered principles each citing an owning skill) reflecting the v2.0.0 skill content (JTBD/Mom-Test discovery, Dunford positioning + Moore chasm/beachhead, outcome-not-output KRs + impact mapping, mission-vs-vision, 9-block-vs-Lean-Canvas); reconciled the Methodology table; rewrote description as a trigger surface; added tests/agents/product-strategist.acceptance.sh — and RAN it: PASS (the agent produced a real vision + mission and applied the mission-vs-vision distinction end-to-end). The platform-engineer (Chunk 52) Behavioral-Directives shape is the template. Remaining agents: requirements-analyst, domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, backend-engineer (largest), security-engineer, data-engineer, test-strategist; frontend-engineer + platform-engineer already current (light check).",
     "_history_note": "Full per-chunk history lives in build_checklist below. This session (Chunks 52-63): (A) skill-authoring-standards refactor campaign — Chunk 52 (DevOps books — 6 new skills + 22 refactors + 1 agent), 53 (domain-modeling — 8), 54 (architecture — 6), 55 (security — 6 books + 6 skills), 56 (data — 11), 57 (discovery/strategy — 9), 58 (UX — 3), 59 (7 medium fixes), 60 (final 10 audit closeout), 61 (body-length polish of 8). Contract-test coverage 63/142 → 148/148. (B) Chunk 62 — tech-stack gap closure (epic #678): 5 research files + 10 new skills (MongoDB/RabbitMQ/Conductor/gRPC/Kong) + 2 multi-cloud refactors; #695 python spike delivered as a proposal. 148→158 skills. (C-E) Python backend suite (epics #713/#739/#758, all closed) — the full go-*-mirrored python-* roster: Chunk 63 Tier 1 (Cosmic Python research + 11 MVP skills), Chunk 64 Tier 2 (pytest research + 8 messaging/testing skills), Chunk 65 Tier 3 (9 parity skills — grpc/amqp/mongo + e2e/mutation/load/chaos/performance, no research phase). 158→186 skills, 158→186 tests. MILESTONE: 28 python-* = 28 go-* skills, full FastAPI-vs-Go backend parity. (F) Chunk 66 — agent refactor campaign started (epic #777): the 13 agents, written before this session's skill work, are being brought current one at a time in SDLC phase order; agent 1/13 product-strategist done (v2.0.0, acceptance test written AND passing)."
   },
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
     "charter": "ARCHITECTURE-REVIEW-CAMPAIGN.md",
-    "status": "P2 COMPLETE — merged to main (parent #805 closed). All 186 skills author produces/domain/status. Broken 'related:' refs 11->0 and orphan skills 48->0, so lint-relationships flipped REPORTING->BLOCKING in scripts/lint-all.sh (verified by injected-broken-ref negative test). Governance gate green. NEXT: P3 (Derived Component Catalog + CI Integration).",
+    "status": "P3 COMPLETE — merged to main (parent #1183 closed). generated/catalog.json is the derived component catalog (186 skills/13 agents/15 commands/8 hook handlers; 180 artifacts; 14 capability domains; 177 agent->skill, 187 skill->produces, 809 skill->related edges). Gate step 5 (build-catalog --check) is BLOCKING, so the catalog cannot drift from the tree. NEXT: P4 · P5 · P6 · P7 (parallelizable, each validated by P1's linter + P3's catalog).",
     "started": "2026-08-01",
     "absorbs_epic": "#777 (agent refactor) folded into parent P5",
-    "active_parent": "P3 (next; P1 + P2 complete)",
+    "active_parent": "P4 · P5 · P6 · P7 (parallelizable; P1+P2+P3 complete)",
     "integration_branch": null,
     "p1_complete": true,
     "p2_note": "CLOSED. Broken related: refs 0; orphan skills 0. lint-relationships is now BLOCKING. domain is authored on all 186 skills using the 14-value vocabulary recorded in p2_complete.",
@@ -58,7 +58,10 @@
         "id": "P3",
         "title": "Derived Component Catalog + CI Integration",
         "est_children": 3,
-        "status": "not-started"
+        "status": "complete — merged to main",
+        "parent_issue": "#1183",
+        "integration_branch": "arch-review/p3-derived-catalog",
+        "children_done": 3
       },
       {
         "id": "P4",
@@ -132,6 +135,51 @@
       },
       "domain_assignment_rule": "Function-wins, evaluated in order: (1) name ends -test/-testing -> testing; (2) instrumentation/telemetry subject -> observability (REFINEMENT added at P2 close-out, see deviation note); (3) go-*/python-* -> backend; (4) react-* -> frontend; (5) otherwise the fixed non-prefixed map, which follows the owning agent. Equivalent statement: domain follows the owning agent except where subject matter overrides.",
       "domain_rule_deviation": "react-observability is authored domain=observability, not frontend as the original prefix rule (recorded in the P2 pilot commit bb3757f) would give. Rationale: it is the browser counterpart of opentelemetry-instrumentation / distributed-tracing-design / structured-logging-design, all of which are domain=observability despite owner=backend-engineer — instrumentation subject already overrides owner elsewhere in the taxonomy, and grouping the only react-* telemetry skill under frontend would split the observability capability across two domains in the P3 derived catalog. This is the sole deviation from the prefix/suffix rule across all 186 skills (audited at close-out); the rule text above is updated to match reality rather than leaving the deviation silent. Revisit at P3 if the catalog's capability view prefers strict prefixing."
+    },
+    "p3_complete": {
+      "parent_issue": "#1183",
+      "integration_branch": "arch-review/p3-derived-catalog",
+      "children": 3,
+      "artifact": "generated/catalog.json (committed, like generated/duplication-report.md)",
+      "generator": "scripts/arch/build-catalog.py (imports scripts/arch/manifest.py; build_catalog() is pure)",
+      "determinism": "Hard requirement: sorted lists, key-sorted mappings, NO timestamp and NO generator-version field. A committed derived artifact must change iff a component changed — a clock stamp would make every regeneration a spurious diff and defeat the staleness gate.",
+      "derived_blocks": [
+        "components",
+        "edges (agent_skills, skill_related, skill_produces)",
+        "artifacts (reverse index artifact -> producing skills; seed of the artifact-dependency graph P7 extends)",
+        "capabilities (the derived view over domain:, per charter decision #2)",
+        "coverage",
+        "counts"
+      ],
+      "multi_producer_artifacts": {
+        "dockerfile": [
+          "go-dockerfile",
+          "python-dockerfile",
+          "react-dockerfile"
+        ],
+        "load-test-suite": [
+          "go-load-test",
+          "python-load-test"
+        ],
+        "makefile": [
+          "go-makefile",
+          "python-makefile"
+        ],
+        "mutation-report": [
+          "go-mutation-test",
+          "python-mutation-test"
+        ],
+        "performance-regression-gate": [
+          "go-performance-test",
+          "python-performance-test"
+        ],
+        "schema-migration": [
+          "go-migration",
+          "python-migration"
+        ]
+      },
+      "gate": "scripts/lint-all.sh STEP 5/5 build-catalog.py --check [BLOCKING]",
+      "defect_fixed": "tests/arch/lint-all.test.sh was FAILING on main — P2's REPORTING->BLOCKING flip invalidated two of its assertions, and nothing caught it because both runners globbed only *.test.py while that file is a .test.sh. Repaired (4 passed/2 failed -> 9 passed/0 failed) and tests/run-smoke-tests.sh's arch category now globs *.test.sh. Deliberately NOT added to lint-all.sh step 1: the gate globbing *.test.sh would run lint-all.test.sh, which runs the gate, recursing without end."
     }
   },
   "project": {
@@ -1621,6 +1669,24 @@
         "Whole governance gate green: bash scripts/lint-all.sh → exit 0 (schema+arch tests, lint-manifests 0 violations across 186 skills / 13 agents / 15 commands / hooks, lint-relationships 0 broken refs, lint-duplication report-only)."
       ],
       "next": "P3 — Derived Component Catalog + CI Integration (~3 children: build-catalog script, the generated catalog, CI wiring + snapshot test). P3 consumes the produces/domain/status fields P2 authored."
+    },
+    {
+      "chunk": 70,
+      "title": "Architecture Review P3 — Derived Component Catalog + CI Integration COMPLETE (parent #1183, merged to main)",
+      "status": "complete",
+      "date": "2026-08-01",
+      "deliverables": [
+        "Third parent of the Architecture Review campaign. Integration branch arch-review/p3-derived-catalog -> main; 3 children (#1184 generator, #1186 committed catalog, #1188 CI gate), one issue + branch + PR each.",
+        "scripts/arch/build-catalog.py — derives the catalog wholly from component frontmatter via scripts/arch/manifest.py (never re-parses). build_catalog() is pure (takes loaded component lists, returns a dict) so its test drives it with synthetic components; only main() touches the filesystem. CLI: default writes, --stdout prints, --check exits 1 if the committed copy is stale.",
+        "generated/catalog.json — committed (as generated/duplication-report.md already was) so it is reviewable without running anything and every regeneration is a visible PR diff. Records 186 skills/13 agents/15 commands/8 hook handlers, 180 distinct artifacts from 187 produces edges, 14 capability domains, 177 agent->skill and 809 skill->related edges, 0 orphans, 0 unresolved refs.",
+        "DETERMINISM is a hard requirement, not a nicety: sorted lists, key-sorted mappings, no timestamp, no generator-version field. Committing a derived artifact is only safe if it changes iff a component changed; a generated_at stamp would diff on every run and defeat the staleness gate. Verified byte-identical across runs AND independent of input ordering.",
+        "The artifacts block is the REVERSE index artifact -> producing skills — the seed of the artifact-dependency graph P7 extends with workflow depends_on. Multiple producers are preserved, not collapsed: the 6 multi-producer artifacts are exactly P2's deliberately stack-neutral ones (dockerfile x3, makefile, schema-migration, load-test-suite, mutation-report, performance-regression-gate).",
+        "The capabilities block is the DERIVED VIEW over domain:, satisfying charter decision #2 (capability is a derived view over the relationship graph, never a hand-authored tier). related: is emitted as authored and deliberately NOT cycle-checked — cycle/DAG validation belongs to the artifact graph.",
+        "scripts/lint-all.sh gained BLOCKING step 5 (build-catalog.py --check). Blocking rather than report-only deliberately: duplication is a backlog signal (a judgement), staleness is a mechanical always-wrong condition with a one-command fix. Verified by negative test — flipping a skill's status made the gate exit 1 naming the fix; reverting restored exit 0.",
+        "DEFECT FOUND AND FIXED: tests/arch/lint-all.test.sh was FAILING on main. P2's REPORTING->BLOCKING flip invalidated two of its assertions and nothing caught it, because both runners globbed only *.test.py while that file is a .test.sh — a test nothing runs is not a test. Repaired to the post-P2 reality plus 3 new step-5 assertions (4 passed/2 failed -> 9 passed/0 failed), and tests/run-smoke-tests.sh's arch category now globs *.test.sh. Deliberately NOT added to lint-all.sh step 1: the gate globbing *.test.sh would run lint-all.test.sh, which runs the gate, recursing without end — both files carry a comment recording that constraint.",
+        "Whole suite green: bash scripts/lint-all.sh -> exit 0 (5 steps); bash tests/run-smoke-tests.sh arch -> 236 passed, 0 failed."
+      ],
+      "next": "P4 (Skill De-duplication & Repointing, ~150 children) · P5 (Agent Deep Refactor, 13) · P6 (Hook Deep Refactor, 7) · P7 (Command Refactor & Workflow-as-Data, ~24) — parallelizable, each validated by P1's linter + P3's catalog."
     }
   ],
   "decisions": [
