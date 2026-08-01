@@ -14,7 +14,10 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, environments, parity, configuration-as-code, values, promotion, tenants]
-related: [cd-pipeline, helm-chart, multi-tenancy-design, feature-flag-design, disaster-recovery-plan, gitops-workflow, platform-engineering]
+produces: environment-config
+domain: platform
+status: stable
+related: [cd-pipeline, helm-chart, multi-tenancy-design, feature-flag-design, disaster-recovery-plan, gitops-workflow, platform-engineering-design]
 ---
 
 # Environment Config
