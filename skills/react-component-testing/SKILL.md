@@ -16,6 +16,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, testing, react-testing-library, msw, vitest, tdd, query-priority, user-event, snapshot-testing, jest-axe]
+produces: react-component-tests
+domain: testing
+status: stable
 related: [react-accessibility, react-api-client, go-unit-test]
 ---
 
