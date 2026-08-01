@@ -29,6 +29,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, consumer, redpanda, kafka, idempotent, worker-pool, dlq, offset-commit, rebalance, heartbeat]
+produces: go-event-consumer
+domain: backend
+status: stable
 related: [go-event-publisher, go-concurrency-patterns, go-error-handling, go-service-skeleton, go-integration-test, go-performance-optimization, data-pipeline-design, distributed-tracing-design, multi-tenancy-design, event-schema-design]
 ---
 
