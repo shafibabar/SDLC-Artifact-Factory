@@ -7,6 +7,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-31
 tags: ["deploy","platform","developer-experience","golden-path","tvp","idp","service-catalog","toil","cognitive-load"]
+produces: platform-design
+domain: platform
+status: stable
 ---
 
 # Platform Engineering Design
