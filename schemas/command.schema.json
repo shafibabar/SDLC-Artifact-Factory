@@ -13,9 +13,15 @@
       "description": "Required. One-line summary of what the command does; surfaces in the command picker."
     },
     "argument-hint": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Optional. Hint text for the arguments the command expects (e.g. '<artifact-id>'), used to split positional $0/$1... input."
+      "description": "Optional. Hint text for the arguments the command expects (e.g. '<artifact-id>'), used to split positional $0/$1... input. Either a single hint string or a list of hint strings (one per positional argument).",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      ]
     },
     "allowed-tools": {
       "description": "Optional. Restricts which tools the command's prompt may use. Either a single tool name or a list of tool names.",
