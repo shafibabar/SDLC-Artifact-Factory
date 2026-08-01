@@ -13,6 +13,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, fastapi, pydantic, openapi, code-first, contract-first, conformance, starlette]
+produces: python-openapi-generated-code
+domain: backend
+status: stable
 related: [go-openapi-codegen, python-fastapi-handler, api-contract-design]
 tools: [Bash]
 ---
