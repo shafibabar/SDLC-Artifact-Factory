@@ -11,6 +11,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, python, fastapi, asgi, uvicorn, lifespan, lifecycle, graceful-shutdown, composition-root, readiness]
+produces: python-composition-root
+domain: backend
+status: stable
 related: [go-service-skeleton, python-project-structure, python-middleware]
 tools: [Bash]
 ---
