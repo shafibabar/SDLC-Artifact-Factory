@@ -14,6 +14,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, container, oci, distroless, provenance, image-standards, conformance, kind, local-dev]
+produces: container-image-standards
+domain: platform
+status: stable
 ---
 
 # Dockerfile Patterns
