@@ -25,6 +25,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, go, ddd, aggregate, value-object, domain-event, invariants, receiver-type, escape-analysis]
+produces: go-domain-model
+domain: backend
+status: stable
 related: [aggregate-design, go-error-handling, go-unit-test, go-project-structure, go-repository-pattern, event-schema-design, go-performance-optimization]
 ---
 
