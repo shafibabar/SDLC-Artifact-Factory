@@ -18,6 +18,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, graph, sigma, webgl, visualization, apache-age, performance, accessibility]
+produces: react-graph-feature
+domain: frontend
+status: stable
 related: [react-accessibility, react-performance-optimization, react-state-management, data-model-design]
 ---
 
