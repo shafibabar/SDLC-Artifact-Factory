@@ -13,6 +13,9 @@ phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, nfr, performance, scalability, security, compliance, architecture-input, dora, delivery, platform-dx]
+produces: nfr-specification
+domain: discovery
+status: stable
 related: [dora-metrics, slo-definition, platform-engineering-design]
 ---
 
