@@ -11,6 +11,9 @@ phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
 tags: [ideate, requirements, user-story, invest, story-splitting, connextra, acceptance-criteria]
+produces: user-story-backlog
+domain: discovery
+status: stable
 related: [acceptance-criteria, epic-definition, user-persona, moscow-prioritization, example-mapping, glossary-management]
 ---
 
