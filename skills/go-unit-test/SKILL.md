@@ -29,6 +29,9 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, go, unit-test, table-driven, tdd, fuzzing, mocking-philosophy, coverage, assertions, fixtures, flakiness, four-pillars, complexity-quadrants]
+produces: go-test-file
+domain: testing
+status: stable
 related: [mock-generation, go-domain-model, go-repository-pattern, go-integration-test, test-fixture-design, go-mutation-test]
 ---
 
