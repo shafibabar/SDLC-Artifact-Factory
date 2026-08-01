@@ -13,6 +13,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, helm, chart, values-layering, kind, templating, versioning, workload-type, init-container]
+produces: helm-chart
+domain: platform
+status: stable
 related: [kubernetes-workload-patterns, kubernetes-manifest, cd-pipeline, multi-tenancy-design]
 ---
 
