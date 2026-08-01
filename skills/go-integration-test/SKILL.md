@@ -26,6 +26,9 @@ phase: implement
 owner: test-strategist
 created: 2026-06-25
 tags: [implement, go, integration-test, testcontainers, postgres, redpanda, hermetic, ci]
+produces: go-integration-test
+domain: testing
+status: stable
 related: [go-unit-test, go-repository-pattern, go-event-publisher, go-event-consumer, go-migration, test-fixture-design, distributed-tracing-design]
 ---
 
