@@ -13,6 +13,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, observability, opentelemetry, otel, metrics, red, use, instrumentation, collector, daemonset, sidecar]
+produces: go-otel-instrumentation
+domain: observability
+status: stable
 ---
 
 # OpenTelemetry Instrumentation
