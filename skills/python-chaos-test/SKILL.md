@@ -12,6 +12,9 @@ phase: quality
 owner: backend-engineer
 created: 2026-07-31
 tags: [quality, python, chaos, resilience, toxiproxy, testcontainers, circuit-breaker, consumer-recovery, fault-injection, blast-radius, asyncio, tenant]
+produces: python-chaos-test
+domain: testing
+status: stable
 related: [go-chaos-test, disaster-recovery-plan, python-integration-test]
 tools: [Bash]
 ---
