@@ -16,6 +16,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, disaster-recovery, rto, rpo, backup, restore, drill, crypto-shredding, chaos-engineering]
+produces: disaster-recovery-plan
+domain: platform
+status: stable
 ---
 
 # Disaster Recovery Plan
