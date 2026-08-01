@@ -12,6 +12,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-06-25
 tags: [implement, observability, logging, slog, json, trace-correlation, structured]
+produces: go-logging-instrumentation
+domain: observability
+status: stable
 ---
 
 # Structured Logging Design
