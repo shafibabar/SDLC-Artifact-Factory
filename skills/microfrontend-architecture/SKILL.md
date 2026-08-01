@@ -16,6 +16,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-07-22
 tags: [implement, frontend, microfrontend, module-federation, architecture, vite]
+produces: microfrontend-topology
+domain: frontend
+status: stable
 ---
 
 # Micro-Frontend Architecture
