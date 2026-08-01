@@ -7,6 +7,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-31
 tags: ["deploy","progressive-delivery","canary","blue-green","feature-flags","argo-rollouts","release-strategy","risk-management"]
+produces: release-strategy
+domain: platform
+status: stable
 ---
 
 # Progressive Delivery
