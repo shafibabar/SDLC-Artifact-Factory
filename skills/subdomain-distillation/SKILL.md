@@ -17,6 +17,9 @@ phase: design
 owner: domain-modeler
 created: 2026-07-22
 tags: [design, ddd, strategic-design, subdomain, distillation, core-domain, security]
+produces: subdomain-classification
+domain: domain-modeling
+status: stable
 ---
 
 # Subdomain Distillation
