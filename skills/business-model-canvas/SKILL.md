@@ -14,6 +14,9 @@ phase: strategy
 owner: product-strategist
 created: 2026-06-24
 tags: [strategy, business-model, canvas, lean-canvas, value-proposition, discovery]
+produces: business-model-canvas
+domain: strategy
+status: stable
 related: [gtm-strategy, competitive-analysis, vision-statement, jtbd-analysis, impact-mapping]
 ---
 
