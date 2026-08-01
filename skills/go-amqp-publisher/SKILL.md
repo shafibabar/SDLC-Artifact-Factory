@@ -22,6 +22,9 @@ phase: implement
 owner: backend-engineer
 created: 2026-07-31
 tags: [implement, backend, rabbitmq, amqp, publisher, go, exchange, publisher-confirms]
+produces: go-amqp-publisher
+domain: backend
+status: stable
 related: [go-event-publisher, message-broker-selection, event-driven-patterns, go-amqp-consumer]
 tools: [Bash]
 ---
