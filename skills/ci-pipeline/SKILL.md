@@ -13,6 +13,9 @@ phase: deploy
 owner: platform-engineer
 created: 2026-07-20
 tags: [deploy, ci, github-actions, pipeline-of-pipelines, trivy, cosign, gates, trunk-based-development, dora]
+produces: ci-pipeline-workflow
+domain: platform
+status: stable
 related: [feature-flag-design, dora-metrics, cd-pipeline, test-pyramid]
 ---
 
