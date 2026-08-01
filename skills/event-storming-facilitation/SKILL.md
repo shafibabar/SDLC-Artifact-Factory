@@ -18,6 +18,9 @@ phase: design
 owner: domain-modeler
 created: 2026-06-25
 tags: [design, domain-modeling, event-storming, facilitation, domain-events, bounded-context, brandolini]
+produces: event-storming-session
+domain: domain-modeling
+status: stable
 related: [domain-event-catalog, aggregate-design, bounded-context-mapping, subdomain-distillation, ubiquitous-language, command-catalog, read-model-design]
 ---
 
