@@ -17,6 +17,9 @@ phase: design
 owner: data-architect
 created: 2026-06-25
 tags: [design, data-architecture, mdm, canonical-model, golden-record, survivorship, match-merge]
+produces: canonical-data-model
+domain: data
+status: stable
 related: [context-map-patterns, integration-design, data-lineage-design, event-schema-design, data-classification, data-model-design, multi-tenancy-design]
 ---
 
