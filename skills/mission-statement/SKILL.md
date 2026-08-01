@@ -16,6 +16,9 @@ phase: strategy
 owner: product-strategist
 created: 2026-06-24
 tags: [strategy, mission, vision, product-strategy, north-star]
+produces: mission-statement
+domain: strategy
+status: stable
 related: [vision-statement, okr-authoring, gtm-strategy, business-model-canvas]
 ---
 
