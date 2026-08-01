@@ -37,6 +37,18 @@ no dependence on the live tree for the behavioural assertions. It asserts:
       validation is NOT matched as the component-naming standard, while
       CLAUDE.md's literal `^[a-z0-9]+(-[a-z0-9]+)*$` IS.
 
+  (b3) PRECISION — a DEFINITION is not a RESTATEMENT (#1202).
+      CLAUDE.md § Non-Negotiable Methodology owns the MANDATE, not the subject
+      matter, so the enforcement framing must sit in the same passage as the
+      methodology it enforces. Glossary rows that merely DEFINE four
+      methodologies — in a corpus whose only "mandatory" is an unrelated row 30+
+      lines away — are NOT flagged, for any skill name including the glossary
+      home; while a genuine re-teaching ("TDD is mandatory, tests before code,
+      non-negotiable"), a verbatim copy of CLAUDE.md's own mandate table, and a
+      genuine mandate sitting INSIDE the glossary home are all still flagged.
+      Quorum, citation, and the untouched Ubiquitous Language detector are
+      asserted alongside.
+
   (c) main() runs against the real repo, exits 0 (report-only), and writes the
       report to generated/duplication-report.md.
 
@@ -402,6 +414,183 @@ cited_regex = {
 check(
     "a naming-regex mention that cites CLAUDE.md is NOT flagged",
     d.find_restatements(cited_regex, std) == [],
+)
+
+# ---------------------------------------------------------------------------
+# (b3) PRECISION: a DEFINITION is not a RESTATEMENT (#1202, P4).
+#      CLAUDE.md § Non-Negotiable Methodology owns the MANDATE, not the subject
+#      matter. The enforcement framing must therefore sit in the same passage as
+#      the methodology it enforces (METHODOLOGY_ENFORCEMENT_WINDOW lines), not
+#      merely somewhere in the same corpus. This is a rule about text shape, so
+#      it applies identically to every skill — the glossary home is neither
+#      blanket-exempted nor blinded.
+# ---------------------------------------------------------------------------
+
+# A glossary reference file: rows that DEFINE four of the five methodologies as
+# canonical vocabulary, plus — far away — an unrelated row using the word
+# "mandatory" about something else entirely. This is the real shape of
+# skills/glossary-management/references/ubiquitous-language.md.
+GLOSSARY_ROWS = (
+    "| **SOLID** | Five object-oriented design principles: Single Responsibility,\n"
+    "Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion. |\n"
+    "| **Event Storming** | A collaborative, workshop-based technique for rapidly\n"
+    "exploring complex business domains by mapping Domain Events on a timeline. |\n"
+    + "| **Filler Term** | An unrelated glossary row. |\n" * 30
+    + "| **Postmortem Trigger Criteria** | The written thresholds that make writing\n"
+      "a postmortem mandatory rather than discretionary. |\n"
+    + "| **Filler Term** | An unrelated glossary row. |\n" * 30
+    + "| **Behavior-Driven Development (BDD)** | A methodology that defines system\n"
+      "behavior using Given/When/Then scenarios before implementation. |\n"
+    "| **Test-Driven Development (TDD)** | A methodology where tests are written\n"
+    "before implementation code: write a failing test, pass it, refactor. |\n"
+)
+
+check(
+    "control: the glossary fixture does carry the marker + a methodology quorum",
+    sum(1 for m in std["methodologies"] if m in GLOSSARY_ROWS.lower()) >= d.METHODOLOGY_QUORUM
+    and any(mk in GLOSSARY_ROWS.lower() for mk in std["methodology_markers"]),
+)
+check(
+    "glossary rows DEFINING methodologies are NOT flagged as restating the mandate",
+    d.find_restatements({"some-glossary-ish-skill": GLOSSARY_ROWS}, std) == [],
+)
+check(
+    "the same rows under the real glossary-home name are also not flagged",
+    d.find_restatements({"glossary-management": GLOSSARY_ROWS}, std) == [],
+)
+
+# The mandate itself — enforcement framing co-located with the methodologies —
+# is STILL flagged. Detection must not be weakened.
+GENUINE_MANDATE = (
+    "Testing discipline for this service.\n"
+    "\n"
+    "Test-Driven Development is mandatory here: tests before implementation code,\n"
+    "non-negotiable. Behavior-Driven Development is equally mandatory — every\n"
+    "acceptance criterion gets a Gherkin feature file. Event Storming must precede\n"
+    "any architecture decision, and SOLID applies to every class you write.\n"
+    "Skipping any of these is a defect, not a warning.\n"
+)
+rm = d.find_restatements({"some-service-skill": GENUINE_MANDATE}, std)
+check(
+    "a genuine re-teaching of the mandate IS still flagged",
+    len(rm) == 1 and "methodolog" in rm[0]["standard"].lower(),
+)
+check(
+    "the genuine-mandate finding names the CLAUDE.md methodology home",
+    bool(rm) and "Non-Negotiable Methodology" in rm[0]["repoint_to"],
+)
+check(
+    "the glossary home is NOT blinded — a genuine mandate inside it is still flagged",
+    len(d.find_restatements({"glossary-management": GENUINE_MANDATE}, std)) == 1,
+)
+check(
+    "a genuine mandate is still caught when the SAME skill also defines the terms",
+    len(d.find_restatements({"glossary-management": GLOSSARY_ROWS + "\n" + GENUINE_MANDATE}, std)) == 1,
+)
+
+# CLAUDE.md's OWN passage shape (mandate sentence, blank line, then the table)
+# must be caught — that is what the enforcement window is calibrated to span.
+CLAUDE_SHAPED = (
+    "## Non-Negotiable Methodology\n"
+    "\n"
+    "These five methodologies are mandatory. Their absence in any artifact where\n"
+    "they apply is a defect — not a warning, not advisory.\n"
+    "\n"
+    "| Methodology | Where It Applies |\n"
+    "|---|---|\n"
+    "| **Domain-Driven Design** | Design, Implement |\n"
+    "| **Event Storming** | Design |\n"
+    "| **Test-Driven Development** | Implement |\n"
+    "| **Behavior-Driven Development** | Implement, Quality |\n"
+    "| **SOLID** | Implement |\n"
+)
+rc_shape = d.find_restatements({"copycat-skill": CLAUDE_SHAPED}, std)
+check(
+    "a verbatim copy of CLAUDE.md's own mandate table IS flagged",
+    len(rc_shape) == 1 and "methodolog" in rc_shape[0]["standard"].lower(),
+)
+check(
+    "the copied-table finding counts all five methodologies",
+    bool(rc_shape) and "5/5" in rc_shape[0]["evidence"],
+)
+# The citation rule still governs the mandate sites: a compact mandate that
+# attributes itself to CLAUDE.md at every occurrence is compliant, not a
+# restatement. (The +/- 2-line citation window is unchanged by this fix, so a
+# skill that reproduces the whole 12-line table under a single citation line is
+# still flagged — reproducing it is exactly what decision #4 forbids.)
+CITED_MANDATE = (
+    "Per CLAUDE.md § Non-Negotiable Methodology, this service applies:\n"
+    "Domain-Driven Design, Event Storming, Test-Driven Development,\n"
+    "Behavior-Driven Development and SOLID — all mandatory; see CLAUDE.md.\n"
+)
+check(
+    "a compact mandate attributing itself to CLAUDE.md is NOT flagged",
+    d.find_restatements({"citing-skill": CITED_MANDATE}, std) == [],
+)
+check(
+    "the same compact mandate without the attribution IS flagged",
+    len(d.find_restatements(
+        {"uncited-mandate-skill": CITED_MANDATE.replace("CLAUDE.md § ", "").replace("; see CLAUDE.md", "")},
+        std,
+    )) == 1,
+)
+
+# Quorum still applies to the co-located mentions: three is not four.
+SUB_QUORUM = (
+    "Test-Driven Development is mandatory on this team. Behavior-Driven\n"
+    "Development is likewise required, and SOLID is non-negotiable.\n"
+)
+check(
+    "three co-located methodologies stay below the quorum",
+    d.find_restatements({"three-only-skill": SUB_QUORUM}, std) == [],
+)
+
+# All five named, but with NO enforcement framing anywhere: not a mandate.
+NO_MARKER = (
+    "This skill touches Domain-Driven Design, Event Storming, Test-Driven\n"
+    "Development, Behavior-Driven Development and SOLID in passing.\n"
+)
+check(
+    "naming all five methodologies with no enforcement framing is not flagged",
+    d.find_restatements({"passing-mention-skill": NO_MARKER}, std) == [],
+)
+
+# The pure helper itself, driven directly.
+g_lines = GLOSSARY_ROWS.splitlines()
+g_markers = d._signature_line_indices(g_lines, std["methodology_markers"], fold_case=True)
+check(
+    "mandated_methodologies() returns nothing for definition rows",
+    g_markers != [] and d.mandated_methodologies(g_lines, std["methodologies"], g_markers) == ([], []),
+)
+m_lines = GENUINE_MANDATE.splitlines()
+m_markers = d._signature_line_indices(m_lines, std["methodology_markers"], fold_case=True)
+m_found, m_idx = d.mandated_methodologies(m_lines, std["methodologies"], m_markers)
+check(
+    "mandated_methodologies() returns the co-located methodologies + their lines",
+    len(m_found) >= d.METHODOLOGY_QUORUM and m_idx and all(isinstance(i, int) for i in m_idx),
+)
+check(
+    "mandated_methodologies() with no markers returns nothing",
+    d.mandated_methodologies(m_lines, std["methodologies"], []) == ([], []),
+)
+
+# SCOPE NOTE (#1202 -> #1203): this fix targets the methodologies detector only.
+# The Ubiquitous Language detector is a DIFFERENT rule — it fires on a skill
+# carrying >= UBIQUITOUS_DUMP_THRESHOLD canonical terms — and is deliberately
+# left untouched here, so `integration-design` is NOT cleared by this change.
+std_ul = dict(std, ubiquitous_terms=[
+    "anti-corruption layer", "bounded context", "change data capture",
+    "circuit breaker", "consumer-driven contract", "context map",
+    "dead letter queue", "domain event", "eventual consistency",
+    "idempotency", "transactional outbox", "ubiquitous language",
+])
+term_user = {"integration-design-like": "\n".join(
+    f"We apply the {t} pattern at this boundary." for t in std_ul["ubiquitous_terms"]
+)}
+ru_ul = d.find_restatements(term_user, std_ul)
+check(
+    "the Ubiquitous Language detector is unchanged (a term-heavy skill still fires)",
+    len(ru_ul) == 1 and "ubiquitous" in ru_ul[0]["standard"].lower(),
 )
 
 # ---------------------------------------------------------------------------
