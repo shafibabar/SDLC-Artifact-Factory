@@ -13,6 +13,9 @@ phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
 tags: [governance, value-stream-map, flow-efficiency, lean, continuous-improvement, cross-cutting, dora]
+produces: value-stream-map
+domain: governance
+status: stable
 related: [impact-mapping, jtbd-analysis, dora-metrics]
 ---
 
