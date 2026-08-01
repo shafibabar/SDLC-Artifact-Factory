@@ -24,6 +24,9 @@ phase: implement
 owner: frontend-engineer
 created: 2026-06-25
 tags: [implement, frontend, react, observability, rum, web-vitals, opentelemetry, error-boundary, error-reporting, microfrontend, session-correlation, tracing]
+produces: react-telemetry-instrumentation
+domain: observability
+status: stable
 related: [microfrontend-architecture, react-component-design, react-api-client, react-performance-optimization, go-chi-handler, go-middleware, opentelemetry-instrumentation, distributed-tracing-design, privacy-design, prometheus-metrics-design, slo-definition]
 ---
 
