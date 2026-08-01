@@ -6,9 +6,10 @@
 #   1. Schema + arch tests   BLOCKING   tests/schemas/*.schema.test.py + tests/arch/*.test.py
 #   2. lint-manifests.py     BLOCKING   frontmatter/manifest shape conformance
 #   3. lint-duplication.py   REPORT     duplication scan (never fails the gate)
-#   4. lint-relationships.py REPORT*    broken 'related:' refs — tracked P2 backlog, not
-#                                       yet blocking (becomes BLOCKING when P2 drives the
-#                                       broken-ref count to 0)
+#   4. lint-relationships.py BLOCKING   broken 'related:' refs + agent 'skills:' refs.
+#                                       Was REPORT-only while P2's backlog stood; P2 drove
+#                                       broken refs 11 -> 0 and orphans 48 -> 0, so this
+#                                       check is now enforced (orphans stay a warning).
 #
 # The gate exits non-zero IFF a BLOCKING step failed. Report-only steps run,
 # print their findings, and never change the gate's exit code.
@@ -82,25 +83,32 @@ section "STEP 3/4  lint-duplication.py             [REPORT-ONLY]"
 echo "(lint-duplication is report-only — its exit code never affects the gate.)"
 
 # ---------------------------------------------------------------------------
-# Step 4 — Relationship linter  (REPORTING ONLY FOR NOW)
+# Step 4 — Relationship linter  (BLOCKING since P2 close-out)
 # ---------------------------------------------------------------------------
-section "STEP 4/4  lint-relationships.py           [REPORTING ONLY — P2 backlog]"
-REL_OUT="$("$PY" "$REPO_ROOT/scripts/lint-relationships.py" 2>&1)" || true
+section "STEP 4/4  lint-relationships.py           [BLOCKING]"
+REL_OUT="$("$PY" "$REPO_ROOT/scripts/lint-relationships.py" 2>&1)"
+REL_RC=$?
 echo "$REL_OUT"
 
 # Count broken 'related:' refs dynamically from the linter's own output.
 REL_BROKEN="$(grep -cE "related '.*' is not a real skill" <<<"$REL_OUT" || true)"
 
 echo
-echo "lint-relationships: ${REL_BROKEN} broken 'related:' ref(s) — tracked P2 backlog;"
-echo "this check becomes BLOCKING once P2 drives the count to 0."
+if [[ $REL_RC -ne 0 ]]; then
+  echo ">>> BLOCKING FAILURE (exit $REL_RC): scripts/lint-relationships.py"
+  echo "    ${REL_BROKEN} broken 'related:' ref(s). P2 drove this count to 0 and the"
+  echo "    check is now enforced — a broken cross-reference must be fixed, not tracked."
+  GATE_RC=1
+else
+  echo "lint-relationships: ${REL_BROKEN} broken 'related:' ref(s) — enforced since P2 close-out."
+fi
 
 # ---------------------------------------------------------------------------
 # Verdict
 # ---------------------------------------------------------------------------
 section "GOVERNANCE GATE RESULT"
 if [[ $GATE_RC -eq 0 ]]; then
-  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests)."
+  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests, lint-relationships)."
   echo "      Report-only checks ran; their findings above do not gate."
 else
   echo "FAIL: one or more BLOCKING checks failed (see >>> markers above)."
