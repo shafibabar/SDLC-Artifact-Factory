@@ -2,7 +2,7 @@
 name: kubernetes-workload-patterns
 description: >
   Teaches which Kubernetes workload controller type and pod composition pattern a service requires — Deployment vs StatefulSet vs DaemonSet vs Job/CronJob vs Argo Rollout vs KEDA-scaled — with explicit decision criteria for each, plus the structural composition patterns (Init Container, Sidecar, Adapter, Ambassador) and when multi-container pods are appropriate. The decision input to helm-chart and kubernetes-manifest. Used by the platform-engineer during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-31
@@ -44,7 +44,7 @@ Both decisions are made *before* templating begins. Getting them wrong creates a
 - Schema migrations → **Job** (run once, pre-deployment, via Init Container or Helm pre-install hook)
 - `go-event-consumer` with Redpanda consumer lag → **KEDA ScaledObject** over a Deployment
 
-Full decision table with anti-patterns: `references/controller-decision-table.md`
+Full decision table with anti-patterns — and the **Operator Ladder** (existing Operator → Helm chart with lifecycle hooks → custom Operator), which governs every stateful-infrastructure provisioning choice: `references/controller-decision-table.md`
 
 ---
 

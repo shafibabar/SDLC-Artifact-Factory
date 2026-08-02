@@ -77,18 +77,30 @@ _SCHEMA_FILES = {
     "hook": "hook.schema.json",
 }
 
-# The exact frontmatter-authored field set each schema constrains. Manifest's
-# derived facts (has_*, dir, file, order, ...) are intentionally excluded — the
-# skill schema tolerates them (additionalProperties:true) but the agent and
-# command schemas do not, so we present a clean, schema-shaped view for all.
-_SKILL_FIELDS = (
-    "name", "description", "version", "phase", "owner", "created", "tags",
-    "related", "produces", "domain", "status",
-)
-_AGENT_FIELDS = (
-    "name", "description", "role", "version", "phase", "owner", "created",
-    "inputs", "outputs", "skills", "tools", "tags",
-)
+# Manifest's DERIVED, non-frontmatter facts. These are the only keys subtracted
+# from a record when projecting it onto its schema-shaped instance; everything
+# else the record carries is authored frontmatter and is forwarded.
+#
+# WHY subtraction rather than a hard-coded allow-list: the previous version
+# projected a fixed 12-field _AGENT_FIELDS tuple, so when P5 added
+# produces/domain/status to agents those fields never reached the validator at
+# all — a typo'd `domainn:` on an agent scored TOTAL 0 violation(s) / PASS while
+# the same raw frontmatter validated directly against agent.schema.json reported
+# "Additional properties are not allowed ('domainn' was unexpected)". An
+# allow-list silently drops exactly the fields it has not been taught about,
+# which is the opposite of what a linter should do. Subtracting a small, closed
+# set of derived keys means the NEXT manifest field is enforced the day it is
+# read, with no edit here.
+_DERIVED_RECORD_KEYS = frozenset({
+    # skills
+    "has_references", "has_assets", "has_scripts", "has_contract_test", "dir",
+    # agents
+    "has_acceptance_test", "file",
+    # commands
+    "has_test",
+    # every kind: unknown authored keys, merged back in explicitly below
+    "extra",
+})
 # command record keys are snake_cased by manifest; the platform (and schema)
 # use the hyphenated keys. Map back so additionalProperties:false is fair.
 _COMMAND_KEY_MAP = {
@@ -113,17 +125,28 @@ def _drop_none(d: dict) -> dict:
 
 
 def record_to_instance(kind: str, record: dict) -> dict:
-    """Project a normalized manifest record onto the schema-shaped instance."""
-    if kind == "skill":
-        inst = {k: record.get(k) for k in _SKILL_FIELDS}
-    elif kind == "agent":
-        inst = {k: record.get(k) for k in _AGENT_FIELDS}
+    """Project a normalized manifest record onto the schema-shaped instance.
+
+    skills/agents: every record key that is not a manifest-derived fact.
+    commands:      the snake_case -> hyphenated key map (the platform's own key
+                   spelling is what the schema constrains), unchanged.
+
+    In all three cases the record's `extra` dict — frontmatter keys no loader
+    field projects, i.e. typos and not-yet-supported fields — is merged back in
+    AFTER the None-drop, so an unknown key is never hidden from
+    `additionalProperties: false`, not even when authored with an empty value.
+    """
+    if kind in ("skill", "agent"):
+        inst = {k: v for k, v in record.items() if k not in _DERIVED_RECORD_KEYS}
     elif kind == "command":
         inst = {schema_key: record.get(rec_key)
                 for rec_key, schema_key in _COMMAND_KEY_MAP.items()}
     else:
         raise ValueError(f"unknown component kind: {kind}")
-    return _drop_none(inst)
+    inst = _drop_none(inst)
+    for key in sorted(record.get("extra") or {}):
+        inst[key] = record["extra"][key]
+    return inst
 
 
 def _error_reason(err: "jsonschema.exceptions.ValidationError") -> str:
