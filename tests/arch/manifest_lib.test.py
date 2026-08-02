@@ -16,6 +16,10 @@ to the live component tree. Asserts:
   * the PyYAML path and the minimal fallback parser agree (both are exercised);
   * resolve(), all_component_names(), load_agents() (has_acceptance_test) and
     load_hooks() behave per their documented contract;
+  * load_agents() reads the P5 manifest fields (produces/domain/status) and
+    keeps records shape-stable, and every loader preserves unknown authored keys
+    in `extra` instead of dropping them (#1211 — the dropped keys were why a
+    typo'd agent field never reached the schema validator);
   * purity — importing and calling every loader leaves the working tree clean
     (the module never writes).
 
@@ -199,6 +203,74 @@ check(
 check(
     "every agent record exposes has_acceptance_test as a bool",
     all(isinstance(r.get("has_acceptance_test"), bool) for r in agents),
+)
+
+# --- agents: P5 manifest fields (produces/domain/status) are READ ------------
+# These were authored on agents before load_agents() read them, so they reached
+# nothing: not the linter's schema view, not the catalog. Records must now be
+# shape-stable — the keys are ALWAYS present, exactly as on a skill record.
+check(
+    "every agent record carries produces/domain/status keys (shape-stable)",
+    all({"produces", "domain", "status", "extra"} <= set(r.keys()) for r in agents),
+)
+check(
+    "an unenriched agent's produces/domain/status are None, not missing",
+    all(
+        (r["produces"] is None or isinstance(r["produces"], list))
+        and (r["domain"] is None or isinstance(r["domain"], str))
+        and (r["status"] is None or isinstance(r["status"], str))
+        for r in agents
+    ),
+)
+ps = m.resolve("product-strategist")
+ps_rec = ps["record"] if ps else {}
+check("product-strategist domain == strategy (authored)", ps_rec.get("domain") == "strategy")
+check("product-strategist status == stable (authored)", ps_rec.get("status") == "stable")
+check(
+    "product-strategist produces parsed as an 11-artifact block list",
+    isinstance(ps_rec.get("produces"), list)
+    and len(ps_rec["produces"]) == 11
+    and "vision-statement" in ps_rec["produces"]
+    and "okr" in ps_rec["produces"],
+)
+check(
+    "scalar 'produces:' normalizes to a list for agents exactly as for skills",
+    m._opt_list("solo-artifact") == ["solo-artifact"] and m._opt_list(None) is None,
+)
+
+# --- unknown authored keys survive into `extra` (never silently dropped) -----
+# This is what lets lint-manifests enforce additionalProperties:false. A typo'd
+# key used to vanish inside the loader, so the validator never saw it.
+_typo_fm = m.parse_frontmatter(
+    "---\n"
+    "name: synthetic-agent\n"
+    "description: Synthetic frontmatter pinning the unknown-key contract.\n"
+    "role: test role\n"
+    "version: 1.0.0\n"
+    "phase: design\n"
+    "owner: shafi\n"
+    "created: 2026-08-01\n"
+    "domainn: strategy\n"
+    "---\n"
+)
+check(
+    "a typo'd agent key is preserved by _extra(), not dropped",
+    m._extra(_typo_fm, m._AGENT_FM_KEYS) == {"domainn": "strategy"},
+)
+check(
+    "a correctly-spelled agent key is NOT reported as extra",
+    m._extra(
+        {"name": "a", "domain": "strategy", "produces": ["x"], "status": "stable"},
+        m._AGENT_FM_KEYS,
+    ) == {},
+)
+check(
+    "every real agent authors zero unknown frontmatter keys",
+    all(r["extra"] == {} for r in agents),
+)
+check(
+    "extra is a dict on every skill/agent/command record",
+    all(isinstance(r.get("extra"), dict) for r in skills + agents + commands),
 )
 
 # --- commands: hyphenated keys normalized, has_test derived ------------------

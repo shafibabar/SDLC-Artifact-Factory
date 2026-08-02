@@ -213,6 +213,40 @@ def _opt_list(value):
     return _as_list(value)
 
 
+# Every frontmatter key each loader below projects onto a named record field.
+# Anything a component authors OUTSIDE these sets is preserved verbatim in the
+# record's `extra` dict rather than silently discarded — that is what lets
+# lint-manifests.py actually enforce `additionalProperties: false`. Before this
+# existed, a typo'd key (`domainn:`) never reached the record, so it never
+# reached the validator and the gate reported PASS.
+_SKILL_FM_KEYS = frozenset({
+    "name", "description", "version", "phase", "owner", "created", "tags",
+    "related", "produces", "domain", "status",
+})
+_AGENT_FM_KEYS = frozenset({
+    "name", "description", "role", "version", "phase", "owner", "created",
+    "inputs", "outputs", "skills", "tools", "tags",
+    "produces", "domain", "status",
+})
+# NOTE: `capability` is deliberately absent above. Charter decision #2 makes it a
+# DERIVED view, never hand-authored, so no loader projects it; if an agent ever
+# authors it, it surfaces through `extra` (and the schema, which permits it)
+# instead of being silently swallowed.
+_COMMAND_FM_KEYS = frozenset({
+    "description", "argument-hint", "allowed-tools", "model",
+    "disable-model-invocation",
+})
+
+
+def _extra(fm: dict, known: frozenset) -> dict:
+    """Authored frontmatter keys the record does not project, key-sorted.
+
+    Deterministic (sorted) and pure. Empty dict when the component authors
+    nothing unexpected.
+    """
+    return {k: fm[k] for k in sorted(fm) if k not in known}
+
+
 # ---------------------------------------------------------------------------
 # Skills
 # ---------------------------------------------------------------------------
@@ -224,6 +258,7 @@ def load_skills() -> list[dict]:
       name, description, version, phase, owner, created, tags,
       related (list|None), produces (list|None), domain (str|None),
       status (str|None),
+      extra (dict — any authored frontmatter key not named above),
       has_references, has_assets, has_scripts, has_contract_test  (bool, derived)
     """
     records = []
@@ -247,6 +282,7 @@ def load_skills() -> list[dict]:
             "produces": _opt_list(fm.get("produces")),
             "domain": fm.get("domain"),
             "status": fm.get("status"),
+            "extra": _extra(fm, _SKILL_FM_KEYS),
             "has_references": _dir_nonempty(skill_dir / "references"),
             "has_assets": _dir_nonempty(skill_dir / "assets"),
             "has_scripts": _dir_nonempty(skill_dir / "scripts"),
@@ -267,7 +303,14 @@ def load_agents() -> list[dict]:
     Record:
       name, description, role, version, phase, owner, created,
       inputs, outputs, skills, tools, tags  (lists),
+      produces (list|None), domain (str|None), status (str|None),
+      extra (dict — any authored frontmatter key not named above),
       has_acceptance_test, has_contract_test  (bool, derived)
+
+    produces/domain/status mirror the skill record exactly: the keys are ALWAYS
+    present (None when the agent has not authored them yet), and `produces` is
+    normalized scalar-or-list -> list, so downstream tooling never has to branch
+    on which loader a record came from.
     """
     records = []
     if not AGENTS_DIR.is_dir():
@@ -288,6 +331,10 @@ def load_agents() -> list[dict]:
             "skills": _as_list(fm.get("skills")),
             "tools": _as_list(fm.get("tools")),
             "tags": _as_list(fm.get("tags")),
+            "produces": _opt_list(fm.get("produces")),
+            "domain": fm.get("domain"),
+            "status": fm.get("status"),
+            "extra": _extra(fm, _AGENT_FM_KEYS),
             "has_acceptance_test": (TESTS_AGENTS_DIR / f"{name}.acceptance.sh").is_file(),
             "has_contract_test": (TESTS_AGENTS_DIR / f"{name}.contract.sh").is_file(),
             "file": str(agent_md.relative_to(REPO_ROOT)),
@@ -310,6 +357,7 @@ def load_commands() -> list[dict]:
       name, description,
       argument_hint (str|None), allowed_tools (list|None), model (str|None),
       disable_model_invocation (bool|None),
+      extra (dict — any authored frontmatter key not named above, raw keys),
       has_test  (bool, derived — tests/commands/<name>.test.sh)
     """
     records = []
@@ -326,6 +374,7 @@ def load_commands() -> list[dict]:
             "allowed_tools": _opt_list(allowed),
             "model": fm.get("model"),
             "disable_model_invocation": fm.get("disable-model-invocation"),
+            "extra": _extra(fm, _COMMAND_FM_KEYS),
             "has_test": (TESTS_COMMANDS_DIR / f"{name}.test.sh").is_file(),
             "file": str(cmd_md.relative_to(REPO_ROOT)),
         })
