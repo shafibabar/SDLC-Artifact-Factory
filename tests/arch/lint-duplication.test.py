@@ -46,8 +46,20 @@ no dependence on the live tree for the behavioural assertions. It asserts:
       home; while a genuine re-teaching ("TDD is mandatory, tests before code,
       non-negotiable"), a verbatim copy of CLAUDE.md's own mandate table, and a
       genuine mandate sitting INSIDE the glossary home are all still flagged.
-      Quorum, citation, and the untouched Ubiquitous Language detector are
-      asserted alongside.
+      Quorum and citation are asserted alongside.
+
+  (b4) PRECISION — USING the vocabulary is not RESTATING the glossary (#1204).
+      CLAUDE.md § Ubiquitous Language MANDATES consistent use of the canonical
+      terms, so a term-heavy skill is a compliant skill: a corpus that uses
+      twelve canonical terms in ordinary prose is NOT flagged (this inverts, on
+      purpose, the assertion #1202 left pinning the old term-count signature —
+      see the block comment above it). What is flagged is the glossary being
+      REPRODUCED: a copied `| Term | Definition |` table and a bulleted
+      `**Term** — definition` list both fire, at the quorum and not one entry
+      below it, while a 3-column decision-criteria table, per-term teaching
+      sections, a term -> label table, terms named only inside another entry's
+      definition body, and a copy that cites CLAUDE.md at every entry do not.
+      `glossary_entry()` / `defined_glossary_terms()` are driven directly.
 
   (c) main() runs against the real repo, exits 0 (report-only), and writes the
       report to generated/duplication-report.md.
@@ -574,23 +586,207 @@ check(
     d.mandated_methodologies(m_lines, std["methodologies"], []) == ([], []),
 )
 
-# SCOPE NOTE (#1202 -> #1203): this fix targets the methodologies detector only.
-# The Ubiquitous Language detector is a DIFFERENT rule — it fires on a skill
-# carrying >= UBIQUITOUS_DUMP_THRESHOLD canonical terms — and is deliberately
-# left untouched here, so `integration-design` is NOT cleared by this change.
+# ---------------------------------------------------------------------------
+# (b4) PRECISION — USING the vocabulary is not RESTATING the glossary (#1204)
+#
+# CONTRACT CHANGE, DELIBERATE. #1202/#1203 left behind this assertion:
+#
+#     check("the Ubiquitous Language detector is unchanged "
+#           "(a term-heavy skill still fires)", ...)
+#
+# It pinned the OLD signature: >= UBIQUITOUS_DUMP_THRESHOLD canonical terms
+# ANYWHERE in a corpus. That signature is inverted relative to the standard it
+# polices — CLAUDE.md § Ubiquitous Language says the terms "must be used
+# consistently across every artifact. Never substitute synonyms", so a term-heavy
+# skill is a COMPLIANT skill. The fixture that assertion used (twelve sentences,
+# each of the form "We apply the <canonical term> pattern at this boundary") is
+# textbook compliance, and pinning that it fires pins a false positive. The
+# assertion is therefore INVERTED here rather than deleted: the same fixture is
+# kept verbatim and now asserts that it is NOT flagged. Detection of a real
+# glossary reproduction is asserted immediately below it, so nothing is weakened.
+# ---------------------------------------------------------------------------
+
 std_ul = dict(std, ubiquitous_terms=[
     "anti-corruption layer", "bounded context", "change data capture",
     "circuit breaker", "consumer-driven contract", "context map",
     "dead letter queue", "domain event", "eventual consistency",
     "idempotency", "transactional outbox", "ubiquitous language",
 ])
+UL_TERMS = std_ul["ubiquitous_terms"]
+
+# The `integration-design` shape: heavy, correct USE of the canonical vocabulary
+# in ordinary prose, with no term -> definition pairing anywhere.
 term_user = {"integration-design-like": "\n".join(
-    f"We apply the {t} pattern at this boundary." for t in std_ul["ubiquitous_terms"]
+    f"We apply the {t} pattern at this boundary." for t in UL_TERMS
 )}
-ru_ul = d.find_restatements(term_user, std_ul)
 check(
-    "the Ubiquitous Language detector is unchanged (a term-heavy skill still fires)",
-    len(ru_ul) == 1 and "ubiquitous" in ru_ul[0]["standard"].lower(),
+    "using many canonical terms in prose is COMPLIANCE, not a restatement",
+    d.find_restatements(term_user, std_ul) == [],
+)
+
+# ... and the detector is not merely off: a copied glossary TABLE still fires.
+GLOSSARY_TABLE = (
+    "## Terminology\n\n"
+    "| Term | Definition |\n"
+    "|---|---|\n"
+    + "".join(
+        f"| **{t.title()}** | The canonical meaning of {t}, written out here in "
+        f"full as a definition rather than merely used in a sentence. |\n"
+        for t in UL_TERMS
+    )
+)
+rg = d.find_restatements({"some-copying-skill": GLOSSARY_TABLE}, std_ul)
+check(
+    "a copied glossary TABLE (term -> definition rows) IS flagged",
+    len(rg) == 1 and rg[0]["standard"] == "Ubiquitous Language glossary",
+)
+check(
+    "the evidence says the skill DEFINES the terms and counts them",
+    rg and rg[0]["evidence"].startswith(f"defines {len(UL_TERMS)} canonical glossary terms"),
+)
+check(
+    "the copied glossary is repointed at CLAUDE.md / glossary-management",
+    rg and "glossary-management" in rg[0]["repoint_to"],
+)
+check(
+    "the glossary HOME may carry those same rows",
+    d.find_restatements({"glossary-management": GLOSSARY_TABLE}, std_ul) == [],
+)
+
+# The second entry shape: a bulleted `**Term** — definition` list.
+GLOSSARY_BULLETS = "\n".join(
+    f"- **{t.title()}** — the canonical meaning of {t}, spelled out at length "
+    f"exactly as the glossary home spells it out."
+    for t in UL_TERMS
+)
+check(
+    "a bulleted `**Term** — definition` glossary copy IS flagged",
+    len(d.find_restatements({"bullet-copying-skill": GLOSSARY_BULLETS}, std_ul)) == 1,
+)
+
+# A DECISION-CRITERIA table (3+ columns) pairing canonical terms with selection
+# guidance is knowledge a skill is allowed to own (CLAUDE.md § Component
+# Architecture) — it is not the glossary.
+DECISION_TABLE = (
+    "| Pattern | Use when | Do not use when |\n"
+    "|---|---|---|\n"
+    + "".join(
+        f"| **{t.title()}** | the boundary is asynchronous and lossy | the call "
+        f"is synchronous and cheap |\n"
+        for t in UL_TERMS
+    )
+)
+check(
+    "a 3-column decision-criteria table over canonical terms is NOT flagged",
+    d.find_restatements({"pattern-selection-skill": DECISION_TABLE}, std_ul) == [],
+)
+
+# Section headings named after terms are depth, not a glossary.
+HEADING_SECTIONS = "\n".join(
+    f"### {t.title()}\n\nThis section teaches {t} in depth, with failure modes, "
+    f"trade-offs and a worked example drawn from production incidents.\n"
+    for t in UL_TERMS
+)
+check(
+    "teaching each term in depth under its own heading is NOT flagged",
+    d.find_restatements({"deep-teaching-skill": HEADING_SECTIONS}, std_ul) == [],
+)
+
+# Quorum: one entry short of UBIQUITOUS_DEFINITION_QUORUM does not fire.
+def _rows(terms):
+    return "".join(
+        f"| **{t.title()}** | The canonical meaning of {t}, written out here as a "
+        f"real definition of the term. |\n"
+        for t in terms
+    )
+
+check(
+    "one definition short of the quorum is NOT flagged",
+    d.find_restatements(
+        {"almost-skill": _rows(UL_TERMS[:d.UBIQUITOUS_DEFINITION_QUORUM - 1])}, std_ul
+    ) == [],
+)
+check(
+    "exactly the quorum IS flagged",
+    len(d.find_restatements(
+        {"quorum-skill": _rows(UL_TERMS[:d.UBIQUITOUS_DEFINITION_QUORUM])}, std_ul
+    )) == 1,
+)
+
+# A term mentioned only inside ANOTHER term's definition body is not defined.
+BODY_ONLY = "".join(
+    f"| **Local Concept {i}** | Interacts with the {t} at the seam, and must not "
+    f"be confused with it in review. |\n"
+    for i, t in enumerate(UL_TERMS)
+)
+check(
+    "canonical terms appearing only in the definition BODY are not counted",
+    d.find_restatements({"body-only-skill": BODY_ONLY}, std_ul) == [],
+)
+
+# A one-word definition body is a label, not a definition.
+LABEL_TABLE = "".join(f"| **{t.title()}** | yes |\n" for t in UL_TERMS)
+check(
+    "a term -> label table (no real definition body) is NOT flagged",
+    d.find_restatements({"label-skill": LABEL_TABLE}, std_ul) == [],
+)
+
+# Citation suppression applies here too: a glossary quoted WITH attribution to
+# its CLAUDE.md home on every entry is the required behaviour.
+CITED_GLOSSARY = "".join(
+    f"| **{t.title()}** | The canonical meaning of {t}, quoted from CLAUDE.md "
+    f"§ Ubiquitous Language for convenience. |\n"
+    for t in UL_TERMS
+)
+check(
+    "a glossary copy that cites CLAUDE.md at every entry is NOT flagged",
+    d.find_restatements({"citing-skill": CITED_GLOSSARY}, std_ul) == [],
+)
+
+# The pure helpers, driven directly.
+check(
+    "glossary_entry() reads a 2-column row as (headword, definition)",
+    d.glossary_entry("| **Bounded Context** | The boundary within which a model holds. |")
+    == ("bounded context", "The boundary within which a model holds."),
+)
+check(
+    "glossary_entry() strips a trailing parenthetical gloss from the headword",
+    d.glossary_entry("| **Change Data Capture** (CDC) | Streaming row-level changes. |")
+    == ("change data capture", "Streaming row-level changes."),
+)
+check(
+    "glossary_entry() rejects the |---|---| rule row",
+    d.glossary_entry("|---|---|") is None,
+)
+check(
+    "glossary_entry() rejects a 3-column row",
+    d.glossary_entry("| **Circuit Breaker** | use when flaky | avoid when cheap |") is None,
+)
+check(
+    "glossary_entry() reads an inline `**Term** — definition` lead-in",
+    d.glossary_entry("- **Dead Letter Queue** — where poison messages land.")
+    == ("dead letter queue", "where poison messages land."),
+)
+check(
+    "glossary_entry() returns None for ordinary prose using a term",
+    d.glossary_entry("We put a circuit breaker on every outbound call.") is None,
+)
+gt_lines = GLOSSARY_TABLE.splitlines()
+gt_terms, gt_idx = d.defined_glossary_terms(gt_lines, UL_TERMS)
+check(
+    "defined_glossary_terms() returns the defined terms and their line indices",
+    gt_terms == UL_TERMS
+    and len(gt_idx) == len(UL_TERMS)
+    and all(gt_lines[i].strip().startswith("|") for i in gt_idx),
+)
+check(
+    "defined_glossary_terms() finds nothing in prose that merely uses the terms",
+    d.defined_glossary_terms(term_user["integration-design-like"].splitlines(), UL_TERMS)
+    == ([], []),
+)
+check(
+    "defined_glossary_terms() with no canonical terms returns nothing",
+    d.defined_glossary_terms(gt_lines, []) == ([], []),
 )
 
 # ---------------------------------------------------------------------------

@@ -49,6 +49,19 @@ WHAT IT DOES (report-only — always exits 0):
         in every skill, and a genuine mandate is still caught in every skill —
         including inside the glossary home itself.
 
+        NOT a restatement: USING the canonical vocabulary. For the Ubiquitous
+        Language standard the polarity is the REVERSE of the methodologies one.
+        CLAUDE.md § Ubiquitous Language says the terms "must be used consistently
+        across every artifact. Never substitute synonyms." — so writing `Circuit
+        Breaker` or `Anti-Corruption Layer` in ordinary prose is COMPLIANCE, and
+        counting those mentions flags the compliant skill. What CLAUDE.md points
+        at `skills/glossary-management/` to own is the GLOSSARY ITSELF: the
+        term -> definition pairing. The check therefore fires on the DEFINITION
+        SHAPE — a canonical term standing in the TERM POSITION of a glossary-style
+        entry (a two-column `| Term | Definition |` row, or a `**Term** — …`
+        lead-in) — and requires UBIQUITOUS_DEFINITION_QUORUM such entries, i.e. a
+        reproduced chunk of the glossary rather than an incidental definition.
+
         NOT a restatement: a block that CITES its CLAUDE.md home. Pointing at
         the home and quoting briefly with attribution is exactly the required
         behaviour, so a finding is suppressed when every occurrence of the
@@ -384,9 +397,24 @@ def load_claude_standards(claude_md_text: str) -> dict:
     }
 
 
-# how many distinct glossary terms in a skill body suggest it is RESTATING the
-# glossary rather than merely using a few terms in passing.
-UBIQUITOUS_DUMP_THRESHOLD = 10
+# How many distinct canonical terms a skill must DEFINE (term -> definition, see
+# defined_glossary_terms) before it reads as reproducing the glossary rather than
+# defining a term or two incidentally while teaching its own subject.
+#
+# Calibrated, not guessed. CLAUDE.md § Ubiquitous Language publishes the glossary
+# in five themed clusters; after parsing (multi-word terms + "idempotency") the
+# SMALLEST cluster holds 6 terms, so a skill that reproduces one whole cluster is
+# still caught. Measured against the live 186-skill corpus the highest non-home
+# count is 4 (`cqrs-pattern`, `bounded-context-mapping` — each defining a handful
+# of canonical terms inside a table about its own subject), against 33 for the
+# legitimate home `glossary-management`. 6 sits above the observed noise floor and
+# at-or-below any real reproduction of the glossary.
+UBIQUITOUS_DEFINITION_QUORUM = 6
+# A definition body shorter than this is a label or a table cell of keywords, not
+# a definition of the term.
+UBIQUITOUS_DEFINITION_MIN_CHARS = 24
+# A term position longer than this is a sentence, not a glossary headword.
+UBIQUITOUS_TERM_HEAD_MAX_CHARS = 60
 # how many of the five methodologies must co-occur (with an enforcement marker)
 # to count as restating the non-negotiable-methodology standard.
 METHODOLOGY_QUORUM = 4
@@ -464,6 +492,81 @@ def mandated_methodologies(lines: list[str], methodologies, marker_indices: list
     return list(found), sorted(hit_lines)
 
 
+# --- glossary-entry shape (Ubiquitous Language) ------------------------------
+# A glossary entry pairs a HEADWORD with a DEFINITION. Two shapes carry that
+# pairing in this repo's markdown:
+#   * a two-column table row   `| **Bounded Context** | The boundary within … |`
+#   * an inline lead-in        `- **Bounded Context** — the boundary within …`
+# A table row with three or more columns is a COMPARISON / DECISION-CRITERIA
+# table ("pattern | use when | trade-off"), which CLAUDE.md § Component
+# Architecture explicitly permits skills to own, so it is not an entry. A section
+# HEADING named after a term is likewise not an entry: teaching one pattern in
+# depth under its own heading is what a skill is for.
+_GLOSSARY_EMPHASIS_RE = re.compile(r"[*_`\"']+")
+_GLOSSARY_TRAILING_PAREN_RE = re.compile(r"\s*[(\[][^)\]]*[)\]]\s*$")
+_GLOSSARY_INLINE_RE = re.compile(
+    r"^\s{0,4}(?:[-*+]\s+|\d+[.)]\s+)?(?:\*\*|__)(?P<term>[^*_\n]{2,80}?)(?:\*\*|__)"
+    r"\s*[—–:-]\s+(?P<body>.+)$"
+)
+_TABLE_RULE_CHARS = set("-: ")
+
+
+def _normalize_headword(text: str) -> str:
+    """Lowercase a candidate headword, stripping emphasis and a trailing gloss."""
+    s = _GLOSSARY_EMPHASIS_RE.sub("", text).strip()
+    prev = None
+    while prev != s:  # drop trailing "(CDC)" / "[deprecated]", possibly repeated
+        prev = s
+        s = _GLOSSARY_TRAILING_PAREN_RE.sub("", s).strip()
+    return " ".join(s.lower().split())
+
+
+def glossary_entry(line: str):
+    """(headword, definition) if `line` is a glossary-style entry, else None. Pure."""
+    stripped = line.strip()
+    if stripped.startswith("|"):
+        cells = [c.strip() for c in stripped.strip("|").split("|")]
+        if len(cells) != 2 or not cells[0] or not cells[1]:
+            return None
+        if set(cells[0]) <= _TABLE_RULE_CHARS:  # the |---|---| rule row
+            return None
+        return _normalize_headword(cells[0]), cells[1]
+    m = _GLOSSARY_INLINE_RE.match(line)
+    if m:
+        return _normalize_headword(m.group("term")), m.group("body").strip()
+    return None
+
+
+def defined_glossary_terms(lines: list[str], ul_terms):
+    """Canonical terms this text DEFINES, and the lines that define them. Pure.
+
+    A term counts only when it stands in the TERM POSITION of a glossary-style
+    entry (see glossary_entry) whose definition body is a real definition rather
+    than a label. Merely writing the term in prose does not count — CLAUDE.md
+    § Ubiquitous Language mandates exactly that usage, so counting it would flag
+    compliance. A term appearing only inside some other term's definition does
+    not count either: the entry is about its headword.
+
+    Returns (terms in ul_terms order, sorted definition line indices).
+    """
+    found: dict[str, None] = {}
+    hit_lines: set[int] = set()
+    for i, line in enumerate(lines):
+        entry = glossary_entry(line)
+        if not entry:
+            continue
+        head, body = entry
+        if not head or len(head) > UBIQUITOUS_TERM_HEAD_MAX_CHARS:
+            continue
+        if len(body) < UBIQUITOUS_DEFINITION_MIN_CHARS:
+            continue
+        for term in ul_terms:
+            if term and term in head:
+                found[term] = None
+                hit_lines.add(i)
+    return [t for t in ul_terms if t in found], sorted(hit_lines)
+
+
 def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
     """Flag skills whose prose restates a CLAUDE.md standard.
 
@@ -534,18 +637,23 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
                     "repoint_to": "CLAUDE.md § Non-Negotiable Methodology",
                 })
 
-        # 4. Ubiquitous Language glossary dumped into the skill.
+        # 4. The Ubiquitous Language GLOSSARY reproduced inside the skill.
+        #    USING the canonical terms is what CLAUDE.md mandates ("must be used
+        #    consistently across every artifact. Never substitute synonyms"), so
+        #    the restatement here is the term -> DEFINITION pairing the glossary
+        #    home owns — not the term count. Only terms standing in the term
+        #    position of a glossary-style entry count, and a quorum of them must
+        #    do so before the skill reads as reproducing the glossary.
         if name not in STANDARD_HOME_SKILLS["ubiquitous_language"]:
-            present_terms = [t for t in ul_terms if t and t in low]
-            idx = _signature_line_indices(lines, present_terms, fold_case=True)
-            if len(present_terms) >= UBIQUITOUS_DUMP_THRESHOLD and not cites_claude_md(lines, idx):
+            defined, idx = defined_glossary_terms(lines, ul_terms)
+            if len(defined) >= UBIQUITOUS_DEFINITION_QUORUM and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "Ubiquitous Language glossary",
                     "severity": "medium",
                     "evidence": (
-                        f"restates {len(present_terms)} canonical glossary terms "
-                        f"(e.g. {', '.join(present_terms[:6])}...)"
+                        f"defines {len(defined)} canonical glossary terms "
+                        f"(e.g. {', '.join(defined[:6])}...)"
                     ),
                     "repoint_to": "CLAUDE.md § Ubiquitous Language / skills/glossary-management",
                 })
