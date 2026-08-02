@@ -161,7 +161,9 @@
       ]
     },
     "css-styling-configuration": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "css-styling-strategy"
       ]
@@ -234,7 +236,8 @@
     },
     "dockerfile": {
       "agents": [
-        "backend-engineer"
+        "backend-engineer",
+        "frontend-engineer"
       ],
       "skills": [
         "go-dockerfile",
@@ -627,7 +630,9 @@
       ]
     },
     "microfrontend-topology": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "microfrontend-architecture"
       ]
@@ -873,73 +878,97 @@
       ]
     },
     "react-accessible-components": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-accessibility"
       ]
     },
     "react-api-client": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-api-client"
       ]
     },
     "react-app-skeleton": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-project-structure"
       ]
     },
     "react-component-tests": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-component-testing"
       ]
     },
     "react-components": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-component-design"
       ]
     },
     "react-dashboard-components": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-dashboard-components"
       ]
     },
     "react-e2e-test-suite": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-e2e-testing"
       ]
     },
     "react-graph-feature": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-graph-visualization"
       ]
     },
     "react-performance-optimization": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-performance-optimization"
       ]
     },
     "react-router-configuration": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-routing"
       ]
     },
     "react-state-stores": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-state-management"
       ]
     },
     "react-telemetry-instrumentation": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "react-observability"
       ]
@@ -1054,7 +1083,9 @@
       ]
     },
     "typescript-type-modules": {
-      "agents": [],
+      "agents": [
+        "frontend-engineer"
+      ],
       "skills": [
         "typescript-types"
       ]
@@ -1403,8 +1434,10 @@
       ]
     },
     "frontend": {
-      "agent_count": 0,
-      "agents": [],
+      "agent_count": 1,
+      "agents": [
+        "frontend-engineer"
+      ],
       "artifacts": [
         "css-styling-configuration",
         "dockerfile",
@@ -1412,12 +1445,15 @@
         "react-accessible-components",
         "react-api-client",
         "react-app-skeleton",
+        "react-component-tests",
         "react-components",
         "react-dashboard-components",
+        "react-e2e-test-suite",
         "react-graph-feature",
         "react-performance-optimization",
         "react-router-configuration",
         "react-state-stores",
+        "react-telemetry-instrumentation",
         "typescript-type-modules"
       ],
       "owners": [
@@ -1944,12 +1980,29 @@
       },
       {
         "created": "2026-06-25",
-        "domain": null,
+        "domain": "frontend",
         "file": "agents/frontend-engineer.md",
         "has_acceptance_test": true,
         "name": "frontend-engineer",
         "phase": "implement",
-        "produces": [],
+        "produces": [
+          "css-styling-configuration",
+          "dockerfile",
+          "microfrontend-topology",
+          "react-accessible-components",
+          "react-api-client",
+          "react-app-skeleton",
+          "react-component-tests",
+          "react-components",
+          "react-dashboard-components",
+          "react-e2e-test-suite",
+          "react-graph-feature",
+          "react-performance-optimization",
+          "react-router-configuration",
+          "react-state-stores",
+          "react-telemetry-instrumentation",
+          "typescript-type-modules"
+        ],
         "role": "React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI",
         "skills": [
           "css-styling-strategy",
@@ -1972,7 +2025,7 @@
           "react-state-management",
           "typescript-types"
         ],
-        "status": null,
+        "status": "stable",
         "tags": [
           "accessibility",
           "frontend",
@@ -1986,7 +2039,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -8778,7 +8831,7 @@
     "artifacts": 180,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 33,
+    "edges_agent_produces": 49,
     "edges_agent_skills": 179,
     "edges_skill_produces": 187,
     "edges_skill_related": 809,
@@ -8789,9 +8842,9 @@
   },
   "coverage": {
     "agents_with_acceptance_test": 3,
-    "agents_with_domain": 2,
-    "agents_with_produces": 2,
-    "agents_with_status": 2,
+    "agents_with_domain": 3,
+    "agents_with_produces": 3,
+    "agents_with_status": 3,
     "commands_with_test": 15,
     "skills_with_assets": 16,
     "skills_with_contract_test": 186,
@@ -8890,6 +8943,70 @@
       {
         "agent": "backend-engineer",
         "artifact": "schema-migration"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "css-styling-configuration"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "dockerfile"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "microfrontend-topology"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-accessible-components"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-api-client"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-app-skeleton"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-component-tests"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-components"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-dashboard-components"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-e2e-test-suite"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-graph-feature"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-performance-optimization"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-router-configuration"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-state-stores"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "react-telemetry-instrumentation"
+      },
+      {
+        "agent": "frontend-engineer",
+        "artifact": "typescript-type-modules"
       },
       {
         "agent": "product-strategist",
