@@ -25,7 +25,9 @@
       ]
     },
     "alerting-rules-design-document": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "alerting-rules-design"
       ]
@@ -75,7 +77,9 @@
       ]
     },
     "canary-rollout-plan": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "canary-deployment"
       ]
@@ -87,13 +91,17 @@
       ]
     },
     "cd-pipeline-config": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "cd-pipeline"
       ]
     },
     "ci-pipeline-workflow": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "ci-pipeline"
       ]
@@ -143,7 +151,9 @@
       ]
     },
     "container-image-standards": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "dockerfile-patterns"
       ]
@@ -169,7 +179,9 @@
       ]
     },
     "cutover-plan": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "blue-green-deployment"
       ]
@@ -229,7 +241,9 @@
       ]
     },
     "disaster-recovery-plan": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "disaster-recovery-plan"
       ]
@@ -264,7 +278,9 @@
       ]
     },
     "environment-config": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "environment-config"
       ]
@@ -300,7 +316,9 @@
       ]
     },
     "feature-flag-inventory": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "feature-flag-design"
       ]
@@ -562,7 +580,9 @@
       ]
     },
     "helm-chart": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "helm-chart"
       ]
@@ -596,7 +616,9 @@
       ]
     },
     "kubernetes-manifest": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "kubernetes-manifest"
       ]
@@ -691,7 +713,9 @@
       ]
     },
     "opentofu-module": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "opentofu-module"
       ]
@@ -716,13 +740,17 @@
       ]
     },
     "platform-design": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "platform-engineering-design"
       ]
     },
     "platform-slo-record": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "slo-definition"
       ]
@@ -740,7 +768,9 @@
       ]
     },
     "prometheus-metrics-design": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "prometheus-metrics-design"
       ]
@@ -998,7 +1028,9 @@
       ]
     },
     "runbook": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "runbook-authoring"
       ]
@@ -1031,7 +1063,9 @@
       ]
     },
     "service-slo-record": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "slo-definition"
       ]
@@ -1173,7 +1207,9 @@
       ]
     },
     "workload-pattern-decisions": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "kubernetes-workload-patterns"
       ]
@@ -1536,9 +1572,12 @@
       ]
     },
     "platform": {
-      "agent_count": 0,
-      "agents": [],
+      "agent_count": 1,
+      "agents": [
+        "platform-engineer"
+      ],
       "artifacts": [
+        "alerting-rules-design-document",
         "blameless-postmortem",
         "canary-rollout-plan",
         "cd-pipeline-config",
@@ -1554,8 +1593,11 @@
         "kubernetes-manifest",
         "opentofu-module",
         "platform-design",
+        "platform-slo-record",
+        "prometheus-metrics-design",
         "release-strategy",
         "runbook",
+        "service-slo-record",
         "workload-pattern-decisions"
       ],
       "owners": [
@@ -2043,12 +2085,31 @@
       },
       {
         "created": "2026-07-20",
-        "domain": null,
+        "domain": "platform",
         "file": "agents/platform-engineer.md",
-        "has_acceptance_test": false,
+        "has_acceptance_test": true,
         "name": "platform-engineer",
         "phase": "deploy",
-        "produces": [],
+        "produces": [
+          "alerting-rules-design-document",
+          "canary-rollout-plan",
+          "cd-pipeline-config",
+          "ci-pipeline-workflow",
+          "container-image-standards",
+          "cutover-plan",
+          "disaster-recovery-plan",
+          "environment-config",
+          "feature-flag-inventory",
+          "helm-chart",
+          "kubernetes-manifest",
+          "opentofu-module",
+          "platform-design",
+          "platform-slo-record",
+          "prometheus-metrics-design",
+          "runbook",
+          "service-slo-record",
+          "workload-pattern-decisions"
+        ],
         "role": "Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks",
         "skills": [
           "alerting-rules-design",
@@ -2072,7 +2133,7 @@
           "runbook-authoring",
           "slo-definition"
         ],
-        "status": null,
+        "status": "stable",
         "tags": [
           "ci-cd",
           "deploy",
@@ -2088,7 +2149,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "1.1.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-24",
@@ -5771,7 +5832,7 @@
           "statefulset",
           "workload"
         ],
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "created": "2026-07-31",
@@ -8831,7 +8892,7 @@
     "artifacts": 180,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 49,
+    "edges_agent_produces": 67,
     "edges_agent_skills": 179,
     "edges_skill_produces": 187,
     "edges_skill_related": 809,
@@ -8841,10 +8902,10 @@
     "unresolved_skill_related": 0
   },
   "coverage": {
-    "agents_with_acceptance_test": 3,
-    "agents_with_domain": 3,
-    "agents_with_produces": 3,
-    "agents_with_status": 3,
+    "agents_with_acceptance_test": 4,
+    "agents_with_domain": 4,
+    "agents_with_produces": 4,
+    "agents_with_status": 4,
     "commands_with_test": 15,
     "skills_with_assets": 16,
     "skills_with_contract_test": 186,
@@ -9007,6 +9068,78 @@
       {
         "agent": "frontend-engineer",
         "artifact": "typescript-type-modules"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "alerting-rules-design-document"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "canary-rollout-plan"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "cd-pipeline-config"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "ci-pipeline-workflow"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "container-image-standards"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "cutover-plan"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "disaster-recovery-plan"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "environment-config"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "feature-flag-inventory"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "helm-chart"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "kubernetes-manifest"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "opentofu-module"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "platform-design"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "platform-slo-record"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "prometheus-metrics-design"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "runbook"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "service-slo-record"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "workload-pattern-decisions"
       },
       {
         "agent": "product-strategist",

@@ -64,6 +64,20 @@ With this, pod `redpanda-0` is reachable at `redpanda-0.redpanda-headless.<names
 
 **Operator first:** For Redpanda, PostgreSQL, and Zookeeper, a production-quality Operator encodes the operational knowledge (cluster scaling, backup, failover, version upgrades) that raw StatefulSet YAML cannot express. Always prefer an existing, well-maintained Operator over a hand-rolled StatefulSet for these systems.
 
+#### The Operator Ladder — three options, in this priority order
+
+Stateful infrastructure is provisioned by taking the **first** of these that applies. Never skip a rung.
+
+| Rung | Use when | Examples | Cost |
+|---|---|---|---|
+| **1. Existing Operator** | A well-maintained Operator covers the domain | CloudNativePG or Zalando/CrunchyData for PostgreSQL · Redpanda Operator · Strimzi for Kafka-compatible brokers · Prometheus Operator for Prometheus/Alertmanager/ServiceMonitors/recording rules · cert-manager for TLS certificate lifecycle | Adoption only. Do not replicate its behaviour with raw manifests or Helm hooks. |
+| **2. Helm chart + lifecycle hooks** | No Operator exists, the operational domain is only moderately complex, and setup is genuinely **one-time** — schema seeding, key provisioning | A small internal stateful component whose scaling and upgrade steps are acceptable as documented manual procedures | Manual scale/upgrade runbooks. Acceptable only while those procedures stay rare — a hook procedure run repeatedly is toil (`platform-engineering-design`). |
+| **3. Custom Operator** | **Both** hold: (a) no existing Operator covers the domain, **and** (b) the operational knowledge requires a continuous **reconciliation loop** — desired-state enforcement, automatic failover, dynamic reconfiguration from cluster state — that install-time hooks structurally cannot express, because hooks run once and never again | Genuinely novel stateful infrastructure | High and ongoing: controller-runtime, CRD design, status subresource, event queue mechanics, and its own upgrade story. **Record the decision in an ADR and obtain approval before starting.** |
+
+**The rung-2/rung-3 test is "once or continuously", not "simple or complex".** A Helm post-install hook fires at install time and is then gone; if the requirement is *continuous* convergence, no quantity of hooks will express it and rung 2 is the wrong answer regardless of how simple the domain looks. Conversely, complexity alone does not justify rung 3 — a complicated but genuinely one-time setup belongs on rung 2.
+
+**Anti-pattern — building a custom Operator because an existing one is imperfect.** Contributing a fix upstream is almost always cheaper than owning a controller forever. Rung 3 is a permanent engineering commitment, not a sprint.
+
 ### DaemonSet
 
 Use when the service is **node-scoped infrastructure** — it collects or modifies something that only exists per-node (filesystem paths, kernel interfaces, CNI configuration, per-node hardware metrics).
