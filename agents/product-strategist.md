@@ -48,6 +48,20 @@ tools:
   - Read
   - Write
 tags: [strategy, product-strategy, vision, positioning, gtm, okr, jtbd, persona, phase-owner]
+produces:
+  - vision-statement
+  - mission-statement
+  - user-persona
+  - jtbd-analysis
+  - stakeholder-map
+  - competitive-analysis
+  - business-model-canvas
+  - go-to-market-strategy
+  - impact-map
+  - strategic-roadmap
+  - okr
+domain: strategy
+status: stable
 ---
 
 # Product Strategist Agent
