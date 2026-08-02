@@ -17,18 +17,25 @@ WHAT IT EMITS:
   components   skills / agents / commands / hooks, each carrying its authored
                manifest plus manifest.py's derived filesystem facts.
   edges        agent_skills   (agent  -> skill,    from an agent's skills:)
+               agent_produces (agent  -> artifact, from an agent's produces:)
                skill_related  (skill  -> skill,    from a skill's related:)
                skill_produces (skill  -> artifact, from a skill's produces:)
-  artifacts    the REVERSE index artifact -> [producing skills]. This is the
-               seed of the artifact-dependency graph that P7 extends with
-               workflow depends_on. Multiple producers are legitimate and are
-               preserved verbatim: 'dockerfile' is produced by go-dockerfile,
+  artifacts    the REVERSE index artifact -> {"agents": [...], "skills": [...]}.
+               This is the seed of the artifact-dependency graph that P7 extends
+               with workflow depends_on. Multiple producers are legitimate and
+               are preserved verbatim: 'dockerfile' is produced by go-dockerfile,
                python-dockerfile AND react-dockerfile — one artifact kind, three
-               stacks.
+               stacks. Producers are KIND-TAGGED rather than pooled into one
+               flat list: a skill is APPLIED and an agent is INVOKED, so a
+               consumer resolving 'who produces X' must know which it got, and
+               a single name can legitimately exist as both a skill and an
+               artifact (user-persona). Both keys always appear; the one with no
+               producers of that kind is an empty list.
   capabilities the DERIVED VIEW over domain: (charter decision #2 — "capability
                is a derived view over the relationship graph, never a
-               hand-authored tier"). Per domain: its skills, the agents owning
-               them, and the artifacts they produce.
+               hand-authored tier"). Per domain: its skills, the agents whose
+               own domain: matches, the owners of those skills, and every
+               artifact either kind produces.
   coverage     test/reference/asset/script coverage counts.
   counts       component and edge totals.
 
@@ -114,6 +121,9 @@ def _agent_entry(a: dict) -> dict:
         "version": a.get("version"),
         "phase": a.get("phase"),
         "role": a.get("role"),
+        "domain": a.get("domain"),
+        "status": a.get("status"),
+        "produces": sorted(_as_list(a.get("produces"))),
         "skills": sorted(_as_list(a.get("skills"))),
         "tools": sorted(_as_list(a.get("tools"))),
         "tags": sorted(_as_list(a.get("tags"))),
@@ -181,30 +191,69 @@ def build_catalog(skills: list[dict], agents: list[dict],
         ({"skill": s["name"], "artifact": p} for s in skill_entries for p in s["produces"]),
         key=lambda e: (e["skill"], e["artifact"]),
     )
+    agent_produces = sorted(
+        ({"agent": a["name"], "artifact": p} for a in agent_entries for p in a["produces"]),
+        key=lambda e: (e["agent"], e["artifact"]),
+    )
 
     # --- artifact reverse index (seed of the artifact-dependency graph) -----
-    artifacts: dict[str, list[str]] = {}
+    # Each value is {"agents": [...], "skills": [...]} — a KIND-TAGGED index,
+    # not a flat list of producer names. A flat list would be ambiguous the
+    # moment agents joined it: an artifact's producers must be resolvable to a
+    # component kind, because a skill is APPLIED and an agent is INVOKED, and
+    # several names collide across kinds by design (the skill `user-persona`
+    # and the artifact `user-persona` the product-strategist agent produces).
+    # Both keys are always present (empty list when that kind produces nothing)
+    # so consumers never branch on key existence.
+    artifacts: dict[str, dict[str, list[str]]] = {}
+
+    def _producer(artifact: str) -> dict:
+        return artifacts.setdefault(artifact, {"agents": [], "skills": []})
+
     for edge in skill_produces:
-        artifacts.setdefault(edge["artifact"], []).append(edge["skill"])
-    artifacts = {k: sorted(set(v)) for k, v in sorted(artifacts.items())}
+        _producer(edge["artifact"])["skills"].append(edge["skill"])
+    for edge in agent_produces:
+        _producer(edge["artifact"])["agents"].append(edge["agent"])
+    artifacts = {
+        name: {"agents": sorted(set(v["agents"])), "skills": sorted(set(v["skills"]))}
+        for name, v in sorted(artifacts.items())
+    }
 
     # --- capability view (derived from domain:, never hand-authored) -------
     capabilities: dict[str, dict] = {}
+
+    def _capability(dom: str) -> dict:
+        return capabilities.setdefault(
+            dom, {"skills": [], "agents": [], "owners": [], "artifacts": []}
+        )
+
     for s in skill_entries:
         dom = s["domain"]
         if not dom:
             continue
-        cap = capabilities.setdefault(dom, {"skills": [], "owners": [], "artifacts": []})
+        cap = _capability(dom)
         cap["skills"].append(s["name"])
         if s["owner"]:
             cap["owners"].append(s["owner"])
         cap["artifacts"].extend(s["produces"])
+    # Agents roll up by their own domain:. 'owners' stays skills-only — it is the
+    # roll-up of skill owner: values (which name agents), not the agent files'
+    # own owner: (which names the human operator).
+    for a in agent_entries:
+        dom = a["domain"]
+        if not dom:
+            continue
+        cap = _capability(dom)
+        cap["agents"].append(a["name"])
+        cap["artifacts"].extend(a["produces"])
     capabilities = {
         dom: {
             "skills": sorted(set(v["skills"])),
+            "agents": sorted(set(v["agents"])),
             "owners": sorted(set(v["owners"])),
             "artifacts": sorted(set(v["artifacts"])),
             "skill_count": len(set(v["skills"])),
+            "agent_count": len(set(v["agents"])),
         }
         for dom, v in sorted(capabilities.items())
     }
@@ -219,6 +268,9 @@ def build_catalog(skills: list[dict], agents: list[dict],
         "skills_with_domain": sum(1 for s in skill_entries if s["domain"]),
         "skills_with_status": sum(1 for s in skill_entries if s["status"]),
         "agents_with_acceptance_test": sum(1 for a in agent_entries if a["has_acceptance_test"]),
+        "agents_with_produces": sum(1 for a in agent_entries if a["produces"]),
+        "agents_with_domain": sum(1 for a in agent_entries if a["domain"]),
+        "agents_with_status": sum(1 for a in agent_entries if a["status"]),
         "commands_with_test": sum(1 for c in command_entries if c["has_test"]),
     }
 
@@ -230,6 +282,7 @@ def build_catalog(skills: list[dict], agents: list[dict],
         "artifacts": len(artifacts),
         "domains": len(capabilities),
         "edges_agent_skills": len(agent_skills),
+        "edges_agent_produces": len(agent_produces),
         "edges_skill_related": len(skill_related),
         "edges_skill_produces": len(skill_produces),
         "orphan_skills": sum(
@@ -253,6 +306,7 @@ def build_catalog(skills: list[dict], agents: list[dict],
         "counts": counts,
         "coverage": coverage,
         "edges": {
+            "agent_produces": agent_produces,
             "agent_skills": agent_skills,
             "skill_produces": skill_produces,
             "skill_related": skill_related,
@@ -312,6 +366,7 @@ def main(argv: list[str]) -> int:
           f"{c['commands']} commands, {c['hooks']} hook handlers")
     print(f"  derived:    {c['artifacts']} artifacts, {c['domains']} capability domains")
     print(f"  edges:      {c['edges_agent_skills']} agent->skill, "
+          f"{c['edges_agent_produces']} agent->artifact, "
           f"{c['edges_skill_produces']} skill->artifact, "
           f"{c['edges_skill_related']} skill->related")
     return 0

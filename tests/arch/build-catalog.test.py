@@ -134,11 +134,18 @@ check("skills emitted sorted by name",
       sorted(s["name"] for s in syn["components"]["skills"]))
 
 # --- (b) artifact reverse index ---------------------------------------------
+# Values are KIND-TAGGED {"agents": [...], "skills": [...]} (P5) rather than a
+# flat producer list: a skill is applied and an agent is invoked, so a consumer
+# resolving 'who produces X' must be able to tell the two apart.
 check("artifact index maps artifact -> producing skills",
-      syn["artifacts"]["shared-artifact"] == ["alpha-skill", "beta-skill"])
+      syn["artifacts"]["shared-artifact"]["skills"] == ["alpha-skill", "beta-skill"])
 check("a skill producing several artifacts appears under each",
-      syn["artifacts"]["first-artifact"] == ["gamma-skill"]
-      and syn["artifacts"]["second-artifact"] == ["gamma-skill"])
+      syn["artifacts"]["first-artifact"]["skills"] == ["gamma-skill"]
+      and syn["artifacts"]["second-artifact"]["skills"] == ["gamma-skill"])
+check("artifact index values are kind-tagged, with both keys always present",
+      all(set(v.keys()) == {"agents", "skills"} for v in syn["artifacts"].values()))
+check("an artifact with no agent producer carries an empty agents list",
+      syn["artifacts"]["shared-artifact"]["agents"] == [])
 check("scalar 'produces:' is normalized to a list (alpha-skill authored a string)",
       [s for s in syn["components"]["skills"] if s["name"] == "alpha-skill"][0]["produces"]
       == ["shared-artifact"])
@@ -154,12 +161,17 @@ check("capability rolls up produced artifacts",
       syn["capabilities"]["backend"]["artifacts"] == ["first-artifact", "second-artifact"])
 check("capability carries a skill_count matching its skill list",
       all(c["skill_count"] == len(c["skills"]) for c in syn["capabilities"].values()))
+check("capability carries an agents roll-up + agent_count (empty when unauthored)",
+      all(c["agents"] == [] and c["agent_count"] == 0 for c in syn["capabilities"].values()))
 
 # --- (d) edges ---------------------------------------------------------------
 check("agent_skills edges are emitted sorted",
       syn["edges"]["agent_skills"] ==
       [{"agent": "agent-one", "skill": "alpha-skill"},
        {"agent": "agent-one", "skill": "gamma-skill"}])
+check("an unenriched agent yields no agent_produces edges",
+      syn["edges"]["agent_produces"] == []
+      and syn["counts"]["edges_agent_produces"] == 0)
 check("skill_produces edges cover every (skill, artifact) pair",
       len(syn["edges"]["skill_produces"]) == 4)
 check("skill_related edges preserve the authored see-also",
@@ -204,6 +216,92 @@ b.build_catalog(SYN_SKILLS, SYN_AGENTS, SYN_COMMANDS, SYN_HOOKS)
 check("build_catalog does not mutate its inputs", SYN_SKILLS == _before)
 
 # ---------------------------------------------------------------------------
+# (f) P5 — AGENT manifest fields (produces/domain/status) reach the catalog
+#
+# Before P5 these fields reached nothing: manifest.load_agents() never read them,
+# lint-manifests projected a fixed 12-field tuple, and _agent_entry() emitted no
+# such key — so `produces` on an agent could not link artifact -> producing agent,
+# which was the entire point of authoring it.
+# ---------------------------------------------------------------------------
+P5_AGENTS = [
+    # enriched: shares 'shared-artifact' with two skills (co-producer case) and
+    # owns one artifact no skill produces.
+    {"name": "agent-one", "version": "1.0.0", "phase": "implement", "role": "r",
+     "domain": "backend", "status": "stable",
+     "produces": ["shared-artifact", "agent-only-artifact"],
+     "skills": ["gamma-skill", "alpha-skill"], "tools": ["Bash"], "tags": ["t"],
+     "created": "2026-01-01", "has_acceptance_test": True, "file": "agents/agent-one.md"},
+    # NOT yet enriched: keys present but None — records are shape-stable, and no
+    # derivation may blow up or invent a domain for it.
+    {"name": "agent-two", "version": "1.0.0", "phase": "design", "role": "r",
+     "domain": None, "status": None, "produces": None,
+     "skills": ["beta-skill"], "tools": [], "tags": ["t"],
+     "created": "2026-01-02", "has_acceptance_test": False, "file": "agents/agent-two.md"},
+    # authors 'produces' as a bare SCALAR — normalized to a list, exactly as a
+    # skill's scalar produces: already is.
+    {"name": "agent-three", "version": "1.0.0", "phase": "strategy", "role": "r",
+     "domain": "strategy", "status": "experimental", "produces": "scalar-artifact",
+     "skills": ["alpha-skill"], "tools": [], "tags": ["t"],
+     "created": "2026-01-03", "has_acceptance_test": False, "file": "agents/agent-three.md"},
+]
+p5 = b.build_catalog(SYN_SKILLS, P5_AGENTS, SYN_COMMANDS, SYN_HOOKS)
+p5_by_name = {a["name"]: a for a in p5["components"]["agents"]}
+
+check("P5: agent entry emits produces/domain/status",
+      p5_by_name["agent-one"]["produces"] == ["agent-only-artifact", "shared-artifact"]
+      and p5_by_name["agent-one"]["domain"] == "backend"
+      and p5_by_name["agent-one"]["status"] == "stable")
+check("P5: an unenriched agent still carries the keys (None / empty list)",
+      p5_by_name["agent-two"]["produces"] == []
+      and p5_by_name["agent-two"]["domain"] is None
+      and p5_by_name["agent-two"]["status"] is None)
+check("P5: scalar 'produces:' on an agent is normalized to a list",
+      p5_by_name["agent-three"]["produces"] == ["scalar-artifact"])
+
+check("P5: agent_produces edges are emitted sorted by (agent, artifact)",
+      p5["edges"]["agent_produces"] ==
+      [{"agent": "agent-one", "artifact": "agent-only-artifact"},
+       {"agent": "agent-one", "artifact": "shared-artifact"},
+       {"agent": "agent-three", "artifact": "scalar-artifact"}]
+      and p5["counts"]["edges_agent_produces"] == 3)
+
+check("P5: artifact index links an artifact to its producing AGENT",
+      p5["artifacts"]["agent-only-artifact"] ==
+      {"agents": ["agent-one"], "skills": []})
+check("P5: an artifact produced by both kinds keeps them separately resolvable",
+      p5["artifacts"]["shared-artifact"] ==
+      {"agents": ["agent-one"], "skills": ["alpha-skill", "beta-skill"]})
+check("P5: an agent-only artifact is counted in counts.artifacts",
+      p5["counts"]["artifacts"] == 5)
+
+check("P5: capability rolls agents up by their own domain:",
+      p5["capabilities"]["backend"]["agents"] == ["agent-one"]
+      and p5["capabilities"]["backend"]["agent_count"] == 1)
+check("P5: agent-produced artifacts roll into their capability domain",
+      p5["capabilities"]["backend"]["artifacts"] ==
+      ["agent-only-artifact", "first-artifact", "second-artifact", "shared-artifact"])
+check("P5: an agent's own owner: does NOT pollute capability owners",
+      p5["capabilities"]["backend"]["owners"] == ["agent-one"])
+check("P5: an agent domain with no skills still forms a capability entry",
+      p5["capabilities"]["strategy"] ==
+      {"skills": [], "agents": ["agent-three"], "owners": [],
+       "artifacts": ["scalar-artifact"], "skill_count": 0, "agent_count": 1})
+check("P5: a domain-less agent joins no capability",
+      "agent-two" not in
+      {a for cap in p5["capabilities"].values() for a in cap["agents"]})
+
+check("P5: coverage counts enriched agents",
+      p5["coverage"]["agents_with_produces"] == 2
+      and p5["coverage"]["agents_with_domain"] == 2
+      and p5["coverage"]["agents_with_status"] == 2)
+
+_p5_before = copy.deepcopy(P5_AGENTS)
+check("P5: two builds with enriched agents are byte-identical",
+      b.render(p5) == b.render(b.build_catalog(SYN_SKILLS, P5_AGENTS, SYN_COMMANDS, SYN_HOOKS)))
+check("P5: build_catalog does not mutate the agent records", P5_AGENTS == _p5_before)
+
+
+# ---------------------------------------------------------------------------
 # REAL tree — invariants that only hold against the live components
 # ---------------------------------------------------------------------------
 real = b.build_from_repo()
@@ -236,11 +334,32 @@ check("REAL: P2 invariant — every skill has produces + domain + status",
       and real["coverage"]["skills_with_domain"] == real["counts"]["skills"]
       and real["coverage"]["skills_with_status"] == real["counts"]["skills"])
 
-check("REAL: every produced artifact has at least one producing skill",
-      all(len(v) >= 1 for v in real["artifacts"].values()))
+check("REAL: every produced artifact has at least one producer",
+      all(len(v["skills"]) + len(v["agents"]) >= 1 for v in real["artifacts"].values()))
 check("REAL: stack-neutral artifacts keep their multiple producers",
-      real["artifacts"].get("dockerfile") ==
+      real["artifacts"].get("dockerfile", {}).get("skills") ==
       ["go-dockerfile", "python-dockerfile", "react-dockerfile"])
+check("REAL: every artifact index value is kind-tagged with both keys",
+      all(set(v.keys()) == {"agents", "skills"} for v in real["artifacts"].values()))
+check("REAL: every agent_produces edge resolves to a real agent",
+      all(e["agent"] in _real_agent_names for e in real["edges"]["agent_produces"]))
+check("REAL: every agent_produces edge is reflected in the artifact index",
+      all(e["agent"] in real["artifacts"][e["artifact"]]["agents"]
+          for e in real["edges"]["agent_produces"]))
+# P5 child 1 enriched product-strategist; the remaining 12 agents follow. Once
+# P5 closes, these become 13/13 — until then the invariant is 'the enriched ones
+# actually reach the catalog', which is what this child fixes.
+_ps = next((a for a in real["components"]["agents"] if a["name"] == "product-strategist"), {})
+check("REAL: product-strategist's authored manifest fields reach the catalog",
+      _ps.get("domain") == "strategy" and _ps.get("status") == "stable"
+      and len(_ps.get("produces") or []) == 11)
+check("REAL: product-strategist appears as a producing agent in the artifact index",
+      all("product-strategist" in real["artifacts"][art]["agents"]
+          for art in (_ps.get("produces") or [])))
+check("REAL: coverage reports the agent manifest-field roll-out",
+      real["coverage"]["agents_with_produces"] >= 1
+      and real["coverage"]["agents_with_produces"] == real["coverage"]["agents_with_domain"]
+      == real["coverage"]["agents_with_status"])
 
 check("REAL: two consecutive real builds are byte-identical",
       b.render(real) == b.render(b.build_from_repo()))

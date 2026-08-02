@@ -1,555 +1,1119 @@
 {
   "artifacts": {
-    "acceptance-criteria-document": [
-      "acceptance-criteria"
-    ],
-    "acceptance-sign-off-record": [
-      "acceptance-sign-off"
-    ],
-    "access-control-model": [
-      "access-control-model"
-    ],
-    "aggregate-design": [
-      "aggregate-design"
-    ],
-    "alerting-rules-design-document": [
-      "alerting-rules-design"
-    ],
-    "analytics-requirements-document": [
-      "analytics-requirements"
-    ],
-    "api-gateway-design": [
-      "api-gateway-design"
-    ],
-    "architecture-decision-record": [
-      "adr-authoring"
-    ],
-    "beta-program": [
-      "beta-program-design"
-    ],
-    "blameless-postmortem": [
-      "incident-management"
-    ],
-    "broker-selection-rationale": [
-      "message-broker-selection"
-    ],
-    "business-model-canvas": [
-      "business-model-canvas"
-    ],
-    "canary-rollout-plan": [
-      "canary-deployment"
-    ],
-    "canonical-data-model": [
-      "canonical-data-model"
-    ],
-    "cd-pipeline-config": [
-      "cd-pipeline"
-    ],
-    "ci-pipeline-workflow": [
-      "ci-pipeline"
-    ],
-    "command-catalog": [
-      "command-catalog"
-    ],
-    "competitive-analysis": [
-      "competitive-analysis"
-    ],
-    "compliance-design": [
-      "compliance-design"
-    ],
-    "compliance-verification-report": [
-      "compliance-verification"
-    ],
-    "component-diagram": [
-      "component-diagram"
-    ],
-    "conductor-workflow-definition": [
-      "conductor-workflow-authoring"
-    ],
-    "container-diagram": [
-      "container-diagram"
-    ],
-    "container-image-standards": [
-      "dockerfile-patterns"
-    ],
-    "context-map": [
-      "bounded-context-mapping"
-    ],
-    "cqrs-design": [
-      "cqrs-pattern"
-    ],
-    "css-styling-configuration": [
-      "css-styling-strategy"
-    ],
-    "cutover-plan": [
-      "blue-green-deployment"
-    ],
-    "dashboard-specification": [
-      "dashboard-specification"
-    ],
-    "data-classification-scheme": [
-      "data-classification"
-    ],
-    "data-lineage-design": [
-      "data-lineage-design"
-    ],
-    "data-model": [
-      "data-model-design"
-    ],
-    "data-pipeline-design": [
-      "data-pipeline-design"
-    ],
-    "data-quality-rules": [
-      "data-quality-rules"
-    ],
-    "data-retention-policy": [
-      "data-retention-policy"
-    ],
-    "data-story": [
-      "data-storytelling"
-    ],
-    "delivery-performance-configuration": [
-      "dora-metrics"
-    ],
-    "disaster-recovery-plan": [
-      "disaster-recovery-plan"
-    ],
-    "dockerfile": [
-      "go-dockerfile",
-      "python-dockerfile",
-      "react-dockerfile"
-    ],
-    "document-data-model": [
-      "document-data-modeling"
-    ],
-    "domain-event-catalog": [
-      "domain-event-catalog"
-    ],
-    "domain-story": [
-      "domain-storytelling"
-    ],
-    "environment-config": [
-      "environment-config"
-    ],
-    "epic-list": [
-      "epic-definition"
-    ],
-    "event-driven-pattern-decisions": [
-      "event-driven-patterns"
-    ],
-    "event-schema": [
-      "event-schema-design"
-    ],
-    "event-storming-session": [
-      "event-storming-facilitation"
-    ],
-    "example-map": [
-      "example-mapping"
-    ],
-    "feature-flag-inventory": [
-      "feature-flag-design"
-    ],
-    "feedback-log": [
-      "feedback-template"
-    ],
-    "functional-requirements-document": [
-      "requirements-analysis"
-    ],
-    "gherkin-feature-file": [
-      "bdd-feature-file"
-    ],
-    "gitops-environment-repository": [
-      "gitops-workflow"
-    ],
-    "go-amqp-consumer": [
-      "go-amqp-consumer"
-    ],
-    "go-amqp-publisher": [
-      "go-amqp-publisher"
-    ],
-    "go-benchmark": [
-      "go-performance-optimization"
-    ],
-    "go-chaos-test": [
-      "go-chaos-test"
-    ],
-    "go-composition-root": [
-      "go-service-skeleton"
-    ],
-    "go-concurrency-package": [
-      "go-concurrency-patterns"
-    ],
-    "go-contract-test": [
-      "go-contract-test"
-    ],
-    "go-cqrs-handlers": [
-      "go-service-layer"
-    ],
-    "go-domain-model": [
-      "go-domain-model"
-    ],
-    "go-e2e-test-suite": [
-      "go-e2e-test"
-    ],
-    "go-error-handling": [
-      "go-error-handling"
-    ],
-    "go-event-consumer": [
-      "go-event-consumer"
-    ],
-    "go-grpc-handler": [
-      "go-grpc-handler"
-    ],
-    "go-http-handler": [
-      "go-chi-handler"
-    ],
-    "go-http-middleware": [
-      "go-middleware"
-    ],
-    "go-integration-test": [
-      "go-integration-test"
-    ],
-    "go-logging-instrumentation": [
-      "structured-logging-design"
-    ],
-    "go-mongodb-repository": [
-      "go-mongodb-repository"
-    ],
-    "go-openapi-generated-code": [
-      "go-openapi-codegen"
-    ],
-    "go-otel-instrumentation": [
-      "opentelemetry-instrumentation"
-    ],
-    "go-outbox-relay": [
-      "go-event-publisher"
-    ],
-    "go-repository-implementation": [
-      "go-repository-pattern"
-    ],
-    "go-security-controls": [
-      "security-implementation"
-    ],
-    "go-service-skeleton": [
-      "go-project-structure"
-    ],
-    "go-test-doubles": [
-      "mock-generation"
-    ],
-    "go-test-file": [
-      "go-unit-test"
-    ],
-    "go-test-fixtures": [
-      "test-fixture-design"
-    ],
-    "go-to-market-strategy": [
-      "gtm-strategy"
-    ],
-    "go-tracing-instrumentation": [
-      "distributed-tracing-design"
-    ],
-    "grpc-service-contract": [
-      "grpc-contract-design"
-    ],
-    "handoff-record": [
-      "ddd-agent-handoff"
-    ],
-    "health-check-endpoints": [
-      "health-check-design"
-    ],
-    "helm-chart": [
-      "helm-chart"
-    ],
-    "impact-map": [
-      "impact-mapping"
-    ],
-    "information-architecture": [
-      "information-architecture"
-    ],
-    "integration-design": [
-      "integration-design"
-    ],
-    "jtbd-analysis": [
-      "jtbd-analysis"
-    ],
-    "kubernetes-manifest": [
-      "kubernetes-manifest"
-    ],
-    "load-test-suite": [
-      "go-load-test",
-      "python-load-test"
-    ],
-    "makefile": [
-      "go-makefile",
-      "python-makefile"
-    ],
-    "methodology-compliance-report": [
-      "methodology-review"
-    ],
-    "metrics-instrumentation-plan": [
-      "metrics-instrumentation-plan"
-    ],
-    "microfrontend-topology": [
-      "microfrontend-architecture"
-    ],
-    "miro-board-spec": [
-      "miro-board-notation"
-    ],
-    "mission-statement": [
-      "mission-statement"
-    ],
-    "moscow-prioritized-backlog": [
-      "moscow-prioritization"
-    ],
-    "multi-tenancy-design": [
-      "multi-tenancy-design"
-    ],
-    "mutation-report": [
-      "go-mutation-test",
-      "python-mutation-test"
-    ],
-    "nfr-specification": [
-      "nfr-specification"
-    ],
-    "okr": [
-      "okr-authoring"
-    ],
-    "openapi-specification": [
-      "api-contract-design"
-    ],
-    "opentofu-module": [
-      "opentofu-module"
-    ],
-    "pattern-selection-rationale": [
-      "context-map-patterns"
-    ],
-    "performance-regression-gate": [
-      "go-performance-test",
-      "python-performance-test"
-    ],
-    "pipeline-stage-worker": [
-      "data-pipeline-implementation"
-    ],
-    "platform-design": [
-      "platform-engineering-design"
-    ],
-    "platform-slo-record": [
-      "slo-definition"
-    ],
-    "privacy-design": [
-      "privacy-design"
-    ],
-    "product-manifest": [
-      "artifact-manifest"
-    ],
-    "prometheus-metrics-design": [
-      "prometheus-metrics-design"
-    ],
-    "pytest-suite": [
-      "python-unit-test"
-    ],
-    "python-amqp-consumer": [
-      "python-amqp-consumer"
-    ],
-    "python-amqp-publisher": [
-      "python-amqp-publisher"
-    ],
-    "python-benchmark": [
-      "python-performance-optimization"
-    ],
-    "python-chaos-test": [
-      "python-chaos-test"
-    ],
-    "python-composition-root": [
-      "python-service-skeleton"
-    ],
-    "python-concurrency-package": [
-      "python-async-concurrency"
-    ],
-    "python-contract-test": [
-      "python-contract-test"
-    ],
-    "python-cqrs-handlers": [
-      "python-service-layer"
-    ],
-    "python-domain-model": [
-      "python-domain-model"
-    ],
-    "python-e2e-test-suite": [
-      "python-e2e-test"
-    ],
-    "python-error-handling": [
-      "python-error-handling"
-    ],
-    "python-event-consumer": [
-      "python-event-consumer"
-    ],
-    "python-grpc-handler": [
-      "python-grpc-handler"
-    ],
-    "python-http-handler": [
-      "python-fastapi-handler"
-    ],
-    "python-http-middleware": [
-      "python-middleware"
-    ],
-    "python-integration-test": [
-      "python-integration-test"
-    ],
-    "python-mongodb-repository": [
-      "python-mongodb-repository"
-    ],
-    "python-openapi-generated-code": [
-      "python-openapi-codegen"
-    ],
-    "python-outbox-relay": [
-      "python-event-publisher"
-    ],
-    "python-repository-implementation": [
-      "python-repository-pattern"
-    ],
-    "python-service-skeleton": [
-      "python-project-structure"
-    ],
-    "react-accessible-components": [
-      "react-accessibility"
-    ],
-    "react-api-client": [
-      "react-api-client"
-    ],
-    "react-app-skeleton": [
-      "react-project-structure"
-    ],
-    "react-component-tests": [
-      "react-component-testing"
-    ],
-    "react-components": [
-      "react-component-design"
-    ],
-    "react-dashboard-components": [
-      "react-dashboard-components"
-    ],
-    "react-e2e-test-suite": [
-      "react-e2e-testing"
-    ],
-    "react-graph-feature": [
-      "react-graph-visualization"
-    ],
-    "react-performance-optimization": [
-      "react-performance-optimization"
-    ],
-    "react-router-configuration": [
-      "react-routing"
-    ],
-    "react-state-stores": [
-      "react-state-management"
-    ],
-    "react-telemetry-instrumentation": [
-      "react-observability"
-    ],
-    "read-model": [
-      "read-model-design"
-    ],
-    "release-strategy": [
-      "progressive-delivery"
-    ],
-    "report-specification": [
-      "reporting-spec"
-    ],
-    "risk-register": [
-      "risk-register"
-    ],
-    "runbook": [
-      "runbook-authoring"
-    ],
-    "schema-migration": [
-      "go-migration",
-      "python-migration"
-    ],
-    "sdlc-config": [
-      "sdlc-config-management"
-    ],
-    "secrets-management-design": [
-      "secrets-management"
-    ],
-    "security-architecture": [
-      "security-architecture"
-    ],
-    "service-slo-record": [
-      "slo-definition"
-    ],
-    "skill-definition": [
-      "skill-authoring-standards"
-    ],
-    "stakeholder-map": [
-      "stakeholder-mapping"
-    ],
-    "strategic-roadmap": [
-      "roadmap-authoring"
-    ],
-    "subdomain-classification": [
-      "subdomain-distillation"
-    ],
-    "system-context-diagram": [
-      "system-context-diagram"
-    ],
-    "test-strategy": [
-      "test-pyramid"
-    ],
-    "threat-model": [
-      "threat-modeling"
-    ],
-    "typescript-type-modules": [
-      "typescript-types"
-    ],
-    "uat-plan": [
-      "uat-plan"
-    ],
-    "uat-scenario": [
-      "uat-scenario"
-    ],
-    "ubiquitous-language": [
-      "ubiquitous-language"
-    ],
-    "ubiquitous-language-glossary": [
-      "glossary-management"
-    ],
-    "ui-component-spec": [
-      "ui-component-spec"
-    ],
-    "user-journey-map": [
-      "user-journey-mapping"
-    ],
-    "user-persona": [
-      "user-persona"
-    ],
-    "user-story-backlog": [
-      "user-story-writing"
-    ],
-    "user-story-map": [
-      "story-mapping"
-    ],
-    "ux-flow": [
-      "ux-flow-design"
-    ],
-    "value-stream-map": [
-      "value-stream-map"
-    ],
-    "vision-statement": [
-      "vision-statement"
-    ],
-    "workflow-orchestration-design": [
-      "workflow-orchestration"
-    ],
-    "workload-pattern-decisions": [
-      "kubernetes-workload-patterns"
-    ],
-    "zero-trust-design": [
-      "zero-trust-design"
-    ]
+    "acceptance-criteria-document": {
+      "agents": [],
+      "skills": [
+        "acceptance-criteria"
+      ]
+    },
+    "acceptance-sign-off-record": {
+      "agents": [],
+      "skills": [
+        "acceptance-sign-off"
+      ]
+    },
+    "access-control-model": {
+      "agents": [],
+      "skills": [
+        "access-control-model"
+      ]
+    },
+    "aggregate-design": {
+      "agents": [],
+      "skills": [
+        "aggregate-design"
+      ]
+    },
+    "alerting-rules-design-document": {
+      "agents": [],
+      "skills": [
+        "alerting-rules-design"
+      ]
+    },
+    "analytics-requirements-document": {
+      "agents": [],
+      "skills": [
+        "analytics-requirements"
+      ]
+    },
+    "api-gateway-design": {
+      "agents": [],
+      "skills": [
+        "api-gateway-design"
+      ]
+    },
+    "architecture-decision-record": {
+      "agents": [],
+      "skills": [
+        "adr-authoring"
+      ]
+    },
+    "beta-program": {
+      "agents": [],
+      "skills": [
+        "beta-program-design"
+      ]
+    },
+    "blameless-postmortem": {
+      "agents": [],
+      "skills": [
+        "incident-management"
+      ]
+    },
+    "broker-selection-rationale": {
+      "agents": [],
+      "skills": [
+        "message-broker-selection"
+      ]
+    },
+    "business-model-canvas": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "business-model-canvas"
+      ]
+    },
+    "canary-rollout-plan": {
+      "agents": [],
+      "skills": [
+        "canary-deployment"
+      ]
+    },
+    "canonical-data-model": {
+      "agents": [],
+      "skills": [
+        "canonical-data-model"
+      ]
+    },
+    "cd-pipeline-config": {
+      "agents": [],
+      "skills": [
+        "cd-pipeline"
+      ]
+    },
+    "ci-pipeline-workflow": {
+      "agents": [],
+      "skills": [
+        "ci-pipeline"
+      ]
+    },
+    "command-catalog": {
+      "agents": [],
+      "skills": [
+        "command-catalog"
+      ]
+    },
+    "competitive-analysis": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "competitive-analysis"
+      ]
+    },
+    "compliance-design": {
+      "agents": [],
+      "skills": [
+        "compliance-design"
+      ]
+    },
+    "compliance-verification-report": {
+      "agents": [],
+      "skills": [
+        "compliance-verification"
+      ]
+    },
+    "component-diagram": {
+      "agents": [],
+      "skills": [
+        "component-diagram"
+      ]
+    },
+    "conductor-workflow-definition": {
+      "agents": [],
+      "skills": [
+        "conductor-workflow-authoring"
+      ]
+    },
+    "container-diagram": {
+      "agents": [],
+      "skills": [
+        "container-diagram"
+      ]
+    },
+    "container-image-standards": {
+      "agents": [],
+      "skills": [
+        "dockerfile-patterns"
+      ]
+    },
+    "context-map": {
+      "agents": [],
+      "skills": [
+        "bounded-context-mapping"
+      ]
+    },
+    "cqrs-design": {
+      "agents": [],
+      "skills": [
+        "cqrs-pattern"
+      ]
+    },
+    "css-styling-configuration": {
+      "agents": [],
+      "skills": [
+        "css-styling-strategy"
+      ]
+    },
+    "cutover-plan": {
+      "agents": [],
+      "skills": [
+        "blue-green-deployment"
+      ]
+    },
+    "dashboard-specification": {
+      "agents": [],
+      "skills": [
+        "dashboard-specification"
+      ]
+    },
+    "data-classification-scheme": {
+      "agents": [],
+      "skills": [
+        "data-classification"
+      ]
+    },
+    "data-lineage-design": {
+      "agents": [],
+      "skills": [
+        "data-lineage-design"
+      ]
+    },
+    "data-model": {
+      "agents": [],
+      "skills": [
+        "data-model-design"
+      ]
+    },
+    "data-pipeline-design": {
+      "agents": [],
+      "skills": [
+        "data-pipeline-design"
+      ]
+    },
+    "data-quality-rules": {
+      "agents": [],
+      "skills": [
+        "data-quality-rules"
+      ]
+    },
+    "data-retention-policy": {
+      "agents": [],
+      "skills": [
+        "data-retention-policy"
+      ]
+    },
+    "data-story": {
+      "agents": [],
+      "skills": [
+        "data-storytelling"
+      ]
+    },
+    "delivery-performance-configuration": {
+      "agents": [],
+      "skills": [
+        "dora-metrics"
+      ]
+    },
+    "disaster-recovery-plan": {
+      "agents": [],
+      "skills": [
+        "disaster-recovery-plan"
+      ]
+    },
+    "dockerfile": {
+      "agents": [],
+      "skills": [
+        "go-dockerfile",
+        "python-dockerfile",
+        "react-dockerfile"
+      ]
+    },
+    "document-data-model": {
+      "agents": [],
+      "skills": [
+        "document-data-modeling"
+      ]
+    },
+    "domain-event-catalog": {
+      "agents": [],
+      "skills": [
+        "domain-event-catalog"
+      ]
+    },
+    "domain-story": {
+      "agents": [],
+      "skills": [
+        "domain-storytelling"
+      ]
+    },
+    "environment-config": {
+      "agents": [],
+      "skills": [
+        "environment-config"
+      ]
+    },
+    "epic-list": {
+      "agents": [],
+      "skills": [
+        "epic-definition"
+      ]
+    },
+    "event-driven-pattern-decisions": {
+      "agents": [],
+      "skills": [
+        "event-driven-patterns"
+      ]
+    },
+    "event-schema": {
+      "agents": [],
+      "skills": [
+        "event-schema-design"
+      ]
+    },
+    "event-storming-session": {
+      "agents": [],
+      "skills": [
+        "event-storming-facilitation"
+      ]
+    },
+    "example-map": {
+      "agents": [],
+      "skills": [
+        "example-mapping"
+      ]
+    },
+    "feature-flag-inventory": {
+      "agents": [],
+      "skills": [
+        "feature-flag-design"
+      ]
+    },
+    "feedback-log": {
+      "agents": [],
+      "skills": [
+        "feedback-template"
+      ]
+    },
+    "functional-requirements-document": {
+      "agents": [],
+      "skills": [
+        "requirements-analysis"
+      ]
+    },
+    "gherkin-feature-file": {
+      "agents": [],
+      "skills": [
+        "bdd-feature-file"
+      ]
+    },
+    "gitops-environment-repository": {
+      "agents": [],
+      "skills": [
+        "gitops-workflow"
+      ]
+    },
+    "go-amqp-consumer": {
+      "agents": [],
+      "skills": [
+        "go-amqp-consumer"
+      ]
+    },
+    "go-amqp-publisher": {
+      "agents": [],
+      "skills": [
+        "go-amqp-publisher"
+      ]
+    },
+    "go-benchmark": {
+      "agents": [],
+      "skills": [
+        "go-performance-optimization"
+      ]
+    },
+    "go-chaos-test": {
+      "agents": [],
+      "skills": [
+        "go-chaos-test"
+      ]
+    },
+    "go-composition-root": {
+      "agents": [],
+      "skills": [
+        "go-service-skeleton"
+      ]
+    },
+    "go-concurrency-package": {
+      "agents": [],
+      "skills": [
+        "go-concurrency-patterns"
+      ]
+    },
+    "go-contract-test": {
+      "agents": [],
+      "skills": [
+        "go-contract-test"
+      ]
+    },
+    "go-cqrs-handlers": {
+      "agents": [],
+      "skills": [
+        "go-service-layer"
+      ]
+    },
+    "go-domain-model": {
+      "agents": [],
+      "skills": [
+        "go-domain-model"
+      ]
+    },
+    "go-e2e-test-suite": {
+      "agents": [],
+      "skills": [
+        "go-e2e-test"
+      ]
+    },
+    "go-error-handling": {
+      "agents": [],
+      "skills": [
+        "go-error-handling"
+      ]
+    },
+    "go-event-consumer": {
+      "agents": [],
+      "skills": [
+        "go-event-consumer"
+      ]
+    },
+    "go-grpc-handler": {
+      "agents": [],
+      "skills": [
+        "go-grpc-handler"
+      ]
+    },
+    "go-http-handler": {
+      "agents": [],
+      "skills": [
+        "go-chi-handler"
+      ]
+    },
+    "go-http-middleware": {
+      "agents": [],
+      "skills": [
+        "go-middleware"
+      ]
+    },
+    "go-integration-test": {
+      "agents": [],
+      "skills": [
+        "go-integration-test"
+      ]
+    },
+    "go-logging-instrumentation": {
+      "agents": [],
+      "skills": [
+        "structured-logging-design"
+      ]
+    },
+    "go-mongodb-repository": {
+      "agents": [],
+      "skills": [
+        "go-mongodb-repository"
+      ]
+    },
+    "go-openapi-generated-code": {
+      "agents": [],
+      "skills": [
+        "go-openapi-codegen"
+      ]
+    },
+    "go-otel-instrumentation": {
+      "agents": [],
+      "skills": [
+        "opentelemetry-instrumentation"
+      ]
+    },
+    "go-outbox-relay": {
+      "agents": [],
+      "skills": [
+        "go-event-publisher"
+      ]
+    },
+    "go-repository-implementation": {
+      "agents": [],
+      "skills": [
+        "go-repository-pattern"
+      ]
+    },
+    "go-security-controls": {
+      "agents": [],
+      "skills": [
+        "security-implementation"
+      ]
+    },
+    "go-service-skeleton": {
+      "agents": [],
+      "skills": [
+        "go-project-structure"
+      ]
+    },
+    "go-test-doubles": {
+      "agents": [],
+      "skills": [
+        "mock-generation"
+      ]
+    },
+    "go-test-file": {
+      "agents": [],
+      "skills": [
+        "go-unit-test"
+      ]
+    },
+    "go-test-fixtures": {
+      "agents": [],
+      "skills": [
+        "test-fixture-design"
+      ]
+    },
+    "go-to-market-strategy": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "gtm-strategy"
+      ]
+    },
+    "go-tracing-instrumentation": {
+      "agents": [],
+      "skills": [
+        "distributed-tracing-design"
+      ]
+    },
+    "grpc-service-contract": {
+      "agents": [],
+      "skills": [
+        "grpc-contract-design"
+      ]
+    },
+    "handoff-record": {
+      "agents": [],
+      "skills": [
+        "ddd-agent-handoff"
+      ]
+    },
+    "health-check-endpoints": {
+      "agents": [],
+      "skills": [
+        "health-check-design"
+      ]
+    },
+    "helm-chart": {
+      "agents": [],
+      "skills": [
+        "helm-chart"
+      ]
+    },
+    "impact-map": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "impact-mapping"
+      ]
+    },
+    "information-architecture": {
+      "agents": [],
+      "skills": [
+        "information-architecture"
+      ]
+    },
+    "integration-design": {
+      "agents": [],
+      "skills": [
+        "integration-design"
+      ]
+    },
+    "jtbd-analysis": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "jtbd-analysis"
+      ]
+    },
+    "kubernetes-manifest": {
+      "agents": [],
+      "skills": [
+        "kubernetes-manifest"
+      ]
+    },
+    "load-test-suite": {
+      "agents": [],
+      "skills": [
+        "go-load-test",
+        "python-load-test"
+      ]
+    },
+    "makefile": {
+      "agents": [],
+      "skills": [
+        "go-makefile",
+        "python-makefile"
+      ]
+    },
+    "methodology-compliance-report": {
+      "agents": [],
+      "skills": [
+        "methodology-review"
+      ]
+    },
+    "metrics-instrumentation-plan": {
+      "agents": [],
+      "skills": [
+        "metrics-instrumentation-plan"
+      ]
+    },
+    "microfrontend-topology": {
+      "agents": [],
+      "skills": [
+        "microfrontend-architecture"
+      ]
+    },
+    "miro-board-spec": {
+      "agents": [],
+      "skills": [
+        "miro-board-notation"
+      ]
+    },
+    "mission-statement": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "mission-statement"
+      ]
+    },
+    "moscow-prioritized-backlog": {
+      "agents": [],
+      "skills": [
+        "moscow-prioritization"
+      ]
+    },
+    "multi-tenancy-design": {
+      "agents": [],
+      "skills": [
+        "multi-tenancy-design"
+      ]
+    },
+    "mutation-report": {
+      "agents": [],
+      "skills": [
+        "go-mutation-test",
+        "python-mutation-test"
+      ]
+    },
+    "nfr-specification": {
+      "agents": [],
+      "skills": [
+        "nfr-specification"
+      ]
+    },
+    "okr": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "okr-authoring"
+      ]
+    },
+    "openapi-specification": {
+      "agents": [],
+      "skills": [
+        "api-contract-design"
+      ]
+    },
+    "opentofu-module": {
+      "agents": [],
+      "skills": [
+        "opentofu-module"
+      ]
+    },
+    "pattern-selection-rationale": {
+      "agents": [],
+      "skills": [
+        "context-map-patterns"
+      ]
+    },
+    "performance-regression-gate": {
+      "agents": [],
+      "skills": [
+        "go-performance-test",
+        "python-performance-test"
+      ]
+    },
+    "pipeline-stage-worker": {
+      "agents": [],
+      "skills": [
+        "data-pipeline-implementation"
+      ]
+    },
+    "platform-design": {
+      "agents": [],
+      "skills": [
+        "platform-engineering-design"
+      ]
+    },
+    "platform-slo-record": {
+      "agents": [],
+      "skills": [
+        "slo-definition"
+      ]
+    },
+    "privacy-design": {
+      "agents": [],
+      "skills": [
+        "privacy-design"
+      ]
+    },
+    "product-manifest": {
+      "agents": [],
+      "skills": [
+        "artifact-manifest"
+      ]
+    },
+    "prometheus-metrics-design": {
+      "agents": [],
+      "skills": [
+        "prometheus-metrics-design"
+      ]
+    },
+    "pytest-suite": {
+      "agents": [],
+      "skills": [
+        "python-unit-test"
+      ]
+    },
+    "python-amqp-consumer": {
+      "agents": [],
+      "skills": [
+        "python-amqp-consumer"
+      ]
+    },
+    "python-amqp-publisher": {
+      "agents": [],
+      "skills": [
+        "python-amqp-publisher"
+      ]
+    },
+    "python-benchmark": {
+      "agents": [],
+      "skills": [
+        "python-performance-optimization"
+      ]
+    },
+    "python-chaos-test": {
+      "agents": [],
+      "skills": [
+        "python-chaos-test"
+      ]
+    },
+    "python-composition-root": {
+      "agents": [],
+      "skills": [
+        "python-service-skeleton"
+      ]
+    },
+    "python-concurrency-package": {
+      "agents": [],
+      "skills": [
+        "python-async-concurrency"
+      ]
+    },
+    "python-contract-test": {
+      "agents": [],
+      "skills": [
+        "python-contract-test"
+      ]
+    },
+    "python-cqrs-handlers": {
+      "agents": [],
+      "skills": [
+        "python-service-layer"
+      ]
+    },
+    "python-domain-model": {
+      "agents": [],
+      "skills": [
+        "python-domain-model"
+      ]
+    },
+    "python-e2e-test-suite": {
+      "agents": [],
+      "skills": [
+        "python-e2e-test"
+      ]
+    },
+    "python-error-handling": {
+      "agents": [],
+      "skills": [
+        "python-error-handling"
+      ]
+    },
+    "python-event-consumer": {
+      "agents": [],
+      "skills": [
+        "python-event-consumer"
+      ]
+    },
+    "python-grpc-handler": {
+      "agents": [],
+      "skills": [
+        "python-grpc-handler"
+      ]
+    },
+    "python-http-handler": {
+      "agents": [],
+      "skills": [
+        "python-fastapi-handler"
+      ]
+    },
+    "python-http-middleware": {
+      "agents": [],
+      "skills": [
+        "python-middleware"
+      ]
+    },
+    "python-integration-test": {
+      "agents": [],
+      "skills": [
+        "python-integration-test"
+      ]
+    },
+    "python-mongodb-repository": {
+      "agents": [],
+      "skills": [
+        "python-mongodb-repository"
+      ]
+    },
+    "python-openapi-generated-code": {
+      "agents": [],
+      "skills": [
+        "python-openapi-codegen"
+      ]
+    },
+    "python-outbox-relay": {
+      "agents": [],
+      "skills": [
+        "python-event-publisher"
+      ]
+    },
+    "python-repository-implementation": {
+      "agents": [],
+      "skills": [
+        "python-repository-pattern"
+      ]
+    },
+    "python-service-skeleton": {
+      "agents": [],
+      "skills": [
+        "python-project-structure"
+      ]
+    },
+    "react-accessible-components": {
+      "agents": [],
+      "skills": [
+        "react-accessibility"
+      ]
+    },
+    "react-api-client": {
+      "agents": [],
+      "skills": [
+        "react-api-client"
+      ]
+    },
+    "react-app-skeleton": {
+      "agents": [],
+      "skills": [
+        "react-project-structure"
+      ]
+    },
+    "react-component-tests": {
+      "agents": [],
+      "skills": [
+        "react-component-testing"
+      ]
+    },
+    "react-components": {
+      "agents": [],
+      "skills": [
+        "react-component-design"
+      ]
+    },
+    "react-dashboard-components": {
+      "agents": [],
+      "skills": [
+        "react-dashboard-components"
+      ]
+    },
+    "react-e2e-test-suite": {
+      "agents": [],
+      "skills": [
+        "react-e2e-testing"
+      ]
+    },
+    "react-graph-feature": {
+      "agents": [],
+      "skills": [
+        "react-graph-visualization"
+      ]
+    },
+    "react-performance-optimization": {
+      "agents": [],
+      "skills": [
+        "react-performance-optimization"
+      ]
+    },
+    "react-router-configuration": {
+      "agents": [],
+      "skills": [
+        "react-routing"
+      ]
+    },
+    "react-state-stores": {
+      "agents": [],
+      "skills": [
+        "react-state-management"
+      ]
+    },
+    "react-telemetry-instrumentation": {
+      "agents": [],
+      "skills": [
+        "react-observability"
+      ]
+    },
+    "read-model": {
+      "agents": [],
+      "skills": [
+        "read-model-design"
+      ]
+    },
+    "release-strategy": {
+      "agents": [],
+      "skills": [
+        "progressive-delivery"
+      ]
+    },
+    "report-specification": {
+      "agents": [],
+      "skills": [
+        "reporting-spec"
+      ]
+    },
+    "risk-register": {
+      "agents": [],
+      "skills": [
+        "risk-register"
+      ]
+    },
+    "runbook": {
+      "agents": [],
+      "skills": [
+        "runbook-authoring"
+      ]
+    },
+    "schema-migration": {
+      "agents": [],
+      "skills": [
+        "go-migration",
+        "python-migration"
+      ]
+    },
+    "sdlc-config": {
+      "agents": [],
+      "skills": [
+        "sdlc-config-management"
+      ]
+    },
+    "secrets-management-design": {
+      "agents": [],
+      "skills": [
+        "secrets-management"
+      ]
+    },
+    "security-architecture": {
+      "agents": [],
+      "skills": [
+        "security-architecture"
+      ]
+    },
+    "service-slo-record": {
+      "agents": [],
+      "skills": [
+        "slo-definition"
+      ]
+    },
+    "skill-definition": {
+      "agents": [],
+      "skills": [
+        "skill-authoring-standards"
+      ]
+    },
+    "stakeholder-map": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "stakeholder-mapping"
+      ]
+    },
+    "strategic-roadmap": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "roadmap-authoring"
+      ]
+    },
+    "subdomain-classification": {
+      "agents": [],
+      "skills": [
+        "subdomain-distillation"
+      ]
+    },
+    "system-context-diagram": {
+      "agents": [],
+      "skills": [
+        "system-context-diagram"
+      ]
+    },
+    "test-strategy": {
+      "agents": [],
+      "skills": [
+        "test-pyramid"
+      ]
+    },
+    "threat-model": {
+      "agents": [],
+      "skills": [
+        "threat-modeling"
+      ]
+    },
+    "typescript-type-modules": {
+      "agents": [],
+      "skills": [
+        "typescript-types"
+      ]
+    },
+    "uat-plan": {
+      "agents": [],
+      "skills": [
+        "uat-plan"
+      ]
+    },
+    "uat-scenario": {
+      "agents": [],
+      "skills": [
+        "uat-scenario"
+      ]
+    },
+    "ubiquitous-language": {
+      "agents": [],
+      "skills": [
+        "ubiquitous-language"
+      ]
+    },
+    "ubiquitous-language-glossary": {
+      "agents": [],
+      "skills": [
+        "glossary-management"
+      ]
+    },
+    "ui-component-spec": {
+      "agents": [],
+      "skills": [
+        "ui-component-spec"
+      ]
+    },
+    "user-journey-map": {
+      "agents": [],
+      "skills": [
+        "user-journey-mapping"
+      ]
+    },
+    "user-persona": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "user-persona"
+      ]
+    },
+    "user-story-backlog": {
+      "agents": [],
+      "skills": [
+        "user-story-writing"
+      ]
+    },
+    "user-story-map": {
+      "agents": [],
+      "skills": [
+        "story-mapping"
+      ]
+    },
+    "ux-flow": {
+      "agents": [],
+      "skills": [
+        "ux-flow-design"
+      ]
+    },
+    "value-stream-map": {
+      "agents": [],
+      "skills": [
+        "value-stream-map"
+      ]
+    },
+    "vision-statement": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "vision-statement"
+      ]
+    },
+    "workflow-orchestration-design": {
+      "agents": [],
+      "skills": [
+        "workflow-orchestration"
+      ]
+    },
+    "workload-pattern-decisions": {
+      "agents": [],
+      "skills": [
+        "kubernetes-workload-patterns"
+      ]
+    },
+    "zero-trust-design": {
+      "agents": [],
+      "skills": [
+        "zero-trust-design"
+      ]
+    }
   },
   "capabilities": {
     "architecture": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "api-gateway-design",
         "architecture-decision-record",
@@ -585,6 +1149,8 @@
       ]
     },
     "backend": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "conductor-workflow-definition",
         "dockerfile",
@@ -674,6 +1240,8 @@
       ]
     },
     "data": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "analytics-requirements-document",
         "canonical-data-model",
@@ -713,6 +1281,8 @@
       ]
     },
     "discovery": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "epic-list",
         "functional-requirements-document",
@@ -741,6 +1311,8 @@
       ]
     },
     "domain-modeling": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "aggregate-design",
         "command-catalog",
@@ -779,6 +1351,8 @@
       ]
     },
     "frontend": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "css-styling-configuration",
         "dockerfile",
@@ -815,6 +1389,8 @@
       ]
     },
     "governance": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "methodology-compliance-report",
         "miro-board-spec",
@@ -841,6 +1417,8 @@
       ]
     },
     "observability": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "alerting-rules-design-document",
         "go-logging-instrumentation",
@@ -870,6 +1448,8 @@
       ]
     },
     "platform": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "blameless-postmortem",
         "canary-rollout-plan",
@@ -916,6 +1496,8 @@
       ]
     },
     "security": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "access-control-model",
         "compliance-design",
@@ -945,14 +1527,21 @@
       ]
     },
     "strategy": {
+      "agent_count": 1,
+      "agents": [
+        "product-strategist"
+      ],
       "artifacts": [
         "business-model-canvas",
         "competitive-analysis",
         "go-to-market-strategy",
+        "impact-map",
+        "jtbd-analysis",
         "mission-statement",
         "okr",
         "stakeholder-map",
         "strategic-roadmap",
+        "user-persona",
         "vision-statement"
       ],
       "owners": [
@@ -971,6 +1560,8 @@
       ]
     },
     "testing": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "acceptance-criteria-document",
         "example-map",
@@ -1029,6 +1620,8 @@
       ]
     },
     "ux": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "information-architecture",
         "ui-component-spec",
@@ -1047,6 +1640,8 @@
       ]
     },
     "validation": {
+      "agent_count": 0,
+      "agents": [],
       "artifacts": [
         "acceptance-sign-off-record",
         "beta-program",
@@ -1071,10 +1666,12 @@
     "agents": [
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/backend-engineer.md",
         "has_acceptance_test": true,
         "name": "backend-engineer",
         "phase": "implement",
+        "produces": [],
         "role": "Go backend and observability-instrumentation implementation — runnable, tested, instrumented services",
         "skills": [
           "ddd-agent-handoff",
@@ -1101,6 +1698,7 @@
           "opentelemetry-instrumentation",
           "structured-logging-design"
         ],
+        "status": null,
         "tags": [
           "backend",
           "concurrency",
@@ -1119,10 +1717,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/data-architect.md",
         "has_acceptance_test": false,
         "name": "data-architect",
         "phase": "design",
+        "produces": [],
         "role": "Data layer design authority — physical models, canonical model, event schemas, pipelines, classification, lineage, retention",
         "skills": [
           "canonical-data-model",
@@ -1136,6 +1736,7 @@
           "glossary-management",
           "methodology-review"
         ],
+        "status": null,
         "tags": [
           "classification",
           "data-architecture",
@@ -1150,10 +1751,12 @@
       },
       {
         "created": "2026-07-20",
+        "domain": null,
         "file": "agents/data-engineer.md",
         "has_acceptance_test": false,
         "name": "data-engineer",
         "phase": "data",
+        "produces": [],
         "role": "Data Engineering — pipeline implementation, data quality, product analytics",
         "skills": [
           "analytics-requirements",
@@ -1167,6 +1770,7 @@
           "metrics-instrumentation-plan",
           "reporting-spec"
         ],
+        "status": null,
         "tags": [
           "analytics",
           "dashboards",
@@ -1183,10 +1787,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/domain-modeler.md",
         "has_acceptance_test": false,
         "name": "domain-modeler",
         "phase": "design",
+        "produces": [],
         "role": "Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model",
         "skills": [
           "aggregate-design",
@@ -1203,6 +1809,7 @@
           "subdomain-distillation",
           "ubiquitous-language"
         ],
+        "status": null,
         "tags": [
           "aggregate",
           "bounded-context",
@@ -1220,10 +1827,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/enterprise-architect.md",
         "has_acceptance_test": false,
         "name": "enterprise-architect",
         "phase": "design",
+        "produces": [],
         "role": "Architecture Design — service decomposition, diagrams, API contracts, ADRs",
         "skills": [
           "adr-authoring",
@@ -1240,6 +1849,7 @@
           "multi-tenancy-design",
           "system-context-diagram"
         ],
+        "status": null,
         "tags": [
           "adr",
           "api-contract",
@@ -1257,10 +1867,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/frontend-engineer.md",
         "has_acceptance_test": true,
         "name": "frontend-engineer",
         "phase": "implement",
+        "produces": [],
         "role": "React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI",
         "skills": [
           "css-styling-strategy",
@@ -1283,6 +1895,7 @@
           "react-state-management",
           "typescript-types"
         ],
+        "status": null,
         "tags": [
           "accessibility",
           "frontend",
@@ -1300,10 +1913,12 @@
       },
       {
         "created": "2026-07-20",
+        "domain": null,
         "file": "agents/platform-engineer.md",
         "has_acceptance_test": false,
         "name": "platform-engineer",
         "phase": "deploy",
+        "produces": [],
         "role": "Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks",
         "skills": [
           "alerting-rules-design",
@@ -1327,6 +1942,7 @@
           "runbook-authoring",
           "slo-definition"
         ],
+        "status": null,
         "tags": [
           "ci-cd",
           "deploy",
@@ -1346,10 +1962,24 @@
       },
       {
         "created": "2026-06-24",
+        "domain": "strategy",
         "file": "agents/product-strategist.md",
         "has_acceptance_test": true,
         "name": "product-strategist",
         "phase": "strategy",
+        "produces": [
+          "business-model-canvas",
+          "competitive-analysis",
+          "go-to-market-strategy",
+          "impact-map",
+          "jtbd-analysis",
+          "mission-statement",
+          "okr",
+          "stakeholder-map",
+          "strategic-roadmap",
+          "user-persona",
+          "vision-statement"
+        ],
         "role": "Product Strategy — full Strategy phase ownership",
         "skills": [
           "business-model-canvas",
@@ -1366,6 +1996,7 @@
           "user-persona",
           "vision-statement"
         ],
+        "status": "stable",
         "tags": [
           "gtm",
           "jtbd",
@@ -1385,10 +2016,12 @@
       },
       {
         "created": "2026-06-24",
+        "domain": null,
         "file": "agents/requirements-analyst.md",
         "has_acceptance_test": false,
         "name": "requirements-analyst",
         "phase": "ideate, customer-validation",
+        "produces": [],
         "role": "Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership",
         "skills": [
           "acceptance-criteria",
@@ -1410,6 +2043,7 @@
           "user-persona",
           "user-story-writing"
         ],
+        "status": null,
         "tags": [
           "backlog",
           "discovery",
@@ -1426,10 +2060,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/security-architect.md",
         "has_acceptance_test": false,
         "name": "security-architect",
         "phase": "design",
+        "produces": [],
         "role": "Security Design — threat model, Zero Trust, ABAC, privacy, compliance-as-code design",
         "skills": [
           "access-control-model",
@@ -1443,6 +2079,7 @@
           "threat-modeling",
           "zero-trust-design"
         ],
+        "status": null,
         "tags": [
           "abac",
           "compliance",
@@ -1461,10 +2098,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/security-engineer.md",
         "has_acceptance_test": false,
         "name": "security-engineer",
         "phase": "implement, quality",
+        "produces": [],
         "role": "Security Implementation — Go security controls, compliance tests, evidence pipeline",
         "skills": [
           "compliance-verification",
@@ -1474,6 +2113,7 @@
           "secrets-management",
           "security-implementation"
         ],
+        "status": null,
         "tags": [
           "audit-log",
           "compliance",
@@ -1492,10 +2132,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/test-strategist.md",
         "has_acceptance_test": false,
         "name": "test-strategist",
         "phase": "implement, quality",
+        "produces": [],
         "role": "SDET — test discipline, Test Pyramid, BDD feature files, and cross-cutting system tests",
         "skills": [
           "bdd-feature-file",
@@ -1514,6 +2156,7 @@
           "test-fixture-design",
           "test-pyramid"
         ],
+        "status": null,
         "tags": [
           "bdd",
           "implement",
@@ -1532,10 +2175,12 @@
       },
       {
         "created": "2026-06-25",
+        "domain": null,
         "file": "agents/ux-architect.md",
         "has_acceptance_test": false,
         "name": "ux-architect",
         "phase": "design",
+        "produces": [],
         "role": "UX design authority — journey maps, information architecture, user flows, and UI component specifications (Shared and Local)",
         "skills": [
           "ddd-agent-handoff",
@@ -1546,6 +2191,7 @@
           "user-journey-mapping",
           "ux-flow-design"
         ],
+        "status": null,
         "tags": [
           "component-spec",
           "design",
@@ -8055,6 +8701,7 @@
     "artifacts": 180,
     "commands": 15,
     "domains": 14,
+    "edges_agent_produces": 11,
     "edges_agent_skills": 177,
     "edges_skill_produces": 187,
     "edges_skill_related": 809,
@@ -8065,6 +8712,9 @@
   },
   "coverage": {
     "agents_with_acceptance_test": 3,
+    "agents_with_domain": 1,
+    "agents_with_produces": 1,
+    "agents_with_status": 1,
     "commands_with_test": 15,
     "skills_with_assets": 16,
     "skills_with_contract_test": 186,
@@ -8075,6 +8725,52 @@
     "skills_with_status": 186
   },
   "edges": {
+    "agent_produces": [
+      {
+        "agent": "product-strategist",
+        "artifact": "business-model-canvas"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "competitive-analysis"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "go-to-market-strategy"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "impact-map"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "jtbd-analysis"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "mission-statement"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "okr"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "stakeholder-map"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "strategic-roadmap"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "user-persona"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "vision-statement"
+      }
+    ],
     "agent_skills": [
       {
         "agent": "backend-engineer",
