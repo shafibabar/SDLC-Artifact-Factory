@@ -17,6 +17,16 @@ WHAT IT DOES (report-only — always exits 0):
         so the report shows the block once with the full set of skills carrying
         it.
 
+        NOT duplication: the mandated ARTIFACT FRONTMATTER inside a skill's
+        `## Output Format` template. CLAUDE.md § Artifact Standards REQUIRES
+        every emitted artifact — and every Output Format template — to carry a
+        `name/version/phase/owner/created` block, so its recurrence across
+        skills is COMPLIANCE, not duplication. Those blocks are therefore
+        excluded at CORPUS-ASSEMBLY time (assemble_corpora ->
+        strip_artifact_frontmatter_templates) rather than post-filtered out of
+        the findings, which keeps the detectors themselves pure and unaware of
+        the exception.
+
     (b) RESTATEMENTS OF A CLAUDE.md STANDARD. CLAUDE.md is the always-on home
         for four standards a skill must POINT TO, never re-teach:
           * the naming-convention regex  ^[a-z0-9]+(-[a-z0-9]+)*$
@@ -27,6 +37,43 @@ WHAT IT DOES (report-only — always exits 0):
         The standards' signatures are parsed OUT OF CLAUDE.md at runtime (not
         hard-coded), so the linter stays honest as CLAUDE.md evolves. The
         legitimate home skill for each standard is allow-listed and never flagged.
+
+        NOT a restatement: a DEFINITION. Naming a methodology and saying what it
+        means is vocabulary, not a mandate — the normative force is what CLAUDE.md
+        owns, not the subject matter. The methodologies check therefore requires
+        the enforcement framing ("mandatory", "non-negotiable", "is a defect") to
+        sit in the SAME PASSAGE as the methodology it enforces
+        (METHODOLOGY_ENFORCEMENT_WINDOW lines), not merely somewhere in the same
+        corpus. This is a rule about text shape, not about which skill is
+        speaking: a glossary row defining "Behavior-Driven Development" is exempt
+        in every skill, and a genuine mandate is still caught in every skill —
+        including inside the glossary home itself.
+
+        NOT a restatement: USING the canonical vocabulary. For the Ubiquitous
+        Language standard the polarity is the REVERSE of the methodologies one.
+        CLAUDE.md § Ubiquitous Language says the terms "must be used consistently
+        across every artifact. Never substitute synonyms." — so writing `Circuit
+        Breaker` or `Anti-Corruption Layer` in ordinary prose is COMPLIANCE, and
+        counting those mentions flags the compliant skill. What CLAUDE.md points
+        at `skills/glossary-management/` to own is the GLOSSARY ITSELF: the
+        term -> definition pairing. The check therefore fires on the DEFINITION
+        SHAPE — a canonical term standing in the TERM POSITION of a glossary-style
+        entry (a two-column `| Term | Definition |` row, or a `**Term** — …`
+        lead-in) — and requires UBIQUITOUS_DEFINITION_QUORUM such entries, i.e. a
+        reproduced chunk of the glossary rather than an incidental definition.
+
+        NOT a restatement: a block that CITES its CLAUDE.md home. Pointing at
+        the home and quoting briefly with attribution is exactly the required
+        behaviour, so a finding is suppressed when every occurrence of the
+        standard's signature has `CLAUDE.md` within +/- CITATION_CONTEXT_LINES
+        lines. "Every", not "any": a skill that cites once but re-teaches the
+        standard again elsewhere uncited is still restating it.
+
+        The naming-convention check matches CLAUDE.md's LITERAL pattern only —
+        an unrelated regex that merely looks like a naming regex (e.g. a
+        Terraform `can(regex("^[a-z0-9]([a-z0-9-]{1,30}[a-z0-9])$", ...))`
+        tenant-id validation) is a different rule for a different purpose and
+        is not a restatement of this one.
 
   Both findings are written, ranked, to generated/duplication-report.md — this
   snapshot IS the P4 de-duplication backlog. The linter NEVER fails the build:
@@ -72,10 +119,29 @@ STANDARD_HOME_SKILLS = {
 
 
 # ---------------------------------------------------------------------------
-# Corpus assembly (filesystem — used by main(), not by the pure detectors)
+# Corpus assembly
+#
+# read_skill_corpus() is the only filesystem step (called from main()).
+# strip_artifact_frontmatter_templates() / assemble_corpora() are PURE text
+# transforms so the bundled test can drive the whole pipeline synthetically.
 # ---------------------------------------------------------------------------
 
 _FM_RE = re.compile(r"^﻿?---\s*\n.*?\n---\s*(?:\n|$)", re.DOTALL)
+
+# --- artifact-frontmatter template exclusion (CLAUDE.md § Artifact Standards) -
+# A `---` ... `---` block whose FIRST key is `name:` and which carries most of
+# the mandated artifact-frontmatter keys is the compliance template every skill
+# is REQUIRED to show; it is not cross-skill duplication.
+_FM_DELIM_RE = re.compile(r"^\s*---\s*$")
+# `key:` at (near) the left margin — the shape of a YAML mapping entry.
+_FM_KEY_RE = re.compile(r"^ {0,3}([A-Za-z_][A-Za-z0-9_-]*)\s*:(?:\s|$)")
+# The keys CLAUDE.md § Artifact Standards mandates alongside `name`.
+ARTIFACT_FM_MANDATED_KEYS = ("version", "phase", "owner", "created")
+# How many of those must be present for the block to read as the mandated
+# template rather than as an arbitrary `---`-delimited chunk of prose.
+ARTIFACT_FM_MIN_MANDATED_KEYS = 3
+# A template longer than this is not a frontmatter block; stop looking.
+ARTIFACT_FM_MAX_LINES = 40
 
 
 def strip_frontmatter(text: str) -> str:
@@ -83,10 +149,74 @@ def strip_frontmatter(text: str) -> str:
     return _FM_RE.sub("", text, count=1)
 
 
+def _scan_frontmatter_block(lines: list[str], start: int):
+    """If lines[start] opens an artifact-frontmatter template, return its end index.
+
+    `start` is the index of the opening `---`. Returns the index of the closing
+    `---`, or None if the block is not an artifact-frontmatter template. Pure.
+    """
+    keys: list[str] = []
+    i = start + 1
+    limit = min(len(lines), start + 1 + ARTIFACT_FM_MAX_LINES)
+    while i < limit:
+        line = lines[i]
+        if _FM_DELIM_RE.match(line):
+            if not keys or keys[0] != "name":
+                return None
+            mandated = sum(1 for k in ARTIFACT_FM_MANDATED_KEYS if k in keys)
+            return i if mandated >= ARTIFACT_FM_MIN_MANDATED_KEYS else None
+        m = _FM_KEY_RE.match(line)
+        if m:
+            keys.append(m.group(1).lower())
+        elif line.strip() and line[:1].isspace():
+            pass  # an indented continuation (list item / nested value) — allowed
+        else:
+            return None  # blank line or prose: not a frontmatter block
+        i += 1
+    return None
+
+
+def strip_artifact_frontmatter_templates(text: str) -> str:
+    """Remove mandated artifact-frontmatter template blocks from a corpus. Pure.
+
+    CLAUDE.md § Artifact Standards requires every artifact — and therefore every
+    skill's `## Output Format` template — to carry a
+    `name/version/phase/owner/created` frontmatter block. Its recurrence across
+    skills is compliance, not duplication, so it is excluded from the corpus
+    before any detector sees it. Everything else is left byte-for-byte intact.
+    """
+    lines = text.splitlines()
+    kept: list[str] = []
+    i = 0
+    while i < len(lines):
+        if _FM_DELIM_RE.match(lines[i]):
+            end = _scan_frontmatter_block(lines, i)
+            if end is not None:
+                i = end + 1
+                continue
+        kept.append(lines[i])
+        i += 1
+    return "\n".join(kept)
+
+
+def assemble_corpora(raw_corpus_by_skill: dict) -> dict:
+    """Apply every corpus-assembly exclusion to each skill's raw prose. Pure.
+
+    Excluding here (rather than post-filtering findings) keeps the detectors
+    themselves free of exception handling: they simply never see the mandated
+    boilerplate.
+    """
+    return {
+        name: strip_artifact_frontmatter_templates(text)
+        for name, text in raw_corpus_by_skill.items()
+    }
+
+
 def read_skill_corpus(record: dict) -> str:
     """Concatenate a skill's SKILL.md body + all its references/*.md prose.
 
     `record` is a manifest.load_skills() record; its 'dir' is repo-relative.
+    Returns the RAW corpus — run it through assemble_corpora() before detection.
     """
     skill_dir = REPO_ROOT / record["dir"]
     parts: list[str] = []
@@ -267,12 +397,174 @@ def load_claude_standards(claude_md_text: str) -> dict:
     }
 
 
-# how many distinct glossary terms in a skill body suggest it is RESTATING the
-# glossary rather than merely using a few terms in passing.
-UBIQUITOUS_DUMP_THRESHOLD = 10
+# How many distinct canonical terms a skill must DEFINE (term -> definition, see
+# defined_glossary_terms) before it reads as reproducing the glossary rather than
+# defining a term or two incidentally while teaching its own subject.
+#
+# Calibrated, not guessed. CLAUDE.md § Ubiquitous Language publishes the glossary
+# in five themed clusters; after parsing (multi-word terms + "idempotency") the
+# SMALLEST cluster holds 6 terms, so a skill that reproduces one whole cluster is
+# still caught. Measured against the live 186-skill corpus the highest non-home
+# count is 4 (`cqrs-pattern`, `bounded-context-mapping` — each defining a handful
+# of canonical terms inside a table about its own subject), against 33 for the
+# legitimate home `glossary-management`. 6 sits above the observed noise floor and
+# at-or-below any real reproduction of the glossary.
+UBIQUITOUS_DEFINITION_QUORUM = 6
+# A definition body shorter than this is a label or a table cell of keywords, not
+# a definition of the term.
+UBIQUITOUS_DEFINITION_MIN_CHARS = 24
+# A term position longer than this is a sentence, not a glossary headword.
+UBIQUITOUS_TERM_HEAD_MAX_CHARS = 60
 # how many of the five methodologies must co-occur (with an enforcement marker)
 # to count as restating the non-negotiable-methodology standard.
 METHODOLOGY_QUORUM = 4
+# How far an enforcement marker may sit from a methodology mention and still be
+# read as enforcing IT. Calibrated against CLAUDE.md's own § Non-Negotiable
+# Methodology, where the "mandatory ... is a defect" sentence is 8 lines above
+# the table's last methodology row and the "Non-Negotiable" heading is 10 lines
+# above it: a skill that reproduces that passage verbatim is still caught. A
+# marker further away than one passage is enforcing something else — e.g. an
+# unrelated glossary row calling a postmortem "mandatory" — and says nothing
+# about the methodologies named elsewhere in the corpus.
+METHODOLOGY_ENFORCEMENT_WINDOW = 10
+# how many lines either side of a signature line count as "immediate context"
+# when looking for a citation of the standard's CLAUDE.md home.
+CITATION_CONTEXT_LINES = 2
+
+_CITATION_RE = re.compile(r"claude\.md", re.IGNORECASE)
+
+
+def _signature_line_indices(lines: list[str], needles, fold_case: bool) -> list[int]:
+    """Indices of the lines carrying any of `needles`. Pure.
+
+    `fold_case=False` keeps the match literal — used for the naming-convention
+    regex, which must match CLAUDE.md's exact pattern and nothing regex-shaped.
+    """
+    haystack = [ln.lower() for ln in lines] if fold_case else lines
+    probes = [n.lower() for n in needles] if fold_case else list(needles)
+    return [i for i, ln in enumerate(haystack) if any(p and p in ln for p in probes)]
+
+
+def cites_claude_md(lines: list[str], indices: list[int]) -> bool:
+    """True iff EVERY signature occurrence points at its CLAUDE.md home. Pure.
+
+    Quoting a standard with attribution to CLAUDE.md is the behaviour the
+    campaign asks for, so such an occurrence is not a restatement. The check is
+    "every occurrence", not "any": a skill that cites once and then re-teaches
+    the standard uncited elsewhere is still restating it.
+    """
+    if not indices:
+        return False
+    for i in indices:
+        lo = max(0, i - CITATION_CONTEXT_LINES)
+        hi = min(len(lines), i + CITATION_CONTEXT_LINES + 1)
+        if not any(_CITATION_RE.search(ln) for ln in lines[lo:hi]):
+            return False
+    return True
+
+
+def mandated_methodologies(lines: list[str], methodologies, marker_indices: list[int]):
+    """Methodologies that are actually FRAMED AS MANDATORY in this text. Pure.
+
+    A methodology name only evidences a restatement of CLAUDE.md § Non-Negotiable
+    Methodology when the enforcement framing is in the same passage — i.e. within
+    METHODOLOGY_ENFORCEMENT_WINDOW lines of the mention. Defining "Test-Driven
+    Development" as a term, in a corpus that happens to call something else
+    "mandatory" forty lines away, is a definition, not a mandate.
+
+    Returns (methodology names in CLAUDE.md order, sorted mandate line indices).
+    """
+    if not marker_indices:
+        return [], []
+    low = [ln.lower() for ln in lines]
+    found: dict[str, None] = {}
+    hit_lines: set[int] = set()
+    for meth in methodologies:
+        if not meth:
+            continue
+        probe = meth.lower()
+        for i, ln in enumerate(low):
+            if probe not in ln:
+                continue
+            if any(abs(i - j) <= METHODOLOGY_ENFORCEMENT_WINDOW for j in marker_indices):
+                found[meth] = None
+                hit_lines.add(i)
+    return list(found), sorted(hit_lines)
+
+
+# --- glossary-entry shape (Ubiquitous Language) ------------------------------
+# A glossary entry pairs a HEADWORD with a DEFINITION. Two shapes carry that
+# pairing in this repo's markdown:
+#   * a two-column table row   `| **Bounded Context** | The boundary within … |`
+#   * an inline lead-in        `- **Bounded Context** — the boundary within …`
+# A table row with three or more columns is a COMPARISON / DECISION-CRITERIA
+# table ("pattern | use when | trade-off"), which CLAUDE.md § Component
+# Architecture explicitly permits skills to own, so it is not an entry. A section
+# HEADING named after a term is likewise not an entry: teaching one pattern in
+# depth under its own heading is what a skill is for.
+_GLOSSARY_EMPHASIS_RE = re.compile(r"[*_`\"']+")
+_GLOSSARY_TRAILING_PAREN_RE = re.compile(r"\s*[(\[][^)\]]*[)\]]\s*$")
+_GLOSSARY_INLINE_RE = re.compile(
+    r"^\s{0,4}(?:[-*+]\s+|\d+[.)]\s+)?(?:\*\*|__)(?P<term>[^*_\n]{2,80}?)(?:\*\*|__)"
+    r"\s*[—–:-]\s+(?P<body>.+)$"
+)
+_TABLE_RULE_CHARS = set("-: ")
+
+
+def _normalize_headword(text: str) -> str:
+    """Lowercase a candidate headword, stripping emphasis and a trailing gloss."""
+    s = _GLOSSARY_EMPHASIS_RE.sub("", text).strip()
+    prev = None
+    while prev != s:  # drop trailing "(CDC)" / "[deprecated]", possibly repeated
+        prev = s
+        s = _GLOSSARY_TRAILING_PAREN_RE.sub("", s).strip()
+    return " ".join(s.lower().split())
+
+
+def glossary_entry(line: str):
+    """(headword, definition) if `line` is a glossary-style entry, else None. Pure."""
+    stripped = line.strip()
+    if stripped.startswith("|"):
+        cells = [c.strip() for c in stripped.strip("|").split("|")]
+        if len(cells) != 2 or not cells[0] or not cells[1]:
+            return None
+        if set(cells[0]) <= _TABLE_RULE_CHARS:  # the |---|---| rule row
+            return None
+        return _normalize_headword(cells[0]), cells[1]
+    m = _GLOSSARY_INLINE_RE.match(line)
+    if m:
+        return _normalize_headword(m.group("term")), m.group("body").strip()
+    return None
+
+
+def defined_glossary_terms(lines: list[str], ul_terms):
+    """Canonical terms this text DEFINES, and the lines that define them. Pure.
+
+    A term counts only when it stands in the TERM POSITION of a glossary-style
+    entry (see glossary_entry) whose definition body is a real definition rather
+    than a label. Merely writing the term in prose does not count — CLAUDE.md
+    § Ubiquitous Language mandates exactly that usage, so counting it would flag
+    compliance. A term appearing only inside some other term's definition does
+    not count either: the entry is about its headword.
+
+    Returns (terms in ul_terms order, sorted definition line indices).
+    """
+    found: dict[str, None] = {}
+    hit_lines: set[int] = set()
+    for i, line in enumerate(lines):
+        entry = glossary_entry(line)
+        if not entry:
+            continue
+        head, body = entry
+        if not head or len(head) > UBIQUITOUS_TERM_HEAD_MAX_CHARS:
+            continue
+        if len(body) < UBIQUITOUS_DEFINITION_MIN_CHARS:
+            continue
+        for term in ul_terms:
+            if term and term in head:
+                found[term] = None
+                hit_lines.add(i)
+    return [t for t in ul_terms if t in found], sorted(hit_lines)
 
 
 def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
@@ -291,22 +583,30 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
     ul_terms = standards.get("ubiquitous_terms", [])
 
     for name in sorted(corpus_by_skill):
-        low = corpus_by_skill[name].lower()
+        text = corpus_by_skill[name]
+        low = text.lower()
+        lines = text.splitlines()
 
         # 1. Naming-convention regex restated verbatim.
-        if naming_regex and name not in STANDARD_HOME_SKILLS["naming_regex"] and naming_regex in corpus_by_skill[name]:
-            findings.append({
-                "skill": name,
-                "standard": "naming-convention regex",
-                "severity": "high",
-                "evidence": f"contains the literal regex `{naming_regex}`",
-                "repoint_to": "CLAUDE.md § Naming Conventions",
-            })
+        #    LITERAL match against CLAUDE.md's own pattern — a regex that merely
+        #    looks like a naming regex (a Terraform tenant-id validation, say) is
+        #    a different rule and must not be flagged as restating this one.
+        if naming_regex and name not in STANDARD_HOME_SKILLS["naming_regex"]:
+            idx = _signature_line_indices(lines, [naming_regex], fold_case=False)
+            if idx and not cites_claude_md(lines, idx):
+                findings.append({
+                    "skill": name,
+                    "standard": "naming-convention regex",
+                    "severity": "high",
+                    "evidence": f"contains the literal regex `{naming_regex}`",
+                    "repoint_to": "CLAUDE.md § Naming Conventions",
+                })
 
         # 2. Frugality rules restated.
         if name not in STANDARD_HOME_SKILLS["frugality"]:
             hits = [p for p in frug if p in low]
-            if hits:
+            idx = _signature_line_indices(lines, hits, fold_case=True)
+            if hits and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "frugality / budget rules",
@@ -316,10 +616,16 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
                 })
 
         # 3. The five non-negotiable methodologies framed as mandatory.
+        #    A DEFINITION is not a RESTATEMENT: the enforcement framing must sit
+        #    in the same passage as the methodology it enforces, not merely
+        #    somewhere in the same corpus. Only those co-located mentions count
+        #    toward the quorum, and only they are checked for a citation — a
+        #    mandate that attributes itself to CLAUDE.md is compliant however
+        #    many times the methodology is also merely named elsewhere.
         if name not in STANDARD_HOME_SKILLS["methodologies"]:
-            present = [mth for mth in methods if mth and mth in low]
-            marker_hit = any(mk in low for mk in markers)
-            if len(present) >= METHODOLOGY_QUORUM and marker_hit:
+            marker_idx = _signature_line_indices(lines, markers, fold_case=True)
+            present, idx = mandated_methodologies(lines, methods, marker_idx)
+            if len(present) >= METHODOLOGY_QUORUM and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "non-negotiable methodologies",
@@ -331,17 +637,23 @@ def find_restatements(corpus_by_skill: dict, standards: dict) -> list[dict]:
                     "repoint_to": "CLAUDE.md § Non-Negotiable Methodology",
                 })
 
-        # 4. Ubiquitous Language glossary dumped into the skill.
+        # 4. The Ubiquitous Language GLOSSARY reproduced inside the skill.
+        #    USING the canonical terms is what CLAUDE.md mandates ("must be used
+        #    consistently across every artifact. Never substitute synonyms"), so
+        #    the restatement here is the term -> DEFINITION pairing the glossary
+        #    home owns — not the term count. Only terms standing in the term
+        #    position of a glossary-style entry count, and a quorum of them must
+        #    do so before the skill reads as reproducing the glossary.
         if name not in STANDARD_HOME_SKILLS["ubiquitous_language"]:
-            present_terms = [t for t in ul_terms if t and t in low]
-            if len(present_terms) >= UBIQUITOUS_DUMP_THRESHOLD:
+            defined, idx = defined_glossary_terms(lines, ul_terms)
+            if len(defined) >= UBIQUITOUS_DEFINITION_QUORUM and not cites_claude_md(lines, idx):
                 findings.append({
                     "skill": name,
                     "standard": "Ubiquitous Language glossary",
                     "severity": "medium",
                     "evidence": (
-                        f"restates {len(present_terms)} canonical glossary terms "
-                        f"(e.g. {', '.join(present_terms[:6])}...)"
+                        f"defines {len(defined)} canonical glossary terms "
+                        f"(e.g. {', '.join(defined[:6])}...)"
                     ),
                     "repoint_to": "CLAUDE.md § Ubiquitous Language / skills/glossary-management",
                 })
@@ -384,7 +696,11 @@ def build_report(dup_clusters: list[dict], restatements: list[dict], skill_count
     lines.append(
         f"Blocks (window = {SHINGLE_WINDOW} normalized lines, merged) whose text "
         f"recurs across at least {MIN_SKILLS_FOR_DUP} skill corpora, ranked by how "
-        "many skills carry them. Consolidate each into one home and repoint."
+        "many skills carry them. Consolidate each into one home and repoint. "
+        "The mandated artifact-frontmatter template "
+        "(`name`/`version`/`phase`/`owner`/`created`, CLAUDE.md § Artifact "
+        "Standards) is excluded during corpus assembly — its recurrence is "
+        "compliance, not duplication."
     )
     lines.append("")
     if not dup_clusters:
@@ -404,7 +720,9 @@ def build_report(dup_clusters: list[dict], restatements: list[dict], skill_count
     lines.append(
         "Skills whose prose re-teaches a standard whose canonical home is "
         "CLAUDE.md. Per campaign decision #4, skills must **point to** these "
-        "homes, never restate them — delete the restatement and repoint."
+        "homes, never restate them — delete the restatement and repoint. A "
+        "block that already cites `CLAUDE.md` within two lines of every "
+        "occurrence is doing exactly that, and is not reported."
     )
     lines.append("")
     if not restatements:
@@ -428,7 +746,9 @@ def build_report(dup_clusters: list[dict], restatements: list[dict], skill_count
 
 def main() -> int:
     skills = manifest.load_skills()
-    corpus_by_skill = {r["name"]: read_skill_corpus(r) for r in skills}
+    # Read raw, then apply the corpus-assembly exclusions (mandated artifact
+    # frontmatter) before any detector sees the text.
+    corpus_by_skill = assemble_corpora({r["name"]: read_skill_corpus(r) for r in skills})
 
     dup_clusters = find_duplicate_blocks(corpus_by_skill)
 

@@ -17,7 +17,9 @@
 kind: InfrastructureRequest
 
 # service: The name of YOUR service (not the infrastructure resource).
-#   Must match the Kubernetes service naming convention: lowercase, hyphens only.
+#   Kebab-case: lowercase alphanumerics joined by single hyphens.
+#   Stricter than Kubernetes' RFC 1035 Service-name rule on hyphens, looser on
+#   leading character and length — so also start with a letter, max 63 chars.
 #   Example: "document-ingestion", "tenant-api", "audit-log-consumer"
 service: <your-service-name>
 
