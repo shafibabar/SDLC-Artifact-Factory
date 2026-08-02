@@ -2,22 +2,22 @@
   "_meta": {
     "purpose": "Single source of truth for project context, decisions, architecture, and build progress. Read this file at the start of every session — before reading anything else — to fully restore context without re-deriving it from conversation history.",
     "how_to_use": "1. Read this file. 2. Check build_checklist for current position. 3. Review open_questions. 4. Continue from the first incomplete checklist item after getting approval.",
-    "last_updated": "2026-08-01",
-    "updated_by": "Architecture Review P3 (Derived Component Catalog + CI Integration) COMPLETE — parent #1183 merged to main. generated/catalog.json committed and gated on staleness (lint-all.sh step 5, BLOCKING). Next: P4/P5/P6/P7, parallelizable.",
-    "_prev_updated_by": "Chunk 66 — Agent refactor campaign (epic #777), STARTED — bringing all 13 agents current with the refactored/new skill roster (Chunks 52-65) and new research, one agent at a time (SDLC phase order), each its own branch/PR, reviewed before the next. AGENT 1/13 — product-strategist (#778, v1.1.0→2.0.0): added user-persona + jtbd-analysis + impact-mapping to skills: (strategy-phase discovery skills it uses; requirements-analyst owns them, shared) → 13 skills; added a Behavioral Directives index (numbered principles each citing an owning skill) reflecting the v2.0.0 skill content (JTBD/Mom-Test discovery, Dunford positioning + Moore chasm/beachhead, outcome-not-output KRs + impact mapping, mission-vs-vision, 9-block-vs-Lean-Canvas); reconciled the Methodology table; rewrote description as a trigger surface; added tests/agents/product-strategist.acceptance.sh — and RAN it: PASS (the agent produced a real vision + mission and applied the mission-vs-vision distinction end-to-end). The platform-engineer (Chunk 52) Behavioral-Directives shape is the template. Remaining agents: requirements-analyst, domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, backend-engineer (largest), security-engineer, data-engineer, test-strategist; frontend-engineer + platform-engineer already current (light check).",
+    "last_updated": "2026-08-02",
+    "updated_by": "Architecture Review P4 (Skill De-duplication & Repointing) COMPLETE — parent #1191 merged to main. RESCOPED after audit: the charter's ~120–186 children of deletion rested on a backlog that was ~99% false positives (the mandated artifact-frontmatter template recurring across 62 skills is compliance, not duplication), so the 8 children fixed the DETECTOR instead. Clusters 13 → 0, restatements 7 → 1, lint-duplication assertions 20 → 73. The single surviving restatement (opentofu-module) is a deliberate, explained finding — not remaining work. Next: P5/P6/P7, parallelizable.",
+    "_prev_updated_by": "Architecture Review P3 (Derived Component Catalog + CI Integration) COMPLETE — parent #1183 merged to main. generated/catalog.json committed and gated on staleness (lint-all.sh step 5, BLOCKING). Next: P4/P5/P6/P7, parallelizable.",
     "_history_note": "Full per-chunk history lives in build_checklist below. This session (Chunks 52-63): (A) skill-authoring-standards refactor campaign — Chunk 52 (DevOps books — 6 new skills + 22 refactors + 1 agent), 53 (domain-modeling — 8), 54 (architecture — 6), 55 (security — 6 books + 6 skills), 56 (data — 11), 57 (discovery/strategy — 9), 58 (UX — 3), 59 (7 medium fixes), 60 (final 10 audit closeout), 61 (body-length polish of 8). Contract-test coverage 63/142 → 148/148. (B) Chunk 62 — tech-stack gap closure (epic #678): 5 research files + 10 new skills (MongoDB/RabbitMQ/Conductor/gRPC/Kong) + 2 multi-cloud refactors; #695 python spike delivered as a proposal. 148→158 skills. (C-E) Python backend suite (epics #713/#739/#758, all closed) — the full go-*-mirrored python-* roster: Chunk 63 Tier 1 (Cosmic Python research + 11 MVP skills), Chunk 64 Tier 2 (pytest research + 8 messaging/testing skills), Chunk 65 Tier 3 (9 parity skills — grpc/amqp/mongo + e2e/mutation/load/chaos/performance, no research phase). 158→186 skills, 158→186 tests. MILESTONE: 28 python-* = 28 go-* skills, full FastAPI-vs-Go backend parity. (F) Chunk 66 — agent refactor campaign started (epic #777): the 13 agents, written before this session's skill work, are being brought current one at a time in SDLC phase order; agent 1/13 product-strategist done (v2.0.0, acceptance test written AND passing)."
   },
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
     "charter": "ARCHITECTURE-REVIEW-CAMPAIGN.md",
-    "status": "P3 COMPLETE — merged to main (parent #1183 closed). generated/catalog.json is the derived component catalog (186 skills/13 agents/15 commands/8 hook handlers; 180 artifacts; 14 capability domains; 177 agent->skill, 187 skill->produces, 809 skill->related edges). Gate step 5 (build-catalog --check) is BLOCKING, so the catalog cannot drift from the tree. NEXT: P4 · P5 · P6 · P7 (parallelizable, each validated by P1's linter + P3's catalog).",
+    "status": "P4 COMPLETE — merged to main (parent #1191 closed). P4 was RESCOPED after audit: the charter's ~120–186 children of \"delete duplication + repoint\" rested on a backlog that was ~99% FALSE POSITIVES, so the 8 children fixed the DETECTOR instead of mutilating compliant skills. Final: recurring-block clusters 13 → 0, CLAUDE.md restatements 7 → 1 (the single survivor, opentofu-module, is a DELIBERATE, explained finding — not unfinished work), lint-duplication test assertions 20 → 73. NEXT: P5 · P6 · P7 (parallelizable, each validated by P1's linter + P3's catalog).",
     "started": "2026-08-01",
     "absorbs_epic": "#777 (agent refactor) folded into parent P5",
-    "active_parent": "P4 · P5 · P6 · P7 (parallelizable; P1+P2+P3 complete)",
+    "active_parent": "P5 · P6 · P7 (parallelizable; P1+P2+P3+P4 complete)",
     "integration_branch": null,
     "p1_complete": true,
     "p2_note": "CLOSED. Broken related: refs 0; orphan skills 0. lint-relationships is now BLOCKING. domain is authored on all 186 skills using the 14-value vocabulary recorded in p2_complete.",
-    "p4_backlog": "generated/duplication-report.md — 13 recurring blocks + 7 CLAUDE.md restatements",
+    "p4_backlog": "CLOSED. generated/duplication-report.md now reads 0 recurring blocks + 1 restatement. The original '13 recurring blocks + 7 CLAUDE.md restatements' were ~99% false positives — see p4_complete.",
     "p1_children": {
       "wave1_parser": "#781",
       "wave1_schemas": [
@@ -65,9 +65,13 @@
       },
       {
         "id": "P4",
-        "title": "Skill De-duplication & Repointing",
-        "est_children": 150,
-        "status": "not-started"
+        "title": "Skill De-duplication & Repointing (RESCOPED — duplication-detector precision)",
+        "est_children": 8,
+        "status": "complete — merged to main",
+        "est_children_original": 150,
+        "parent_issue": "#1191",
+        "integration_branch": "arch-review/p4-duplication-precision",
+        "children_done": 8
       },
       {
         "id": "P5",
@@ -180,6 +184,35 @@
       },
       "gate": "scripts/lint-all.sh STEP 5/5 build-catalog.py --check [BLOCKING]",
       "defect_fixed": "tests/arch/lint-all.test.sh was FAILING on main — P2's REPORTING->BLOCKING flip invalidated two of its assertions, and nothing caught it because both runners globbed only *.test.py while that file is a .test.sh. Repaired (4 passed/2 failed -> 9 passed/0 failed) and tests/run-smoke-tests.sh's arch category now globs *.test.sh. Deliberately NOT added to lint-all.sh step 1: the gate globbing *.test.sh would run lint-all.test.sh, which runs the gate, recursing without end."
+    },
+    "p4_complete": {
+      "parent_issue": "#1191",
+      "integration_branch": "arch-review/p4-duplication-precision",
+      "children": 8,
+      "rescope": "The charter estimated P4 at ~120–186 children — 'one child per skill flagged by the P1 duplication linter', deleting each restatement and repointing it. Auditing the actual backlog BEFORE generating any issues showed it was ~99% false positives, so P4 was rescoped to 8 children that fixed the detector rather than mutilating compliant skills.",
+      "why_the_backlog_was_false": [
+        "All 13 recurring-block clusters (62 skills) were the MANDATED artifact frontmatter (name/version/phase/owner/created) inside each skill's `## Output Format` template. CLAUDE.md § Artifact Standards REQUIRES that block, so its recurrence is compliance, not duplication — deleting or repointing it would violate the standard the linter exists to enforce. Verified mechanically: 62/62 flagged blocks sat inside a `---` + `name:` template.",
+        "5 of the 7 CLAUDE.md 'restatements' were also false positives: python-contract-test CITES CLAUDE.md with attribution (the correct behaviour); opentofu-module's flagged string was a Terraform tenant_id regex, not CLAUDE.md's component-naming regex; sdlc-config-management legitimately constrains product_slug and explains why; glossary-management is the allow-listed HOME for glossary definitions; integration-design merely USES canonical glossary terms, which CLAUDE.md § Ubiquitous Language mandates."
+      ],
+      "why_fix_the_detector_rather_than_declare_p4_empty": "A report where 60+ of 62 findings are noise is worse than no report: a genuine future duplication would hide among the false positives and the P4 backlog would read as permanently unfinished. Charter decision #5 makes the consistency linter the campaign keystone — a keystone with this precision is not doing its job.",
+      "children_detail": [
+        "#1192/#1193 — scripts/lint-duplication.py precision pass: exclude artifact-frontmatter template blocks from corpus assembly; suppress any finding whose block already cites its CLAUDE.md home; match the LITERAL component-naming regex rather than any regex-shaped string. Clusters 13 → 0, restatements 7 → 6; test assertions 20 → 35.",
+        "#1194/#1195 — react-e2e-testing: attribute its frugality application to CLAUDE.md § Budget and Frugality. 6 → 5.",
+        "#1196/#1197 — react-observability: same attribution fix. 5 → 4.",
+        "#1198/#1199 — opentofu-module: the child agent REFUSED the attribution fix and was right to. The JSON-Schema `pattern` there governs a service name inside a GENERATED PRODUCT, so citing plugin-internal CLAUDE.md governance would be wrong. It instead fixed a real factual error — the description claimed a Kubernetes rule the regex does not implement. The finding deliberately survives.",
+        "#1200/#1201 — sdlc-config-management: attribution IS correct here (product_slug prefixes every artifact ID the plugin emits, so the component-naming pattern is genuinely the plugin's own standard). 4 → 3.",
+        "#1202/#1203 — methodologies detector: it tested 'methodologies present' and 'enforcement marker present' INDEPENDENTLY across a whole skill corpus, so glossary-management's 407-line file matched on an unrelated postmortem row 37+ lines away. Fixed with an enforcement-marker CO-LOCATION WINDOW, calibrated against CLAUDE.md itself. 3 → 2; test assertions 35 → 52.",
+        "#1204/#1205 — Ubiquitous Language detector was INVERTED: it flagged term USAGE, which CLAUDE.md MANDATES, instead of glossary REPRODUCTION. Rewritten to detect the term→definition shape, with the quorum calibrated on measured data (33 defined terms in the glossary home vs 4 in the highest non-home skill). 2 → 1; test assertions 52 → 73.",
+        "#1206 — close-out: regenerate + commit generated/duplication-report.md (every child deliberately avoided committing it so it would be written once, at the end, from the final linter) plus charter §7 housekeeping."
+      ],
+      "final_counts": {
+        "recurring_block_clusters": "13 (62 skills) → 0",
+        "claude_md_restatements": "7 → 1",
+        "lint_duplication_test_assertions": "20 → 73"
+      },
+      "deliberate_survivor": "opentofu-module (R1) is an ACCEPTED, EXPLAINED finding — not remaining work. It is a true-positive-by-text / false-positive-by-meaning coincidence: the literal component-naming regex appears there, but it governs a service name in a generated product rather than a plugin component, so attributing it to CLAUDE.md would be wrong. Do not 'fix' it. A future agent seeing restatements: 1 should read this note, not re-open the finding.",
+      "detector_contract_now": "lint-duplication's contract changed materially and CLAUDE.md § Governance gate was updated to match: it excludes mandated artifact-frontmatter templates from the corpus, suppresses findings that already cite their CLAUDE.md home, matches the literal naming regex, requires enforcement-marker co-location before flagging the methodologies standard, and detects glossary REPRODUCTION rather than term USAGE. It remains REPORT-ONLY.",
+      "unchanged": "No skill content beyond the four attribution/accuracy fixes above was touched, and no other linter, schema, gate step, or catalog field changed. P4 did not delete a single line of compliant skill prose."
     }
   },
   "project": {
@@ -1687,6 +1720,25 @@
         "Whole suite green: bash scripts/lint-all.sh -> exit 0 (5 steps); bash tests/run-smoke-tests.sh arch -> 236 passed, 0 failed."
       ],
       "next": "P4 (Skill De-duplication & Repointing, ~150 children) · P5 (Agent Deep Refactor, 13) · P6 (Hook Deep Refactor, 7) · P7 (Command Refactor & Workflow-as-Data, ~24) — parallelizable, each validated by P1's linter + P3's catalog."
+    },
+    {
+      "chunk": 71,
+      "title": "Architecture Review P4 — Skill De-duplication & Repointing COMPLETE, RESCOPED to duplication-detector precision (parent #1191, merged to main)",
+      "status": "complete",
+      "date": "2026-08-02",
+      "deliverables": [
+        "Fourth parent of the Architecture Review campaign. Integration branch arch-review/p4-duplication-precision -> main; 8 children (#1192-#1206), one issue + branch + PR each, per-child fresh-agent handoff.",
+        "RESCOPE — the headline result. The charter estimated P4 at ~120-186 children of 'delete the restatement, repoint it to its canonical home'. Auditing the actual backlog BEFORE generating any issues showed it was ~99% FALSE POSITIVES. P4 was therefore rescoped to 8 children that fixed the DETECTOR rather than mutilating compliant skills. Not one line of compliant skill prose was deleted.",
+        "WHY THE BACKLOG WAS FALSE: all 13 recurring-block clusters (62 skills) were the MANDATED artifact frontmatter (name/version/phase/owner/created) inside each skill's ## Output Format template — CLAUDE.md § Artifact Standards requires it, so its recurrence is compliance, not duplication (verified mechanically: 62/62 flagged blocks sat inside a --- + name: template). And 5 of the 7 'restatements' were false too: python-contract-test cites CLAUDE.md correctly; opentofu-module's flagged string was a Terraform tenant_id regex, not the component-naming regex; sdlc-config-management constrains product_slug and explains why; glossary-management is the allow-listed home for definitions; integration-design merely uses canonical terms, which CLAUDE.md MANDATES.",
+        "WHY NOT JUST DECLARE P4 EMPTY: a report where 60+ of 62 findings are noise is worse than no report — a genuine future duplication would hide in the noise and the backlog would read as permanently unfinished. Charter decision #5 makes the linter the campaign keystone; a keystone with this precision is not doing its job.",
+        "FOUR PRECISION FIXES to scripts/lint-duplication.py: (1) #1193 exclude artifact-frontmatter templates from corpus assembly, suppress findings that already cite their CLAUDE.md home, match the LITERAL naming regex rather than any regex-shaped string (clusters 13->0, restatements 7->6); (2) #1203 the methodologies detector tested 'methodologies present' and 'enforcement marker present' INDEPENDENTLY across a whole corpus, so glossary-management's 407-line file matched on an unrelated postmortem row 37+ lines away — fixed with an enforcement-marker CO-LOCATION WINDOW calibrated against CLAUDE.md itself (3->2); (3) #1205 the Ubiquitous Language detector was INVERTED — it flagged term USAGE, which CLAUDE.md mandates, instead of glossary REPRODUCTION — rewritten to detect the term->definition shape with the quorum calibrated on measured data (33 defined terms in the glossary home vs 4 in the highest non-home skill) (2->1).",
+        "THREE SKILL ATTRIBUTION FIXES (the only genuine findings): react-e2e-testing (#1195) and react-observability (#1197) now attribute their frugality application to CLAUDE.md § Budget and Frugality; sdlc-config-management (#1201) attributes the component-naming pattern to CLAUDE.md § Naming Conventions, which is correct there because product_slug prefixes every artifact ID the plugin emits.",
+        "ONE DELIBERATE SURVIVOR: opentofu-module. Its child (#1199) REFUSED the attribution fix and was right to — the JSON-Schema pattern governs a service name inside a GENERATED PRODUCT, so citing plugin-internal CLAUDE.md governance there would be wrong. It is a true-positive-by-text / false-positive-by-meaning coincidence, correctly explained rather than silenced. The child instead fixed a real factual error it found: the description claimed a Kubernetes rule the regex does not implement. restatements: 1 is an ACCEPTED FINDING, not remaining work — do not 'fix' it.",
+        "FINAL COUNTS: recurring-block clusters 13 (62 skills) -> 0; CLAUDE.md restatements 7 -> 1; lint-duplication test assertions 20 -> 73 (the precision rules are pinned by tests, so a regression is caught, not re-litigated).",
+        "generated/duplication-report.md regenerated and committed once at close-out (every child deliberately avoided committing it so it would be written a single time from the final linter). Housekeeping: CLAUDE.md § Governance gate now describes lint-duplication's ACTUAL contract instead of 'the P4 backlog'; README active-work banner; CHANGELOG [Unreleased] entry; this chunk + the campaign block's p4_complete record; and the charter's ~120-186 estimate is VISIBLY corrected (struck through with the audit finding beside it) in §4 and §10 rather than quietly overwritten, so a cold-start agent cannot re-derive the disproven plan.",
+        "Verified: python3 scripts/lint-duplication.py -> 0 clusters / 1 restatement with the committed report matching; bash scripts/lint-all.sh -> exit 0 across all 5 steps; sdlc-context.json parses."
+      ],
+      "next": "P5 (Agent Deep Refactor, absorbs epic #777, 13 children) · P6 (Hook Deep Refactor, 7) · P7 (Command Refactor & Workflow-as-Data, ~24) — parallelizable, each validated by P1's linter + P3's catalog."
     }
   ],
   "decisions": [

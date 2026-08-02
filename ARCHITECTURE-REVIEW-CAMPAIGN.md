@@ -73,7 +73,7 @@ validates against); some later parents may interleave once P1/P3 exist.
 | **P1** | **Governance Foundation — Manifest Schemas + Consistency Linter** | one child per schema (skill/agent/command/hook/workflow) + one per linter (manifest, relationship, duplication) + CI wiring | ~10 |
 | **P2** ✅ | **Skill Manifest Enrichment** (`produces`/`domain`/`status`) — *complete;* also drove broken `related:` refs 11→0 and orphans 48→0, flipping `lint-relationships` to blocking | one child per skill | 186 (+2 fix) |
 | **P3** ✅ | **Derived Component Catalog + CI Integration** — *complete;* `generated/catalog.json` is committed and gated on staleness (`lint-all.sh` step 5, blocking) | build-catalog script + catalog + CI + snapshot test | 3 |
-| **P4** | **Skill De-duplication & Repointing** (delete restatements → CLAUDE.md/cross-cutting; repoint validation → scripts/hooks; extract `shared-references/`) | one child per skill flagged by the P1 duplication linter | ~120–186 |
+| **P4** ✅ | **Skill De-duplication & Repointing** — *complete, but **rescoped**; see the scope-correction note below* | ~~one child per skill flagged by the P1 duplication linter~~ → one child per **duplication-detector precision fix**, plus one per genuinely-mis-attributed skill | ~~~120–186~~ → **8** |
 | **P5** | **Agent Deep Refactor** (absorbs epic #777) | one child per agent — behavioral directives, manifest fields, owns/does-not-own, description-as-trigger-surface, acceptance test (run it) | 13 |
 | **P6** | **Hook Deep Refactor** | one child per hook — determinism/<2s/idempotency audit, catalog/linter integration where relevant | 7 |
 | **P7** | **Command Refactor & Workflow-as-Data** | one child per workflow spec (~9 phase workflows) + one per command thinned/refactored (15) | ~24 |
@@ -83,6 +83,37 @@ validates against); some later parents may interleave once P1/P3 exist.
 **Order:** P1 → P2 → P3 → (P4 · P5 · P6 · P7, each validated by P1's linter + P3's catalog) → P8 → P9.
 **Rough totals:** 9 parents · ~380–450 child issues · same count of branches · same count of merges
 (child→integration) + 9 (integration→main). Counts are indicative; thoroughness governs, not economy.
+(P4 landed at 8 rather than ~120–186 — see the scope correction below — so the realistic total is ~260–290.)
+
+> **⚠ Scope correction — P4 (recorded 2026-08-02, do not re-derive the original plan).**
+> This charter estimated P4 at **~120–186 children**: one per skill flagged by P1's duplication linter,
+> each deleting a restatement and repointing it. **That estimate was wrong.** Auditing the actual backlog
+> *before* generating any issues showed it was **~99% false positives**:
+> - All **13 recurring-block clusters (62 skills)** were the **mandated artifact frontmatter**
+>   (`name`/`version`/`phase`/`owner`/`created`) inside each skill's `## Output Format` template.
+>   CLAUDE.md § Artifact Standards *requires* that block, so its recurrence is **compliance, not
+>   duplication** — deleting or repointing it would have violated the very standard the linter enforces.
+>   Verified mechanically: 62/62 flagged blocks sat inside a `---` + `name:` template.
+> - **5 of the 7** "CLAUDE.md restatements" were false too — a correct citation, a *different* (Terraform)
+>   regex, a legitimate constraint that already explains itself, the glossary home doing its job, and
+>   mandated glossary-term *usage*.
+>
+> Declaring P4 empty was **rejected**: a report where 60+ of 62 findings are noise is worse than no
+> report — a genuine future duplication would hide in it, and the backlog would read as permanently
+> unfinished. Decision #5 makes the consistency linter this campaign's **keystone**; a keystone with that
+> precision is not doing its job. So P4 **fixed the detector, not the skills**: four precision fixes to
+> `scripts/lint-duplication.py` (exclude mandated frontmatter templates; suppress findings that already
+> cite their CLAUDE.md home; match the *literal* naming regex; require enforcement-marker **co-location**
+> for the methodologies standard; detect glossary **reproduction** rather than term **usage**) plus three
+> genuine skills fixed by **attribution**, not deletion. Result: clusters **13 → 0**, restatements
+> **7 → 1**, `lint-duplication` test assertions **20 → 73**.
+>
+> The single surviving restatement (`opentofu-module`) is an **accepted, explained finding — not open
+> work**: that regex governs a service name in a *generated product*, so attributing it to plugin-internal
+> governance would be wrong. Full record: `sdlc-context.json` → `architecture_review_campaign.p4_complete`.
+> The `shared-references/` extraction named in the original P4 scope **was not built**: with 0 recurring
+> blocks there was nothing to extract into it. It is not P4 debt; a later parent may still introduce it if
+> a real need appears.
 
 > **Note on #777:** the agent-refactor epic is **folded into P5**. product-strategist (already v2.0.0,
 > acceptance test passing) gets a light P5 child for the manifest fields + linter conformance only; the
@@ -187,7 +218,7 @@ tape.
 | P1 | `arch-review/p1-governance-foundation` | **complete — merged to main** (parent #780; incl. 2 fix children) | 12 / 12 | ✅ |
 | P2 | `arch-review/p2-skill-manifest-enrichment` | **complete — merged to main** (parent #805; incl. 2 fix children) | 188 / 188 | ✅ |
 | P3 | `arch-review/p3-derived-catalog` | **complete — merged to main** (parent #1183) | 3 / 3 | ✅ |
-| P4 | — | not started | 0 / ~150 | — |
+| P4 | `arch-review/p4-duplication-precision` | **complete — merged to main** (parent #1191; **rescoped** — see §4 scope correction: backlog audited as ~99% false positives, so the detector was fixed, not the skills; clusters 13→0, restatements 7→1, assertions 20→73) | 8 / 8 (~~0 / ~150~~) | ✅ |
 | P5 | — | not started | 0 / 13 | — |
 | P6 | — | not started | 0 / 7 | — |
 | P7 | — | not started | 0 / ~24 | — |
