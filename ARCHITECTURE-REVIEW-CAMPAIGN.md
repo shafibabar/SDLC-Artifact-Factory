@@ -74,7 +74,7 @@ validates against); some later parents may interleave once P1/P3 exist.
 | **P2** ✅ | **Skill Manifest Enrichment** (`produces`/`domain`/`status`) — *complete;* also drove broken `related:` refs 11→0 and orphans 48→0, flipping `lint-relationships` to blocking | one child per skill | 186 (+2 fix) |
 | **P3** ✅ | **Derived Component Catalog + CI Integration** — *complete;* `generated/catalog.json` is committed and gated on staleness (`lint-all.sh` step 5, blocking) | build-catalog script + catalog + CI + snapshot test | 3 |
 | **P4** ✅ | **Skill De-duplication & Repointing** — *complete, but **rescoped**; see the scope-correction note below* | ~~one child per skill flagged by the P1 duplication linter~~ → one child per **duplication-detector precision fix**, plus one per genuinely-mis-attributed skill | ~~~120–186~~ → **8** |
-| **P5** | **Agent Deep Refactor** (absorbs epic #777) | one child per agent — behavioral directives, manifest fields, owns/does-not-own, description-as-trigger-surface, acceptance test (run it) | 13 |
+| **P5** 🔄 | **Agent Deep Refactor** (absorbs epic #777) — ***in progress, 5/15; NOT complete.*** Its integration branch was merged to `main` early — see the interim-merge note below | one child per agent — behavioral directives, manifest fields, owns/does-not-own, description-as-trigger-surface, acceptance test (run it) | ~~13~~ → **15** (13 agents + 1 tooling child + close-out) |
 | **P6** | **Hook Deep Refactor** | one child per hook — determinism/<2s/idempotency audit, catalog/linter integration where relevant | 7 |
 | **P7** | **Command Refactor & Workflow-as-Data** | one child per workflow spec (~9 phase workflows) + one per command thinned/refactored (15) | ~24 |
 | **P8** | **Test & Schema Infrastructure Hardening** | one child per shared test-infra artifact (harness, assertions, runner, tests/scripts group, tests/schemas, agent-test coverage) + schema completeness | ~15 |
@@ -114,6 +114,27 @@ validates against); some later parents may interleave once P1/P3 exist.
 > The `shared-references/` extraction named in the original P4 scope **was not built**: with 0 recurring
 > blocks there was nothing to extract into it. It is not P4 debt; a later parent may still introduce it if
 > a real need appears.
+
+> **⚠ Interim merge — P5 (recorded 2026-08-02). A MERGED P5 INTEGRATION BRANCH DOES NOT MEAN P5 IS DONE.**
+> The rule at the top of this section — *"the integration branch merges to `main` when the parent is
+> complete"* — was **deliberately deviated from for P5, and for P5 only**, at Shafi's explicit direction.
+> `arch-review/p5-agent-refactor` was merged to `main` at **5 of 15 children**: `product-strategist`
+> (#1209), the manifest-field wiring child (#1211), `backend-engineer` (#1213), `frontend-engineer`
+> (#1215), `platform-engineer` (#1217), closed out by #1219.
+>
+> **Why.** P5's children are far slower than any earlier parent — each full agent refactor writes or runs a
+> **real-model acceptance test** (`claude --plugin-dir`, minutes per invocation) on top of a
+> directive-by-directive audit against skill *content* — and four of the last six sub-agents were killed
+> mid-task by session limits (successive resets 12:30am → 8:30am → 5pm UTC). Leaving five completed,
+> independently verified refactors parked on a branch for an indefinite period was judged the larger risk.
+>
+> **P5 remains OPEN. 9 of the 13 agents still have no child**: `data-architect`, `data-engineer`,
+> `domain-modeler`, `enterprise-architect`, `requirements-analyst`, `security-architect`,
+> `security-engineer`, `test-strategist`, `ux-architect`. The integration branch is **kept, not deleted**,
+> and is **re-synced from `main`** before the next child branches from it; the second pass ends with the
+> **real** close-out child that closes #1208. This deviation sets no precedent — P6/P7/P8/P9 still merge at
+> parent completion. Live position, the binding conventions the exemplar (#1213) established, and the open
+> findings: `sdlc-context.json` → `architecture_review_campaign.p5_progress`.
 
 > **Note on #777:** the agent-refactor epic is **folded into P5**. product-strategist (already v2.0.0,
 > acceptance test passing) gets a light P5 child for the manifest fields + linter conformance only; the
@@ -219,7 +240,7 @@ tape.
 | P2 | `arch-review/p2-skill-manifest-enrichment` | **complete — merged to main** (parent #805; incl. 2 fix children) | 188 / 188 | ✅ |
 | P3 | `arch-review/p3-derived-catalog` | **complete — merged to main** (parent #1183) | 3 / 3 | ✅ |
 | P4 | `arch-review/p4-duplication-precision` | **complete — merged to main** (parent #1191; **rescoped** — see §4 scope correction: backlog audited as ~99% false positives, so the detector was fixed, not the skills; clusters 13→0, restatements 7→1, assertions 20→73) | 8 / 8 (~~0 / ~150~~) | ✅ |
-| P5 | — | not started | 0 / 13 | — |
+| P5 | `arch-review/p5-agent-refactor` | **IN PROGRESS — NOT complete** (parent #1208, **still open**). Merged to `main` at 5/15 as a **deliberate one-off deviation** from the merge-at-completion rule — see the §4 interim-merge note (2026-08-02). 4 of 13 agents refactored (`product-strategist`, `backend-engineer`, `frontend-engineer`, `platform-engineer`) + the manifest-field wiring child; agent→artifact edges 0→67. **9 agents remain**; the branch is re-synced from `main` for the second pass | 5 / 15 (~~0 / 13~~) | ⚠ merged early — **parent still open** |
 | P6 | — | not started | 0 / 7 | — |
 | P7 | — | not started | 0 / ~24 | — |
 | P8 | — | not started | 0 / ~15 | — |
