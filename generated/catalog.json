@@ -233,7 +233,9 @@
       ]
     },
     "dockerfile": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-dockerfile",
         "python-dockerfile",
@@ -337,7 +339,9 @@
       ]
     },
     "go-benchmark": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-performance-optimization"
       ]
@@ -349,13 +353,17 @@
       ]
     },
     "go-composition-root": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-service-skeleton"
       ]
     },
     "go-concurrency-package": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-concurrency-patterns"
       ]
@@ -367,13 +375,17 @@
       ]
     },
     "go-cqrs-handlers": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-service-layer"
       ]
     },
     "go-domain-model": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-domain-model"
       ]
@@ -385,13 +397,17 @@
       ]
     },
     "go-error-handling": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-error-handling"
       ]
     },
     "go-event-consumer": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-event-consumer"
       ]
@@ -403,25 +419,33 @@
       ]
     },
     "go-http-handler": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-chi-handler"
       ]
     },
     "go-http-middleware": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-middleware"
       ]
     },
     "go-integration-test": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-integration-test"
       ]
     },
     "go-logging-instrumentation": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "structured-logging-design"
       ]
@@ -433,25 +457,33 @@
       ]
     },
     "go-openapi-generated-code": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-openapi-codegen"
       ]
     },
     "go-otel-instrumentation": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "opentelemetry-instrumentation"
       ]
     },
     "go-outbox-relay": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-event-publisher"
       ]
     },
     "go-repository-implementation": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-repository-pattern"
       ]
@@ -463,7 +495,9 @@
       ]
     },
     "go-service-skeleton": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-project-structure"
       ]
@@ -475,7 +509,9 @@
       ]
     },
     "go-test-file": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-unit-test"
       ]
@@ -495,7 +531,9 @@
       ]
     },
     "go-tracing-instrumentation": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "distributed-tracing-design"
       ]
@@ -513,7 +551,9 @@
       ]
     },
     "health-check-endpoints": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "health-check-design"
       ]
@@ -566,7 +606,9 @@
       ]
     },
     "makefile": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-makefile",
         "python-makefile"
@@ -933,7 +975,9 @@
       ]
     },
     "schema-migration": {
-      "agents": [],
+      "agents": [
+        "backend-engineer"
+      ],
       "skills": [
         "go-migration",
         "python-migration"
@@ -1149,8 +1193,10 @@
       ]
     },
     "backend": {
-      "agent_count": 0,
-      "agents": [],
+      "agent_count": 1,
+      "agents": [
+        "backend-engineer"
+      ],
       "artifacts": [
         "conductor-workflow-definition",
         "dockerfile",
@@ -1166,11 +1212,17 @@
         "go-grpc-handler",
         "go-http-handler",
         "go-http-middleware",
+        "go-integration-test",
+        "go-logging-instrumentation",
         "go-mongodb-repository",
         "go-openapi-generated-code",
+        "go-otel-instrumentation",
         "go-outbox-relay",
         "go-repository-implementation",
         "go-service-skeleton",
+        "go-test-file",
+        "go-tracing-instrumentation",
+        "health-check-endpoints",
         "makefile",
         "python-amqp-consumer",
         "python-amqp-publisher",
@@ -1666,12 +1718,35 @@
     "agents": [
       {
         "created": "2026-06-25",
-        "domain": null,
+        "domain": "backend",
         "file": "agents/backend-engineer.md",
         "has_acceptance_test": true,
         "name": "backend-engineer",
         "phase": "implement",
-        "produces": [],
+        "produces": [
+          "dockerfile",
+          "go-benchmark",
+          "go-composition-root",
+          "go-concurrency-package",
+          "go-cqrs-handlers",
+          "go-domain-model",
+          "go-error-handling",
+          "go-event-consumer",
+          "go-http-handler",
+          "go-http-middleware",
+          "go-integration-test",
+          "go-logging-instrumentation",
+          "go-openapi-generated-code",
+          "go-otel-instrumentation",
+          "go-outbox-relay",
+          "go-repository-implementation",
+          "go-service-skeleton",
+          "go-test-file",
+          "go-tracing-instrumentation",
+          "health-check-endpoints",
+          "makefile",
+          "schema-migration"
+        ],
         "role": "Go backend and observability-instrumentation implementation — runnable, tested, instrumented services",
         "skills": [
           "ddd-agent-handoff",
@@ -1684,6 +1759,7 @@
           "go-error-handling",
           "go-event-consumer",
           "go-event-publisher",
+          "go-integration-test",
           "go-makefile",
           "go-middleware",
           "go-migration",
@@ -1693,12 +1769,13 @@
           "go-repository-pattern",
           "go-service-layer",
           "go-service-skeleton",
+          "go-unit-test",
           "health-check-design",
           "methodology-review",
           "opentelemetry-instrumentation",
           "structured-logging-design"
         ],
-        "status": null,
+        "status": "stable",
         "tags": [
           "backend",
           "concurrency",
@@ -1713,7 +1790,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "1.1.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-25",
@@ -8701,8 +8778,8 @@
     "artifacts": 180,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 11,
-    "edges_agent_skills": 177,
+    "edges_agent_produces": 33,
+    "edges_agent_skills": 179,
     "edges_skill_produces": 187,
     "edges_skill_related": 809,
     "hooks": 8,
@@ -8712,9 +8789,9 @@
   },
   "coverage": {
     "agents_with_acceptance_test": 3,
-    "agents_with_domain": 1,
-    "agents_with_produces": 1,
-    "agents_with_status": 1,
+    "agents_with_domain": 2,
+    "agents_with_produces": 2,
+    "agents_with_status": 2,
     "commands_with_test": 15,
     "skills_with_assets": 16,
     "skills_with_contract_test": 186,
@@ -8726,6 +8803,94 @@
   },
   "edges": {
     "agent_produces": [
+      {
+        "agent": "backend-engineer",
+        "artifact": "dockerfile"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-benchmark"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-composition-root"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-concurrency-package"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-cqrs-handlers"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-domain-model"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-error-handling"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-event-consumer"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-http-handler"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-http-middleware"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-integration-test"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-logging-instrumentation"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-openapi-generated-code"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-otel-instrumentation"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-outbox-relay"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-repository-implementation"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-service-skeleton"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-test-file"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "go-tracing-instrumentation"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "health-check-endpoints"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "makefile"
+      },
+      {
+        "agent": "backend-engineer",
+        "artifact": "schema-migration"
+      },
       {
         "agent": "product-strategist",
         "artifact": "business-model-canvas"
@@ -8814,6 +8979,10 @@
       },
       {
         "agent": "backend-engineer",
+        "skill": "go-integration-test"
+      },
+      {
+        "agent": "backend-engineer",
         "skill": "go-makefile"
       },
       {
@@ -8847,6 +9016,10 @@
       {
         "agent": "backend-engineer",
         "skill": "go-service-skeleton"
+      },
+      {
+        "agent": "backend-engineer",
+        "skill": "go-unit-test"
       },
       {
         "agent": "backend-engineer",
