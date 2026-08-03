@@ -12,9 +12,16 @@
 #      Generic reasoning ranks a data-subject erasure request (Art. 17, "the
 #      right to be forgotten") at the top -- it feels supreme. It is not: a
 #      legal hold suspends deletion even against an erasure request, and
-#      deleting held data during litigation is an incident with no undo. The
-#      prompt asks for the ranking and dictates only its FORMAT, never its
-#      order, so a pass is evidence the order came from the skill.
+#      deleting held data during litigation is an incident with no undo.
+#
+#      THE PROMPT ENUMERATES THE THREE ITEMS IN A DELIBERATELY WRONG ORDER --
+#      "a data-subject erasure request, a legal hold, and the retention window"
+#      -- so that a model which merely preserves the order it was handed FAILS
+#      the assertion. Only re-ordering them per the skill's standard passes.
+#      The prompt still dictates the output FORMAT ('A > B > C', highest
+#      first), which is about shape, not about the answer. Do not "tidy" that
+#      enumeration back into precedence order: doing so silently converts this
+#      check into one that any model passes without reading the skill.
 #   2. Immutable backups are erased by DESTROYING THE ENCRYPTION KEY
 #      (crypto-shredding), not by a row-level delete. An immutable snapshot
 #      cannot be edited row-by-row; a policy that says "delete the row from
@@ -114,7 +121,7 @@ PY
 
 smoke_test_acceptance \
   "agents/data-architect (acceptance)" \
-  "Use the Agent tool to dispatch the 'data-architect' subagent with exactly this task: for a product called 'Acme Estate' — a data-estate and compliance platform that maps where sensitive and PII data lives across a customer's Google Drive and S3 — produce ONE design artifact at $SCRATCH_DIR/$DESIGN_DIR_REL/data-retention-policy.md using the data-retention-policy skill from this plugin. The design already fixed these facts, use them as given: the data classes held are audit log, compliance report, data-asset record, extracted entity metadata, personal data (PII), and operational telemetry; the stores are PostgreSQL, an Apache AGE graph projection, an Elasticsearch index, Redpanda topics, and a nightly immutable encrypted backup snapshot; extracted entities and compliance findings are derived from the source data assets by the pipeline. The artifact must contain: (a) a frontmatter block with at least a name: field; (b) a retention schedule table giving each data class a window, a basis, and a disposition; (c) a section headed '## Precedence' that states, as a single ordered chain in the exact form 'A > B > C' with the highest-precedence item first, how the skill's standard ranks these three against one another — a legal hold, the retention window, and a data-subject erasure request — followed by one sentence of justification; (d) an erasure procedure describing how the design locates everything that must be erased when a data subject exercises the right to erasure; and (e) a cross-store disposal table naming the disposal mechanism for every store listed above. Do not produce any other artifacts, do not ask for approval, just write that one file and stop." \
+  "Use the Agent tool to dispatch the 'data-architect' subagent with exactly this task: for a product called 'Acme Estate' — a data-estate and compliance platform that maps where sensitive and PII data lives across a customer's Google Drive and S3 — produce ONE design artifact at $SCRATCH_DIR/$DESIGN_DIR_REL/data-retention-policy.md using the data-retention-policy skill from this plugin. The design already fixed these facts, use them as given: the data classes held are audit log, compliance report, data-asset record, extracted entity metadata, personal data (PII), and operational telemetry; the stores are PostgreSQL, an Apache AGE graph projection, an Elasticsearch index, Redpanda topics, and a nightly immutable encrypted backup snapshot; extracted entities and compliance findings are derived from the source data assets by the pipeline. The artifact must contain: (a) a frontmatter block with at least a name: field; (b) a retention schedule table giving each data class a window, a basis, and a disposition; (c) a section headed '## Precedence' that states, as a single ordered chain in the exact form 'A > B > C' with the highest-precedence item first, how the skill's standard ranks these three against one another — a data-subject erasure request, a legal hold, and the retention window — followed by one sentence of justification; (d) an erasure procedure describing how the design locates everything that must be erased when a data subject exercises the right to erasure; and (e) a cross-store disposal table naming the disposal mechanism for every store listed above. Do not produce any other artifacts, do not ask for approval, just write that one file and stop." \
   "$POLICY" \
   validate_retention_policy
 
