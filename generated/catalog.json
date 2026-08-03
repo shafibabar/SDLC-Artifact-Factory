@@ -85,7 +85,9 @@
       ]
     },
     "canonical-data-model": {
-      "agents": [],
+      "agents": [
+        "data-architect"
+      ],
       "skills": [
         "canonical-data-model"
       ]
@@ -193,25 +195,33 @@
       ]
     },
     "data-classification-scheme": {
-      "agents": [],
+      "agents": [
+        "data-architect"
+      ],
       "skills": [
         "data-classification"
       ]
     },
     "data-lineage-design": {
-      "agents": [],
+      "agents": [
+        "data-architect"
+      ],
       "skills": [
         "data-lineage-design"
       ]
     },
     "data-model": {
-      "agents": [],
+      "agents": [
+        "data-architect"
+      ],
       "skills": [
         "data-model-design"
       ]
     },
     "data-pipeline-design": {
-      "agents": [],
+      "agents": [
+        "data-architect"
+      ],
       "skills": [
         "data-pipeline-design"
       ]
@@ -223,7 +233,9 @@
       ]
     },
     "data-retention-policy": {
-      "agents": [],
+      "agents": [
+        "data-architect"
+      ],
       "skills": [
         "data-retention-policy"
       ]
@@ -298,7 +310,9 @@
       ]
     },
     "event-schema": {
-      "agents": [],
+      "agents": [
+        "data-architect"
+      ],
       "skills": [
         "event-schema-design"
       ]
@@ -1359,8 +1373,10 @@
       ]
     },
     "data": {
-      "agent_count": 0,
-      "agents": [],
+      "agent_count": 1,
+      "agents": [
+        "data-architect"
+      ],
       "artifacts": [
         "analytics-requirements-document",
         "canonical-data-model",
@@ -1373,6 +1389,7 @@
         "data-retention-policy",
         "data-story",
         "document-data-model",
+        "event-schema",
         "metrics-instrumentation-plan",
         "pipeline-stage-worker",
         "report-specification"
@@ -1872,12 +1889,20 @@
       },
       {
         "created": "2026-06-25",
-        "domain": null,
+        "domain": "data",
         "file": "agents/data-architect.md",
-        "has_acceptance_test": false,
+        "has_acceptance_test": true,
         "name": "data-architect",
         "phase": "design",
-        "produces": [],
+        "produces": [
+          "canonical-data-model",
+          "data-classification-scheme",
+          "data-lineage-design",
+          "data-model",
+          "data-pipeline-design",
+          "data-retention-policy",
+          "event-schema"
+        ],
         "role": "Data layer design authority — physical models, canonical model, event schemas, pipelines, classification, lineage, retention",
         "skills": [
           "canonical-data-model",
@@ -1891,7 +1916,7 @@
           "glossary-management",
           "methodology-review"
         ],
-        "status": null,
+        "status": "stable",
         "tags": [
           "classification",
           "data-architecture",
@@ -1901,8 +1926,11 @@
           "pipeline",
           "retention"
         ],
-        "tools": [],
-        "version": "1.1.0"
+        "tools": [
+          "Read",
+          "Write"
+        ],
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-20",
@@ -8892,7 +8920,7 @@
     "artifacts": 180,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 67,
+    "edges_agent_produces": 74,
     "edges_agent_skills": 179,
     "edges_skill_produces": 187,
     "edges_skill_related": 809,
@@ -8902,10 +8930,10 @@
     "unresolved_skill_related": 0
   },
   "coverage": {
-    "agents_with_acceptance_test": 4,
-    "agents_with_domain": 4,
-    "agents_with_produces": 4,
-    "agents_with_status": 4,
+    "agents_with_acceptance_test": 5,
+    "agents_with_domain": 5,
+    "agents_with_produces": 5,
+    "agents_with_status": 5,
     "commands_with_test": 15,
     "skills_with_assets": 16,
     "skills_with_contract_test": 186,
@@ -9004,6 +9032,34 @@
       {
         "agent": "backend-engineer",
         "artifact": "schema-migration"
+      },
+      {
+        "agent": "data-architect",
+        "artifact": "canonical-data-model"
+      },
+      {
+        "agent": "data-architect",
+        "artifact": "data-classification-scheme"
+      },
+      {
+        "agent": "data-architect",
+        "artifact": "data-lineage-design"
+      },
+      {
+        "agent": "data-architect",
+        "artifact": "data-model"
+      },
+      {
+        "agent": "data-architect",
+        "artifact": "data-pipeline-design"
+      },
+      {
+        "agent": "data-architect",
+        "artifact": "data-retention-policy"
+      },
+      {
+        "agent": "data-architect",
+        "artifact": "event-schema"
       },
       {
         "agent": "frontend-engineer",
