@@ -18,14 +18,17 @@
       "Bash(make:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)",
+      "Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
     ]
   },
 
   "env": {
     "SDLC_CONTEXT_FILE": "sdlc-context.json",
     "SDLC_CONFIG_SCHEMA": "schemas/sdlc-config.schema.json",
-    "SDLC_MANIFEST_SCHEMA": "schemas/sdlc-manifest.schema.json"
+    "SDLC_MANIFEST_SCHEMA": "schemas/sdlc-manifest.schema.json",
+    "SDLC_MEMORY_DIR": ".sdlc-memory"
   },
 
   "_hooks_note": "Hooks are not configured here. They live in hooks/hooks.json and are auto-discovered by Claude Code when this plugin is installed/enabled.",

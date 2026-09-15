@@ -1,0 +1,15 @@
+# Chunk 26: subdomain-distillation full refactor (6-book gap-check) + miro-board-notation MVP skill
+
+**Status:** complete
+
+**Completed:** 
+
+**Deliverables:**
+- skills/subdomain-distillation/SKILL.md rewritten from MVP (81 lines, Evans-only) to a thin (120-line) progressive-disclosure entry point (v2.0.0), checked against Vaughn Vernon's Domain-Driven Design Distilled, Vlad Khononov's Learning Domain-Driven Design, Susanne Kaiser's Architecture for Flow, Dan Bergh Johnsson's Secure by Design, and Carola Lilienthal & Henning Schwentner's Domain-Driven Transformation in addition to Evans (GitHub issue #68, sub-issues #70/#71/#72/#74)
+- skills/subdomain-distillation/references/classification-techniques.md — Vernon's outsource-test heuristic and one-or-two-Core-Domains warning; Khononov's complexity-vs-strategic-importance 2x2 (a subdomain can be complicated without being Core) and pattern-selection guidance, flagging a real, unresolved tension with CLAUDE.md's blanket DDD-tactical-patterns rule; Kaiser's Wardley Mapping evolution axis (Genesis/Custom-Built/Product-Rental/Commodity) as a Miro board spec; Evans' Segregated Core / Abstract Core refactoring techniques
+- skills/subdomain-distillation/references/security-sensitive-subdomains.md — Secure by Design's security-sensitivity axis as separate from Core/Supporting/Generic; corrects the MVP's Authentication/Authorization worked example (buying the library is Generic, modeling how access decisions interact with domain-specific invariants is not something to skip)
+- skills/subdomain-distillation/references/legacy-transformation-guidance.md — Lilienthal & Schwentner's transformation-sequencing rules (Core + bounded risk first, Generic as replace-not-migrate), Strangler Fig tied to Segregated Core, the organizationally-political framing of classification in a transformation, and a Domain Vision Board as a Miro board spec
+- skills/subdomain-distillation/assets/subdomain-classification-canvas.md — fill-in worksheet (Miro board spec) combining every technique above into one per-subdomain form
+- skills/miro-board-notation/SKILL.md (new, MVP, owner: factory-governance) — the 5 Miro element types (sticky note, shape, frame, connector, text) and a standard two-table Board Spec Format, pulled into this plan as its own MVP sub-issue (#69) since 3 of the reference/asset files above depend on it, same pattern as subdomain-distillation itself was pulled into the ddd-agent-handoff plan (D020/D021)
+- tests/skills/subdomain-distillation.contract.sh updated to exercise the refactored deep content (Vernon's outsource test via references/classification-techniques.md), live-verified to follow the progressive-disclosure pointer; tests/skills/miro-board-notation.contract.sh added
+- No live Miro API/MCP connection exists in this environment — confirmed via claude mcp list before writing any Miro-related content; all Miro board specs in this chunk are structured tables only, buildable by hand or automatable later with no format changes, per Shafi's explicit decision to defer live integration (see decision D022)

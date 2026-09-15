@@ -217,7 +217,7 @@ result = lm.lint()
 check("lint() returns a dict with the documented keys",
       isinstance(result, dict) and {"violations", "summary", "ok"} <= set(result))
 summary = result.get("summary", {})
-check("summary reports 186 skills", summary.get("skill", {}).get("total") == 186)
+check("summary reports 187 skills", summary.get("skill", {}).get("total") == 187)
 check("summary reports 13 agents", summary.get("agent", {}).get("total") == 13)
 check("summary reports 15 commands", summary.get("command", {}).get("total") == 15)
 check("summary reports the hooks.json file", summary.get("hook", {}).get("total") == 1)

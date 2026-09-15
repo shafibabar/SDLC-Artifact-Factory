@@ -1021,6 +1021,12 @@
         "reporting-spec"
       ]
     },
+    "retrieval-digest": {
+      "agents": [],
+      "skills": [
+        "memory-recall"
+      ]
+    },
     "risk-register": {
       "agents": [],
       "skills": [
@@ -1519,6 +1525,7 @@
         "methodology-compliance-report",
         "miro-board-spec",
         "product-manifest",
+        "retrieval-digest",
         "risk-register",
         "sdlc-config",
         "skill-definition",
@@ -1528,10 +1535,11 @@
       "owners": [
         "factory-governance"
       ],
-      "skill_count": 8,
+      "skill_count": 9,
       "skills": [
         "artifact-manifest",
         "glossary-management",
+        "memory-recall",
         "methodology-review",
         "miro-board-notation",
         "risk-register",
@@ -2484,7 +2492,7 @@
       },
       {
         "allowed_tools": [
-          "Read, Glob"
+          "Read, Glob, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
         ],
         "argument_hint": null,
         "description": "Tell the user exactly what to run next",
@@ -2532,7 +2540,7 @@
       },
       {
         "allowed_tools": [
-          "Read, Glob"
+          "Read, Glob, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
         ],
         "argument_hint": null,
         "description": "Report current position in the factory build or in a product's SDLC journey",
@@ -2600,6 +2608,14 @@
         "event": "PreToolUse",
         "matcher": "Agent",
         "order": 0,
+        "script": "memory-bootstrap.sh",
+        "timeout": 60,
+        "type": "command"
+      },
+      {
+        "event": "PreToolUse",
+        "matcher": "Agent",
+        "order": 1,
         "script": "pre-phase-advance.sh",
         "timeout": 10,
         "type": "command"
@@ -2626,6 +2642,22 @@
         "order": 0,
         "script": "validate-artifact-structure.sh",
         "timeout": 10,
+        "type": "command"
+      },
+      {
+        "event": "SessionStart",
+        "matcher": "",
+        "order": 0,
+        "script": "memory-session-orient.sh",
+        "timeout": 60,
+        "type": "command"
+      },
+      {
+        "event": "UserPromptSubmit",
+        "matcher": "",
+        "order": 0,
+        "script": "memory-prompt-recall.sh",
+        "timeout": 20,
         "type": "command"
       }
     ],
@@ -5835,6 +5867,31 @@
         "version": "1.1.0"
       },
       {
+        "created": "2026-09-15",
+        "dir": "skills/memory-recall",
+        "domain": "governance",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_references": false,
+        "has_scripts": false,
+        "name": "memory-recall",
+        "owner": "factory-governance",
+        "phase": "cross-cutting",
+        "produces": [
+          "retrieval-digest"
+        ],
+        "related": [],
+        "status": "stable",
+        "tags": [
+          "context",
+          "cross-cutting",
+          "efficiency",
+          "memory",
+          "retrieval"
+        ],
+        "version": "1.0.0"
+      },
+      {
         "created": "2026-07-31",
         "dir": "skills/message-broker-selection",
         "domain": "architecture",
@@ -8889,16 +8946,16 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 180,
+    "artifacts": 181,
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 67,
     "edges_agent_skills": 179,
-    "edges_skill_produces": 187,
+    "edges_skill_produces": 188,
     "edges_skill_related": 809,
-    "hooks": 8,
+    "hooks": 11,
     "orphan_skills": 0,
-    "skills": 186,
+    "skills": 187,
     "unresolved_skill_related": 0
   },
   "coverage": {
@@ -8909,11 +8966,11 @@
     "commands_with_test": 15,
     "skills_with_assets": 16,
     "skills_with_contract_test": 186,
-    "skills_with_domain": 186,
-    "skills_with_produces": 186,
+    "skills_with_domain": 187,
+    "skills_with_produces": 187,
     "skills_with_references": 181,
     "skills_with_scripts": 10,
-    "skills_with_status": 186
+    "skills_with_status": 187
   },
   "edges": {
     "agent_produces": [
@@ -10284,6 +10341,10 @@
       {
         "artifact": "workload-pattern-decisions",
         "skill": "kubernetes-workload-patterns"
+      },
+      {
+        "artifact": "retrieval-digest",
+        "skill": "memory-recall"
       },
       {
         "artifact": "broker-selection-rationale",

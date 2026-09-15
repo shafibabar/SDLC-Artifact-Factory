@@ -1,0 +1,12 @@
+# Chunk 67: Architecture Review campaign chartered (v0) — resumable structure committed; execution gated on go
+
+**Status:** chartered (execution not started)
+
+**Completed:** 
+
+**Deliverables:**
+- Outcome of five architecture reviews (workflows, capability registry, internal libraries, manifests, consolidated responsibility matrix). Locked decisions recorded in ARCHITECTURE-REVIEW-CAMPAIGN.md §2: workflows-as-data + Claude-as-interpreter (no engine); relationship-model over capability-registry (derived graph; capability = derived view); manifests = enriched frontmatter (source of truth) + derived catalog; libraries rejected as a system (dedup by deletion + repointing to CLAUDE.md/cross-cutting-skills/scripts/hooks + a thin shared-references/); the consistency linter is the keystone.
+- Committed the resumable preliminary structure BEFORE execution (per Shafi's requirement to survive interruption across account/machine): ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter — cold-start source of truth: model, 9 parents, execution model, git contract, housekeeping contract, resumability protocol, non-negotiables, progress log) + the architecture_review_campaign resume-pointer block in this file + pointer added to CLAUDE.md.
+- 9 dependency-ordered parents (P1 Governance Foundation [schemas+linter] → P2 Skill Manifest Enrichment → P3 Derived Catalog → P4 Skill De-duplication · P5 Agent Deep Refactor [ABSORBS #777] · P6 Hook Deep Refactor · P7 Command Refactor & Workflow-as-Data → P8 Test & Schema Hardening → P9 Catalog-driven Generation). ~380-450 child issues total, ONE per artifact, NO grouping.
+- Execution model (Shafi-directed): each child issue handed to a FRESH agent with full context to minimise main-conversation compactions; deep-refactor authorised for agents/hooks/commands/tests/schemas ('better now than never'); thoroughness over economy (issue/refactor counts explicitly not a concern). Housekeeping expanded to four files (CLAUDE.md, README.md, sdlc-context.json, CHANGELOG.md) before every major commit. Branch hierarchy: child → integration (arch-review/<Pn>-<slug>) → main. Non-negotiables: detailed parent/child descriptions; detailed commit message on EVERY commit however small; test bundled with artifact (TDD).
+- GATE: no issues created and no execution started this chunk. Awaiting Shafi's go on the committed charter before creating the ~390 issues and cutting P1's integration branch.

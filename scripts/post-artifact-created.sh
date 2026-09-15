@@ -10,7 +10,7 @@ set -euo pipefail
 INPUT="$(cat)"
 
 python3 - "$INPUT" <<'PYEOF'
-import json, re, sys, datetime, pathlib
+import json, os, re, subprocess, sys, datetime, pathlib
 
 try:
     payload = json.loads(sys.argv[1])
@@ -19,6 +19,30 @@ except Exception:
     print(json.dumps({"continue": True}))
     sys.exit(0)
 file_path = payload.get("tool_input", {}).get("file_path", "")
+cwd = payload.get("cwd", ".")
+
+# Keep the SDLC memory engine's index in sync with every write under
+# artifacts/, research/, or skills/*/SKILL.md — ingest.py's own classifier
+# silently no-ops on any other path, so this is safe to attempt unconditionally.
+# Never allowed to block or fail this hook: best-effort, short timeout.
+plugin_root = os.environ.get("CLAUDE_PLUGIN_ROOT", "")
+if plugin_root and file_path:
+    try:
+        subprocess.run(
+            [
+                "bash",
+                f"{plugin_root}/scripts/memory/run.sh",
+                f"{plugin_root}/scripts/memory/ingest.py",
+                file_path,
+            ],
+            cwd=cwd,
+            timeout=30,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env={**os.environ, "SDLC_MEMORY_REPO_ROOT": cwd},
+        )
+    except Exception:
+        pass
 
 def done():
     print(json.dumps({"continue": True}))

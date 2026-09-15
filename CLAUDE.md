@@ -149,6 +149,7 @@ Hooks      = Governance   — event-driven, self-imposed <2s target, idempotent.
 Scripts    = Actions      — atomic, deterministic, stateless. Single purpose. Invoked by hooks/commands (repo-root `scripts/`) or by the agent applying a skill that owns one (`skills/<name>/scripts/`) — not a discovered component type either way.
 MCP        = Integrations — external systems. Deferred.
 LSP        = Code intel   — language-aware analysis. Pending.
+Memory     = Retrieval    — self-contained context/search engine (scripts/memory/). See "Memory Engine" below.
 ```
 
 **Component hierarchy:**
@@ -325,7 +326,22 @@ The `tdd-gate` hook checks:
 
 ## Context File Maintenance
 
-`sdlc-context.json` is updated by the `post-artifact-created` hook whenever an artifact is produced. The checklist `status` field must be updated to `complete` when a chunk finishes. The `decisions` array is appended whenever an architectural decision is made. The `open_questions` array is cleared when questions are resolved.
+`sdlc-context.json` holds this plugin's relatively static sections only (`_meta`, `project`, `working_agreements`, `methodology`, `tech_stack`, `first_product`, `plugin_architecture`, `agents`, `skill_domains`, `commands`, `hooks`, `scripts`). Its former fast-growing log sections (`build_checklist`, `decisions`, `open_questions`, `anti_patterns`) were migrated into the SDLC memory engine (see "Memory Engine" below) by `scripts/memory/migrate_context.py` and now live as individually retrievable nodes under `sdlc://self/...` in `.sdlc-memory/`. Do not append to those arrays in `sdlc-context.json` again — they no longer exist there. Record a new decision, resolve a question, or close a checklist chunk by writing/editing the corresponding file under `.sdlc-memory/tree/self/...` and running `ingest.py`, per `skills/memory-recall`.
+
+---
+
+## Memory Engine
+
+`scripts/memory/` is this plugin's self-contained, OpenViking-parity context/retrieval engine — every repo this plugin is enabled in gets its own `.sdlc-memory/` (never inside this plugin's own repo), created on first use. It reimplements OpenViking's architecture locally, with no MCP server and no dependency on the OpenViking repo/service:
+
+- A hierarchical L0 (abstract) / L1 (overview) / L2 (detail) context tree over every product artifact, research file, skill, and this plugin's own project memory (`sdlc://product/...`, `sdlc://research/...`, `sdlc://skills/...`, `sdlc://self/...`).
+- Hybrid dense (local `fastembed` embeddings) + sparse (SQLite FTS5/BM25) search, best-first tree-walk retrieval with score propagation and convergence, and a local cross-encoder reranker — `scripts/memory/retrieve.py`, ported from OpenViking's `hierarchical_retriever.py`.
+- Hotness lifecycle scoring (`scripts/memory/hotness.py`, same `sigmoid(log1p(active_count)) * exp(-decay*age)` formula) so frequently- and recently-accessed context ranks higher.
+- Real dependencies (`fastembed`, `sqlite-vec`) are installed per-repo into an isolated `.sdlc-memory/.venv` by `scripts/memory/bootstrap.sh` (a `PreToolUse`/`Agent` hook, idempotent); if install fails or hasn't run yet, the same code degrades to dependency-free BM25/lexical matching rather than failing.
+- `SessionStart` and `UserPromptSubmit` hooks (`scripts/memory-session-orient.sh`, `scripts/memory-prompt-recall.sh`) surface cheap, always-on abstract-level orientation automatically every session/turn. Deeper `--mode thinking` drill-down is agent-invoked (`skills/memory-recall`), matching how an OpenViking-integrated agent calls its own search tool rather than paying for a full tree walk on every turn.
+- Indexing is automatic on write: `post-artifact-created.sh` calls `scripts/memory/ingest.py` on every product artifact / research file / skill write.
+
+See `skills/memory-recall` for the rule every agent follows (search first, read full content only for what retrieval surfaces) and `scripts/memory/*.py`'s own docstrings for the ported algorithm details.
 
 ---
 

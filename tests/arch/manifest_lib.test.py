@@ -7,7 +7,7 @@ Runs against the REAL repo (no fixtures): the manifest library is the shared
 foundation the P1 linters and the P3 catalog import, so its contract is pinned
 to the live component tree. Asserts:
 
-  * exact component counts (186 skills, 13 agents, 15 commands) — a drift here
+  * exact component counts (187 skills, 13 agents, 15 commands) — a drift here
     means a component was added/removed without the manifest noticing;
   * filesystem-DERIVED booleans are computed correctly for a known skill
     (adr-authoring has references/ + assets/ + scripts/ + a contract test);
@@ -73,7 +73,7 @@ commands = m.load_commands()
 hooks = m.load_hooks()
 
 # --- counts against the real repo -------------------------------------------
-check(f"skill count is 186 (got {len(skills)})", len(skills) == 186)
+check(f"skill count is 187 (got {len(skills)})", len(skills) == 187)
 check(f"agent count is 13 (got {len(agents)})", len(agents) == 13)
 check(f"command count is 15 (got {len(commands)})", len(commands) == 15)
 

@@ -1,0 +1,15 @@
+# Chunk 69: Architecture Review P2 — Skill Manifest Enrichment COMPLETE (parent #805, merged to main)
+
+**Status:** complete
+
+**Completed:** 
+
+**Deliverables:**
+- Second parent of the Architecture Review campaign executed and merged. Integration branch arch-review/p2-skill-manifest-enrichment → main, child → integration → main hierarchy, one child issue + branch + PR per artifact (no grouping). 188 children total: 186 skills + 2 fix children (#1178, #1180). 100 children were completed in earlier sessions; 88 were completed in this one.
+- Every one of the 186 skills now authors three non-derivable manifest fields immediately after tags: — produces (the artifact noun the skill yields), domain (one of 14 logical groupings; a tag, never a filesystem path), status (stable on all 186). These are the consumed inputs to the P3 derived catalog and the artifact-dependency graph.
+- produces was a per-skill judgement, not a mechanical derivation: only 27 of the enriched skills named their artifact in an ## Output Format template, so the remainder were read individually and named. python-* and react-* skills mirror their established go-* counterparts (go-chi-handler → go-http-handler ⇒ python-fastapi-handler → python-http-handler); stack-neutral artifacts stay neutral and are deliberately shared across stacks (dockerfile, makefile, schema-migration, load-test-suite, mutation-report, performance-regression-gate).
+- domain vocabulary (14 values, live counts): backend 41, testing 24, platform 18, data 14, domain-modeling 13, frontend 13, architecture 12, discovery 9, security 9, governance 8, observability 8, strategy 8, validation 5, ux 4. Rule: domain follows the owning agent except where subject matter overrides (test skills → testing, instrumentation → observability).
+- Two campaign backlogs closed as a side effect: broken 'related:' refs 11 → 0, and orphan skills 48 → 0 (an orphan is a skill with no owning agent AND no domain — declaring domain on every skill eliminated the category, exactly as the P2 note predicted).
+- Consequently lint-relationships flipped REPORTING → BLOCKING in scripts/lint-all.sh (its exit code had been discarded via `|| true`; it is now captured and gates). Verified by a negative test: injecting a bogus related: target into helm-chart made the gate exit 1 with the blocking marker; the injection was reverted and the tree confirmed clean.
+- Two arch tests that snapshotted the pre-P2 tree were re-pinned to the post-P2 invariant WITHOUT weakening them — the absent-optional-field parser contract moved to a synthetic frontmatter fixture (manifest_lib 46→48 passing) and the broken-ref detection stayed covered by untouched synthetic fixtures (lint-relationships 26→28 passing). Real-tree coverage strictly increased: both now assert the post-P2 invariants.
+- Whole governance gate green: bash scripts/lint-all.sh → exit 0 (schema+arch tests, lint-manifests 0 violations across 186 skills / 13 agents / 15 commands / hooks, lint-relationships 0 broken refs, lint-duplication report-only).
