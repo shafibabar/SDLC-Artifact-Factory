@@ -1,0 +1,16 @@
+# Chunk 70: Architecture Review P3 — Derived Component Catalog + CI Integration COMPLETE (parent #1183, merged to main)
+
+**Status:** complete
+
+**Completed:** 
+
+**Deliverables:**
+- Third parent of the Architecture Review campaign. Integration branch arch-review/p3-derived-catalog -> main; 3 children (#1184 generator, #1186 committed catalog, #1188 CI gate), one issue + branch + PR each.
+- scripts/arch/build-catalog.py — derives the catalog wholly from component frontmatter via scripts/arch/manifest.py (never re-parses). build_catalog() is pure (takes loaded component lists, returns a dict) so its test drives it with synthetic components; only main() touches the filesystem. CLI: default writes, --stdout prints, --check exits 1 if the committed copy is stale.
+- generated/catalog.json — committed (as generated/duplication-report.md already was) so it is reviewable without running anything and every regeneration is a visible PR diff. Records 186 skills/13 agents/15 commands/8 hook handlers, 180 distinct artifacts from 187 produces edges, 14 capability domains, 177 agent->skill and 809 skill->related edges, 0 orphans, 0 unresolved refs.
+- DETERMINISM is a hard requirement, not a nicety: sorted lists, key-sorted mappings, no timestamp, no generator-version field. Committing a derived artifact is only safe if it changes iff a component changed; a generated_at stamp would diff on every run and defeat the staleness gate. Verified byte-identical across runs AND independent of input ordering.
+- The artifacts block is the REVERSE index artifact -> producing skills — the seed of the artifact-dependency graph P7 extends with workflow depends_on. Multiple producers are preserved, not collapsed: the 6 multi-producer artifacts are exactly P2's deliberately stack-neutral ones (dockerfile x3, makefile, schema-migration, load-test-suite, mutation-report, performance-regression-gate).
+- The capabilities block is the DERIVED VIEW over domain:, satisfying charter decision #2 (capability is a derived view over the relationship graph, never a hand-authored tier). related: is emitted as authored and deliberately NOT cycle-checked — cycle/DAG validation belongs to the artifact graph.
+- scripts/lint-all.sh gained BLOCKING step 5 (build-catalog.py --check). Blocking rather than report-only deliberately: duplication is a backlog signal (a judgement), staleness is a mechanical always-wrong condition with a one-command fix. Verified by negative test — flipping a skill's status made the gate exit 1 naming the fix; reverting restored exit 0.
+- DEFECT FOUND AND FIXED: tests/arch/lint-all.test.sh was FAILING on main. P2's REPORTING->BLOCKING flip invalidated two of its assertions and nothing caught it, because both runners globbed only *.test.py while that file is a .test.sh — a test nothing runs is not a test. Repaired to the post-P2 reality plus 3 new step-5 assertions (4 passed/2 failed -> 9 passed/0 failed), and tests/run-smoke-tests.sh's arch category now globs *.test.sh. Deliberately NOT added to lint-all.sh step 1: the gate globbing *.test.sh would run lint-all.test.sh, which runs the gate, recursing without end — both files carry a comment recording that constraint.
+- Whole suite green: bash scripts/lint-all.sh -> exit 0 (5 steps); bash tests/run-smoke-tests.sh arch -> 236 passed, 0 failed.

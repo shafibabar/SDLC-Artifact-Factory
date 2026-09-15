@@ -1,0 +1,7 @@
+- Skill that reasons or decides — reasoning belongs in an Agent
+- Agent that stores large domain knowledge — knowledge belongs in Skills
+- Command that contains methodology or domain expertise — belongs in Skills
+- Hook that runs a workflow — hooks validate only, they do not orchestrate
+- Script that makes business decisions — decisions belong in Agents
+- MCP that implements business workflows — MCPs expose atomic capabilities only
+- Agent with overlapping responsibilities — every agent has single, non-overlapping ownership

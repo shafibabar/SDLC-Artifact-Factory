@@ -1,0 +1,12 @@
+# Chunk 25: ddd-agent-handoff refactor (first skill under the skill-refactor campaign) + subdomain-distillation MVP skill
+
+**Status:** complete
+
+**Completed:** 
+
+**Deliverables:**
+- skills/ddd-agent-handoff/SKILL.md rewritten as a thin (98-line) progressive-disclosure entry point (v2.0.0), backed by skills/ddd-agent-handoff/references/handoff-protocol.md (handoff record schema, 3 Team Topologies interaction modes, Mode Selection Criteria with Core/Supporting/Generic Subdomain classification as the primary input, Definition of Done per stage, Mode Transition Protocol, Roster Change Protocol, conflict resolution, Pass/Defect checklist), skills/ddd-agent-handoff/references/handoff-worked-examples.md (7 worked examples: 4 successful incl. mode escalation and new-agent-addition, 3 abandoned/resumed incl. operational-pause and breakthrough-triggered-refactor), and skills/ddd-agent-handoff/assets/handoff-record-template.md (fill-in template with mode-conditional completion rules) (GitHub issue #54, sub-issues #55-#58)
+- skills/subdomain-distillation/SKILL.md (new, MVP scope, owner: domain-modeler) — Core/Supporting/Generic Subdomain classification per Eric Evans' Domain-Driven Design Part IV; pulled into this plan (as sub-issue #60) rather than left as a queued idea, since handoff-protocol.md's Mode Selection Criteria depends on it; wired into domain-modeler's skills: list (GitHub issue #54, sub-issue #60/d6)
+- tests/skills/ddd-agent-handoff.contract.sh updated to exercise the refactored deep content (Mode Selection Criteria via references/handoff-protocol.md) rather than only the thin SKILL.md surface, live-verified to actually follow the progressive-disclosure pointer; tests/skills/subdomain-distillation.contract.sh added
+- Two dev-tooling fixes to scripts/github-project/ discovered mid-campaign: plan_status.py's done now clears current_plan from local state (nothing previously did, which would have blocked plan-start for every subsequent skill refactor — PR #53); exec_complete.py now appends a deterministic git diff --staged --stat block to every commit body, so commits are self-documenting regardless of the hand-typed subject line (PR #63)
+- This is the first skill processed under the skill-refactor campaign (see decisions D020/D021 and the auto-memory project-skill-refactor-campaign) — establishes the per-skill plan/execute pattern (one parent issue, dependency-ordered sub-issues, progressive disclosure into references/assets, Evans-standard gap-check) that subsequent skill refactors will repeat

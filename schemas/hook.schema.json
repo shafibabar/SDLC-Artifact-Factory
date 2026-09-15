@@ -45,13 +45,13 @@
   "$defs": {
     "entry": {
       "type": "object",
-      "description": "A single hook binding: a matcher plus the handlers that run when a matching tool is used.",
+      "description": "A single hook binding: a matcher plus the handlers that run when a matching tool is used. 'matcher' is required on every entry regardless of event — for events not tied to a specific tool invocation (SessionStart, UserPromptSubmit, Stop, etc.) it carries no meaning and is conventionally set to an empty string rather than omitted (see the existing Stop/SessionStart fixtures in tests/schemas/hook.schema.test.py, and the SDLC memory engine's SessionStart/UserPromptSubmit entries in hooks/hooks.json).",
       "required": ["matcher", "hooks"],
       "additionalProperties": false,
       "properties": {
         "matcher": {
           "type": "string",
-          "description": "Tool name or regex the event is scoped to (e.g. 'Write', 'Write|Edit', 'Agent')."
+          "description": "Tool name or regex the event is scoped to (e.g. 'Write', 'Write|Edit', 'Agent'). Empty string for events with no tool to match against."
         },
         "hooks": {
           "type": "array",

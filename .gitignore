@@ -1,3 +1,10 @@
 __pycache__/
 *.pyc
 scripts/github-project/.state.json
+
+# sdlc-memory (added by SDLC-Artifact-Factory's memory engine)
+# Only relevant if this plugin's own repo is ever used as a test target for
+# itself -- every real consuming repo gets this same block auto-appended by
+# scripts/memory/bootstrap.sh on first run.
+.sdlc-memory/.venv/
+.sdlc-memory/index.db

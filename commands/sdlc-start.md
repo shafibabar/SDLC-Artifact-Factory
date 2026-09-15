@@ -20,6 +20,6 @@ Read `CLAUDE.md`'s Tech Stack Defaults table and `sdlc-context.json`'s `tech_sta
 
 ## 4. Record the product and hand off to Strategy
 
-Update `sdlc-context.json`: set `first_product` (or the equivalent product entry) with the problem statement and confirmed/overridden config, and append a decision entry if any default was overridden.
+Update `sdlc-context.json`: set `first_product` (or the equivalent product entry) with the problem statement and confirmed/overridden config — this section is still tracked there directly (it's static, not a growing log). If any default was overridden, record it as a decision the memory-engine way instead of appending to `sdlc-context.json` (see `skills/memory-recall`): write `.sdlc-memory/tree/self/decisions/D0<next>.md` with the decision and rationale, then run `"${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh" "${CLAUDE_PLUGIN_ROOT}/scripts/memory/ingest.py" .sdlc-memory/tree/self/decisions/D0<next>.md` to index it.
 
 Then proceed exactly as `/sdlc-strategy` does: invoke the `product-strategist` agent via the Agent tool, giving it the problem statement and confirmed tech/business context. Report back to the user what was produced and what phase gate comes next.

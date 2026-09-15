@@ -1,0 +1,12 @@
+{
+  "half_life_days": 7.0,
+  "score_propagation_alpha": 0.7,
+  "hotness_alpha": 0.25,
+  "max_parallel_child_searches": 4,
+  "max_convergence_rounds": 3,
+  "candidate_limit": 40,
+  "result_limit": 10,
+  "embedding_model": "BAAI/bge-small-en-v1.5",
+  "rerank_model": "Xenova/ms-marco-MiniLM-L-6-v2",
+  "embedding_dim": 384
+}

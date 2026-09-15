@@ -1,0 +1,13 @@
+# Chunk 28: acceptance-criteria refactor (first skill under the no-ceremony process, D024) + cross-file sequencing fix
+
+**Status:** complete
+
+**Completed:** 
+
+**Deliverables:**
+- skills/acceptance-criteria/SKILL.md rewritten (v2.0.0) with a new 'Deriving Criteria from a Worked Example' section per Ken Pugh's Acceptance Test-Driven Development (ATDD) practice (research/requirements-and-user-stories/lean-agile-atdd-pugh.md): criteria are derived from a concrete worked example via example-mapping first, never decided as an abstract rule and illustrated afterward; includes a solo-agent honesty note (the 'worked example' is the requirements-analyst agent reasoning through Customer/Developer/Tester perspectives, not a real multi-person session) and an explicit acceptance-criteria-vs-UAT boundary note. Split into progressive disclosure: references/output-format-template.md.
+- Fixed a real sequencing bug found during the book research (lean-agile-atdd-pugh.md): agents/requirements-analyst.md's Execution Sequence ran Acceptance Criteria (step 8) before Example Maps (step 9), backwards from Specification-by-Example's examples-first order. Swapped to Example Maps (step 8) then Acceptance Criteria (step 9), with an explicit note on why the order matters.
+- skills/example-mapping/SKILL.md (v1.2.0) corrected to match: step 2 no longer derives rule cards 'for each acceptance criterion' (which required criteria to already exist); description and Purpose updated to state example mapping runs before acceptance criteria are drafted, not after.
+- skills/glossary-management/references/ubiquitous-language.md: added 'Acceptance Test-Driven Development (ATDD)' and 'Three Amigos' as canonical terms, both previously used informally in this repo's skills but never defined. Updated the existing 'Acceptance Testing' entry to cross-reference and distinguish it from ATDD (pre-code collaborative derivation vs. post-deployment execution) -- preempting the exact kind of terminology collision the testing-research cluster flagged as a real risk pattern (Quigley's V&V dictionary research, chunk 26). Did NOT add ATDD as a 6th non-negotiable methodology in CLAUDE.md alongside DDD/Event Storming/TDD/BDD/SOLID -- that is a bigger scope decision requiring Shafi's explicit sign-off, flagged as a follow-up consideration, not decided unilaterally.
+- tests/skills/acceptance-criteria.contract.sh and tests/skills/example-mapping.contract.sh added, live-verified against the corrected ordering.
+- This is the first skill refactor done under the no-ceremony process (decision D024) -- no parent GitHub issue or sub-issues created; work proceeded directly per the updated feedback-skill-refactor-process.
