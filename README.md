@@ -81,7 +81,7 @@ Building software products at a professional quality bar requires deep, simultan
 |---|---|
 | **Repository Purpose** | Claude Code plugin for full-lifecycle, artifact-producing SDLC automation |
 | **Status** | Active Development |
-| **Maturity** | Complete and live-verified (136 skills, 13 agents, 15 commands, 7 hooks, 2 schemas) — every build_checklist item done except the deferred ai-ml-architect agent |
+| **Maturity** | Complete and live-verified (186 skills, 13 agents, 15 commands, 7 hooks, 7 schemas) — Architecture Review campaign active (P5 agent deep-refactor in progress, 5 of 13 agents done) |
 | **Documentation Standard** | Markdown, GitHub-compatible, frontmatter-governed |
 | **Governance Model** | Methodology-first; DDD, Event Storming, TDD, BDD, and SOLID are non-negotiable |
 | **Target Users** | Product Managers, Architects, Engineers, AI Engineers, Enterprise Teams |
@@ -181,7 +181,7 @@ sdlc-artifact-factory/
 ├── .claude-plugin/           # Plugin manifest (plugin.json only)
 │   └── plugin.json
 ├── CLAUDE.md                 # Always-on standards — read every session
-├── sdlc-context.json         # Factory memory: build checklist, decisions, open questions
+├── sdlc-context.json         # Factory memory: project context, tech stack, working agreements (build checklist/decisions/questions live in .sdlc-memory/)
 ├── settings.json             # Default settings applied when plugin is enabled
 ├── skills/                   # Skills — flat, one directory per skill (domain is a tag, not a path)
 │   └── <skill-name>/
@@ -210,7 +210,7 @@ Skills carry exactly one definition file per component (`SKILL.md`) and are pure
 | Directory | Purpose | Ownership | Expected Contents |
 |---|---|---|---|
 | `.claude-plugin/` | Plugin manifest only | Plugin maintainer | `plugin.json` |
-| `skills/` | Reusable domain knowledge | Domain leads | `SKILL.md` per skill, supporting assets — **not yet auto-discovered; see the note above the tree** |
+| `skills/` | Reusable domain knowledge | Domain leads | `SKILL.md` per skill, supporting assets — auto-discovered (flat layout verified; domain-nested layout was confirmed undiscoverable and was fixed) |
 | `agents/` | Reasoning specialists | Architecture lead | One flat `<name>.md` per agent — auto-discovered, verified |
 | `commands/` | User-facing slash commands | Product/engineering | One real `<name>.md` per command — auto-discovered, verified |
 | `hooks/` | Event-driven governance | Platform/governance | One `hooks.json` binding all hooks to real events — auto-discovered |
@@ -1116,11 +1116,12 @@ Any component that supports multiple tenants must enforce:
 
 ### Delivered So Far
 
-- **Skills:** 136, flat under `skills/<name>/SKILL.md` — verified discoverable. Domain grouping (15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6)) survives as a logical tag in `sdlc-context.json`'s `skill_domains`, not as a directory.
+- **Skills:** 186, flat under `skills/<name>/SKILL.md` — verified discoverable. All 186 carry `produces`/`domain`/`status` manifest fields (Architecture Review P2). Domain grouping (15 domains — strategy (8), discovery (11), domain-modeling (9), architecture (9), security (9), ux (4), data-architecture (7), backend-engineering (16), observability (7 — instrumentation + stack), frontend-engineering (14), test-engineering (12), platform (12), data-analytics (7), validation (5), governance (6)) survives as a logical tag in `sdlc-context.json`'s `skill_domains`, not as a directory.
 - **Agents:** 13 of 13 — product-strategist, requirements-analyst (Ideate + Customer Validation), domain-modeler, enterprise-architect, ux-architect, data-architect, security-architect, security-engineer, backend-engineer, frontend-engineer, test-strategist, platform-engineer, data-engineer. Flat `agents/<name>.md`, verified discoverable.
 - **Commands:** 15 of 15 — all phase-driver, navigation, and cross-cutting commands, verified discoverable and one verified by live invocation.
 - **Hooks:** 7 real hooks in `hooks/hooks.json` (9 originally planned, 3 consolidated into 1 once bound to a real event — see CHANGELOG), backed by 6 scripts under `scripts/`. Every hook and every script individually triggered and its outcome verified, not just read — 3 real bugs found and fixed in the process.
-- **Schemas:** `schemas/sdlc-config.schema.json` and `schemas/sdlc-manifest.schema.json` (Draft 2020-12), formalizing the two governance skills' already-documented shapes exactly. Tested against the real `jsonschema` library: both skills' own worked examples validate cleanly, and 15 deliberately invalid instances (across both schemas) are correctly rejected.
+- **Schemas:** 7 total (Draft 2020-12). `schemas/sdlc-config.schema.json` and `schemas/sdlc-manifest.schema.json` formalize the two governance skills' shapes. Five component-frontmatter schemas (`skill`, `agent`, `command`, `hook`, `workflow`) were added during Architecture Review P1 and are validated by `scripts/lint-all.sh` on every PR. Tested against the real `jsonschema` library.
+- **Memory engine:** `scripts/memory/` — a self-contained, OpenViking-parity context/retrieval engine. Every repo this plugin is enabled in gets its own `.sdlc-memory/` with hybrid dense+sparse search, hotness lifecycle scoring, and automatic indexing on artifact writes. `SessionStart` and `UserPromptSubmit` hooks surface orientation automatically each session/turn.
 
 ### Planned Components
 
@@ -1130,12 +1131,16 @@ Any component that supports multiple tenants must enforce:
 | Scripts | 4 standalone utility scripts (`validate-openapi-contract.sh`, `validate-event-schema.sh`, `generate-artifact-id.sh`, `cross-reference-checker.sh`) — deferred until a command or agent actually needs them |
 | MCP Servers | Source control, project management, knowledge management, cloud platforms, data platforms, communication (deferred — defined per product) |
 
+### Delivered Automation
+
+- Automated frontmatter validation on every PR (`scripts/lint-all.sh`, wired into `.github/workflows/governance.yml`)
+- Naming convention enforcement (`scripts/naming-convention-enforcer.sh`)
+- Cross-reference validation — broken `related:`/`skills:` refs are a blocking gate failure (`scripts/lint-relationships.py`)
+- Derived catalog staleness check — `generated/catalog.json` must match the component tree or the gate fails
+
 ### Planned Automation
 
-- Automated frontmatter validation on every PR
-- Automated naming convention enforcement
-- Phase gate automation (blocking saves/commits when gate is not passed)
-- Cross-reference validation (referenced components must exist)
+- Phase gate automation (blocking saves/commits when gate conditions are not met — currently enforced by hooks on `Write`, full phase advancement not yet automated)
 
 ### Planned Integrations
 
@@ -1152,7 +1157,7 @@ Cloud Platforms         → AWS, Azure, GCP, Kubernetes
 
 ### Session State Artifact
 
-Delivered as `sdlc-context.json` at the repository root: a structured JSON file capturing project context, working agreements, the build checklist, architectural decisions, and open questions. It is read at the start of every session to restore full context across resets — see the Session Startup rules in `CLAUDE.md`.
+Delivered as `sdlc-context.json` at the repository root: a structured JSON file capturing project context, working agreements, tech stack, and agent/skill metadata. It is read at the start of every session to restore full context across resets — see the Session Startup rules in `CLAUDE.md`. The former fast-growing log sections (build checklist, decisions, open questions) were migrated to the memory engine and now live as individually retrievable nodes under `sdlc://self/...` in `.sdlc-memory/`.
 
 ---
 

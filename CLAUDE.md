@@ -13,10 +13,42 @@ This file is read on every session. It encodes the non-negotiable rules every ag
 **Every session begins with these three steps — no exceptions:**
 
 1. Read `sdlc-context.json` — this restores full project context, build position, decisions, and tech stack.
-2. Check `build_checklist` in that file — find the first incomplete item. That is where work continues.
+2. Check the build checklist in `.sdlc-memory/tree/self/` (migrated out of `sdlc-context.json` — see Context File Maintenance) — find the first incomplete item. That is where work continues.
 3. If Shafi has not said "go" on the next chunk — do not build. Discuss the plan, get approval, then build.
 
 **Active campaign:** the **Architecture Review campaign** is in progress — its cold-start source of truth is `ARCHITECTURE-REVIEW-CAMPAIGN.md` (master charter) plus the `architecture_review_campaign` block in `sdlc-context.json` (live position: active parent, integration branch, child checklist). On resume, read the charter, then that block, then the GitHub Project board, then continue from the first incomplete child. This campaign introduces new component concepts (declarative **workflow specs**, enriched **manifests** = frontmatter, a derived **catalog**, a consistency **linter**, `shared-references/`); as each lands, the Component Architecture / Layout / Frontmatter sections of this file are updated to match reality.
+
+---
+
+## Common Commands
+
+```bash
+# Governance gate (run before every PR — exits non-zero on any blocking failure)
+bash scripts/lint-all.sh
+
+# Full test suite / targeted runs
+bash tests/run-smoke-tests.sh
+bash tests/run-smoke-tests.sh arch                     # governance gate only
+bash tests/run-smoke-tests.sh --skill <name>           # one skill + its owning agents
+bash tests/run-smoke-tests.sh --agent <name>           # one agent acceptance test
+bash tests/run-smoke-tests.sh --changed [ref]          # skills/agents changed since ref (default: HEAD)
+
+# Rebuild derived catalog (required after any frontmatter change)
+python3 scripts/arch/build-catalog.py
+# Verify catalog is current without rebuilding
+python3 scripts/arch/build-catalog.py --check
+
+# Validate one skill's structure against the authoring-standards rubric
+bash scripts/validate-skill-structure.sh skills/<name>/SKILL.md
+
+# Skill-refactor workflow (uses .claude/commands/ slash commands in sequence)
+# /plan-start → /plan-exit → /exec-start → /exec-complete
+# /exec-start creates the issue-NNN branch; /exec-complete closes it and opens the PR.
+
+# Memory engine — bootstrap (idempotent) or index a file
+bash scripts/memory/bootstrap.sh
+bash scripts/memory/run.sh scripts/memory/ingest.py <file-path>
+```
 
 ---
 
