@@ -14,7 +14,7 @@ description: >
   scripts/validate-signoff.sh (mechanically checks the checklist, both
   parties, and a stated decision/rollout action). Used by the
   requirements-analyst during Customer Validation.
-version: 2.1.0
+version: 2.2.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20

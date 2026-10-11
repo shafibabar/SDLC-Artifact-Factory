@@ -9,7 +9,7 @@ description: >
   mechanism — with explicit selection criteria, failure-mode analysis, and the
   Go implementation on this platform. Used during Design when two Bounded
   Contexts or an external system must communicate.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -200,6 +200,7 @@ product: [product name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: enterprise-architect
 ---
 

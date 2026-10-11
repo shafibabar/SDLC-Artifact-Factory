@@ -10,7 +10,7 @@ description: >
   as a Key Result ("launch the onboarding flow", "ship the connector",
   "features shipped: 10"). Sets the measurable goals downstream discovery
   (impact-mapping, story-mapping) traces back to.
-version: 2.0.0
+version: 2.1.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24

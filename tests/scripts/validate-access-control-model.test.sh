@@ -54,6 +54,7 @@ product: acme
 version: 1.0.0
 phase: design
 owner: security-architect
+summary: Access-control model fixture missing only its created field.
 ---
 
 # Access Control Model

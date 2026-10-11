@@ -9,6 +9,7 @@ version: 1.0.0
 phase: <implement|design|strategy|quality|deploy|customer-validation|cross-cutting>
 owner: <agent-name>
 created: <YYYY-MM-DD>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 tags: [<tag1>, <tag2>]
 ---
 

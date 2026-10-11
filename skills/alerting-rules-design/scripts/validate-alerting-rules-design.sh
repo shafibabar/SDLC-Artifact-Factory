@@ -41,7 +41,7 @@ _check() {
 
 FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$FILE" | sed '1d;$d')"
 
-for field in name product version phase created owner; do
+for field in name product version phase created owner summary; do
   if printf '%s\n' "$FRONTMATTER" | grep -qE "^${field}:"; then
     _check "frontmatter has '$field'" 1
   else

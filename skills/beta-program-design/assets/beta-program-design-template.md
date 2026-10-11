@@ -4,6 +4,7 @@ product: [product name]
 version: 1.0.0
 phase: customer-validation
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 ---
 

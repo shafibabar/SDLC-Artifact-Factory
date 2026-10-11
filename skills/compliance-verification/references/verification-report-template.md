@@ -58,6 +58,7 @@ frameworks: [SOC 2, GDPR, ISO 27001]
 version: 1.0.0
 phase: quality
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: security-engineer
 ---
 

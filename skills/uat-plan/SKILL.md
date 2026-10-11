@@ -13,7 +13,7 @@ description: >
   proves a deployed release behaves correctly for real users before wide
   rollout — it is the final human-in-the-loop gate, not pre-deployment QA.
   Used by the requirements-analyst during Customer Validation.
-version: 2.0.0
+version: 2.1.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20

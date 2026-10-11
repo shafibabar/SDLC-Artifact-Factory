@@ -8,7 +8,7 @@ description: >
   not the product it builds. Consulted by Shafi during retrospectives and by
   any agent proposing a change to phase sequencing, gate criteria, or
   handoff structure.
-version: 1.1.0
+version: 1.2.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -163,6 +163,7 @@ version: 1.0.0
 phase: cross-cutting
 owner: factory-governance
 created: <YYYY-MM-DD>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Value Stream Map — <Story or Slice Name>

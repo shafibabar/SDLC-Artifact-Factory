@@ -6,27 +6,27 @@ One row per artifact type this plugin can produce: Artifact Type, Producing Agen
 
 | Artifact Type | Producing Agent | Skill Used | File Path Pattern | Phase | Required Frontmatter Fields |
 |---|---|---|---|---|---|
-| Vision Statement | product-strategist | `strategy/vision-statement` | `artifacts/[product]/strategy/vision-statement.md` | strategy | name, version, phase, owner, created |
-| Roadmap | product-strategist | `strategy/roadmap-authoring` | `artifacts/[product]/strategy/roadmap.md` | strategy | name, version, phase, owner, created |
-| OKR Set | product-strategist | `strategy/okr-authoring` | `artifacts/[product]/strategy/okrs/[cycle].md` | strategy | name, version, phase, owner, created |
-| User Story | requirements-analyst | `discovery/user-story-writing` | `artifacts/[product]/ideate/stories/[story-id].md` | ideate | name, version, phase, owner, created |
-| Epic | requirements-analyst | `discovery/epic-definition` | `artifacts/[product]/ideate/epics/[epic-id].md` | ideate | name, version, phase, owner, created |
-| Acceptance Criteria | requirements-analyst | `discovery/acceptance-criteria` | `artifacts/[product]/ideate/stories/[story-id]-ac.md` | ideate | name, version, phase, owner, created |
-| Event Storm Board | domain-modeler | `domain-modeling/event-storming-facilitation` | `artifacts/[product]/design/event-storms/[domain].md` | design | name, version, phase, owner, created |
-| Bounded Context Map | domain-modeler | `domain-modeling/bounded-context-mapping` | `artifacts/[product]/design/context-map.md` | design | name, version, phase, owner, created |
+| Vision Statement | product-strategist | `strategy/vision-statement` | `artifacts/[product]/strategy/vision-statement.md` | strategy | name, version, phase, owner, created, summary |
+| Roadmap | product-strategist | `strategy/roadmap-authoring` | `artifacts/[product]/strategy/roadmap.md` | strategy | name, version, phase, owner, created, summary |
+| OKR Set | product-strategist | `strategy/okr-authoring` | `artifacts/[product]/strategy/okrs/[cycle].md` | strategy | name, version, phase, owner, created, summary |
+| User Story | requirements-analyst | `discovery/user-story-writing` | `artifacts/[product]/ideate/stories/[story-id].md` | ideate | name, version, phase, owner, created, summary |
+| Epic | requirements-analyst | `discovery/epic-definition` | `artifacts/[product]/ideate/epics/[epic-id].md` | ideate | name, version, phase, owner, created, summary |
+| Acceptance Criteria | requirements-analyst | `discovery/acceptance-criteria` | `artifacts/[product]/ideate/stories/[story-id]-ac.md` | ideate | name, version, phase, owner, created, summary |
+| Event Storm Board | domain-modeler | `domain-modeling/event-storming-facilitation` | `artifacts/[product]/design/event-storms/[domain].md` | design | name, version, phase, owner, created, summary |
+| Bounded Context Map | domain-modeler | `domain-modeling/bounded-context-mapping` | `artifacts/[product]/design/context-map.md` | design | name, version, phase, owner, created, summary |
 | ADR | enterprise-architect | `architecture/adr-authoring` | `artifacts/[product]/design/decisions/ADR-[NNN]-[slug].md` | design | adr-id, title, status, date, deciders |
 | API Contract | enterprise-architect | `architecture/api-contract-design` | `artifacts/[product]/design/api/[service].openapi.yaml` | design | (OpenAPI `info` block; no SKILL.md frontmatter — see api-contract-design) |
 | Event Schema | data-architect | `data-architecture/event-schema-design` | `artifacts/[product]/data/schemas/[event-name].json` | data | (JSON Schema envelope; see event-schema-design) |
-| Data Model | data-architect | `data-architecture/data-model-design` | `artifacts/[product]/data/data-model.md` | data | name, version, phase, owner, created |
+| Data Model | data-architect | `data-architecture/data-model-design` | `artifacts/[product]/data/data-model.md` | data | name, version, phase, owner, created, summary |
 | Go Service | backend-engineer | `backend-engineering/go-service-skeleton` + related | `artifacts/[product]/implement/services/[service]/` | implement | (source tree; design doc uses standard frontmatter) |
 | BDD Feature File | test-strategist | `test-engineering/bdd-feature-file` | `artifacts/[product]/implement/features/[story-id].feature` | implement | (Gherkin; traceability tag references story-id) |
 | React Component | frontend-engineer | `frontend-engineering/react-component-design` + related | `artifacts/[product]/implement/web/src/components/[Name]/` | implement | (source tree; design doc uses standard frontmatter) |
-| Test Strategy | test-strategist | `test-engineering/test-pyramid` | `artifacts/[product]/quality/test-strategy.md` | quality | name, version, phase, owner, created |
+| Test Strategy | test-strategist | `test-engineering/test-pyramid` | `artifacts/[product]/quality/test-strategy.md` | quality | name, version, phase, owner, created, summary |
 | Helm Chart | platform-engineer | `platform/helm-chart` | `artifacts/[product]/deploy/charts/[service]/` | deploy | (chart tree; `Chart.yaml` carries chart-level metadata) |
-| Runbook | platform-engineer | `platform/runbook-authoring` | `artifacts/[product]/deploy/runbooks/[scenario].md` | deploy | name, version, phase, owner, created |
-| UAT Plan | requirements-analyst | `validation/uat-plan` | `artifacts/[product]/validate/uat-plan.md` | customer-validation | name, version, phase, owner, created |
-| Risk Register Entry | any agent | `governance/risk-register` | `artifacts/[product]/governance/risk-register.md` | cross-cutting | name, version, phase, owner, created |
-| Methodology Review Report | any agent, hooks | `governance/methodology-review` | `artifacts/[product]/governance/reviews/[artifact]-review.md` | cross-cutting | name, version, phase, owner, created, reviewed_artifact, result |
+| Runbook | platform-engineer | `platform/runbook-authoring` | `artifacts/[product]/deploy/runbooks/[scenario].md` | deploy | name, version, phase, owner, created, summary |
+| UAT Plan | requirements-analyst | `validation/uat-plan` | `artifacts/[product]/validate/uat-plan.md` | customer-validation | name, version, phase, owner, created, summary |
+| Risk Register Entry | any agent | `governance/risk-register` | `artifacts/[product]/governance/risk-register.md` | cross-cutting | name, version, phase, owner, created, summary |
+| Methodology Review Report | any agent, hooks | `governance/methodology-review` | `artifacts/[product]/governance/reviews/[artifact]-review.md` | cross-cutting | name, version, phase, owner, created, summary, reviewed_artifact, result |
 
 ## Directory-Shaped Artifact Types
 

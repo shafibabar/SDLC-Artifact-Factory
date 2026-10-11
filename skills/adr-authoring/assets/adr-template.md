@@ -1,6 +1,7 @@
 ---
 adr-id: ADR-[NNN]
 title: [Title]
+summary: [one sentence, ≤ 200 chars — the decision and its main reason; indexed as its memory-engine abstract]
 status: Proposed
 date: [YYYY-MM-DD]
 deciders: [Who made this decision]

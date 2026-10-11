@@ -11,7 +11,7 @@ description: >
   crypto-shredding interplay that keeps backups honoring per-subject erasure,
   the restore-test discipline that makes an untested backup not a backup, and
   per-tenant DR independence. Used by the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20

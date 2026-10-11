@@ -9,7 +9,7 @@ description: >
   = transport identity only; ABAC = the authorization decision), the security-sensitivity axis
   orthogonal to Core/Supporting/Generic subdomain classification, and the automated-governance
   component triad. Used during Design after threat-modeling.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: security-architect
 created: 2026-06-25
@@ -148,6 +148,7 @@ product: [product name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: security-architect
 ---
 

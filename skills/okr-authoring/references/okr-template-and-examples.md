@@ -16,6 +16,7 @@ cycle: [Q3 2026 / H2 2026 / Annual 2026]
 version: 1.0.0
 phase: strategy
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: product-strategist
 north-star-metric: [single metric]
 ---

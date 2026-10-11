@@ -7,7 +7,7 @@ description: >
   to a measurable goal and prevents building features nobody needs. Used during
   Strategy/Ideate to connect an OKR goal to the specific actor behavior changes
   and only then to candidate deliverables.
-version: 2.0.0
+version: 2.1.0
 phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
@@ -135,6 +135,7 @@ product: [product name]
 version: 1.0.0
 phase: strategy
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 linked-kr: [OKR Key Result ID]
 ---

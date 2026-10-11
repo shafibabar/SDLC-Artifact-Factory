@@ -29,6 +29,7 @@ product: [product name]
 version: 1.0.0
 phase: implement
 created: [YYYY-MM-DD]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: test-strategist
 ---
 

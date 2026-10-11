@@ -417,6 +417,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Workload Manifest — [service]

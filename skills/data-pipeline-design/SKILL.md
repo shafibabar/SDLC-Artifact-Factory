@@ -10,7 +10,7 @@ description: >
   pipeline observability). The design-phase counterpart to data-pipeline-implementation.
   Used when a new data flow between systems is defined — ingestion, CDC, event
   stream processing, or scheduled batch. Produced by the data-architect.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: data-architect
 created: 2026-06-25
@@ -196,6 +196,7 @@ product: [product name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: data-architect
 ---
 

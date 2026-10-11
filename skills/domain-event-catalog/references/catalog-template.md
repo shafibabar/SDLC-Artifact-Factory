@@ -18,6 +18,7 @@ bounded-context: [context name — e.g., Classification Engine]
 version: 1.0.0
 phase: design
 created: [YYYY-MM-DD]
+summary: Catalogs the Classification Engine's Domain Events with aggregate, version, consumers, category and retention for each.
 owner: domain-modeler
 ---
 ```
@@ -31,6 +32,7 @@ bounded-context: Classification Engine
 version: 1.0.0
 phase: design
 created: 2026-07-01
+summary: Catalogs the Classification Engine's Domain Events with aggregate, version, consumers, category and retention for each.
 owner: domain-modeler
 ---
 ```

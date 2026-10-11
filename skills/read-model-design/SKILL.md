@@ -1,7 +1,7 @@
 ---
 name: read-model-design
 description: "Teaches the domain-modeler and backend-engineer to design Read Models — the denormalized, query-optimized representations of Aggregate state produced by projections from Domain Events. Covers Read Model field selection (what to include from the Aggregate and related context), denormalization strategy (when and how to flatten nested structures), eventual consistency management (version fields, staleness tolerance, client-side handling), the Read Model artifact format, and naming conventions. Used during Design whenever a service exposes query endpoints that must return pre-computed, caller-optimized shapes."
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25

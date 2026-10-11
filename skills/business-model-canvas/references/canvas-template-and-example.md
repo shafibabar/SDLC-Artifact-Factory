@@ -17,6 +17,7 @@ product: [product name]
 version: 1.0.0
 phase: strategy
 created: [YYYY-MM-DD]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: product-strategist
 canvas-type: bmc
 ---

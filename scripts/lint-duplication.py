@@ -20,7 +20,7 @@ WHAT IT DOES (report-only — always exits 0):
         NOT duplication: the mandated ARTIFACT FRONTMATTER inside a skill's
         `## Output Format` template. CLAUDE.md § Artifact Standards REQUIRES
         every emitted artifact — and every Output Format template — to carry a
-        `name/version/phase/owner/created` block, so its recurrence across
+        `name/version/phase/owner/created/summary` block, so its recurrence across
         skills is COMPLIANCE, not duplication. Those blocks are therefore
         excluded at CORPUS-ASSEMBLY time (assemble_corpora ->
         strip_artifact_frontmatter_templates) rather than post-filtered out of
@@ -136,7 +136,7 @@ _FM_DELIM_RE = re.compile(r"^\s*---\s*$")
 # `key:` at (near) the left margin — the shape of a YAML mapping entry.
 _FM_KEY_RE = re.compile(r"^ {0,3}([A-Za-z_][A-Za-z0-9_-]*)\s*:(?:\s|$)")
 # The keys CLAUDE.md § Artifact Standards mandates alongside `name`.
-ARTIFACT_FM_MANDATED_KEYS = ("version", "phase", "owner", "created")
+ARTIFACT_FM_MANDATED_KEYS = ("version", "phase", "owner", "created", "summary")
 # How many of those must be present for the block to read as the mandated
 # template rather than as an arbitrary `---`-delimited chunk of prose.
 ARTIFACT_FM_MIN_MANDATED_KEYS = 3
@@ -181,7 +181,7 @@ def strip_artifact_frontmatter_templates(text: str) -> str:
 
     CLAUDE.md § Artifact Standards requires every artifact — and therefore every
     skill's `## Output Format` template — to carry a
-    `name/version/phase/owner/created` frontmatter block. Its recurrence across
+    `name/version/phase/owner/created/summary` frontmatter block. Its recurrence across
     skills is compliance, not duplication, so it is excluded from the corpus
     before any detector sees it. Everything else is left byte-for-byte intact.
     """
@@ -698,7 +698,7 @@ def build_report(dup_clusters: list[dict], restatements: list[dict], skill_count
         f"recurs across at least {MIN_SKILLS_FOR_DUP} skill corpora, ranked by how "
         "many skills carry them. Consolidate each into one home and repoint. "
         "The mandated artifact-frontmatter template "
-        "(`name`/`version`/`phase`/`owner`/`created`, CLAUDE.md § Artifact "
+        "(`name`/`version`/`phase`/`owner`/`created`/`summary`, CLAUDE.md § Artifact "
         "Standards) is excluded during corpus assembly — its recurrence is "
         "compliance, not duplication."
     )

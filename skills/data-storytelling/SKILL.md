@@ -9,7 +9,7 @@ description: >
   check against manipulative presentation (truncated axes, cherry-picked windows, misleading
   aggregation). Grounded in Knaflic, Storytelling with Data. Distinct from domain-storytelling
   (a DDD modeling technique). Use when analysis results must persuade or inform a decision.
-version: 2.0.0
+version: 2.1.0
 phase: data
 owner: data-engineer
 created: 2026-07-20
@@ -184,6 +184,7 @@ story: [short title]
 version: 2.0.0
 phase: data
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: data-engineer
 audience: [who this is presented to]
 ---

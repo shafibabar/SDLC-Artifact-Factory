@@ -9,7 +9,7 @@ description: >
   only via Vault Agent), and the promotion invariance check that proves the
   artifact never changed between environments. Used by the platform-engineer
   during Deploy.
-version: 1.2.0
+version: 1.3.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20

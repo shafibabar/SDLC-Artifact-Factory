@@ -10,7 +10,7 @@ description: >
   control mapping, and the Control Coverage Matrix artifact. Each control is
   designed to be verified automatically (handoff to compliance-verification).
   Used during Design for any regulated feature or the platform baseline.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: security-architect
 created: 2026-06-25
@@ -204,6 +204,7 @@ frameworks: [SOC 2, GDPR, CCPA, ISO 27001]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: security-architect
 ---
 

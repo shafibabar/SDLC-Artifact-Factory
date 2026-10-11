@@ -22,6 +22,7 @@ bounded-context: [Bounded Context name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: enterprise-architect
 ---
 

@@ -11,7 +11,7 @@ description: >
   lifecycle retain/destroy stages and with data-classification. Used during
   Design for any dataset holding regulated or personal data — audit logs,
   extracted entities, data-asset records, personal data, event payloads.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: data-architect
 created: 2026-06-25
@@ -184,6 +184,7 @@ product: [product name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: data-architect
 ---
 

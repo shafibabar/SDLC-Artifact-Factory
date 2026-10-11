@@ -12,7 +12,7 @@ description: >
   the per-tenant scrape plus central federation topology. Consumed by
   platform-engineer during Deploy; feeds slo-definition and
   alerting-rules-design.
-version: 2.0.0
+version: 2.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -140,6 +140,7 @@ product: <product-name>
 version: 1.0.0
 phase: deploy
 created: <date>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: platform-engineer
 ---
 

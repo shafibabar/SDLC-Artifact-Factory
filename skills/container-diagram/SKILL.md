@@ -9,7 +9,7 @@ description: >
   notation, technology-choice annotation, the Clements component-and-connector vs.
   allocation viewtype distinction, and the diagram template. Used during Design
   after the System Context view is fixed.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25

@@ -14,7 +14,7 @@ description: >
   freshness / throughput instrumentation. Used by the data-engineer during
   Implement for every pipeline (e.g. Google Drive/S3 ingestion into the DataAsset
   store, entity extraction, compliance evaluation).
-version: 2.0.0
+version: 2.1.0
 phase: implement
 owner: data-engineer
 created: 2026-07-20

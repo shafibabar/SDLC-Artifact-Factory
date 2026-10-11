@@ -10,7 +10,7 @@ description: >
   and cost tradeoffs, the per-layer enforcement rules, and the per-tenant
   provisioning/stamp model — grounded in this repo's SOC 2 physical-isolation
   product context. Used during Design for any tenant-facing system.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -117,6 +117,7 @@ tenancy-model: [physical | shared-schema | shared-everything]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: enterprise-architect
 ---
 

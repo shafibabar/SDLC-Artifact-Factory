@@ -153,7 +153,7 @@ Procedure:
 
 ## 5. Output template — per-Bounded-Context Ubiquitous Language document
 
-Copy this shape when producing the artifact. The frontmatter follows the plugin's artifact standard (`name`, `version`, `phase`, `owner`, `created`).
+Copy this shape when producing the artifact. The frontmatter follows the plugin's artifact standard (`name`, `version`, `phase`, `owner`, `created`, `summary`).
 
 ```markdown
 ---
@@ -163,6 +163,7 @@ bounded-context: [Bounded Context name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: domain-modeler
 ---
 

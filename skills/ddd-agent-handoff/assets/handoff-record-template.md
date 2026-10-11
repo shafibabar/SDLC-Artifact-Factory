@@ -14,6 +14,7 @@ version: 1.0.0
 phase: <phase of the concern being handed off>
 owner: <from_agent>
 created: <YYYY-MM-DD>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 from_agent: <agent name>
 to_agent: <agent name>
 concern: <the specific piece of DDD work changing hands — name it precisely>

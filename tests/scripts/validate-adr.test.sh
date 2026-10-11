@@ -29,6 +29,7 @@ cat > "$SCRATCH_DIR/broken.md" <<'EOF'
 ---
 adr-id: ADR-999
 title: Missing Deciders And Trade-off
+summary: Fixture ADR deliberately missing deciders and trade-off sections.
 status: Proposed
 date: 2026-07-23
 ---

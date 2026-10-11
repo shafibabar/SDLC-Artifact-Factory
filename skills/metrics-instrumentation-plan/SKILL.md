@@ -12,7 +12,7 @@ description: >
   event-to-metric traceability, and how metrics feed `dashboard-specification` and
   `reporting-spec`. Used by the data-engineer and platform-engineer during Data and
   Deploy phases.
-version: 2.0.0
+version: 2.1.0
 phase: data
 owner: data-engineer
 created: 2026-07-20
@@ -167,6 +167,7 @@ product: [product name]
 version: 1.0.0
 phase: data
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: data-engineer
 ---
 

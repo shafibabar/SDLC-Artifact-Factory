@@ -14,7 +14,7 @@ description: >
   are the primary handoff from the requirements-analyst to the
   test-strategist. Used during the Ideate phase after user stories are
   written and example maps are discovered.
-version: 2.1.0
+version: 2.2.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24

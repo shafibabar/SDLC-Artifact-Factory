@@ -6,7 +6,7 @@ description: >
   stakeholders. Covers the Power/Interest Grid, stakeholder register format,
   communication strategy per quadrant, and RACI for key decisions. Used by the
   product-strategist agent during the Strategy phase before GTM planning begins.
-version: 1.1.0
+version: 1.2.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -154,6 +154,7 @@ product: [product name]
 version: 1.0.0
 phase: strategy
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: product-strategist
 ---
 

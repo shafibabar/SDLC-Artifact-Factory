@@ -14,7 +14,7 @@ description: >
   frontmatter and that the Domain Primitives/Policies/Trust-Boundary tables
   actually have data, not just headers). Used by the security-architect
   agent during the Design phase.
-version: 2.2.0
+version: 2.3.0
 phase: design
 owner: security-architect
 created: 2026-06-25

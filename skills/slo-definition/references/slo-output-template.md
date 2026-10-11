@@ -29,6 +29,7 @@ product: <product-name>
 version: 1.0.0
 phase: deploy
 created: <ISO-8601 date>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: platform-engineer
 ---
 
@@ -127,6 +128,7 @@ product: platform
 version: 1.0.0
 phase: deploy
 created: <ISO-8601 date>
+summary: Platform SLOs for CI duration, CD availability and environment provisioning; all currently within target.
 owner: platform-engineer
 ---
 
@@ -194,6 +196,7 @@ product: data-estate
 version: 1.0.0
 phase: deploy
 created: 2026-07-20
+summary: Reliability and latency SLOs for the Data Estate user journeys, derived from the NFR spec and a 500 RPS load-test baseline.
 owner: platform-engineer
 ---
 
@@ -251,6 +254,7 @@ product: platform
 version: 1.0.0
 phase: deploy
 created: 2026-07-20
+summary: Platform SLOs for CI duration, CD availability and environment provisioning; all currently within target.
 owner: platform-engineer
 ---
 

@@ -284,7 +284,7 @@ These defaults apply to all generated code and configuration unless overridden i
 
 Every artifact produced by this plugin must:
 
-1. Have a frontmatter block with `name`, `version`, `phase`, `owner`, and `created` fields.
+1. Have a frontmatter block with `name`, `version`, `phase`, `owner`, `created`, and `summary` fields. `summary` is one sentence (≤ ~200 chars) stating what the artifact establishes — the memory engine indexes it verbatim as the artifact's abstract (L0), so it must be specific enough to find the artifact by search. Enforced at write time by `validate-artifact-structure`.
 2. Use only terms from the canonical glossary (`skills/glossary-management/`).
 3. Be traceable — reference the requirement, event, or decision that caused it to exist.
 4. Apply all non-negotiable methodologies applicable to its type.

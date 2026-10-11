@@ -10,7 +10,7 @@ description: >
   (load aggregate, validate, execute, emit events), and the catalog artifact
   template. Used during Design and Implement whenever a new Aggregate operation
   is defined.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25

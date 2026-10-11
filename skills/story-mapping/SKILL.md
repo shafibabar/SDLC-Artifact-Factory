@@ -9,7 +9,7 @@ description: >
   walking skeleton, MVP slice, release slicing, cutting a horizontal slice,
   sequencing epics/stories into releases, seeing the whole product journey at a
   glance, or turning a flat backlog into a two-dimensional view during Ideate.
-version: 2.0.0
+version: 2.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24

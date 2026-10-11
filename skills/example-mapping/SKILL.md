@@ -10,7 +10,7 @@ description: >
   stories and BDD feature files by making implicit rules explicit through
   concrete examples. Used by the requirements-analyst agent during the Ideate
   phase, before acceptance criteria are drafted.
-version: 1.2.0
+version: 1.3.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -174,6 +174,7 @@ story-id: US-[ID]
 version: 1.0.0
 phase: ideate
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 ready-for-sprint: [yes / no — if no, list blocking questions]
 ---

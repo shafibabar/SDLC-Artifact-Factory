@@ -11,7 +11,7 @@ description: >
   package structure to components, and the diagram artifact template. Used
   during Design after the Container view is fixed, once a service's internal
   structure is non-obvious enough to be worth drawing.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25

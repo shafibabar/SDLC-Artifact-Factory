@@ -10,7 +10,7 @@ description: >
   mitigation effort to an architecturally-significant risk, one that if
   unmitigated could force a costly re-design. Consulted at every phase gate and
   whenever an agent's Escalation Rules surface a persistent exposure.
-version: 2.0.0
+version: 2.1.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20

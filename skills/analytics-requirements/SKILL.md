@@ -13,7 +13,7 @@ description: >
   `reporting-spec`, and `metrics-instrumentation-plan`. Includes
   scripts/scaffold-analytics-requirements.sh and
   scripts/validate-analytics-requirements.sh. Used by the data-engineer during Data.
-version: 1.1.0
+version: 1.2.0
 phase: data
 owner: data-engineer
 created: 2026-07-20

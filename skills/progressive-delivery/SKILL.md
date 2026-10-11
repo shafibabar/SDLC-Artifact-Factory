@@ -2,7 +2,7 @@
 name: progressive-delivery
 description: >
   Teaches progressive delivery as a unified release risk-management discipline — the deploy/release distinction as its foundation, the decision framework for choosing canary vs blue-green vs feature-flag-only vs Argo Rollouts, when and how to combine strategies, the boundaries of what cannot be released progressively and the fallback strategies, and how to design a complete release strategy for a service. Used by the platform-engineer and backend-engineer to design service release strategies during Deploy.
-version: 1.0.0
+version: 1.1.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-31
@@ -146,6 +146,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Release Strategy — [service]

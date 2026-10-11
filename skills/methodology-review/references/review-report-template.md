@@ -11,6 +11,7 @@ version: 1.0.0
 phase: <phase of the reviewed artifact>
 owner: <reviewing agent, hook, or "shafi">
 created: <YYYY-MM-DD>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 reviewed_artifact: <path or name of the artifact reviewed>
 result: pass | fail
 ---

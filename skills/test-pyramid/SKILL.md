@@ -8,7 +8,7 @@ description: >
   (Statement Coverage, Branch Coverage, Path Coverage), flaky-test quarantine
   policy, regression discipline, and how security and compliance testing are
   delegated to security-engineer.
-version: 2.0.0
+version: 2.1.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25

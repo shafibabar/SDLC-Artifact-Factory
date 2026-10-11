@@ -12,7 +12,7 @@ description: >
   is created — the canonical rubric, not a convention imitated from whichever
   skill was refactored most recently. Cross-cutting governance skill alongside
   glossary-management and methodology-review.
-version: 1.1.0
+version: 1.2.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-23

@@ -10,7 +10,7 @@ description: >
   flags are UX hints only, the CI flag matrix that tests both branches of a
   flag, and the kill-switch pattern for pausing pipeline consumers without a
   deploy. Used by the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -158,6 +158,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Feature Flag Design — [product]

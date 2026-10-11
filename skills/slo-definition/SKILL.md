@@ -8,7 +8,7 @@ description: >
   multiwindow policy that alerting builds on, and the review cadence that keeps
   targets honest. Turns the NFR specification into measurable, enforceable
   operational targets. Used by the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20

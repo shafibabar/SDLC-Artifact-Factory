@@ -162,7 +162,7 @@ check(
 # ---------------------------------------------------------------------------
 # (a2) PRECISION: mandated artifact frontmatter is compliance, not duplication
 #      (#1192, P4). CLAUDE.md § Artifact Standards REQUIRES every skill's
-#      `## Output Format` template to carry name/version/phase/owner/created, so
+#      `## Output Format` template to carry name/version/phase/owner/created/summary, so
 #      its recurrence must not be reported as a duplicated block.
 # ---------------------------------------------------------------------------
 

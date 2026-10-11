@@ -10,7 +10,7 @@ description: >
   procedure, and how Domain Stories feed into Event Storming and Ubiquitous Language
   extraction. Used during Design before Event Storming when the domain experts' workflow
   is not yet understood.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
@@ -168,6 +168,7 @@ mode: [pure | annotated]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: domain-modeler
 ---
 

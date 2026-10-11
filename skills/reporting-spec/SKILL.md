@@ -7,7 +7,7 @@ description: >
   recipients), and the report specification artifact. Distinguishes an
   operational report from an analytical one. Used during the Data phase for
   recurring or on-demand reports.
-version: 2.0.0
+version: 2.1.0
 phase: data
 owner: data-engineer
 created: 2026-07-20

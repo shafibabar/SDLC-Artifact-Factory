@@ -14,12 +14,12 @@ smoke_test_script "validate-artifact-structure" \
   '{"tool_input":{"file_path":"/x/artifacts/p/strategy/v.md","content":"---\nname: v\n---\n"}}' \
   "deny" "missing required field"
 
-# Complete frontmatter -> allow
+# The five pre-memory-engine fields without summary -> deny, naming summary
 smoke_test_script "validate-artifact-structure" \
   '{"tool_input":{"file_path":"/x/artifacts/p/strategy/v.md","content":"---\nname: v\nversion: 1.0.0\nphase: strategy\nowner: x\ncreated: 2026-07-20\n---\n"}}' \
-  "allow"
+  "deny" "summary"
 
-# Complete frontmatter plus the optional summary field -> allow
+# Complete frontmatter (all six fields) -> allow
 smoke_test_script "validate-artifact-structure" \
   '{"tool_input":{"file_path":"/x/artifacts/p/strategy/v.md","content":"---\nname: v\nversion: 1.0.0\nphase: strategy\nowner: x\ncreated: 2026-07-20\nsummary: One-line abstract.\n---\n"}}' \
   "allow"

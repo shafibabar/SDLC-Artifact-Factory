@@ -223,6 +223,7 @@ stage: [stage name]
 version: 1.0.0
 phase: implement
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: data-engineer
 implements: [data-pipeline-design stage contract reference]
 ---

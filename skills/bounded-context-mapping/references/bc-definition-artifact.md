@@ -19,6 +19,7 @@ phase: design
 owner: domain-modeler
 product: [product name]
 created: [ISO date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # [BC Name] — Bounded Context Definition
@@ -113,6 +114,7 @@ phase: design
 owner: domain-modeler
 product: Data Estate Mapping & Compliance Intelligence
 created: 2026-07-31
+summary: Defines the DataAsset Management core Bounded Context, which discovers, ingests and classifies data assets from external storage sources.
 ---
 
 # DataAsset Management — Bounded Context Definition

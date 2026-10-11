@@ -197,6 +197,7 @@ product: DataEstate Compliance Platform
 version: 1.0.0
 phase: strategy
 created: 2026-07-31
+summary: Core jobs and job stories for the Compliance Officer and Data Steward, scored by opportunity across functional, emotional and social dimensions.
 owner: requirements-analyst
 ---
 

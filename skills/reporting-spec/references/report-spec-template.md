@@ -19,6 +19,7 @@ report: [report name]
 version: [definition version, e.g. 1.0.0]
 phase: data
 created: [date]
+summary: Specifies the monthly compliance-gap report (AR-014): sections, source Read Models, grain and stated takeaway for each.
 owner: data-engineer
 ---
 
@@ -102,6 +103,7 @@ report: monthly-compliance-gap-report
 version: 1.0.0
 phase: data
 created: 2026-07-31
+summary: Specifies the monthly compliance-gap report (AR-014): sections, source Read Models, grain and stated takeaway for each.
 owner: data-engineer
 ---
 

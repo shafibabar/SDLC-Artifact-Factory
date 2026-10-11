@@ -10,7 +10,7 @@ description: >
   cutover, the pre-flip verification gate, instant rollback by selector
   revert, and the transient 2x-capacity cost this strategy carries per
   service. Used by the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -175,6 +175,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Blue-Green Deployment — [service]

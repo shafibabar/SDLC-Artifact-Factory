@@ -13,7 +13,7 @@ description: >
   when a stated feature request must be probed for its real job (jtbd-analysis);
   when compliments, fluff, or ideas must be filtered out of feedback; or when a
   feedback log feeds an acceptance-sign-off decision. Used by requirements-analyst.
-version: 2.0.0
+version: 2.1.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20

@@ -67,6 +67,7 @@ version: 1.0.0
 phase: cross-cutting
 owner: factory-governance
 created: <YYYY-MM-DD>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Risk Register — <Product Name>

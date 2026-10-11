@@ -8,7 +8,7 @@ description: >
   Service Mesh injection, a ServiceAccount per service, HPA guidance, and
   graceful shutdown aligned with the Go server's drain ordering. Used by the
   platform-engineer during Deploy.
-version: 1.2.0
+version: 1.3.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20

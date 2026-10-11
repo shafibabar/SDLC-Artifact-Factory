@@ -8,7 +8,7 @@ description: >
   incident), and the workspaces-versus-directories decision for per-tenant
   stamping with a worked tenant-stamp module. Used by the platform-engineer
   during Deploy.
-version: 1.2.0
+version: 1.3.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -188,6 +188,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # OpenTofu Module — [concern]

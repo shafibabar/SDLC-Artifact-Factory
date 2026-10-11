@@ -11,7 +11,7 @@ description: >
   point-in-time vs. continuous distinction, and the completeness criterion for
   verification. Used during Quality and continuously in production for SOC 2 Type II
   operating effectiveness (also GDPR, ISO 27001).
-version: 2.0.0
+version: 2.1.0
 phase: quality
 owner: security-engineer
 created: 2026-06-25

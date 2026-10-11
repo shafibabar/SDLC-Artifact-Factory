@@ -17,7 +17,7 @@ description: >
   scripts/scaffold-beta-program-design.sh /
   scripts/validate-beta-program-design.sh. Used by the requirements-analyst
   during Customer Validation.
-version: 2.1.0
+version: 2.2.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -175,6 +175,7 @@ product: [product name]
 version: 1.0.0
 phase: customer-validation
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 ---
 

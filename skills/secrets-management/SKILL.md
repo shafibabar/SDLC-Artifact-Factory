@@ -8,7 +8,7 @@ description: >
   consuming secrets at runtime without ever storing them. Used by the
   security-architect agent during Design and the security-engineer agent during
   Implement.
-version: 1.2.0
+version: 1.3.0
 phase: design
 owner: security-architect
 created: 2026-06-25
@@ -191,6 +191,7 @@ product: [product name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: security-architect
 ---
 

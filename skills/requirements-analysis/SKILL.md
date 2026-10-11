@@ -7,7 +7,7 @@ description: >
   logging, and gap analysis. Produces a Functional Requirements Document (FRD)
   that is the authoritative input to the Design phase. Used by the
   requirements-analyst agent during the Ideate phase.
-version: 1.1.0
+version: 1.2.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -165,6 +165,7 @@ product: [product name]
 version: 1.0.0
 phase: ideate
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 okr-cycle: [cycle]
 ---

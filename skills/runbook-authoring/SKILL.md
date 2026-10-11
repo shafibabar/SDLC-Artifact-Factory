@@ -10,7 +10,7 @@ description: >
   boundaries), the style rules that keep runbooks imperative and free of
   tribal knowledge, and the freshness discipline that treats a stale runbook
   as a failed drill. Used by the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20

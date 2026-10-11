@@ -22,6 +22,7 @@ product: [product name]
 version: 1.0.0
 phase: strategy
 created: [YYYY-MM-DD]
+summary: We catalog and classify every data asset a regulated SMB holds so its compliance team can prove what sensitive data lives where, on-premises.
 owner: product-strategist
 ---
 
@@ -214,6 +215,7 @@ product: data-estate-compliance-platform
 version: 1.0.0
 phase: strategy
 created: 2026-07-31
+summary: We catalog and classify every data asset a regulated SMB holds so its compliance team can prove what sensitive data lives where, on-premises.
 owner: product-strategist
 ---
 

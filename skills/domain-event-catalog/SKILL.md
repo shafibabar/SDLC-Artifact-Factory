@@ -9,7 +9,7 @@ description: >
   the Outbox trigger, event versioning strategy, retention policy by event
   class, and the catalog artifact template. Used during Design and Implement
   phases whenever a new Bounded Context or Domain Event is defined.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25

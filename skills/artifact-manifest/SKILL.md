@@ -12,7 +12,7 @@ description: >
   references/artifact-type-catalog.md; a populated worked example lives in
   references/manifest-worked-example.md; a copyable empty starting shape for
   a new product's manifest lives in assets/manifest-instance-template.json.
-version: 2.0.0
+version: 2.1.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20

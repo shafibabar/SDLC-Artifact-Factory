@@ -6,7 +6,7 @@ description: >
   methodology-compliance-check hook and by any agent performing a self-review
   before submitting an artifact for phase gate validation. Defines what constitutes
   a pass, a warning, and a defect for each methodology in each phase.
-version: 1.1.0
+version: 1.2.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24

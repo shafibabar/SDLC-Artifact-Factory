@@ -11,7 +11,7 @@ description: >
   modeling artifact, attack trees, and the validation loop. Used during Design
   for every new service or significant data flow, producing a reviewable threat
   model that feeds the Security Control Matrix.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: security-architect
 created: 2026-06-25
@@ -168,6 +168,7 @@ product: [product name]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: security-architect
 ---
 

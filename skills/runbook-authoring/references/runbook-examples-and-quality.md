@@ -15,6 +15,7 @@ version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
+summary: How to investigate and drain the entity-extractor Dead Letter Queue when PipelineDLQNotEmpty fires for 15 minutes.
 ---
 
 # Runbook: entity-extractor DLQ Not Empty
@@ -187,6 +188,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Runbook Library — [product]

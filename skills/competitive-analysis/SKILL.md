@@ -6,7 +6,7 @@ description: >
   defensible differentiation points. Covers direct competitors, indirect competitors,
   and substitutes. Used by the product-strategist agent during the Strategy phase
   to ground GTM strategy and roadmap prioritisation in market reality.
-version: 1.1.0
+version: 1.2.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -145,6 +145,7 @@ product: [product name]
 version: 1.0.0
 phase: strategy
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: product-strategist
 ---
 

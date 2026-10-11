@@ -6,7 +6,7 @@ description: >
   Negotiable, Valuable, Estimable, Small, Testable), story-splitting patterns for
   stories that are too big, and the coupling to acceptance criteria. Used during
   Ideate to capture requirements as small, testable, valuable increments.
-version: 2.0.0
+version: 2.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -187,6 +187,7 @@ product: [product name]
 version: 1.0.0
 phase: ideate
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 ---
 

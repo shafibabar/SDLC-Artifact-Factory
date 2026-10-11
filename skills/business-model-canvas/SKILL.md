@@ -9,7 +9,7 @@ description: >
   to use when, how the blocks constrain each other, and the canvas artifact. Used
   during Strategy to make the business model of a product explicit before deeper
   design.
-version: 2.0.0
+version: 2.1.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24

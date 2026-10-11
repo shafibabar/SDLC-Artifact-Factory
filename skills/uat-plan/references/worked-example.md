@@ -14,6 +14,7 @@ release-slice: Release 1 (MVP — Google Drive connect, scan, classify, gap repo
 version: 1.0.0
 phase: customer-validation
 created: 2026-07-20
+summary: UAT plan for the Release 1 MVP: four scenarios tracing each Must Have story to its acceptance criteria, run with design-partner users.
 owner: requirements-analyst
 ---
 

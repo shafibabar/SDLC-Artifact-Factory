@@ -11,7 +11,7 @@ description: >
   anti-patterns, and how the mission anchors okr-authoring, product strategy, and
   the gtm positioning statement. Triggers on mission statement, mission vs vision,
   present-tense purpose, scope boundary, north star, what we do for whom.
-version: 2.0.0
+version: 2.1.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24

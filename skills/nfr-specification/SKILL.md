@@ -8,7 +8,7 @@ description: >
   decisions in the Design phase and become the acceptance criteria for Quality
   phase testing. Used by the requirements-analyst agent during the Ideate phase,
   immediately after functional requirements.
-version: 2.0.0
+version: 2.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24

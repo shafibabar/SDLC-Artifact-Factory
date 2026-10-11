@@ -11,7 +11,7 @@ description: >
   to the Kano model (Must-be/basic, performance, delighter). Used during Ideate to
   agree a defensible, capacity-bounded scope for one release after the story map and
   backlog exist.
-version: 2.0.0
+version: 2.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24

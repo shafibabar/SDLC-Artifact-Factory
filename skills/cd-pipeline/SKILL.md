@@ -7,7 +7,7 @@ description: >
   git revert, drift detection as an incident, and the secrets boundary that keeps
   credentials out of Git. Tool-agnostic model with Flux as the frugal default
   implementation. Used by the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20

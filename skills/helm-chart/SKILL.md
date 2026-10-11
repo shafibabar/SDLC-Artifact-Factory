@@ -8,7 +8,7 @@ description: >
   probe/resource/securityContext blocks, chart testing with helm lint and a
   kind install in CI, and chart versioning with image digest pinning. Used by
   the platform-engineer during Deploy.
-version: 1.2.0
+version: 1.3.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -181,6 +181,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # Helm Chart — [service]

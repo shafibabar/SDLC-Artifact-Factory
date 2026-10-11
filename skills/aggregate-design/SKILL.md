@@ -17,7 +17,7 @@ description: >
   files with explicit branching decision trees, not flat prose. Used by
   the domain-modeler agent after Event Storming and Bounded Context
   mapping.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25

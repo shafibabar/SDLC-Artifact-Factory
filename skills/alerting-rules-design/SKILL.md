@@ -16,7 +16,7 @@ description: >
   scripts/validate-alerting-rules-design.sh. Deep derivation, saturation
   patterns, toil, and escalation content split across references/. Used by
   the platform-engineer during Deploy.
-version: 2.2.0
+version: 2.3.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -187,6 +187,7 @@ product: <product-name>
 version: 1.0.0
 phase: deploy
 created: <date>
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: platform-engineer
 ---
 

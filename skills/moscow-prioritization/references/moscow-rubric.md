@@ -168,6 +168,7 @@ delivery-window: [e.g. MVP — 8 weeks]
 version: 1.0.0
 phase: ideate
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 must-capacity-pct: [estimated % of capacity consumed by Musts]
 ---

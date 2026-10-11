@@ -6,7 +6,7 @@ description: >
   dimensional star/snowflake modeling for analytical (OLAP) models (Kimball), the
   OLTP-vs-OLAP model-shape decision, and PostgreSQL physical DDL patterns with pgx.
   Used during Design whenever a service needs a persistent schema or an analytical mart.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: data-architect
 created: 2026-06-25

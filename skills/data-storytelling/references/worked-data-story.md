@@ -97,6 +97,7 @@ story: classification-coverage-crosses-soc2-target
 version: 2.0.0
 phase: data
 created: 2026-07-31
+summary: Classification coverage crossed the 90% SOC 2 target in week 9 of Q2 and held, so automated coverage can replace the manual audit sample.
 owner: data-engineer
 audience: Shafi (PM) — SOC 2 evidence decision
 ---

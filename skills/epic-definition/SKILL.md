@@ -10,7 +10,7 @@ description: >
   INVEST-sized stories. Fires when structuring a feature area before story-level detail,
   deciding epic vs story vs theme, or splitting an oversized epic. Used by the
   requirements-analyst during Ideate, after impact mapping and before user-story-writing.
-version: 2.0.0
+version: 2.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24

@@ -13,7 +13,7 @@ description: >
   before architecture decisions, when /sdlc-design or /sdlc-event-storm runs,
   or when the domain-modeler agent needs the workshop procedure, card taxonomy,
   hotspot handling, or a worked session. Event Storming is mandatory at Design.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
@@ -174,6 +174,7 @@ level: [big-picture | process | design | all]
 version: 1.0.0
 phase: design
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: domain-modeler
 ---
 

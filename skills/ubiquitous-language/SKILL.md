@@ -12,7 +12,7 @@ description: >
   correction. Distinct from glossary-management: this is the modeling PRACTICE,
   the glossary is the artifact. Used by domain-modeler at the start of every
   Design-phase domain session.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25

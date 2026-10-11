@@ -9,7 +9,7 @@ description: >
   goals, behaviors, pains, JTBD link), the honesty rule for labeling assumptions, what to leave out
   (demographics that do not drive design), and how a persona becomes the "As a <persona>" role in a
   user story.
-version: 2.0.0
+version: 2.1.0
 phase: strategy
 owner: requirements-analyst
 created: 2026-06-24

@@ -21,6 +21,7 @@ dashboard: [dashboard name]
 version: 1.0.0
 phase: data
 created: [date]
+summary: Specifies the Compliance Officer audit-prep dashboard, starting with a classification-coverage widget that prompts scaling classification.
 owner: data-engineer
 ---
 
@@ -98,6 +99,7 @@ dashboard: Compliance Officer — Audit Prep
 version: 1.0.0
 phase: data
 created: 2026-07-31
+summary: Specifies the Compliance Officer audit-prep dashboard, starting with a classification-coverage widget that prompts scaling classification.
 owner: data-engineer
 ---
 
@@ -226,7 +228,7 @@ Distinct from compliance_gap_summary being empty (no rule run yet).
 
 ## Filling-out checklist
 
-- [ ] Frontmatter present (`name`, `version`, `phase`, `owner`, `created`).
+- [ ] Frontmatter present (`name`, `version`, `phase`, `owner`, `created`, `summary`).
 - [ ] Dashboard mode declared (exploratory-leaning / explanatory-leaning).
 - [ ] Every widget traces to an `analytics-requirements` entry.
 - [ ] Every widget states grain, unit, filters, and time semantics.

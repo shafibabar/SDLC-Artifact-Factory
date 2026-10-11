@@ -8,7 +8,7 @@ description: >
   the Pipeline of Pipelines composition, dependency caching, PR/main/nightly
   trigger split, concurrency groups, and least-privilege GITHUB_TOKEN
   permissions. Used by the platform-engineer during Deploy.
-version: 1.1.0
+version: 1.2.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -209,6 +209,7 @@ version: 1.0.0
 phase: deploy
 owner: platform-engineer
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 ---
 
 # CI Pipeline — [product]

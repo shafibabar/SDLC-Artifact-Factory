@@ -41,7 +41,7 @@ _check() {
 
 FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$FILE" | sed '1d;$d')"
 
-for field in name product service version phase created owner openapi-spec; do
+for field in name product service version phase created owner summary openapi-spec; do
   if printf '%s\n' "$FRONTMATTER" | grep -qE "^${field}:"; then
     _check "frontmatter has '$field'" 1
   else

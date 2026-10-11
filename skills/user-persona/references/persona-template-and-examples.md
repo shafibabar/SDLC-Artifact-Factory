@@ -22,6 +22,7 @@ name: user-personas
 version: 1.0.0
 phase: strategy
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 primary-persona: [name of the primary]
 grounding: [proto | research | mixed]

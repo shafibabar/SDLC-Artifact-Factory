@@ -8,7 +8,7 @@ description: >
   system-level view of BC relationships, and how BC boundaries drive service decomposition
   decisions in this platform. Used during Design whenever a new domain is modeled or an existing
   boundary is challenged.
-version: 2.0.0
+version: 2.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25

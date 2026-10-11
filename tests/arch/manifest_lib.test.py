@@ -114,7 +114,16 @@ check("adr-authoring has_scripts (derived, non-empty dir)", adr_rec.get("has_scr
 check("adr-authoring has_contract_test (derived from tests/skills/)", adr_rec.get("has_contract_test") is True)
 
 # --- known-skill AUTHORED frontmatter: adr-authoring -------------------------
-check("adr-authoring version == 3.1.0", adr_rec.get("version") == "3.1.0")
+# Compare against the version read straight from the file rather than a pinned
+# literal: this asserts the parser reports what the source says, without the
+# test breaking on every ordinary version bump of adr-authoring.
+import re as _re
+_adr_src_version = _re.search(
+    r"^version:\s*(\S+)\s*$",
+    (REPO_ROOT / "skills/adr-authoring/SKILL.md").read_text().split("\n---\n", 1)[0],
+    _re.M,
+).group(1)
+check(f"adr-authoring version == source ({_adr_src_version})", adr_rec.get("version") == _adr_src_version)
 check("adr-authoring phase == design", adr_rec.get("phase") == "design")
 check("adr-authoring owner == enterprise-architect", adr_rec.get("owner") == "enterprise-architect")
 check("adr-authoring inline tags parsed (7 tags)", adr_rec.get("tags") == [

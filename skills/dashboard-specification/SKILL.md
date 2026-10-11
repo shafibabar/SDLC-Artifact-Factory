@@ -7,7 +7,7 @@ description: >
   dashboard specification artifact. Distinguishes an exploratory dashboard from an
   explanatory one. Used during the Data phase when a stakeholder needs an
   at-a-glance operational or analytics view.
-version: 2.0.0
+version: 2.1.0
 phase: data
 owner: data-engineer
 created: 2026-07-20

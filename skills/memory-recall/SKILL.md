@@ -9,7 +9,7 @@ description: >
   research findings, or another agent's prior output. This is the
   self-contained, no-external-service replacement for what an
   OpenViking-integrated agent would do by calling its search MCP tool.
-version: 1.0.1
+version: 1.0.2
 phase: cross-cutting
 owner: factory-governance
 created: 2026-09-15
@@ -42,7 +42,7 @@ Two modes, matching OpenViking's own QUICK/THINKING split:
 
 ## What's indexed
 
-- **Product memory**: every artifact under `artifacts/<product>/<phase>/...`, indexed automatically on write (`post-artifact-created.sh` calls `ingest.py` on every `Write`). Its optional `summary` frontmatter field becomes the L0 abstract when present; otherwise the body's first paragraph does.
+- **Product memory**: every artifact under `artifacts/<product>/<phase>/...`, indexed automatically on write (`post-artifact-created.sh` calls `ingest.py` on every `Write`). Its required `summary` frontmatter field (one sentence, enforced by `scripts/validate-artifact-structure.sh`) becomes the L0 abstract; the body's first paragraph is only a fallback for files indexed without one.
 - **This plugin's own project memory**: decisions, open questions, build checklist, and anti-patterns — migrated out of `sdlc-context.json` into `sdlc://self/...` nodes by `scripts/memory/migrate_context.py`. Query these instead of reading `sdlc-context.json` in full; `sdlc-context.json` now only holds the relatively static sections (methodology, tech stack, agent roster) plus a pointer note.
 - **Research**: every file under `research/<topic>/...`.
 - **Skills**: every `skills/<name>/SKILL.md`, indexed as-is (its `description` frontmatter is already a usable L1 overview).

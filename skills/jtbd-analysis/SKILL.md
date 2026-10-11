@@ -9,7 +9,7 @@ description: >
   product for, feeding personas and stories. Covers job stories vs user stories, core
   vs related vs consumption jobs, forces of progress, the Opportunity Score, Mom-Test
   question discipline, and screening for earlyvangelists.
-version: 2.0.0
+version: 2.1.0
 phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
@@ -184,6 +184,7 @@ product: [product name]
 version: 1.0.0
 phase: strategy
 created: [date]
+summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
 owner: requirements-analyst
 ---
 
