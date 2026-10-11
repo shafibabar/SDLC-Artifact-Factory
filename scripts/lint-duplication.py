@@ -212,21 +212,32 @@ def assemble_corpora(raw_corpus_by_skill: dict) -> dict:
     }
 
 
+# The skill subfolders holding PROSE the agent reads, under the Fresh-Eyes
+# folder spec. Duplication there is real duplication. templates/ is deliberately
+# absent: a template is copy-as-is boilerplate whose recurrence across skills
+# (the mandated artifact frontmatter, standard section skeletons) is compliance,
+# not duplication — the same reasoning as the frontmatter-template exclusion.
+# assets/ and scripts/ are not prose.
+PROSE_SUBDIRS = ("references", "resources", "examples", "steps")
+
+
 def read_skill_corpus(record: dict) -> str:
-    """Concatenate a skill's SKILL.md body + all its references/*.md prose.
+    """Concatenate a skill's SKILL.md body + the *.md prose in PROSE_SUBDIRS.
 
     `record` is a manifest.load_skills() record; its 'dir' is repo-relative.
     Returns the RAW corpus — run it through assemble_corpora() before detection.
+    Files are read recursively and in sorted order, so the corpus is stable.
     """
     skill_dir = REPO_ROOT / record["dir"]
     parts: list[str] = []
     skill_md = skill_dir / "SKILL.md"
     if skill_md.is_file():
         parts.append(strip_frontmatter(skill_md.read_text(encoding="utf-8")))
-    refs = skill_dir / "references"
-    if refs.is_dir():
-        for ref in sorted(refs.glob("*.md")):
-            parts.append(strip_frontmatter(ref.read_text(encoding="utf-8")))
+    for sub in PROSE_SUBDIRS:
+        d = skill_dir / sub
+        if d.is_dir():
+            for f in sorted(d.rglob("*.md")):
+                parts.append(strip_frontmatter(f.read_text(encoding="utf-8")))
     return "\n\n".join(parts)
 
 
