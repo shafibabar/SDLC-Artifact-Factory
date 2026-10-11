@@ -391,6 +391,26 @@ if CATALOG_PATH.is_file():
           _dirty_after == _after_check)
 
 # --- summary -----------------------------------------------------------------
+# --- sources: grounding edges + coverage (Fresh-Eyes A2) ----------------------
+SRC_SKILLS = [dict(s) for s in SYN_SKILLS]
+SRC_SKILLS[0]["sources"] = ["research/b/two.md", "research/a/one.md"]   # beta-skill
+SRC_SKILLS[1]["sources"] = ["research/a/one.md"]                        # alpha-skill
+src_cat = b.build_catalog(SRC_SKILLS, SYN_AGENTS, SYN_COMMANDS, SYN_HOOKS)
+check("skill_sources edges emitted, sorted by (skill, source)",
+      src_cat["edges"]["skill_sources"] == [
+          {"skill": "alpha-skill", "source": "research/a/one.md"},
+          {"skill": "beta-skill", "source": "research/a/one.md"},
+          {"skill": "beta-skill", "source": "research/b/two.md"}])
+check("skill entry carries its sources, sorted",
+      next(s for s in src_cat["components"]["skills"] if s["name"] == "beta-skill")["sources"]
+      == ["research/a/one.md", "research/b/two.md"])
+check("coverage.skills_with_sources counts grounded skills", src_cat["coverage"]["skills_with_sources"] == 2)
+check("coverage.research_files_cited counts DISTINCT files", src_cat["coverage"]["research_files_cited"] == 2)
+check("counts.edges_skill_sources", src_cat["counts"]["edges_skill_sources"] == 3)
+check("a skill without sources has an empty list, not a missing key",
+      next(s for s in src_cat["components"]["skills"] if s["name"] == "gamma-skill")["sources"] == [])
+check("no sources anywhere -> zero coverage", syn["coverage"]["skills_with_sources"] == 0)
+
 print(f"\n--- Summary: {passed} passed, {len(failed)} failed ---")
 if failed:
     print("Failed:")
