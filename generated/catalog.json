@@ -9220,15 +9220,15 @@
         "created": "2026-07-23",
         "dir": "skills/skill-authoring-standards",
         "domain": "governance",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "skill-authoring-standards",
         "owner": "factory-governance",
         "phase": "cross-cutting",
@@ -9239,7 +9239,10 @@
           "glossary-management",
           "methodology-review"
         ],
-        "sources": [],
+        "sources": [
+          "research/ai-agent-engineering/context-engineering-for-ai-agents-zhu.md",
+          "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md"
+        ],
         "status": "stable",
         "tags": [
           "cross-cutting",
@@ -9248,7 +9251,7 @@
           "progressive-disclosure",
           "skill-authoring"
         ],
-        "version": "1.2.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-20",
@@ -10103,7 +10106,7 @@
     "edges_agent_skills": 179,
     "edges_skill_produces": 188,
     "edges_skill_related": 809,
-    "edges_skill_sources": 0,
+    "edges_skill_sources": 2,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10115,20 +10118,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 0,
-    "skills_with_assets": 16,
-    "skills_with_contract_test": 186,
+    "research_files_cited": 2,
+    "skills_with_assets": 15,
+    "skills_with_contract_test": 185,
     "skills_with_domain": 187,
-    "skills_with_evals": 0,
-    "skills_with_examples": 0,
+    "skills_with_evals": 1,
+    "skills_with_examples": 1,
     "skills_with_produces": 187,
     "skills_with_references": 181,
-    "skills_with_resources": 0,
+    "skills_with_resources": 1,
     "skills_with_scripts": 10,
-    "skills_with_sources": 0,
+    "skills_with_sources": 1,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 0
+    "skills_with_templates": 1
   },
   "edges": {
     "agent_produces": [
@@ -15139,6 +15142,15 @@
         "skill": "zero-trust-design"
       }
     ],
-    "skill_sources": []
+    "skill_sources": [
+      {
+        "skill": "skill-authoring-standards",
+        "source": "research/ai-agent-engineering/context-engineering-for-ai-agents-zhu.md"
+      },
+      {
+        "skill": "skill-authoring-standards",
+        "source": "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md"
+      }
+    ]
   }
 }
