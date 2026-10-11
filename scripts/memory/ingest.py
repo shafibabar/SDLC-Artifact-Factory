@@ -24,6 +24,10 @@ from models import Embedder
 ARTIFACT_RE = re.compile(r"^(?:.*/)?artifacts/([a-z0-9-]+)/([a-z0-9-]+)/(.+)$")
 RESEARCH_RE = re.compile(r"^(?:.*/)?research/([^/]+)/(.+)$")
 SKILL_RE = re.compile(r"^(?:.*/)?skills/([a-z0-9-]+)/SKILL\.md$")
+COMPLIANCE_RE = re.compile(r"^(?:.*/)?compliance/(?:([^/]+)/)?(.+)\.md$")
+GLOSSARY_RE = re.compile(r"^(?:.*/)?glossary/(.+)\.md$")
+ADR_RE = re.compile(r"^(?:.*/)?decisions/adr/(.+)\.md$")
+CONTEXT_JSON_RE = re.compile(r"^sdlc-context\.json$")
 
 DIR_ABSTRACT_DEFAULTS = {
     "product": "Artifacts and decisions for product {name}.",
@@ -32,6 +36,10 @@ DIR_ABSTRACT_DEFAULTS = {
     "skills-root": "Reusable agent skills.",
     "research-root": "Research corpus, organized by topic.",
     "product-root": "All in-flight and delivered products.",
+    "compliance-root": "Compliance source materials, indexed by framework.",
+    "compliance-framework": "{name} compliance source materials and provenance notes.",
+    "glossary-root": "Ubiquitous Language glossary.",
+    "adr-root": "Architecture Decision Records.",
 }
 
 
@@ -61,6 +69,31 @@ def classify(repo_root: Path, abs_path: Path) -> Optional[dict[str, Any]]:
         uri = f"sdlc://skills/{name}"
         parents = [("sdlc://skills", "skills-root", {})]
         return {"uri": uri, "context_type": "skill", "parents": parents}
+    if (m := COMPLIANCE_RE.match(rel)):
+        framework, stem = m.groups()
+        if framework is None:
+            # compliance/README.md itself -- the top-level index, no framework parent.
+            uri = f"sdlc://compliance/{stem}"
+            parents = [("sdlc://compliance", "compliance-root", {})]
+        else:
+            uri = f"sdlc://compliance/{framework}/{stem}"
+            parents = [
+                ("sdlc://compliance", "compliance-root", {}),
+                (f"sdlc://compliance/{framework}", "compliance-framework", {"name": framework}),
+            ]
+        return {"uri": uri, "context_type": "resource", "parents": parents}
+    if (m := GLOSSARY_RE.match(rel)):
+        stem = m.group(1)
+        uri = f"sdlc://glossary/{stem}"
+        parents = [("sdlc://glossary", "glossary-root", {})]
+        return {"uri": uri, "context_type": "resource", "parents": parents}
+    if (m := ADR_RE.match(rel)):
+        stem = m.group(1)
+        uri = f"sdlc://adr/{stem}"
+        parents = [("sdlc://adr", "adr-root", {})]
+        return {"uri": uri, "context_type": "resource", "parents": parents}
+    if CONTEXT_JSON_RE.match(rel):
+        return {"uri": "sdlc://context", "context_type": "memory", "parents": []}
     return None
 
 
@@ -107,6 +140,24 @@ def ensure_ancestors(conn, embedder: Embedder, repo_root: Path, parents: list[tu
 
 def build_texts(rel_path: str, raw_text: str) -> tuple[str, str, str]:
     """Returns (abstract, overview, content) for a leaf file."""
+    if rel_path.endswith(".json"):
+        import json as _json
+        try:
+            data = _json.loads(raw_text)
+        except (ValueError, TypeError):
+            data = {}
+        product = data.get("product", {}) if isinstance(data, dict) else {}
+        phase = data.get("phase", {}) if isinstance(data, dict) else {}
+        if product:
+            name = product.get("name") or product.get("codename") or rel_path
+            core_value = product.get("core_value", "")
+            abstract = (f"{name}: {core_value}" if core_value else str(name))[:200]
+            overview = f"Phase: {phase.get('current', 'unknown')}. {core_value}".strip()
+        else:
+            abstract = first_paragraph(raw_text, 140)
+            overview = first_paragraph(raw_text)
+        return abstract, overview, raw_text
+
     if rel_path.endswith("SKILL.md"):
         fields, body = parse_frontmatter(raw_text)
         description = fields.get("description", "").strip()
@@ -130,6 +181,76 @@ def build_texts(rel_path: str, raw_text: str) -> tuple[str, str, str]:
     return abstract, overview, raw_text
 
 
+_SECTION_RE = re.compile(r"^## +(.+)$", re.M)
+_BOLD_LEAD_RE = re.compile(r"^\*\*(.+?)\*\*")
+
+
+def chunk_research_bullets(body: str) -> list[dict[str, str]]:
+    """Split a research file's body into (section, bullet) chunks.
+
+    research/ files are dense distillations, not short notes (median 19KB,
+    up to 34 top-level bullets per file) -- each `- ` bullet is a
+    self-contained concept + citation + gap-analysis unit. The embedding
+    model's ~512-token window means one vector for the whole file only
+    "sees" its first section; chunking each bullet into its own leaf makes
+    the rest of the file reachable by semantic search too, not just BM25.
+    Nested/indented bullets are left as part of their parent bullet's text
+    (supporting detail, not separate concepts).
+    """
+    sections = _SECTION_RE.split(body)
+    # re.split with a capturing group interleaves: [preamble, heading1, text1, heading2, text2, ...]
+    chunks: list[dict[str, str]] = []
+    pairs = list(zip(sections[1::2], sections[2::2])) if len(sections) > 1 else []
+    for section_idx, (heading, text) in enumerate(pairs, start=1):
+        bullet_idx = 0
+        current: list[str] = []
+
+        def flush():
+            nonlocal bullet_idx, current
+            if not current:
+                return
+            bullet_idx += 1
+            raw = "\n".join(current).strip()
+            if not raw:
+                current = []
+                return
+            bullet_text = re.sub(r"^- +", "", raw, count=1)
+            bold = _BOLD_LEAD_RE.match(bullet_text)
+            abstract = (bold.group(1) if bold else bullet_text[:140]).strip()[:140]
+            sentence_end = bullet_text.find(". ", len(abstract))
+            overview = bullet_text[: sentence_end + 1] if sentence_end != -1 else bullet_text[:280]
+            chunks.append({
+                "section_idx": section_idx, "bullet_idx": bullet_idx, "heading": heading.strip(),
+                "abstract": abstract, "overview": overview.strip(), "content": bullet_text,
+            })
+            current = []
+
+        for line in text.splitlines():
+            if re.match(r"^- ", line):
+                flush()
+                current = [line]
+            elif current:
+                current.append(line)
+        flush()
+    return chunks
+
+
+def ingest_research_chunks(conn, embedder: Embedder, path: Path, file_uri: str, body: str, now_iso: str) -> int:
+    store.delete_children(conn, file_uri)
+    chunks = chunk_research_bullets(body)
+    for chunk in chunks:
+        uri = f"{file_uri}#{chunk['section_idx']}-{chunk['bullet_idx']}"
+        content_for_embedding = chunk["content"][:3000]
+        for level, text in ((0, chunk["abstract"]), (1, chunk["overview"]), (2, content_for_embedding)):
+            store.upsert(
+                conn, uri=uri, parent_uri=file_uri, level=level, context_type="resource",
+                abstract=chunk["abstract"], overview=chunk["overview"], content=chunk["content"],
+                content_path=f"{path.name}#{chunk['heading']}", is_leaf=True,
+                created_at=now_iso, updated_at=now_iso, embedding=embedder.embed(text or chunk["abstract"]),
+            )
+    return len(chunks)
+
+
 def ingest_file(conn, embedder: Embedder, repo_root: Path, path: Path) -> Optional[str]:
     info = classify(repo_root, path)
     if info is None:
@@ -150,13 +271,20 @@ def ingest_file(conn, embedder: Embedder, repo_root: Path, path: Path) -> Option
             is_leaf=True, created_at=now_iso, updated_at=now_iso,
             embedding=embedder.embed(text or abstract),
         )
+
+    if info["context_type"] == "resource" and rel_path.startswith("research/"):
+        ingest_research_chunks(conn, embedder, path, uri, content, now_iso)
+
     return uri
 
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Ingest files into the SDLC memory tree")
     parser.add_argument("paths", nargs="*", help="File paths to ingest")
-    parser.add_argument("--all", action="store_true", help="Reindex artifacts/, research/, skills/")
+    parser.add_argument(
+        "--all", action="store_true",
+        help="Reindex artifacts/, research/, skills/, compliance/, glossary/, decisions/adr/, sdlc-context.json",
+    )
     args = parser.parse_args(argv)
 
     repo_root = find_repo_root()
@@ -166,8 +294,15 @@ def main(argv: list[str]) -> int:
 
     targets: list[Path] = []
     if args.all:
-        for pattern in ("artifacts/**/*.md", "research/**/*.md", "skills/*/SKILL.md"):
+        patterns = (
+            "artifacts/**/*.md", "research/**/*.md", "skills/*/SKILL.md",
+            "compliance/**/*.md", "glossary/*.md", "decisions/adr/*.md",
+        )
+        for pattern in patterns:
             targets.extend(repo_root.glob(pattern))
+        context_json = repo_root / "sdlc-context.json"
+        if context_json.exists():
+            targets.append(context_json)
     for p in args.paths:
         pp = Path(p)
         targets.append(pp if pp.is_absolute() else repo_root / pp)

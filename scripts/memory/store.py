@@ -147,6 +147,18 @@ def touch(conn: sqlite3.Connection, uri_or_id: str, now_iso: str) -> int:
     return conn.execute("SELECT active_count FROM contexts WHERE id = ?", (row["id"],)).fetchone()[0]
 
 
+def delete_children(conn: sqlite3.Connection, parent_uri: str) -> int:
+    """Remove every context node whose parent_uri is the given uri (all
+    levels). Used before re-writing a set of chunk children on re-ingest,
+    so edits that remove a chunk don't leave a stale orphaned row behind."""
+    ids = [r["id"] for r in conn.execute("SELECT id FROM contexts WHERE parent_uri = ?", (parent_uri,)).fetchall()]
+    for cid in ids:
+        conn.execute("DELETE FROM contexts WHERE id = ?", (cid,))
+        conn.execute("DELETE FROM contexts_fts WHERE id = ?", (cid,))
+    conn.commit()
+    return len(ids)
+
+
 def children(conn: sqlite3.Connection, parent_uri: str) -> list[sqlite3.Row]:
     """One row per distinct child URI (its level-1/overview record, which
     carries abstract/overview/content/is_leaf/content_path alongside it --
