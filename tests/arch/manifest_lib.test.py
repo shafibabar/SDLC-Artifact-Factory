@@ -401,7 +401,18 @@ with _tempfile.TemporaryDirectory() as _td:
 check("has_templates True for a non-empty templates/", _rec["has_templates"] is True)
 check("has_examples False for an EMPTY examples/ dir", _rec["has_examples"] is False)
 check("has_steps False when the folder is absent", _rec["has_steps"] is False)
-check("has_evals True for a non-empty root evals/<skill>/", _rec["has_evals"] is True)
+check("has_evals True for a root evals/<skill>/ with a case", _rec["has_evals"] is True)
+with _tempfile.TemporaryDirectory() as _td2:
+    _r2 = Path(_td2)
+    (_r2 / "skills" / "fx-two").mkdir(parents=True)
+    (_r2 / "skills" / "fx-two" / "SKILL.md").write_text("---\nname: fx-two\nversion: 1.0.0\n---\n")
+    (_r2 / "evals" / "fx-two" / "results" / "run-1").mkdir(parents=True)
+    (_r2 / "evals" / "fx-two" / "results" / "run-1" / "prompt.md").write_text("run output copy")
+    fx2 = _load_module(unique_name="_manifest_fx2")
+    fx2.REPO_ROOT, fx2.SKILLS_DIR = _r2, _r2 / "skills"
+    fx2.EVALS_DIR, fx2.TESTS_SKILLS_DIR = _r2 / "evals", _r2 / "tests" / "skills"
+    _rec2 = fx2.load_skills()[0]
+check("has_evals False when evals/<skill>/ holds only run results", _rec2["has_evals"] is False)
 check("every SKILL_SUBDIRS folder yields a has_ flag",
       all(f"has_{d}" in _rec for d in fx.SKILL_SUBDIRS))
 
