@@ -93,7 +93,44 @@ mkdir -p "$D/references"
 echo "# Orphan" > "$D/references/orphaned.md"
 make_skill "$D" "$GOOD_FM" "Body content with no reference pointer."
 assert_exit1 "exits 1 when reference file is orphaned (not mentioned in body)" "$SCRIPT" "$D/SKILL.md"
-assert_output_contains "reports orphaned reference file" "orphaned reference file" "$SCRIPT" "$D/SKILL.md"
+assert_output_contains "reports the orphan as unreachable (layout linter L4)" "not reachable from SKILL.md" "$SCRIPT" "$D/SKILL.md"
+
+# ── 7b. A file reached TRANSITIVELY (body -> reference -> example) passes ─────
+D="$SCRATCH/transitive"
+mkdir -p "$D/references" "$D/examples"
+echo 'See ../examples/enterprise.md for the multi-tenant case.' > "$D/references/guide.md"
+echo "# Example" > "$D/examples/enterprise.md"
+make_skill "$D" "$GOOD_FM" "Read references/guide.md when the tenant model matters."
+assert_exit0 "exits 0 when a file is reachable only through another file" "$SCRIPT" "$D/SKILL.md"
+
+# ── 7c. A missing templates/ pointer fails (all spec folders checked) ────────
+D="$SCRATCH/missing-template"
+make_skill "$D" "$GOOD_FM" "Copy ./templates/output.md into the artifact."
+assert_exit1 "exits 1 when a mentioned templates/ file is missing" "$SCRIPT" "$D/SKILL.md"
+assert_output_contains "names the missing templates/ file" "templates/output.md" "$SCRIPT" "$D/SKILL.md"
+
+# ── 7e. A bare scripts/ path means repo-root scripts — not checked ──────────
+D="$SCRATCH/repo-script-mention"
+make_skill "$D" "$GOOD_FM" "Then run scripts/lint-manifests.py from the repo root."
+assert_exit0 "exits 0 when the body names a repo-root scripts/ path" "$SCRIPT" "$D/SKILL.md"
+
+# ── 7f. A skill-relative ./scripts/ path IS checked ─────────────────────────
+D="$SCRATCH/missing-skill-script"
+make_skill "$D" "$GOOD_FM" "Run ./scripts/score.sh to compute the risk."
+assert_exit1 "exits 1 when a ./scripts/ file is missing" "$SCRIPT" "$D/SKILL.md"
+
+# ── 7g. A bare templates/ path may be a PRODUCT path (Helm) — not checked ──
+D="$SCRATCH/helm-templates-mention"
+make_skill "$D" "$GOOD_FM" "Put the Argo Rollout in the chart's templates/rollout.yaml."
+assert_exit0 "exits 0 when the body names a product templates/ path" "$SCRIPT" "$D/SKILL.md"
+
+# ── 7d. A non-spec folder fails (layout linter L2) ──────────────────────────
+D="$SCRATCH/bad-folder"
+mkdir -p "$D/docs"
+echo "x" > "$D/docs/a.md"
+make_skill "$D" "$GOOD_FM" "See docs/a.md."
+assert_exit1 "exits 1 when the skill has a non-spec folder" "$SCRIPT" "$D/SKILL.md"
+assert_output_contains "reports the folder rule" "is not one of" "$SCRIPT" "$D/SKILL.md"
 
 # ── 8. No references/ directory — passes without reference checks ─────────────
 D="$SCRATCH/no-refs-dir"

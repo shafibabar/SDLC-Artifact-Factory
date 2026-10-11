@@ -35,6 +35,7 @@ it finds anything, so the flip is a one-word change in the gate.
 Usage:
   python3 scripts/lint-skill-layout.py                 # all skills, summary + findings
   python3 scripts/lint-skill-layout.py --skill <name>  # one skill
+  python3 scripts/lint-skill-layout.py --dir <path>    # one skill directory anywhere
   python3 scripts/lint-skill-layout.py --json          # machine-readable
   python3 scripts/lint-skill-layout.py --summary       # totals only
 
@@ -201,17 +202,18 @@ def lint(skills_dir: Path = SKILLS_DIR) -> dict:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Lint skills against the folder spec.")
     ap.add_argument("--skill", help="lint one skill by name")
+    ap.add_argument("--dir", help="lint one skill directory at any path (used by validate-skill-structure.sh)")
     ap.add_argument("--json", action="store_true", help="print the full result as JSON")
     ap.add_argument("--summary", action="store_true", help="print totals only")
     args = ap.parse_args(argv)
 
-    if args.skill:
-        d = SKILLS_DIR / args.skill
+    if args.skill or args.dir:
+        d = Path(args.dir) if args.dir else SKILLS_DIR / args.skill
         if not d.is_dir():
-            print(f"no such skill: {args.skill}", file=sys.stderr)
+            print(f"no such skill: {args.dir or args.skill}", file=sys.stderr)
             return 2
         fs = lint_skill(d)
-        result = {"skills": {args.skill: fs},
+        result = {"skills": {d.name: fs},
                   "totals": {**{r: sum(1 for f in fs if f["rule"] == r) for r in RULES},
                              "skills": 1, "skills_clean": int(not fs), "findings": len(fs)}}
     else:

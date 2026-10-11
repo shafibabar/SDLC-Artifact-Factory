@@ -16,7 +16,9 @@ This file is read on every session. It encodes the non-negotiable rules every ag
 2. Check the build checklist in `.sdlc-memory/tree/self/` (migrated out of `sdlc-context.json` — see Context File Maintenance) — find the first incomplete item. That is where work continues.
 3. If Shafi has not said "go" on the next chunk — do not build. Discuss the plan, get approval, then build.
 
-**Active campaign:** the **Architecture Review campaign** is in progress — its cold-start source of truth is `ARCHITECTURE-REVIEW-CAMPAIGN.md` (master charter) plus the `architecture_review_campaign` block in `sdlc-context.json` (live position: active parent, integration branch, child checklist). On resume, read the charter, then that block, then the GitHub Project board, then continue from the first incomplete child. This campaign introduces new component concepts (declarative **workflow specs**, enriched **manifests** = frontmatter, a derived **catalog**, a consistency **linter**, `shared-references/`); as each lands, the Component Architecture / Layout / Frontmatter sections of this file are updated to match reality.
+**Active campaign (2026-10-11 →):** the **Fresh-Eyes Refactor** — every skill augmented with the `research/` library where it applies and restructured to the folder spec in § Skill Authoring. Cold-start pointer: `discovery/fresh-eyes/README.md` (branch `discovery/fresh-eyes`), then the GitHub Project board. Phase A (standard + tooling, parent #1224) builds what the per-skill waves are validated against. **The Architecture Review campaign is PAUSED at P5 (5/15), not abandoned** — the Fresh-Eyes synthesis decides whether P5–P9 continue, change or drop.
+
+**Paused campaign:** the **Architecture Review campaign** — its cold-start source of truth is `ARCHITECTURE-REVIEW-CAMPAIGN.md` (master charter) plus the `architecture_review_campaign` block in `sdlc-context.json` (live position: active parent, integration branch, child checklist). On resume, read the charter, then that block, then the GitHub Project board, then continue from the first incomplete child. This campaign introduces new component concepts (declarative **workflow specs**, enriched **manifests** = frontmatter, a derived **catalog**, a consistency **linter**, `shared-references/`); as each lands, the Component Architecture / Layout / Frontmatter sections of this file are updated to match reality.
 
 ---
 
@@ -32,6 +34,11 @@ bash tests/run-smoke-tests.sh arch                     # governance gate only
 bash tests/run-smoke-tests.sh --skill <name>           # one skill + its owning agents
 bash tests/run-smoke-tests.sh --agent <name>           # one agent acceptance test
 bash tests/run-smoke-tests.sh --changed [ref]          # skills/agents changed since ref (default: HEAD)
+
+# Skill folder spec + evals (Fresh-Eyes)
+python3 scripts/lint-skill-layout.py [--skill <name>]  # folder-spec linter (report-only in the gate for now)
+python3 scripts/arch/migrate-skill-layout.py <name>    # dry-run a skill's move into the spec; add --apply
+bash tests/run-skill-evals.sh <name>                   # a skill's evals: every case passes AND beats the no-plugin baseline
 
 # Rebuild derived catalog (required after any frontmatter change)
 python3 scripts/arch/build-catalog.py
@@ -93,7 +100,12 @@ schemas/sdlc-config.schema.json   Formalizes sdlc-config-management's shape — 
 schemas/sdlc-manifest.schema.json Formalizes artifact-manifest's per-product instance shape — tested
 schemas/{skill,agent,command,hook,workflow}.schema.json  Component-frontmatter contracts (Arch Review P1) — validated by the governance gate
 scripts/arch/manifest.py          Shared frontmatter parser (Arch Review P1) — imported by the linters and (P3) the catalog
-scripts/lint-manifests.py lint-relationships.py lint-duplication.py  The three consistency linters (Arch Review P1)
+scripts/lint-manifests.py lint-relationships.py lint-duplication.py  The consistency linters (Arch Review P1)
+scripts/lint-skill-layout.py      Folder-spec linter (Fresh-Eyes A3) — entry file, allowed folders, no empty dirs, reachability, relative pointers
+scripts/arch/migrate-skill-layout.py  Moves a skill's files into the folder spec and rewrites broken pointers (Fresh-Eyes A5) — dry-run by default
+evals/<skill>/<case>/             Per-skill eval suites for `claude plugin eval` (prompt.md + graders/) — at the ROOT, never inside skills/
+tests/run-skill-evals.sh          Runs one skill's evals and applies the verdict: all cases pass AND positive delta vs the no-plugin baseline
+discovery/fresh-eyes/             Fresh-Eyes campaign findings + resume pointer (on branch discovery/fresh-eyes)
 scripts/arch/build-catalog.py     Derives generated/catalog.json from component frontmatter (Arch Review P3)
 generated/catalog.json            The derived component catalog — committed, deterministic, gated on staleness
 scripts/lint-all.sh               The governance gate — run by tests/run-smoke-tests.sh (arch) and .github/workflows/governance.yml
@@ -137,17 +149,17 @@ python3 tests/schemas/sdlc-config.test.py
 
 `skills`, `agents`, `commands`, and `hooks` tests load this repo live via `claude --plugin-dir $REPO_ROOT -p ...` (see `tests/lib/harness.sh`) — they need the `claude` CLI on `PATH`, make real model calls, and default to a 90s per-invocation timeout (override with `SMOKE_TEST_TIMEOUT`). `scripts` tests pipe synthetic JSON directly at a `scripts/*.sh` file's stdin — no LLM call. `schemas` tests need `python3` with `jsonschema` installed and validate both known-good and deliberately-invalid instances against the Draft 2020-12 schemas.
 
-Each refactored skill must have a corresponding contract test at `tests/skills/<name>.contract.sh` — a single `smoke_test_skill` call that probes a non-obvious fact grounded in the skill's content (not a generic "does this skill exist?" check). Currently 63 of 142 skills have one; every skill touched during a refactor must add its own before the PR merges.
+**Skill evals (Fresh-Eyes, supersede contract tests).** Every skill refactored under the folder spec gets an eval suite at the repo root, `evals/<skill>/<case>/{prompt.md, graders/*.md}`, run by Claude Code's built-in `claude plugin eval` via `tests/run-skill-evals.sh <skill>`. A case asks something only the skill's content answers well. The verdict passes only if **every case passes and the mean delta against the no-plugin baseline is positive** — a skill Claude answers just as well without adds nothing. Evals live outside `skills/` because the runner refuses an eval dir inside a loaded component directory, and golden answers beside a skill would leak into the run that grades it. The older `tests/skills/<name>.contract.sh` (one `smoke_test_skill` substring probe) stays for every not-yet-refactored skill and is deleted when that skill's evals pass. Cost reference: 3 cases × 2 runs × 2 arms ≈ $1.70 / 4.5 min.
 
 ### Governance gate (Architecture Review campaign, P1)
 
 The repo now has a **machine-readable governance layer** — the keystone of the Architecture Review campaign (`ARCHITECTURE-REVIEW-CAMPAIGN.md`). It is data + validators, not a runtime tier:
 
 - **Manifest = component frontmatter** is the single source of truth. `schemas/{skill,agent,command,hook}.schema.json` (Draft 2020-12) validate each component's frontmatter shape; `schemas/workflow.schema.json` is the forward contract P7's declarative workflow specs author to. `scripts/arch/manifest.py` is the shared frontmatter parser (normalizes YAML dates, derives filesystem facts) that all tooling imports.
-- **Three linters** (`scripts/lint-*.py`): `lint-manifests` (schema-validates every component — **blocking**), `lint-relationships` (broken `related:`/`skills:` refs, mandatory cross-cutting skills, orphan warnings — **blocking since P2 close-out**, which drove broken refs 11 → 0 and orphans 48 → 0; orphans remain a non-gating warning), `lint-duplication` (recurring blocks + CLAUDE.md restatements → `generated/duplication-report.md` — **report-only**).
+- **Four linters** (`scripts/lint-*.py`): `lint-manifests` (schema-validates every component, and that every skill `sources:` entry exists — **blocking**), `lint-relationships` (broken `related:`/`skills:` refs, mandatory cross-cutting skills, orphan warnings — **blocking since P2 close-out**, which drove broken refs 11 → 0 and orphans 48 → 0; orphans remain a non-gating warning), `lint-duplication` (recurring blocks + CLAUDE.md restatements → `generated/duplication-report.md` — **report-only**; reads prose from `references/`, `resources/`, `examples/` and `steps/`), and `lint-skill-layout` (the folder spec, rules L1–L5 — **report-only until the Fresh-Eyes waves leave every skill clean**, then blocking).
 - **What `lint-duplication` does and does not flag (Arch Review P4).** P4 audited its output and found the original backlog was ~99% false positives, so P4 fixed the *detector* rather than the skills. Its contract now: it **excludes the mandated artifact-frontmatter template** (`name`/`version`/`phase`/`owner`/`created` inside an `## Output Format` block) from corpus assembly — § Artifact Standards *requires* that block, so its recurrence across 62 skills is compliance, not duplication; it **suppresses any finding that already cites its CLAUDE.md home**, because pointing at the canonical home is the behaviour the campaign wants; it matches the **literal** component-naming regex rather than any regex-shaped string; it requires an **enforcement marker co-located** with the methodology names before flagging a methodologies restatement (independent whole-file matching produced hits 37+ lines apart); and for § Ubiquitous Language it detects glossary **reproduction** (the term→definition shape, above a calibrated quorum) rather than term **usage**, which § Ubiquitous Language *mandates*. Current output: **0 recurring-block clusters, 1 restatement** — and that survivor (`opentofu-module`) is an **accepted, explained finding, not open work**: the naming regex there governs a service name in a *generated product*, so attributing it to plugin-internal governance would be wrong. See `sdlc-context.json` → `architecture_review_campaign.p4_complete` before re-opening it.
-- **The derived catalog (Arch Review P3).** `scripts/arch/build-catalog.py` derives `generated/catalog.json` wholly from component frontmatter (importing `manifest.py`, never re-parsing). It emits components, edges (`agent→skill`, `skill→related`, `skill→produces`), the **artifact reverse index** (`artifact → producing skills` — the seed of the artifact-dependency graph P7 extends), the **capability view** (the derived view over `domain:`; capability is never a hand-authored tier), and coverage/counts. The catalog is **committed** and must be **deterministic** — sorted throughout, no timestamp, no generator-version field — so it changes if and only if a component changed. Rebuild with `python3 scripts/arch/build-catalog.py` whenever you touch component frontmatter.
-- **The gate:** `scripts/lint-all.sh` runs the schema+arch tests, the three linters, and the catalog staleness check with that blocking/reporting policy, exiting non-zero only on a blocking failure. It is wired into `tests/run-smoke-tests.sh` (the `arch` category) and `.github/workflows/governance.yml` (runs on PR). A PR that breaks a schema, introduces a manifest violation, breaks a cross-reference, or leaves the catalog stale fails the gate. The `arch` category additionally runs `tests/arch/*.test.sh` (the gate's own contract test) — those are deliberately *not* globbed by `lint-all.sh` itself, since the gate running its own test would recurse without end.
+- **The derived catalog (Arch Review P3).** `scripts/arch/build-catalog.py` derives `generated/catalog.json` wholly from component frontmatter (importing `manifest.py`, never re-parsing). It emits components, edges (`agent→skill`, `skill→related`, `skill→produces`, `skill→research` from `sources:`), the **artifact reverse index** (`artifact → producing skills` — the seed of the artifact-dependency graph P7 extends), the **capability view** (the derived view over `domain:`; capability is never a hand-authored tier), and coverage/counts — including `skills_with_<folder>` for every spec folder, `skills_with_evals`, and research grounding (`skills_with_sources`, `research_files_cited`). The catalog is **committed** and must be **deterministic** — sorted throughout, no timestamp, no generator-version field — so it changes if and only if a component changed. Rebuild with `python3 scripts/arch/build-catalog.py` whenever you touch component frontmatter.
+- **The gate:** `scripts/lint-all.sh` runs six steps — the schema+arch tests, `lint-manifests`, `lint-duplication`, `lint-relationships`, the catalog staleness check, and `lint-skill-layout` — with that blocking/reporting policy, exiting non-zero only on a blocking failure. It is wired into `tests/run-smoke-tests.sh` (the `arch` category) and `.github/workflows/governance.yml` (runs on PR). A PR that breaks a schema, introduces a manifest violation, breaks a cross-reference, or leaves the catalog stale fails the gate. The `arch` category additionally runs `tests/arch/*.test.sh` (the gate's own contract test) — those are deliberately *not* globbed by `lint-all.sh` itself, since the gate running its own test would recurse without end.
 
 Cycle/DAG validation is **not** run over `related:` (a bidirectional see-also); it belongs to the artifact-dependency graph that P2 (`produces:`) and P7 (workflow `depends_on`) build.
 
@@ -206,18 +218,24 @@ Hook → Script (command-type handlers) or → Agent/Skill (prompt/agent-type ha
 
 ## Skill Authoring & Progressive Disclosure
 
-Every skill's *shape*, not just its content, follows a stated rubric: `skills/skill-authoring-standards/SKILL.md`. In brief — a skill has one mandatory part and three optional ones, added only when the content genuinely warrants them:
+Every skill's *shape*, not just its content, follows a stated rubric: `skills/skill-authoring-standards/SKILL.md` (v2, Fresh-Eyes). In brief — one mandatory entry file and seven optional folders, each created **only when content earns it** (an empty folder is a defect):
 
 | Part | Holds | Loaded when |
 |---|---|---|
-| `SKILL.md` (mandatory) | Decision-shaping guidance | Every time the skill's trigger surface matches |
-| `references/*.md` | Reference material — full templates, worked examples, exhaustive checklists | Only when the body explicitly points to it |
-| `assets/*` | Copyable files used as-is in a produced artifact | Only when the skill's procedure calls for copying one in |
-| `scripts/*.sh` | Deterministic scaffolding/validation executables | Only when the skill's procedure calls for running one via the Bash tool |
+| `SKILL.md` (mandatory, uppercase) | Decision-shaping guidance + pointers saying *when* to open each folder file | Every time the skill's trigger surface matches |
+| `references/` | Documentation and standards to look up | The body says to consult it for a specific question |
+| `resources/` | Rule sets, dictionaries, rigid schemas the output is cross-checked against | Before handing off, to validate output |
+| `templates/` | Skeletons copied and filled (artifact documents, scaffolds) | When producing the artifact |
+| `examples/` | Input → output demonstrations, simplest real case → hardest (multi-tenant, HA, multi-tier, scale) | For edge cases, ambiguity, the harder variants |
+| `steps/` | One file per stage of a long multi-stage procedure | One stage at a time |
+| `scripts/` | Deterministic executables (exact calculation, validation, scaffolding) — each tested in `tests/scripts/` | When the procedure says to run one |
+| `assets/` | Media, binary files, env/property files, metadata schemas | When the procedure needs the file itself |
 
-A skill-owned `scripts/*.sh` is invoked by the agent applying that skill, at a path the skill's own body names — a different invocation context from the repo-root `scripts/` folder in "Command and Hook Mechanics" below (hook- or command-invoked), though the same Scripts = Actions rule governs both.
+**Pointers** into a skill's own folders are relative and start with `./` (`./templates/plan.md`, `../examples/x.md` from inside a folder) — the `./` keeps them unambiguous against product paths (a Helm chart's `templates/`) and the repo-root `scripts/`. Never `skills/<name>/…`, an absolute path, or the plugin-root variable pointing into `skills/` (it remains correct for the plugin's own repo-root scripts). Every folder file is self-contained and reachable from `SKILL.md`. `scripts/lint-skill-layout.py` checks all of this; `scripts/validate-skill-structure.sh` runs it per skill alongside the frontmatter and 200-line body checks.
 
-A `SKILL.md` body whose content below the frontmatter exceeds roughly 200 lines is a split candidate — reference material moves to `references/`, decision-shaping guidance stays. `description` is the literal discovery/matching surface a skill fires on, not a summary written for a human reader. Version bumps follow a two-surface rule: a `description` change that could alter what prompts match it is MAJOR; body content added without changing the trigger surface is MINOR; wording-only fixes are PATCH. An optional `related:` frontmatter field (not part of the closed Component Frontmatter schema below) declares which other skills a skill's body references in prose, retrofit-as-you-go rather than all at once.
+**Grounding:** where a `research/` book informs a skill, the prose names it and the optional `sources:` frontmatter field lists it (`research/<cluster>/<file>.md`); the gate fails on a listed file that does not exist. **Evals** live at the repo root (`evals/<skill>/`) — see § Running Tests. A skill-owned `scripts/` file is invoked by the agent applying that skill — a different invocation context from the repo-root `scripts/` folder in "Command and Hook Mechanics" below, under the same Scripts = Actions rule.
+
+`description` is the literal discovery/matching surface a skill fires on, not a summary written for a human reader. Version bumps follow a two-surface rule: a `description` change that could alter what prompts match it is MAJOR; body or folder content added without changing the trigger surface is MINOR; wording-only fixes are PATCH. An optional `related:` field declares which other skills a skill's prose references.
 
 Full rubric, worked reasoning, Quality Criteria, and Anti-Patterns: `skill-authoring-standards`.
 
@@ -303,7 +321,7 @@ The plugin's own components carry these canonical schemas — no other shapes ar
 
 Every agent's `skills:` list includes `glossary-management` and `methodology-review` in addition to its domain skills. Agents that run shell commands (build, test, scan) declare `tools: [Bash]`.
 
-A skill may additionally declare an optional `related:` field (a list of other skill names its body references in prose) — not part of the required, ordered schema above, and not required on every skill. See `skill-authoring-standards`.
+A skill may additionally declare two optional fields, not part of the required, ordered schema above and not required on every skill: `related:` (other skill names its prose references) and `sources:` (the `research/<cluster>/<file>.md` files its content draws on — every entry must exist; `lint-manifests` blocks otherwise). See `skill-authoring-standards`.
 
 **Manifest fields (Arch Review P2 — complete).** Every skill additionally authors three manifest fields, placed immediately after `tags:`:
 
