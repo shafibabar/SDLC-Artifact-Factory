@@ -19,6 +19,16 @@ smoke_test_script "validate-artifact-structure" \
   '{"tool_input":{"file_path":"/x/artifacts/p/strategy/v.md","content":"---\nname: v\nversion: 1.0.0\nphase: strategy\nowner: x\ncreated: 2026-07-20\n---\n"}}' \
   "allow"
 
+# Complete frontmatter plus the optional summary field -> allow
+smoke_test_script "validate-artifact-structure" \
+  '{"tool_input":{"file_path":"/x/artifacts/p/strategy/v.md","content":"---\nname: v\nversion: 1.0.0\nphase: strategy\nowner: x\ncreated: 2026-07-20\nsummary: One-line abstract.\n---\n"}}' \
+  "allow"
+
+# Missing a required field even when summary is present -> deny, naming the field
+smoke_test_script "validate-artifact-structure" \
+  '{"tool_input":{"file_path":"/x/artifacts/p/strategy/v.md","content":"---\nname: v\nversion: 1.0.0\nphase: strategy\ncreated: 2026-07-20\nsummary: x\n---\n"}}' \
+  "deny" "owner"
+
 # No frontmatter block at all under artifacts/ -> deny
 smoke_test_script "validate-artifact-structure" \
   '{"tool_input":{"file_path":"/x/artifacts/p/strategy/v.md","content":"# No frontmatter here"}}' \

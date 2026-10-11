@@ -45,12 +45,13 @@ if "/artifacts/" not in file_path.replace("\\", "/"):
 if not file_path.endswith(".md"):
     allow()
 
-REQUIRED = ["name", "version", "phase", "owner", "created", "summary"]
-# "summary" (added alongside the SDLC memory engine): a single-sentence line
-# used verbatim as this artifact's L0 abstract when it's indexed into
-# .sdlc-memory/ (scripts/memory/ingest.py) — the thing retrieval shows
-# before anyone reads the full artifact, so it earns its own required field
-# rather than being inferred from the body.
+REQUIRED = ["name", "version", "phase", "owner", "created"]
+# "summary" is RECOMMENDED, not required: when present, scripts/memory/ingest.py
+# uses it verbatim as the artifact's L0 abstract in .sdlc-memory/; when absent,
+# ingest falls back to the body's first paragraph. It must not be blocking:
+# no skill's ## Output Format template carries it, so requiring it here denied
+# every artifact an agent wrote from a template (CLAUDE.md § Artifact Standards
+# lists the five fields above).
 
 m = re.match(r"^---\n(.*?)\n---\n", content, re.S)
 if not m:
