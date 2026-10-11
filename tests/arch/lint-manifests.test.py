@@ -239,6 +239,12 @@ check("main() exit code agrees with lint() ok",
 
 # --- verdict -----------------------------------------------------------------
 print("")
+# --- derived has_<folder>/has_evals are subtracted, never forwarded (A4) -------
+_fld = dict(good_skill, **{f"has_{d}": True for d in lm.manifest.SKILL_SUBDIRS}, has_evals=True)
+_fld_inst = lm.record_to_instance("skill", _fld)
+check("record_to_instance drops every has_<folder> and has_evals",
+      not any(k.startswith("has_") for k in _fld_inst))
+
 # --- sources: existence check (Fresh-Eyes A2) --------------------------------
 # The schema checks a sources: entry's shape; only lint() can say it resolves.
 # Swap manifest.load_skills for one synthetic skill citing one real and one
