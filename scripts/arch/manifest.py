@@ -221,7 +221,7 @@ def _opt_list(value):
 # reached the validator and the gate reported PASS.
 _SKILL_FM_KEYS = frozenset({
     "name", "description", "version", "phase", "owner", "created", "tags",
-    "related", "produces", "domain", "status",
+    "related", "produces", "domain", "status", "sources",
 })
 _AGENT_FM_KEYS = frozenset({
     "name", "description", "role", "version", "phase", "owner", "created",
@@ -257,7 +257,7 @@ def load_skills() -> list[dict]:
     Record:
       name, description, version, phase, owner, created, tags,
       related (list|None), produces (list|None), domain (str|None),
-      status (str|None),
+      status (str|None), sources (list|None — research/ paths the skill draws on),
       extra (dict — any authored frontmatter key not named above),
       has_references, has_assets, has_scripts, has_contract_test  (bool, derived)
     """
@@ -282,6 +282,7 @@ def load_skills() -> list[dict]:
             "produces": _opt_list(fm.get("produces")),
             "domain": fm.get("domain"),
             "status": fm.get("status"),
+            "sources": _opt_list(fm.get("sources")),
             "extra": _extra(fm, _SKILL_FM_KEYS),
             "has_references": _dir_nonempty(skill_dir / "references"),
             "has_assets": _dir_nonempty(skill_dir / "assets"),

@@ -2708,6 +2708,7 @@
           "example-mapping",
           "skill-authoring-standards"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "acceptance-criteria",
@@ -2738,6 +2739,7 @@
           "skill-authoring-standards",
           "uat-plan"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "canary",
@@ -2767,6 +2769,7 @@
           "subdomain-distillation",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "abac",
@@ -2798,6 +2801,7 @@
           "nfr-specification",
           "skill-authoring-standards"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "adr",
@@ -2834,6 +2838,7 @@
           "skill-authoring-standards",
           "subdomain-distillation"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aggregate",
@@ -2868,6 +2873,7 @@
           "skill-authoring-standards",
           "slo-definition"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "alerting",
@@ -2902,6 +2908,7 @@
           "okr-authoring",
           "skill-authoring-standards"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "analytics",
@@ -2933,6 +2940,7 @@
           "read-model-design",
           "skill-authoring-standards"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "api-first",
@@ -2964,6 +2972,7 @@
           "kubernetes-manifest",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "api-gateway",
@@ -2992,6 +3001,7 @@
           "product-manifest"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "artifact-manifest",
@@ -3017,6 +3027,7 @@
           "gherkin-feature-file"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "bdd",
@@ -3045,6 +3056,7 @@
           "beta-program"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "beta-program",
@@ -3077,6 +3089,7 @@
           "go-migration",
           "progressive-delivery"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "blue-green",
@@ -3109,6 +3122,7 @@
           "glossary-management",
           "subdomain-distillation"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "bounded-context",
@@ -3142,6 +3156,7 @@
           "jtbd-analysis",
           "vision-statement"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "business-model",
@@ -3173,6 +3188,7 @@
           "progressive-delivery",
           "slo-definition"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "argo-rollouts",
@@ -3209,6 +3225,7 @@
           "integration-design",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "canonical-model",
@@ -3236,6 +3253,7 @@
           "cd-pipeline-config"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cd",
@@ -3271,6 +3289,7 @@
           "feature-flag-design",
           "test-pyramid"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "ci",
@@ -3305,6 +3324,7 @@
           "cqrs-pattern",
           "domain-event-catalog"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aggregates",
@@ -3332,6 +3352,7 @@
           "competitive-analysis"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "competitive-analysis",
@@ -3364,6 +3385,7 @@
           "security-architecture",
           "threat-modeling"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "compliance",
@@ -3401,6 +3423,7 @@
           "security-implementation",
           "threat-modeling"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "attestation",
@@ -3437,6 +3460,7 @@
           "go-service-layer",
           "system-context-diagram"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture",
@@ -3470,6 +3494,7 @@
           "integration-design",
           "workflow-orchestration"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backend",
@@ -3504,6 +3529,7 @@
           "methodology-review",
           "system-context-diagram"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture",
@@ -3537,6 +3563,7 @@
           "go-contract-test",
           "integration-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "acl",
@@ -3571,6 +3598,7 @@
           "read-model-design",
           "subdomain-distillation"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cqrs",
@@ -3598,6 +3626,7 @@
           "css-styling-configuration"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "css",
@@ -3633,6 +3662,7 @@
           "read-model-design",
           "ui-component-spec"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "analytics",
@@ -3667,6 +3697,7 @@
           "privacy-design",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "access-control",
@@ -3703,6 +3734,7 @@
           "glossary-management",
           "privacy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "compliance",
@@ -3738,6 +3770,7 @@
           "multi-tenancy-design",
           "read-model-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "data-architecture",
@@ -3773,6 +3806,7 @@
           "event-driven-patterns",
           "metrics-instrumentation-plan"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "batch",
@@ -3808,6 +3842,7 @@
           "go-service-skeleton",
           "opentelemetry-instrumentation"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "checkpointing",
@@ -3843,6 +3878,7 @@
           "data-pipeline-implementation",
           "metrics-instrumentation-plan"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "accuracy",
@@ -3878,6 +3914,7 @@
           "privacy-design",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "archival",
@@ -3911,6 +3948,7 @@
           "react-dashboard-components",
           "reporting-spec"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "analytics",
@@ -3938,6 +3976,7 @@
           "handoff-record"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "agents",
@@ -3964,6 +4003,7 @@
           "disaster-recovery-plan"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backup",
@@ -3999,6 +4039,7 @@
           "opentelemetry-instrumentation",
           "structured-logging-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "context-propagation",
@@ -4026,6 +4067,7 @@
           "container-image-standards"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "conformance",
@@ -4060,6 +4102,7 @@
           "data-model-design",
           "go-mongodb-repository"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "data-architecture",
@@ -4094,6 +4137,7 @@
           "go-event-publisher",
           "read-model-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cdc",
@@ -4126,6 +4170,7 @@
           "event-storming-facilitation",
           "ubiquitous-language"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "actor",
@@ -4153,6 +4198,7 @@
           "delivery-performance-configuration"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "change-failure-rate",
@@ -4189,6 +4235,7 @@
           "multi-tenancy-design",
           "platform-engineering-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "configuration-as-code",
@@ -4224,6 +4271,7 @@
           "story-mapping",
           "user-story-writing"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "acceptance-criteria",
@@ -4257,6 +4305,7 @@
           "event-schema-design",
           "integration-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture",
@@ -4292,6 +4341,7 @@
           "domain-event-catalog",
           "go-domain-model"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backward-compatibility",
@@ -4327,6 +4377,7 @@
           "subdomain-distillation",
           "ubiquitous-language"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "bounded-context",
@@ -4354,6 +4405,7 @@
           "example-map"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "acceptance-criteria",
@@ -4386,6 +4438,7 @@
           "environment-config",
           "progressive-delivery"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "deploy",
@@ -4420,6 +4473,7 @@
           "uat-scenario",
           "user-persona"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "customer-validation",
@@ -4446,6 +4500,7 @@
           "gitops-environment-repository"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "argocd",
@@ -4476,6 +4531,7 @@
           "ubiquitous-language-glossary"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cross-cutting",
@@ -4506,6 +4562,7 @@
           "go-event-consumer",
           "message-broker-selection"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "amqp",
@@ -4539,6 +4596,7 @@
           "go-event-publisher",
           "message-broker-selection"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "amqp",
@@ -4578,6 +4636,7 @@
           "kubernetes-manifest",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "blast-radius",
@@ -4619,6 +4678,7 @@
           "go-service-skeleton",
           "health-check-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "chi",
@@ -4660,6 +4720,7 @@
           "go-service-skeleton",
           "health-check-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "atomic",
@@ -4698,6 +4759,7 @@
           "go-unit-test",
           "test-pyramid"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "can-i-deploy",
@@ -4733,6 +4795,7 @@
           "secrets-management",
           "security-architecture"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "buildkit",
@@ -4771,6 +4834,7 @@
           "go-repository-pattern",
           "go-unit-test"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aggregate",
@@ -4813,6 +4877,7 @@
           "test-pyramid",
           "user-journey-mapping"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "ci",
@@ -4851,6 +4916,7 @@
           "go-service-layer",
           "go-unit-test"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "error-messages",
@@ -4894,6 +4960,7 @@
           "go-service-skeleton",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "consumer",
@@ -4938,6 +5005,7 @@
           "go-service-skeleton",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "at-least-once",
@@ -4974,6 +5042,7 @@
           "go-service-skeleton",
           "grpc-contract-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backend",
@@ -5009,6 +5078,7 @@
           "go-unit-test",
           "test-fixture-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "ci",
@@ -5046,6 +5116,7 @@
           "prometheus-metrics-design",
           "slo-definition"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backpressure",
@@ -5082,6 +5153,7 @@
           "go-project-structure",
           "test-pyramid"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "benchmark",
@@ -5121,6 +5193,7 @@
           "security-implementation",
           "structured-logging-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "chi",
@@ -5159,6 +5232,7 @@
           "go-service-layer",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backward-compatibility",
@@ -5194,6 +5268,7 @@
           "go-migration",
           "go-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aggregation",
@@ -5226,6 +5301,7 @@
           "sdlc-config-management",
           "test-pyramid"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "coverage",
@@ -5260,6 +5336,7 @@
           "go-middleware",
           "go-project-structure"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "chi",
@@ -5296,6 +5373,7 @@
           "go-makefile",
           "go-performance-test"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "algorithmic-complexity",
@@ -5333,6 +5411,7 @@
           "slo-definition",
           "test-pyramid"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "baseline",
@@ -5374,6 +5453,7 @@
           "go-unit-test",
           "mock-generation"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "clean-architecture",
@@ -5409,6 +5489,7 @@
           "go-service-layer",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "error-translation",
@@ -5449,6 +5530,7 @@
           "multi-tenancy-design",
           "read-model-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "application-layer",
@@ -5487,6 +5569,7 @@
           "health-check-design",
           "kubernetes-manifest"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "composition-root",
@@ -5523,6 +5606,7 @@
           "mock-generation",
           "test-fixture-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "assertions",
@@ -5561,6 +5645,7 @@
           "go-openapi-codegen",
           "integration-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "api",
@@ -5595,6 +5680,7 @@
           "user-persona",
           "vision-statement"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "channels",
@@ -5622,6 +5708,7 @@
           "health-check-endpoints"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "health-check",
@@ -5654,6 +5741,7 @@
           "kubernetes-workload-patterns",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "chart",
@@ -5690,6 +5778,7 @@
           "story-mapping",
           "user-persona"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "actors",
@@ -5717,6 +5806,7 @@
           "blameless-postmortem"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "blameless",
@@ -5750,6 +5840,7 @@
           "user-journey-mapping",
           "ux-flow-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "card-sorting",
@@ -5785,6 +5876,7 @@
           "event-schema-design",
           "go-contract-test"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "anti-corruption-layer",
@@ -5821,6 +5913,7 @@
           "user-persona",
           "user-story-writing"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "customer-motivation",
@@ -5847,6 +5940,7 @@
           "kubernetes-manifest"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "argo-rollouts",
@@ -5877,6 +5971,7 @@
           "workload-pattern-decisions"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cronjob",
@@ -5909,6 +6004,7 @@
           "retrieval-digest"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "context",
@@ -5941,6 +6037,7 @@
           "go-event-publisher",
           "integration-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "amqp",
@@ -5969,6 +6066,7 @@
           "methodology-compliance-report"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "bdd",
@@ -5997,6 +6095,7 @@
           "metrics-instrumentation-plan"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "activation",
@@ -6027,6 +6126,7 @@
           "microfrontend-topology"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture",
@@ -6053,6 +6153,7 @@
           "miro-board-spec"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cross-cutting",
@@ -6084,6 +6185,7 @@
           "okr-authoring",
           "vision-statement"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "mission",
@@ -6115,6 +6217,7 @@
           "react-component-testing",
           "test-fixture-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "fakes",
@@ -6152,6 +6255,7 @@
           "story-mapping",
           "user-story-writing"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "ideate",
@@ -6186,6 +6290,7 @@
           "opentofu-module",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture",
@@ -6218,6 +6323,7 @@
           "platform-engineering-design",
           "slo-definition"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture-input",
@@ -6255,6 +6361,7 @@
           "story-mapping",
           "vision-statement"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "goal-setting",
@@ -6281,6 +6388,7 @@
           "go-otel-instrumentation"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "collector",
@@ -6312,6 +6420,7 @@
           "opentofu-module"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "deploy",
@@ -6342,6 +6451,7 @@
           "platform-design"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cognitive-load",
@@ -6379,6 +6489,7 @@
           "security-architecture",
           "threat-modeling"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "consent",
@@ -6408,6 +6519,7 @@
           "release-strategy"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "argo-rollouts",
@@ -6442,6 +6554,7 @@
           "opentelemetry-instrumentation",
           "slo-definition"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cardinality",
@@ -6477,6 +6590,7 @@
           "python-amqp-publisher",
           "python-event-consumer"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aio-pika",
@@ -6511,6 +6625,7 @@
           "python-amqp-consumer",
           "python-event-publisher"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aio-pika",
@@ -6547,6 +6662,7 @@
           "python-event-consumer",
           "python-service-layer"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "async",
@@ -6581,6 +6697,7 @@
           "go-chaos-test",
           "python-integration-test"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "asyncio",
@@ -6618,6 +6735,7 @@
           "go-contract-test",
           "python-openapi-codegen"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "consumer-driven",
@@ -6651,6 +6769,7 @@
           "go-dockerfile",
           "python-service-skeleton"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "container",
@@ -6689,6 +6808,7 @@
           "python-repository-pattern",
           "python-service-layer"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aggregate",
@@ -6723,6 +6843,7 @@
           "python-integration-test",
           "uat-scenario"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aiokafka",
@@ -6758,6 +6879,7 @@
           "python-domain-model",
           "python-fastapi-handler"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "boundary",
@@ -6795,6 +6917,7 @@
           "python-event-publisher",
           "python-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aiokafka",
@@ -6832,6 +6955,7 @@
           "python-event-consumer",
           "python-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aiokafka",
@@ -6871,6 +6995,7 @@
           "python-middleware",
           "python-openapi-codegen"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "async",
@@ -6906,6 +7031,7 @@
           "python-fastapi-handler",
           "python-middleware"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "asyncio",
@@ -6940,6 +7066,7 @@
           "python-migration",
           "python-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aiokafka",
@@ -6976,6 +7103,7 @@
           "python-performance-test",
           "slo-definition"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backpressure",
@@ -7011,6 +7139,7 @@
           "python-project-structure",
           "python-unit-test"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "alembic",
@@ -7050,6 +7179,7 @@
           "python-fastapi-handler",
           "python-service-skeleton"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "asgi",
@@ -7083,6 +7213,7 @@
           "go-migration",
           "python-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "alembic",
@@ -7119,6 +7250,7 @@
           "python-domain-model",
           "python-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aggregation",
@@ -7151,6 +7283,7 @@
           "python-unit-test",
           "test-pyramid"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cosmic-ray",
@@ -7185,6 +7318,7 @@
           "go-openapi-codegen",
           "python-fastapi-handler"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "code-first",
@@ -7218,6 +7352,7 @@
           "python-async-concurrency",
           "python-service-layer"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "allocation",
@@ -7255,6 +7390,7 @@
           "python-load-test",
           "python-performance-optimization"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "async",
@@ -7289,6 +7425,7 @@
           "python-domain-model",
           "python-service-skeleton"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "clean-architecture",
@@ -7321,6 +7458,7 @@
           "python-migration",
           "python-service-layer"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "asyncpg",
@@ -7356,6 +7494,7 @@
           "python-error-handling",
           "python-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "application-layer",
@@ -7391,6 +7530,7 @@
           "python-middleware",
           "python-project-structure"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "asgi",
@@ -7426,6 +7566,7 @@
           "python-service-layer",
           "test-fixture-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "aaa",
@@ -7463,6 +7604,7 @@
           "react-dashboard-components",
           "react-graph-visualization"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "accessibility",
@@ -7499,6 +7641,7 @@
           "react-state-management",
           "typescript-types"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "api-client",
@@ -7537,6 +7680,7 @@
           "react-project-structure",
           "react-state-management"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "atomic-design",
@@ -7570,6 +7714,7 @@
           "react-accessibility",
           "react-api-client"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "frontend",
@@ -7609,6 +7754,7 @@
           "react-performance-optimization",
           "react-state-management"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "accessibility",
@@ -7647,6 +7793,7 @@
           "secrets-management",
           "security-architecture"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "docker",
@@ -7683,6 +7830,7 @@
           "react-component-testing",
           "react-routing"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cross-remote",
@@ -7718,6 +7866,7 @@
           "react-performance-optimization",
           "react-state-management"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "accessibility",
@@ -7760,6 +7909,7 @@
           "react-performance-optimization",
           "slo-definition"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "error-boundary",
@@ -7798,6 +7948,7 @@
           "react-routing",
           "react-state-management"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "code-splitting",
@@ -7832,6 +7983,7 @@
           "react-observability",
           "typescript-types"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "frontend",
@@ -7867,6 +8019,7 @@
           "react-project-structure",
           "react-state-management"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "code-splitting",
@@ -7903,6 +8056,7 @@
           "react-routing",
           "typescript-types"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "caching",
@@ -7938,6 +8092,7 @@
           "domain-event-catalog",
           "go-repository-pattern"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cqrs",
@@ -7972,6 +8127,7 @@
           "data-model-design",
           "data-storytelling"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "analytics",
@@ -7998,6 +8154,7 @@
           "functional-requirements-document"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "frd",
@@ -8030,6 +8187,7 @@
           "methodology-review",
           "multi-tenancy-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "governance",
@@ -8056,6 +8214,7 @@
           "strategic-roadmap"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "okr",
@@ -8081,6 +8240,7 @@
           "runbook"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "deploy",
@@ -8111,6 +8271,7 @@
           "methodology-review",
           "skill-authoring-standards"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "configuration",
@@ -8141,6 +8302,7 @@
           "gitops-workflow",
           "kubernetes-manifest"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "design",
@@ -8179,6 +8341,7 @@
           "threat-modeling",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "abac",
@@ -8217,6 +8380,7 @@
           "threat-modeling",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "abac",
@@ -8250,6 +8414,7 @@
           "glossary-management",
           "methodology-review"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "cross-cutting",
@@ -8282,6 +8447,7 @@
           "nfr-specification",
           "prometheus-metrics-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "burn-rate",
@@ -8311,6 +8477,7 @@
           "stakeholder-map"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "communication",
@@ -8343,6 +8510,7 @@
           "user-persona",
           "user-story-writing"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "backbone",
@@ -8370,6 +8538,7 @@
           "go-logging-instrumentation"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "implement",
@@ -8397,6 +8566,7 @@
           "subdomain-classification"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "core-domain",
@@ -8431,6 +8601,7 @@
           "nfr-specification",
           "user-persona"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture",
@@ -8463,6 +8634,7 @@
           "go-unit-test",
           "mock-generation"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "builder",
@@ -8509,6 +8681,7 @@
           "test-fixture-design",
           "uat-plan"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "coverage",
@@ -8547,6 +8720,7 @@
           "security-implementation",
           "zero-trust-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "attack-tree",
@@ -8583,6 +8757,7 @@
           "react-state-management",
           "ui-component-spec"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "discriminated-union",
@@ -8610,6 +8785,7 @@
           "uat-plan"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "acceptance-testing",
@@ -8645,6 +8821,7 @@
           "risk-register",
           "uat-plan"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "acceptance-testing",
@@ -8678,6 +8855,7 @@
           "event-storming-facilitation",
           "glossary-management"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "ddd",
@@ -8704,6 +8882,7 @@
           "ui-component-spec"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "accessibility",
@@ -8738,6 +8917,7 @@
           "user-persona",
           "ux-flow-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "ideate",
@@ -8770,6 +8950,7 @@
           "stakeholder-mapping",
           "user-story-writing"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "discovery",
@@ -8804,6 +8985,7 @@
           "moscow-prioritization",
           "user-persona"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "acceptance-criteria",
@@ -8836,6 +9018,7 @@
           "user-journey-mapping",
           "user-persona"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "design",
@@ -8868,6 +9051,7 @@
           "impact-mapping",
           "jtbd-analysis"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "continuous-improvement",
@@ -8895,6 +9079,7 @@
           "vision-statement"
         ],
         "related": [],
+        "sources": [],
         "status": "stable",
         "tags": [
           "north-star",
@@ -8924,6 +9109,7 @@
           "event-driven-patterns",
           "integration-design"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "architecture",
@@ -8957,6 +9143,7 @@
           "security-implementation",
           "threat-modeling"
         ],
+        "sources": [],
         "status": "stable",
         "tags": [
           "design",
@@ -8981,6 +9168,7 @@
     "edges_agent_skills": 179,
     "edges_skill_produces": 188,
     "edges_skill_related": 809,
+    "edges_skill_sources": 0,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -8992,12 +9180,14 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
+    "research_files_cited": 0,
     "skills_with_assets": 16,
     "skills_with_contract_test": 186,
     "skills_with_domain": 187,
     "skills_with_produces": 187,
     "skills_with_references": 181,
     "skills_with_scripts": 10,
+    "skills_with_sources": 0,
     "skills_with_status": 187
   },
   "edges": {
@@ -14008,6 +14198,7 @@
         "related": "threat-modeling",
         "skill": "zero-trust-design"
       }
-    ]
+    ],
+    "skill_sources": []
   }
 }

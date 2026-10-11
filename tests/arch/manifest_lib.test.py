@@ -370,6 +370,15 @@ except Exception as exc:  # pragma: no cover - git absent
     print(f"PASS: manifest_lib (purity check skipped — git unavailable: {exc})")
 
 # --- summary -----------------------------------------------------------------
+# --- sources: is a KNOWN skill key (Fresh-Eyes A2) ---------------------------
+# If it were unknown it would land in `extra` and lint-manifests would forward
+# it as an unrecognised field instead of the projected, schema-checked one.
+check("sources is a known skill frontmatter key", "sources" in m._SKILL_FM_KEYS)
+check("every live skill record carries a sources key (list or None)",
+      all("sources" in r and (r["sources"] is None or isinstance(r["sources"], list)) for r in m.load_skills()))
+check("sources never leaks into extra",
+      all("sources" not in (r.get("extra") or {}) for r in m.load_skills()))
+
 print(f"\n--- Summary: {passed} passed, {len(failed)} failed ---")
 if failed:
     print("Failed:")
