@@ -209,6 +209,17 @@ def _dir_nonempty(path: Path) -> bool:
     return path.is_dir() and any(path.iterdir())
 
 
+def _has_eval_cases(suite: Path) -> bool:
+    """True iff the suite holds at least one real case (prompt.md or case.yaml)
+    outside a results/ directory — run output alone is not an eval suite."""
+    if not suite.is_dir():
+        return False
+    return any(
+        p.name in ("prompt.md", "case.yaml") and "results" not in p.relative_to(suite).parts
+        for p in suite.rglob("*")
+    )
+
+
 def _as_list(value) -> list:
     if value is None:
         return []
@@ -297,7 +308,7 @@ def load_skills() -> list[dict]:
             "sources": _opt_list(fm.get("sources")),
             "extra": _extra(fm, _SKILL_FM_KEYS),
             **{f"has_{d}": _dir_nonempty(skill_dir / d) for d in SKILL_SUBDIRS},
-            "has_evals": _dir_nonempty(EVALS_DIR / name),
+            "has_evals": _has_eval_cases(EVALS_DIR / name),
             "has_contract_test": (TESTS_SKILLS_DIR / f"{name}.contract.sh").is_file(),
             "dir": str(skill_dir.relative_to(REPO_ROOT)),
         })
