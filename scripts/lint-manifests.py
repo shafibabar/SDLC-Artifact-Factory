@@ -93,7 +93,7 @@ _SCHEMA_FILES = {
 # read, with no edit here.
 _DERIVED_RECORD_KEYS = frozenset({
     # skills
-    "has_references", "has_assets", "has_scripts", "has_contract_test", "dir",
+    *(f"has_{d}" for d in manifest.SKILL_SUBDIRS), "has_evals", "has_contract_test", "dir",
     # agents
     "has_acceptance_test", "file",
     # commands

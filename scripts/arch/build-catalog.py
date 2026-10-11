@@ -110,9 +110,8 @@ def _skill_entry(s: dict) -> dict:
         "sources": sorted(_as_list(s.get("sources"))),
         "tags": sorted(_as_list(s.get("tags"))),
         "created": str(s.get("created")) if s.get("created") is not None else None,
-        "has_references": bool(s.get("has_references")),
-        "has_assets": bool(s.get("has_assets")),
-        "has_scripts": bool(s.get("has_scripts")),
+        **{f"has_{d}": bool(s.get(f"has_{d}")) for d in manifest.SKILL_SUBDIRS},
+        "has_evals": bool(s.get("has_evals")),
         "has_contract_test": bool(s.get("has_contract_test")),
         "dir": s.get("dir"),
     }
@@ -268,9 +267,9 @@ def build_catalog(skills: list[dict], agents: list[dict],
     # --- coverage ----------------------------------------------------------
     coverage = {
         "skills_with_contract_test": sum(1 for s in skill_entries if s["has_contract_test"]),
-        "skills_with_references": sum(1 for s in skill_entries if s["has_references"]),
-        "skills_with_assets": sum(1 for s in skill_entries if s["has_assets"]),
-        "skills_with_scripts": sum(1 for s in skill_entries if s["has_scripts"]),
+        **{f"skills_with_{d}": sum(1 for s in skill_entries if s[f"has_{d}"])
+           for d in manifest.SKILL_SUBDIRS},
+        "skills_with_evals": sum(1 for s in skill_entries if s["has_evals"]),
         "skills_with_produces": sum(1 for s in skill_entries if s["produces"]),
         "skills_with_domain": sum(1 for s in skill_entries if s["domain"]),
         "skills_with_status": sum(1 for s in skill_entries if s["status"]),
