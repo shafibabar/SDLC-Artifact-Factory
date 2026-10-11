@@ -9992,22 +9992,35 @@
         "dir": "skills/vision-statement",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
-        "has_references": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
         "has_resources": false,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "vision-statement",
         "owner": "product-strategist",
         "phase": "strategy",
         "produces": [
           "vision-statement"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "mission-statement",
+          "okr-authoring"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
+          "research/storytelling-and-narrative/business-storytelling-for-dummies.md",
+          "research/storytelling-and-narrative/the-best-story-wins.md"
+        ],
         "status": "stable",
         "tags": [
           "north-star",
@@ -10015,7 +10028,7 @@
           "strategy",
           "vision"
         ],
-        "version": "1.2.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-31",
@@ -10105,8 +10118,8 @@
     "edges_agent_produces": 74,
     "edges_agent_skills": 179,
     "edges_skill_produces": 188,
-    "edges_skill_related": 809,
-    "edges_skill_sources": 2,
+    "edges_skill_related": 814,
+    "edges_skill_sources": 8,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10118,20 +10131,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 2,
+    "research_files_cited": 8,
     "skills_with_assets": 15,
-    "skills_with_contract_test": 185,
+    "skills_with_contract_test": 184,
     "skills_with_domain": 187,
-    "skills_with_evals": 1,
-    "skills_with_examples": 1,
+    "skills_with_evals": 2,
+    "skills_with_examples": 2,
     "skills_with_produces": 187,
-    "skills_with_references": 181,
+    "skills_with_references": 182,
     "skills_with_resources": 1,
     "skills_with_scripts": 10,
-    "skills_with_sources": 1,
+    "skills_with_sources": 2,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 1
+    "skills_with_templates": 2
   },
   "edges": {
     "agent_produces": [
@@ -15106,6 +15119,26 @@
         "skill": "value-stream-map"
       },
       {
+        "related": "competitive-analysis",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "mission-statement",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "vision-statement"
+      },
+      {
         "related": "conductor-workflow-authoring",
         "skill": "workflow-orchestration"
       },
@@ -15150,6 +15183,30 @@
       {
         "skill": "skill-authoring-standards",
         "source": "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/storytelling-and-narrative/the-best-story-wins.md"
       }
     ]
   }
