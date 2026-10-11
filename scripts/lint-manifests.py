@@ -93,7 +93,7 @@ _SCHEMA_FILES = {
 # read, with no edit here.
 _DERIVED_RECORD_KEYS = frozenset({
     # skills
-    "has_references", "has_assets", "has_scripts", "has_contract_test", "dir",
+    *(f"has_{d}" for d in manifest.SKILL_SUBDIRS), "has_evals", "has_contract_test", "dir",
     # agents
     "has_acceptance_test", "file",
     # commands
@@ -196,6 +196,18 @@ def lint() -> dict:
                 passed += 1
         summary[kind] = {"passed": passed, "total": total}
 
+    # ---- skills: every declared research source must exist ------------------
+    # The schema checks a sources: entry's SHAPE (research/<cluster>/<file>.md);
+    # only the filesystem can say it resolves. A dangling source is a broken
+    # grounding claim, so it is a blocking violation like any schema failure.
+    missing_sources = 0
+    for record in manifest.load_skills():
+        for src in record.get("sources") or []:
+            if isinstance(src, str) and not (REPO_ROOT / src).is_file():
+                violations.append(f"{_file_for_skill(record)}: sources entry '{src}' does not exist")
+                missing_sources += 1
+    summary["sources"] = {"passed": 0 if missing_sources else 1, "total": 1, "missing": missing_sources}
+
     # ---- hooks (whole-file structure validation) ----------------------------
     hook_schema = load_schema("hook")
     hooks_file = manifest.HOOKS_FILE
@@ -234,6 +246,8 @@ def main(argv=None) -> int:
         if kind in summary:
             s = summary[kind]
             print(f"  {label[kind]:<10} {s['passed']}/{s['total']} pass")
+    if "sources" in summary:
+        print(f"  {'sources':<10} {summary['sources']['missing']} missing research file(s)")
     print(f"  {'TOTAL':<10} {len(violations)} violation(s)")
 
     if result["ok"]:

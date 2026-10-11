@@ -86,6 +86,7 @@ required_skill_fields = {
     "name", "description", "version", "phase", "owner", "created", "tags",
     "related", "produces", "domain", "status",
     "has_references", "has_assets", "has_scripts", "has_contract_test",
+    "has_resources", "has_templates", "has_examples", "has_steps", "has_evals",
 }
 check(
     "every skill record has the full field set",
@@ -100,7 +101,8 @@ check(
     all(
         isinstance(r[k], bool)
         for r in skills
-        for k in ("has_references", "has_assets", "has_scripts", "has_contract_test")
+        for k in ("has_references", "has_assets", "has_scripts", "has_contract_test",
+                  "has_resources", "has_templates", "has_examples", "has_steps", "has_evals")
     ),
 )
 
@@ -370,6 +372,50 @@ except Exception as exc:  # pragma: no cover - git absent
     print(f"PASS: manifest_lib (purity check skipped — git unavailable: {exc})")
 
 # --- summary -----------------------------------------------------------------
+# --- sources: is a KNOWN skill key (Fresh-Eyes A2) ---------------------------
+# If it were unknown it would land in `extra` and lint-manifests would forward
+# it as an unrecognised field instead of the projected, schema-checked one.
+check("sources is a known skill frontmatter key", "sources" in m._SKILL_FM_KEYS)
+check("every live skill record carries a sources key (list or None)",
+      all("sources" in r and (r["sources"] is None or isinstance(r["sources"], list)) for r in m.load_skills()))
+check("sources never leaks into extra",
+      all("sources" not in (r.get("extra") or {}) for r in m.load_skills()))
+
+# --- has_<folder> + has_evals derived from a synthetic tree (Fresh-Eyes A4) ---
+import tempfile as _tempfile
+check("SKILL_SUBDIRS is the 7-folder spec, in order",
+      m.SKILL_SUBDIRS == ("references", "resources", "templates", "examples", "steps", "scripts", "assets"))
+with _tempfile.TemporaryDirectory() as _td:
+    _root = Path(_td)
+    _sk = _root / "skills" / "fx-skill"
+    (_sk / "templates").mkdir(parents=True)
+    (_sk / "templates" / "t.md").write_text("x")
+    (_sk / "examples").mkdir()                       # EMPTY -> must be False
+    (_sk / "SKILL.md").write_text("---\nname: fx-skill\nversion: 1.0.0\n---\nbody\n")
+    (_root / "evals" / "fx-skill" / "case-a").mkdir(parents=True)
+    (_root / "evals" / "fx-skill" / "case-a" / "prompt.md").write_text("q")
+    fx = _load_module(unique_name="_manifest_fx")
+    fx.REPO_ROOT, fx.SKILLS_DIR = _root, _root / "skills"
+    fx.EVALS_DIR, fx.TESTS_SKILLS_DIR = _root / "evals", _root / "tests" / "skills"
+    _rec = fx.load_skills()[0]
+check("has_templates True for a non-empty templates/", _rec["has_templates"] is True)
+check("has_examples False for an EMPTY examples/ dir", _rec["has_examples"] is False)
+check("has_steps False when the folder is absent", _rec["has_steps"] is False)
+check("has_evals True for a root evals/<skill>/ with a case", _rec["has_evals"] is True)
+with _tempfile.TemporaryDirectory() as _td2:
+    _r2 = Path(_td2)
+    (_r2 / "skills" / "fx-two").mkdir(parents=True)
+    (_r2 / "skills" / "fx-two" / "SKILL.md").write_text("---\nname: fx-two\nversion: 1.0.0\n---\n")
+    (_r2 / "evals" / "fx-two" / "results" / "run-1").mkdir(parents=True)
+    (_r2 / "evals" / "fx-two" / "results" / "run-1" / "prompt.md").write_text("run output copy")
+    fx2 = _load_module(unique_name="_manifest_fx2")
+    fx2.REPO_ROOT, fx2.SKILLS_DIR = _r2, _r2 / "skills"
+    fx2.EVALS_DIR, fx2.TESTS_SKILLS_DIR = _r2 / "evals", _r2 / "tests" / "skills"
+    _rec2 = fx2.load_skills()[0]
+check("has_evals False when evals/<skill>/ holds only run results", _rec2["has_evals"] is False)
+check("every SKILL_SUBDIRS folder yields a has_ flag",
+      all(f"has_{d}" in _rec for d in fx.SKILL_SUBDIRS))
+
 print(f"\n--- Summary: {passed} passed, {len(failed)} failed ---")
 if failed:
     print("Failed:")

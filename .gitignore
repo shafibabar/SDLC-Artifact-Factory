@@ -2,6 +2,10 @@ __pycache__/
 *.pyc
 scripts/github-project/.state.json
 
+# claude plugin eval run output (tests/run-skill-evals.sh) — reports and
+# aggregate JSON per run; the suites themselves (prompt.md, graders/) are tracked.
+evals/**/results/
+
 # sdlc-memory (added by SDLC-Artifact-Factory's memory engine)
 # Only relevant if this plugin's own repo is ever used as a test target for
 # itself -- every real consuming repo gets this same block auto-appended by

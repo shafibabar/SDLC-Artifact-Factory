@@ -79,6 +79,18 @@ check("name uppercase", {**good, "name": "BddFeatureFile"}, False)
 check("created not a date", {**good, "created": "July 20 2026"}, False)
 check("status not in enum", {**good, "status": "draft"}, False)
 
+# --- sources: (Fresh-Eyes A2) — research grounding, repo-relative research/ paths
+check("sources: valid research paths", {**good, "sources": [
+    "research/product-strategy-and-gtm/inspired-cagan.md",
+    "research/product-strategy-and-gtm/obviously-awesome-dunford.md"]}, True)
+check("sources: path outside research/ rejected", {**good, "sources": ["skills/x/SKILL.md"]}, False)
+check("sources: missing cluster level rejected", {**good, "sources": ["research/inspired-cagan.md"]}, False)
+check("sources: non-markdown file rejected", {**good, "sources": ["research/testing/x.pdf"]}, False)
+check("sources: empty list rejected (omit the field instead)", {**good, "sources": []}, False)
+check("sources: duplicate entry rejected", {**good, "sources": [
+    "research/testing/explore-it-hendrickson.md", "research/testing/explore-it-hendrickson.md"]}, False)
+check("sources: a bare string rejected (must be a list)", {**good, "sources": "research/testing/explore-it-hendrickson.md"}, False)
+
 print(f"\n--- Summary: {passed} passed, {len(failed)} failed ---")
 if failed:
     print("Failed:")

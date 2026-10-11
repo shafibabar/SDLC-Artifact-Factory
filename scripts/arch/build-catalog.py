@@ -20,6 +20,7 @@ WHAT IT EMITS:
                agent_produces (agent  -> artifact, from an agent's produces:)
                skill_related  (skill  -> skill,    from a skill's related:)
                skill_produces (skill  -> artifact, from a skill's produces:)
+               skill_sources  (skill  -> research file, from a skill's sources:)
   artifacts    the REVERSE index artifact -> {"agents": [...], "skills": [...]}.
                This is the seed of the artifact-dependency graph that P7 extends
                with workflow depends_on. Multiple producers are legitimate and
@@ -36,7 +37,8 @@ WHAT IT EMITS:
                hand-authored tier"). Per domain: its skills, the agents whose
                own domain: matches, the owners of those skills, and every
                artifact either kind produces.
-  coverage     test/reference/asset/script coverage counts.
+  coverage     test/reference/asset/script coverage counts, plus research
+               grounding (skills_with_sources, research_files_cited).
   counts       component and edge totals.
 
   'related:' is a bidirectional-by-convention see-also and is deliberately NOT
@@ -105,11 +107,11 @@ def _skill_entry(s: dict) -> dict:
         "status": s.get("status"),
         "produces": sorted(_as_list(s.get("produces"))),
         "related": sorted(_as_list(s.get("related"))),
+        "sources": sorted(_as_list(s.get("sources"))),
         "tags": sorted(_as_list(s.get("tags"))),
         "created": str(s.get("created")) if s.get("created") is not None else None,
-        "has_references": bool(s.get("has_references")),
-        "has_assets": bool(s.get("has_assets")),
-        "has_scripts": bool(s.get("has_scripts")),
+        **{f"has_{d}": bool(s.get(f"has_{d}")) for d in manifest.SKILL_SUBDIRS},
+        "has_evals": bool(s.get("has_evals")),
         "has_contract_test": bool(s.get("has_contract_test")),
         "dir": s.get("dir"),
     }
@@ -195,6 +197,10 @@ def build_catalog(skills: list[dict], agents: list[dict],
         ({"agent": a["name"], "artifact": p} for a in agent_entries for p in a["produces"]),
         key=lambda e: (e["agent"], e["artifact"]),
     )
+    skill_sources = sorted(
+        ({"skill": s["name"], "source": src} for s in skill_entries for src in s["sources"]),
+        key=lambda e: (e["skill"], e["source"]),
+    )
 
     # --- artifact reverse index (seed of the artifact-dependency graph) -----
     # Each value is {"agents": [...], "skills": [...]} — a KIND-TAGGED index,
@@ -261,12 +267,14 @@ def build_catalog(skills: list[dict], agents: list[dict],
     # --- coverage ----------------------------------------------------------
     coverage = {
         "skills_with_contract_test": sum(1 for s in skill_entries if s["has_contract_test"]),
-        "skills_with_references": sum(1 for s in skill_entries if s["has_references"]),
-        "skills_with_assets": sum(1 for s in skill_entries if s["has_assets"]),
-        "skills_with_scripts": sum(1 for s in skill_entries if s["has_scripts"]),
+        **{f"skills_with_{d}": sum(1 for s in skill_entries if s[f"has_{d}"])
+           for d in manifest.SKILL_SUBDIRS},
+        "skills_with_evals": sum(1 for s in skill_entries if s["has_evals"]),
         "skills_with_produces": sum(1 for s in skill_entries if s["produces"]),
         "skills_with_domain": sum(1 for s in skill_entries if s["domain"]),
         "skills_with_status": sum(1 for s in skill_entries if s["status"]),
+        "skills_with_sources": sum(1 for s in skill_entries if s["sources"]),
+        "research_files_cited": len({e["source"] for e in skill_sources}),
         "agents_with_acceptance_test": sum(1 for a in agent_entries if a["has_acceptance_test"]),
         "agents_with_produces": sum(1 for a in agent_entries if a["produces"]),
         "agents_with_domain": sum(1 for a in agent_entries if a["domain"]),
@@ -285,6 +293,7 @@ def build_catalog(skills: list[dict], agents: list[dict],
         "edges_agent_produces": len(agent_produces),
         "edges_skill_related": len(skill_related),
         "edges_skill_produces": len(skill_produces),
+        "edges_skill_sources": len(skill_sources),
         "orphan_skills": sum(
             1 for s in skill_entries
             if not s["domain"] and s["name"] not in {e["skill"] for e in agent_skills}
@@ -310,6 +319,7 @@ def build_catalog(skills: list[dict], agents: list[dict],
             "agent_skills": agent_skills,
             "skill_produces": skill_produces,
             "skill_related": skill_related,
+            "skill_sources": skill_sources,
         },
     }
 
@@ -368,7 +378,11 @@ def main(argv: list[str]) -> int:
     print(f"  edges:      {c['edges_agent_skills']} agent->skill, "
           f"{c['edges_agent_produces']} agent->artifact, "
           f"{c['edges_skill_produces']} skill->artifact, "
-          f"{c['edges_skill_related']} skill->related")
+          f"{c['edges_skill_related']} skill->related, "
+          f"{c['edges_skill_sources']} skill->research")
+    cov = catalog["coverage"]
+    print(f"  grounding:  {cov['skills_with_sources']}/{c['skills']} skills declare sources, "
+          f"{cov['research_files_cited']} research files cited")
     return 0
 
 

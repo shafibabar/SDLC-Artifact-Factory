@@ -4,7 +4,9 @@
 
 **Author:** Shafi Babar | **Version:** 0.1.0 | **Status:** Active Development
 
-> **Active work:** the **Architecture Review campaign** is under way — making the platform's component relationships and standards machine-explicit and self-enforcing (manifests as enriched frontmatter, a derived catalog, declarative workflow specs, and a consistency linter). The governance foundation (P1) is merged — component-frontmatter schemas + a consistency linter gate (`scripts/lint-all.sh`, CI-enforced) — skill manifest enrichment (P2) is complete (all 186 skills declare `produces`/`domain`/`status`, driving broken cross-references and orphan skills to 0), the derived component catalog (P3) is live — [`generated/catalog.json`](generated/catalog.json) is derived from component frontmatter, committed for review, and gated on staleness so it can never drift from the tree — and skill de-duplication (P4) is complete, though **not** as chartered: auditing the duplication backlog before acting on it showed ~99% of it was false positives (the *mandated* artifact-frontmatter template recurring across 62 skills is compliance, not duplication), so P4 sharpened the detector instead of deleting compliant skill prose, taking [`generated/duplication-report.md`](generated/duplication-report.md) from 13 recurring-block clusters + 7 restatements to **0 + 1** — that last one an accepted, explained finding rather than open work. **The agent deep refactor (P5) is under way and is *not* finished: 5 of 15 children are done** (`product-strategist`, `backend-engineer`, `frontend-engineer`, `platform-engineer`, plus the child that wired agent manifest fields through the linter and catalog), taking agent→artifact edges from 0 to 67 and closing a real hole where a typo'd agent field passed the governance gate silently. That work was merged to `main` early, at 5/15 rather than at parent completion, so five finished and verified refactors would not sit on a branch indefinitely — a deliberate one-off deviation from the campaign's own merge rule. **9 agents still have no P5 child**, so a merged P5 branch does not mean a completed P5. See [`ARCHITECTURE-REVIEW-CAMPAIGN.md`](ARCHITECTURE-REVIEW-CAMPAIGN.md) for the plan and resumable status.
+> **Active work (2026-10-11 →):** the **Fresh-Eyes Refactor** — every skill augmented with the `research/` library where it applies and restructured to a seven-folder progressive-disclosure spec (`references/ resources/ templates/ examples/ steps/ scripts/ assets/`), with research grounding declared in a `sources:` field and behaviour proven by per-skill evals that must beat the no-plugin baseline. Phase A (the standard and its tooling) is parent issue #1224; resume from `discovery/fresh-eyes/README.md`. The Architecture Review campaign below is **paused at P5 (5/15)**, not abandoned.
+>
+> **Paused:** the **Architecture Review campaign** — making the platform's component relationships and standards machine-explicit and self-enforcing (manifests as enriched frontmatter, a derived catalog, declarative workflow specs, and a consistency linter). The governance foundation (P1) is merged — component-frontmatter schemas + a consistency linter gate (`scripts/lint-all.sh`, CI-enforced) — skill manifest enrichment (P2) is complete (all 186 skills declare `produces`/`domain`/`status`, driving broken cross-references and orphan skills to 0), the derived component catalog (P3) is live — [`generated/catalog.json`](generated/catalog.json) is derived from component frontmatter, committed for review, and gated on staleness so it can never drift from the tree — and skill de-duplication (P4) is complete, though **not** as chartered: auditing the duplication backlog before acting on it showed ~99% of it was false positives (the *mandated* artifact-frontmatter template recurring across 62 skills is compliance, not duplication), so P4 sharpened the detector instead of deleting compliant skill prose, taking [`generated/duplication-report.md`](generated/duplication-report.md) from 13 recurring-block clusters + 7 restatements to **0 + 1** — that last one an accepted, explained finding rather than open work. **The agent deep refactor (P5) is under way and is *not* finished: 5 of 15 children are done** (`product-strategist`, `backend-engineer`, `frontend-engineer`, `platform-engineer`, plus the child that wired agent manifest fields through the linter and catalog), taking agent→artifact edges from 0 to 67 and closing a real hole where a typo'd agent field passed the governance gate silently. That work was merged to `main` early, at 5/15 rather than at parent completion, so five finished and verified refactors would not sit on a branch indefinitely — a deliberate one-off deviation from the campaign's own merge rule. **9 agents still have no P5 child**, so a merged P5 branch does not mean a completed P5. See [`ARCHITECTURE-REVIEW-CAMPAIGN.md`](ARCHITECTURE-REVIEW-CAMPAIGN.md) for the plan and resumable status.
 
 ---
 
@@ -185,8 +187,10 @@ sdlc-artifact-factory/
 ├── settings.json             # Default settings applied when plugin is enabled
 ├── skills/                   # Skills — flat, one directory per skill (domain is a tag, not a path)
 │   └── <skill-name>/
-│       ├── SKILL.md
-│       └── references/       # Optional supporting templates
+│       ├── SKILL.md          # Mandatory entry file: guidance + pointers saying when to open each folder
+│       └── references/ resources/ templates/ examples/ steps/ scripts/ assets/
+│                             # Optional — only the folders the content earns (see Progressive Disclosure)
+├── evals/                    # Per-skill eval suites: evals/<skill>/<case>/{prompt.md, graders/} (claude plugin eval)
 ├── agents/                   # Subagent definitions — flat, one file per agent
 │   └── <agent-name>.md
 ├── commands/                 # Real slash commands, one file each
@@ -433,7 +437,7 @@ All components use **semantic versioning**: `MAJOR.MINOR.PATCH`
 
 | Component | Recommended Max |
 |---|---|
-| `SKILL.md` | 500 lines |
+| `SKILL.md` | ~200 lines below the frontmatter — a split candidate, not a hard block |
 | `agents/<name>.md` | 500 lines |
 | `commands/<name>.md` | 100 lines — a prompt, not a spec document |
 | `hooks/hooks.json` | No line limit; keep one entry per hook, matchers narrow |
@@ -441,7 +445,7 @@ All components use **semantic versioning**: `MAJOR.MINOR.PATCH`
 | `LSP.md` | 500 lines |
 | `scripts/*.sh` | 150 lines — a script doing more than that should be split |
 
-When a skill's or agent's content exceeds its limit, move reference material to the `references/` subdirectory and link from the main file.
+When a skill's content exceeds its limit, move it into the folder its kind belongs in (see Progressive Disclosure) and point to it from `SKILL.md`; an agent moves knowledge into a skill.
 
 ### Progressive Disclosure
 
@@ -454,7 +458,19 @@ This is real for Skills and, loosely, Commands — not for Hooks or Scripts, whi
 | Hook | Nothing — hooks are registered triggers, not context | The handler runs (script/prompt/agent) only when its event and matcher fire |
 | Script | Nothing | Runs only when a hook or command invokes it directly |
 
-Move detail beyond a skill's/agent's practical size into `references/` and link from the main file, rather than everything inline.
+A skill's own content loads in tiers too: `SKILL.md` on every match, and its optional folders only when the body points to them — each pointer saying *when*:
+
+| Folder | Holds | Opened when |
+|---|---|---|
+| `references/` | Documentation and standards to look up | The body says to consult it |
+| `resources/` | Rule sets and schemas the output is cross-checked against | Before handing off |
+| `templates/` | Skeletons copied and filled | Producing the artifact |
+| `examples/` | Input → output demonstrations, simple → enterprise | Edge cases and harder variants |
+| `steps/` | One file per stage of a long procedure | One stage at a time |
+| `scripts/` | Deterministic executables, each tested | The procedure says to run one |
+| `assets/` | Media, env/property files, metadata schemas | The procedure needs the file |
+
+Pointers are relative and start with `./`; no folder is created empty. `scripts/lint-skill-layout.py` checks it, and `skills/skill-authoring-standards/` is the full rubric.
 
 ### Body Structure by Component
 
@@ -575,8 +591,9 @@ Hook ──── Script (command handler) or ──── Agent / Skill (prompt
 
 **Key constraints:**
 - Skills do not contain reasoning or decision-making logic
-- Skills must stay under 500 lines; move detail to `references/`
-- File references stay one level deep from `SKILL.md`
+- `SKILL.md` stays lean (~200 lines below the frontmatter); detail moves to the folder its kind belongs in, with a `./` pointer saying when to read it
+- Where a `research/` book informs the content, it is named in the prose and listed in `sources:`
+- Behaviour is proven by evals at `evals/<skill>/` that beat the no-plugin baseline
 
 **Example skills from this domain:**
 
@@ -940,7 +957,7 @@ The following principles govern every artifact and component produced by or for 
 
 - Ubiquitous language does not drift between components
 - One naming convention, applied everywhere
-- Progressive disclosure — detailed content moves to `references/` as components grow
+- Progressive disclosure — detailed content moves into the skill folder its kind belongs in as components grow
 - Every component has a `tests/` directory
 
 ---
@@ -962,7 +979,7 @@ The following principles govern every artifact and component produced by or for 
 2. Skills: create `skills/<name>/SKILL.md` — flat, no domain subdirectory. Agents: create `agents/<name>.md` directly — no subdirectory. Commands: create `commands/<name>.md` directly — no subdirectory. Hooks: add an entry to `hooks/hooks.json`. Scripts: add `scripts/<name>.sh`.
 3. Complete all required frontmatter fields for that component type (see [Frontmatter — Required Fields by Component Type](#frontmatter--required-fields-by-component-type))
 4. Follow the body structure for that component type
-5. Keep skill/agent files under 500 lines; move detail to `references/`
+5. Keep `SKILL.md` lean (~200 lines) and agent files under 500 lines; move skill detail into the right folder
 6. Validate frontmatter and naming before submitting; for commands/hooks/scripts, actually invoke them and confirm they work
 
 ### Updating Existing Artifacts
@@ -997,7 +1014,7 @@ A component is accepted when:
 - Applicable methodologies are applied (not just mentioned)
 - All referenced skills, agents, commands, tools, and MCP servers exist
 - Naming follows the convention
-- File length is within limits or overflow is in `references/`
+- File length is within limits or overflow is in the right skill folder (`lint-skill-layout` is clean)
 - Tests are defined
 
 ---

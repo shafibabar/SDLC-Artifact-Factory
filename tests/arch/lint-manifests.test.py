@@ -239,6 +239,31 @@ check("main() exit code agrees with lint() ok",
 
 # --- verdict -----------------------------------------------------------------
 print("")
+# --- derived has_<folder>/has_evals are subtracted, never forwarded (A4) -------
+_fld = dict(good_skill, **{f"has_{d}": True for d in lm.manifest.SKILL_SUBDIRS}, has_evals=True)
+_fld_inst = lm.record_to_instance("skill", _fld)
+check("record_to_instance drops every has_<folder> and has_evals",
+      not any(k.startswith("has_") for k in _fld_inst))
+
+# --- sources: existence check (Fresh-Eyes A2) --------------------------------
+# The schema checks a sources: entry's shape; only lint() can say it resolves.
+# Swap manifest.load_skills for one synthetic skill citing one real and one
+# dangling research file, run lint(), and read the violations.
+_real_source = sorted((REPO_ROOT / "research").rglob("*.md"))[0].relative_to(REPO_ROOT).as_posix()
+_dangling = "research/no-such-cluster/no-such-book.md"
+_orig_load_skills = lm.manifest.load_skills
+try:
+    lm.manifest.load_skills = lambda: [dict(good_skill, sources=[_real_source, _dangling])]
+    _res = lm.lint()
+finally:
+    lm.manifest.load_skills = _orig_load_skills
+_src_viol = [v for v in _res["violations"] if "sources entry" in v]
+check("a dangling sources entry is a violation", any(_dangling in v for v in _src_viol))
+check("an existing sources entry is not a violation", not any(_real_source in v for v in _src_viol))
+check("dangling source makes the lint fail", _res["ok"] is False)
+check("summary counts the missing source", _res["summary"].get("sources", {}).get("missing") == 1)
+check("violation names the skill's SKILL.md", any("synthetic-skill" in v for v in _src_viol))
+
 if failed:
     print(f"FAIL: lint-manifests — {len(failed)} check(s) failed: {failed}")
     sys.exit(1)

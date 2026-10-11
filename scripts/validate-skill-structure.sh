@@ -4,9 +4,13 @@
 # Checks a single SKILL.md against the skill-authoring-standards rubric:
 #   1. Required frontmatter fields present in the canonical order
 #   2. Body line count flagged if it exceeds the 200-line split threshold
-#   3. Reference pointer integrity — bidirectional:
-#      a. Every references/<file>.md mentioned in the body exists on disk
-#      b. Every file in references/ is pointed to from the body
+#   3. Pointer integrity — bidirectional, across every spec folder:
+#      a. Every <folder>/<file> the body mentions exists on disk
+#         (folder = references|resources|templates|examples|steps|scripts|assets)
+#      b. The folder spec itself — delegated to scripts/lint-skill-layout.py, the
+#         single definition of the layout rules: entry file, allowed folders,
+#         no empty dirs, every file reachable from SKILL.md (transitively), and
+#         no hard-coded pointers to skill content.
 #
 # Exit codes:
 #   0 — all checks passed
@@ -29,7 +33,6 @@ if [[ ! -f "$SKILL_FILE" ]]; then
 fi
 
 SKILL_DIR="$(dirname "$SKILL_FILE")"
-REFS_DIR="$SKILL_DIR/references"
 ERRORS=0
 
 pass() { echo "PASS: $1"; }
@@ -69,15 +72,25 @@ else
   pass "body line count: $body_lines (≤ 200)"
 fi
 
-# ── 3a. Body → disk: every references/<file> mentioned in body exists ────────
-# Match patterns like: references/<something>.md
+# ── 3a. Body → disk: every <folder>/<file> mentioned in the body exists ─────
+# Which mentions count as pointers INTO this skill:
+#   * anything written skill-relative with ./ — `./templates/plan.md`,
+#     `./scripts/score.sh` — the convention skill-authoring-standards requires;
+#   * a bare `references/...` — the legacy form, never ambiguous.
+# A bare templates/, scripts/, assets/ … is NOT checked: in a skill body it may
+# equally name a PRODUCT path (a Helm chart's templates/rollout.yaml) or the
+# plugin's repo-root scripts/ (lint-manifests.py), which do not live in the skill.
+FOLDERS='references|resources|templates|examples|steps|scripts|assets'
 mentioned=()
 while IFS= read -r ref; do
   mentioned+=("$ref")
-done < <(grep -oE 'references/[a-z0-9_-]+\.md' "$SKILL_FILE" | sort -u)
+done < <( { grep -oE "\./($FOLDERS)/[A-Za-z0-9_./-]*[A-Za-z0-9_-]\.[A-Za-z0-9]+" "$SKILL_FILE";
+            grep -oE "(^|[^A-Za-z0-9_./-])references/[A-Za-z0-9_./-]*[A-Za-z0-9_-]\.[A-Za-z0-9]+" "$SKILL_FILE" \
+              | sed -E 's#^[^r]##'; } \
+          | sed 's#^\./##' | sort -u)
 
 if [[ "${#mentioned[@]}" -eq 0 ]]; then
-  pass "no references/ files mentioned in body (nothing to check)"
+  pass "no folder files mentioned in body (nothing to check)"
 else
   for ref in "${mentioned[@]}"; do
     target="$SKILL_DIR/$ref"
@@ -89,18 +102,17 @@ else
   done
 fi
 
-# ── 3b. Disk → body: every file in references/ is pointed to from body ───────
-if [[ -d "$REFS_DIR" ]]; then
-  while IFS= read -r -d '' ref_file; do
-    basename_ref="$(basename "$ref_file")"
-    if grep -q "references/${basename_ref}" "$SKILL_FILE"; then
-      pass "references/$basename_ref is pointed to from body"
-    else
-      fail "references/$basename_ref exists on disk but body never mentions it (orphaned reference file)"
-    fi
-  done < <(find "$REFS_DIR" -maxdepth 1 -name '*.md' -print0 | sort -z)
+# ── 3b. Folder spec (delegated to the layout linter) ─────────────────────────
+LAYOUT_LINTER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lint-skill-layout.py"
+layout_out="$(python3 "$LAYOUT_LINTER" --dir "$SKILL_DIR" 2>&1)"
+layout_rc=$?
+if [[ $layout_rc -eq 0 ]]; then
+  pass "folder spec: clean under lint-skill-layout (entry, folders, no empty dirs, reachability, relative pointers)"
 else
-  pass "no references/ directory (nothing to check)"
+  while IFS= read -r line; do
+    [[ "$line" =~ ^L[1-5][[:space:]] ]] && fail "folder spec: $line"
+  done <<<"$layout_out"
+  [[ $layout_rc -eq 2 ]] && fail "folder spec: lint-skill-layout could not run ($layout_out)"
 fi
 
 # ── Summary ──────────────────────────────────────────────────────────────────
