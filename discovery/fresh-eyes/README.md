@@ -46,3 +46,12 @@ A whole-repo traversal to find refactor ideas. It looks at the components **as t
 | 10 | Maintainability | maintainability | pending | 10-maintainability.md |
 | 11 | Portability | portability | pending | 11-portability.md |
 | 12 | Synthesis: ranked backlog + P5–P9 re-plan | all | pending | 12-synthesis.md |
+
+## Pending side-task (requested 2026-10-11, NOT started — usage limit hit)
+
+Make artifact frontmatter `summary` REQUIRED everywhere, then merge to main. Findings so far:
+- Consumer: `scripts/memory/ingest.py` `build_texts()` uses `summary` verbatim as the L0 abstract (falls back to first paragraph, ~140 chars). Form it as ONE sentence, ≤ ~200 chars, placed after `created:`.
+- 105 artifact-frontmatter templates in 89 skill files: 42 in SKILL.md, 45 in references/, 1 in assets/. Detect them with `_scan_frontmatter_block` in `scripts/lint-duplication.py` (name-first block with ≥3 of version/phase/owner/created). Shapes vary, e.g. vision-statement's has no `owner`.
+- Also: the 10 `skills/*/scripts/scaffold-*.sh` (emit frontmatter) and `validate-*.sh` (check fields), with their tests in `tests/scripts/`. `scripts/validate-artifact-structure.sh` REQUIRED gets `summary` again, and its test fixture changes. Add `summary` to `ARTIFACT_FM_MANDATED_KEYS` in `lint-duplication.py`. Update CLAUDE.md § Artifact Standards (6 fields), README, `skills/memory-recall` (required again), and the `schemas/sdlc-manifest` check if relevant.
+- Then: version bumps (MINOR), rebuild the catalog, `scripts/lint-all.sh`, `tests/run-smoke-tests.sh scripts schemas arch`, CHANGELOG, push main.
+- Work in a separate worktree off `main` (the primary worktree is on `discovery/fresh-eyes`).
