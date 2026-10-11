@@ -47,7 +47,24 @@ A whole-repo traversal to find refactor ideas. It looks at the components **as t
 | 11 | Portability | portability | pending | 11-portability.md |
 | 12 | Synthesis: ranked backlog + P5–P9 re-plan | all | pending | 12-synthesis.md |
 
-## Pending side-task (requested 2026-10-11, NOT started — usage limit hit)
+## Refactor campaign progress (scope expanded 2026-10-11: discover + augment)
+
+Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phase A + B approved; Phase C needs Shafi's review of the pilot first.
+
+| Phase | Parent | Status |
+|---|---|---|
+| A — folder spec, `sources:`, layout linter, evals runner, migration script, standard rewrite | #1224 | **done** — merged to main via #1237 (851ac0a), CI green |
+| B — pilot: vision-statement, adr-authoring, one Go backend skill | — | next |
+| C — domain waves (per-skill issues) | — | after Shafi reviews B |
+
+Phase A facts a resuming session needs:
+- Evals live at ROOT `evals/<skill>/<case>/` — `claude plugin eval` refuses dirs inside `skills/`.
+- `tests/run-skill-evals.sh <skill>` passes only if all cases pass AND mean delta > 0. Cost ref: 3 cases × 2 runs ≈ $1.70.
+- Skill pointers start with `./`. A bare `templates/` or `scripts/` may be a product path (Helm) or repo-root scripts.
+- Layout baseline: 177/187 skills clean. The linter is report-only until the waves finish.
+- Plan tooling runs from the main-tracking worktree, with `.state.json` symlinked to the primary checkout's.
+
+## Side-task: required `summary` (DONE — merged to main in dc5d07f)
 
 Make artifact frontmatter `summary` REQUIRED everywhere, then merge to main. Findings so far:
 - Consumer: `scripts/memory/ingest.py` `build_texts()` uses `summary` verbatim as the L0 abstract (falls back to first paragraph, ~140 chars). Form it as ONE sentence, ≤ ~200 chars, placed after `created:`.
