@@ -64,7 +64,10 @@ check("worked example incl. -r2 suffix", {
 check("empty artifacts array (new product)", {"_meta": base_meta, "product": "x", "product_slug": "x", "artifacts": []}, True)
 
 # Negative cases
-check("missing traces_to", {"_meta": base_meta, "product": "x", "product_slug": "x", "artifacts": [{k: v for k, v in entry().items() if k != "traces_to"}]}, False)
+# traces_to is optional (#1252): the hook copies it from the artifact and never
+# invents one; a missing trace is an orphan the artifact-manifest skill flags.
+check("missing traces_to is allowed", {"_meta": base_meta, "product": "x", "product_slug": "x", "artifacts": [{k: v for k, v in entry().items() if k != "traces_to"}]}, True)
+check("traces_to without ref", {"_meta": base_meta, "product": "x", "product_slug": "x", "artifacts": [entry(traces_to={"kind": "decision"})]}, False)
 check("bad status enum", {"_meta": base_meta, "product": "x", "product_slug": "x", "artifacts": [entry(status="in-review")]}, False)
 check("bad phase enum", {"_meta": base_meta, "product": "x", "product_slug": "x", "artifacts": [entry(phase="testing")]}, False)
 check("bad version not semver", {"_meta": base_meta, "product": "x", "product_slug": "x", "artifacts": [entry(version="v1.0")]}, False)
