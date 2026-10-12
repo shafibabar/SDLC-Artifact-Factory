@@ -9,7 +9,7 @@ description: >
   research findings, or another agent's prior output. This is the
   self-contained, no-external-service replacement for what an
   OpenViking-integrated agent would do by calling its search MCP tool.
-version: 1.0.2
+version: 1.1.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-09-15
@@ -53,7 +53,7 @@ If a search comes back empty or stale for something you know exists on disk, run
 
 When you make a decision, resolve an open question, or complete a build-checklist item, don't append to `sdlc-context.json` — the memory engine no longer treats it as the growing log. Instead:
 1. Write (or edit) the corresponding node under `.sdlc-memory/tree/self/decisions/<id>.md` (or `open_questions/`, `build_checklist/`) directly — plain markdown, no frontmatter required for these (they're not product artifacts).
-2. Run `run.sh ingest.py .sdlc-memory/tree/self/decisions/<id>.md` (or the equivalent path) to re-embed and re-index it — or just re-run `migrate_context.py` if you've instead edited `sdlc-context.json` itself as the source of truth for a new entry.
+2. A file written with the Write tool is indexed automatically (the `PostToolUse` write hook runs `ingest.py` on it). If you wrote it another way, run `run.sh ingest.py .sdlc-memory/tree/self/decisions/<id>.md` (or the equivalent path); it prints `SKIPPED:` and exits non-zero if the path isn't one it can index. Start the file with `# <id>: <the decision>`; for an open question, add `**Question:** …` and `**Status:** open` (change it to `resolved — …` when answered), which is what `/sdlc-status` reads.
 
 ## Directory abstracts
 
