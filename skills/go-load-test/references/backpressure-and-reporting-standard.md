@@ -136,5 +136,5 @@ curl -s -X POST "$GRAFANA_URL/api/annotations" \
 profile run, the Grafana dashboard link (with the time range pre-set to the run's window), the
 pass/fail verdict per SLO gate (`references/slo-gate-standard.md`), and the backpressure assertions'
 outcome. The durable record is the time series in Prometheus and the dashboard that reads it; the
-Markdown file is the reviewable-by-Shafi summary CLAUDE.md's Artifact Standards require, not a
+Markdown file is the reviewable-by-the-user summary CLAUDE.md's Artifact Standards require, not a
 second copy of the data.

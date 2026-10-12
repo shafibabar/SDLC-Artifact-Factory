@@ -129,7 +129,7 @@ never settled mid-session by seniority.
 | Process uncertainty | Schedule a domain-expert interview or a follow-up session |
 | Technical-feasibility concern | Flag to the architect; record as an architecture risk |
 | Missing domain knowledge | Identify the knowledge holder; schedule follow-up |
-| Scope dispute | Escalate to Shafi — this is a product decision, not a modeling one |
+| Scope dispute | Escalate to the product owner — this is a product decision, not a modeling one |
 
 Opportunities (green/lilac) go straight to the product backlog, not the risk
 register.

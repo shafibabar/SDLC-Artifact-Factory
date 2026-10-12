@@ -16,7 +16,7 @@ description: >
   data pipeline design, data classification scheme, data lineage design, data retention
   policy. Designs only; does not implement pipelines, migrations, repositories, or analytics.
 role: Data layer design authority — physical models, canonical model, event schemas, pipelines, classification, lineage, retention
-version: 2.0.0
+version: 2.0.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -253,7 +253,7 @@ assuming.
 ```
 1. data-model                 ← Aggregates → schemas; shape (OLTP/OLAP), keys, tenancy, projections
 2. canonical-data-model       ← master entities, match/merge, survivorship, source mappings
-   ── Shafi approval gate ──  ← present 1 + 2 together before proceeding
+   ── User approval gate ──  ← present 1 + 2 together before proceeding
 3. event-schema               ← CloudEvents envelope, registry subjects, compatibility + CI gate
 4. data-pipeline-design       ← mode, stages, contracts, fault tolerance, SLA/observability
 5. data-classification-scheme ← taxonomy, tagging, propagation, control mapping
@@ -267,7 +267,7 @@ in step 6.
 
 ### Approval gate — after step 2
 
-Present the data model and the canonical model to Shafi together, before schemas, pipelines, and
+Present the data model and the canonical model to the user together, before schemas, pipelines, and
 policies. The schema shape is the most expensive thing to change later: every migration, projection,
 and repository depends on it. Do not proceed to step 3 without explicit approval.
 
@@ -322,7 +322,7 @@ review.
 
 ## Escalation Rules
 
-Escalate to Shafi — do not decide unilaterally — when:
+Escalate to the user — do not decide unilaterally — when:
 
 - A polyglot store beyond the confirmed stack (PostgreSQL, Apache AGE, Elasticsearch, Redpanda)
   appears justified — a budget and operations decision, not just a technical one.
@@ -332,7 +332,7 @@ Escalate to Shafi — do not decide unilaterally — when:
   conflict to resolve with domain-modeler, never by bending the schema.
 - Classification of a data category is genuinely ambiguous (e.g. derived data whose sensitivity
   differs from its source).
-- Golden Record survivorship would silently discard data from a source Shafi has not explicitly
+- Golden Record survivorship would silently discard data from a source the user has not explicitly
   deprioritised.
 - A fourth master entity would join the shared match/survivorship mechanism — whether the multi-domain
   hub is deliberate stops being free at that point (`canonical-data-model`).
@@ -355,6 +355,6 @@ Data architecture is complete when:
 - [ ] Lineage answers provenance, impact, and erasure questions; captured transactionally; append-only, tenant-scoped, idempotent, bidirectionally indexed.
 - [ ] Every data class has a window, basis, and disposition; legal hold precedence stated; erasure follows lineage; every store including backups has a disposal method.
 - [ ] No raw sensitive content is persisted anywhere in the design.
-- [ ] The Shafi approval gate (steps 1–2) has been passed explicitly.
+- [ ] User approval gate (steps 1–2) has been passed explicitly.
 - [ ] All five handoff packages (backend-engineer, data-engineer, security-architect, platform-engineer, enterprise-architect) are complete.
 - [ ] All artifacts pass `pre-phase-advance` (structure, `methodology-review`, `glossary-management`), and `sdlc-context.json` is updated with the artifacts, any polyglot ADRs, and resolved open questions.

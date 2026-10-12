@@ -16,7 +16,7 @@ description: >
   external-worker skeleton (poll, execute, update, error, idempotency, health,
   metrics) in references/go-task-workers.md. Used during Implement once
   workflow-orchestration selected a central orchestrator over choreography.
-version: 1.0.0
+version: 1.0.1
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
@@ -42,7 +42,7 @@ This skill is authoring depth, not selection. The choice to orchestrate at all �
 
 A Conductor **workflow definition** is a named, versioned JSON document: a `name`, a `version` (integer), an `inputParameters` list, a `tasks` array (the DAG), and an `outputParameters` map. Each entry in `tasks` is a **task instance** — `name` (the registered task definition), `taskReferenceName` (unique within this workflow, how other tasks refer to its output), `type`, and `inputParameters` wiring values in from the workflow input or from an earlier task's output via `${ref.output.field}` / `${workflow.input.field}` expressions.
 
-Two documents, two registration calls: **task definitions** (`POST /api/metadata/taskdefs`) carry the per-task policy — retry, timeout, rate limits — and are registered once; **workflow definitions** (`POST /api/metadata/workflow`) carry the DAG and reference tasks by name. Start a run with `POST /api/workflow/{name}` and an input body. The DAG, not code, is the artifact Shafi reviews: it shows the whole flow, its branches, and its failure path on one screen.
+Two documents, two registration calls: **task definitions** (`POST /api/metadata/taskdefs`) carry the per-task policy — retry, timeout, rate limits — and are registered once; **workflow definitions** (`POST /api/metadata/workflow`) carry the DAG and reference tasks by name. Start a run with `POST /api/workflow/{name}` and an input body. The DAG, not code, is the artifact the user reviews: it shows the whole flow, its branches, and its failure path on one screen.
 
 The workflow definition is a versioned artifact — bump `version` for an incompatible change so in-flight runs finish on the definition they started under. Full worked definition: `references/workflow-and-task-dsl.md`.
 

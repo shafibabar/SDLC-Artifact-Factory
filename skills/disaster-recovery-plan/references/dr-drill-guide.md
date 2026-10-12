@@ -137,13 +137,13 @@ Append one row per drill to the drill record table in the product's DR plan docu
 |---|---|---|---|---|---|---|---|---|---|
 | 2026-07-20 | Data loss | tenant-acme | 09:02Z | 09:41Z | 39 min (target: 1h) | 08:57Z (5 min before drill) | 5 min (met) | Yes | Pass |
 | 2026-04-18 | Cluster loss | tenant-canary | 14:10Z | 17:55Z | 3h 45m (target: 4h) | 13:58Z | 12 min (met) | Yes | Pass — projector rebuild was the slowest step; noted for capacity review |
-| 2026-01-15 | Tenant-stamp loss | tenant-globex | 10:00Z | 15:20Z | 5h 20m (**breach** — target: 4h) | 09:52Z | 8 min (met) | Yes | **Fail** — escalated to Shafi; OpenTofu apply time was the bottleneck; module parallelism increased before next drill |
+| 2026-01-15 | Tenant-stamp loss | tenant-globex | 10:00Z | 15:20Z | 5h 20m (**breach** — target: 4h) | 09:52Z | 8 min (met) | Yes | **Fail** — escalated to the product owner; OpenTofu apply time was the bottleneck; module parallelism increased before next drill |
 
 The failed drill in the record is not hidden — a DR document with only passing drills is either lucky or dishonest. The January breach is exactly the kind of finding this discipline exists to surface before a real incident does.
 
 **After a breached drill:**
 1. Open a corrective action item (owner + due date) immediately.
-2. Do not update the stated RTO/RPO target downward without Shafi's approval.
+2. Do not update the stated RTO/RPO target downward without the user's approval.
 3. Run the corrective action to completion.
 4. Schedule a re-drill of the same class within 30 days to verify the fix.
 
@@ -258,7 +258,7 @@ Weekly chaos experiment log:
 ## Open Gaps
 
 [Every scope class not yet drilled, not yet achievable at current architecture, or with a known breach:
-- Region loss: cross-region infrastructure not yet provisioned at MVP scale — escalated to Shafi 2026-07-20.
+- Region loss: cross-region infrastructure not yet provisioned at MVP scale — escalated to the product owner 2026-07-20.
 - Cluster loss: region-loss-class runbook not yet authored.
 - Any breached drill: reference the corrective action item and re-drill date.]
 

@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.3.0
+version: 1.3.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -126,10 +126,10 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 
 1. **Read context.** Read `sdlc-context.json` — confirm domain-modeler artifacts are complete.
 2. **Read NFR architecture handoff.** The NFR specification's Architecture Handoff section contains the NFRs that directly constrain architecture decisions. These are the first inputs considered — not the last.
-3. **Identify existing artifacts.** Skip approved artifacts. Do not re-produce without Shafi's request.
+3. **Identify existing artifacts.** Skip approved artifacts. Do not re-produce without the user's request.
 4. **Execute in sequence.** Architecture artifacts have dependencies — follow the sequence below.
 5. **Write ADRs as you go — for decisions that earn one.** A decision that is costly to change and widely depended on is an ADR; a cheap, narrow, reversible one deliberately is not (`adr-authoring`'s risk gate). Write it at the point the decision is made, not at the end. If an ADR's own reasoning would apply unchanged to many future, unrelated decisions for this product (not just the one at hand), pull that generalization into the Principle Catalog instead of leaving it buried in the ADR's Rationale — see `adr-authoring`'s decision-vs-principle test.
-6. **Present at gates.** Two mandatory Shafi approval gates: after the Container Diagram and after all Component Diagrams. API contracts are produced after the second gate.
+6. **Present at gates.** Two mandatory user approval gates: after the Container Diagram and after all Component Diagrams. API contracts are produced after the second gate.
 
 ---
 
@@ -140,7 +140,7 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 2. System Context Diagram          ← who uses the system; what external systems exist
 3. Container Diagram               ← service boundaries; technology; communication
                 ↓
-         GATE: Present to Shafi — Container Diagram + ADRs written so far
+         GATE: Present to the user — Container Diagram + ADRs written so far
                 ↓
 4. Multi-Tenancy Design            ← physical isolation architecture
 5. Integration Design              ← sync/async patterns; ACLs; contract tests plan
@@ -151,7 +151,7 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 8. Component Diagram               ← layer structure; package layout; SOLID enforcement
 9. API Contract (OpenAPI spec)     ← all endpoints; request/response schemas; versioning
                 ↓
-         GATE: Present to Shafi — all Component Diagrams + API Contracts
+         GATE: Present to the user — all Component Diagrams + API Contracts
                 ↓
 10. Architecture Summary           ← synthesis of all architecture decisions
 ```
@@ -221,10 +221,10 @@ The enterprise-architect produces three explicit handoffs:
 
 ## Escalation Rules
 
-The enterprise-architect escalates to Shafi when:
+The enterprise-architect escalates to the user when:
 
 - An NFR constraint (data residency, RTO/RPO, tenant isolation) requires a service boundary that significantly increases cost or complexity — this is a product trade-off requiring approval
-- The Context Map reveals a cyclic dependency between Bounded Contexts that cannot be resolved without revisiting the domain model — escalate to domain-modeler and Shafi
+- The Context Map reveals a cyclic dependency between Bounded Contexts that cannot be resolved without revisiting the domain model — escalate to domain-modeler and the user
 - A technology default from `sdlc-context.json` cannot be applied to a specific Bounded Context and a non-standard choice is required — write an ADR and present for approval
 - A Consumer-Driven Contract requirement conflicts with a Supplier team's capacity — escalate to resolve the dependency management plan
 

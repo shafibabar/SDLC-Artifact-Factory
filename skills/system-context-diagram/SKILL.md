@@ -9,7 +9,7 @@ description: >
   outside the system being built), and the diagram artifact template. The first
   architecture view produced, before Container and Component views. Used at the
   start of Design.
-version: 2.1.0
+version: 2.1.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -41,7 +41,7 @@ It shows exactly three kinds of thing and nothing else:
 Internal detail is deliberately absent: no services, no databases, no message
 brokers, no infrastructure, no technology labels. Those belong to Level 2
 (Container) and lower. The power of this view is its simplicity — the one
-diagram Shafi can read without an IDE, without knowing Go, and use to confirm
+diagram the user can read without an IDE, without knowing Go, and use to confirm
 the scope is right before any detail is built on top of it.
 
 In *Documenting Software Architectures* (Clements) terms this is a
@@ -155,7 +155,7 @@ that matches the task:
 | All external systems | Every integration from Event Storming is shown | A supporting system (IdP, alerting) omitted |
 | Labelled relationships | Every arrow states what flows and who initiates | Unlabelled or double-headed arrows |
 | No internal detail | No databases, services, or infrastructure inside the box | Containers or technology visible at L1 |
-| Plain English | Descriptions readable by Shafi without technical background | Jargon or technology labels on elements |
+| Plain English | Descriptions readable by the product owner without technical background | Jargon or technology labels on elements |
 | Rationale captured | A sentence on why this boundary, distinct from constraint notes | Boundary asserted with no reasoning |
 
 ---

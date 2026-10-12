@@ -8,7 +8,7 @@ description: >
   multi-tenancy, and the boundary of what cannot canary (partitioned event
   consumers, schema changes) with fallback strategies. Used by the
   platform-engineer during Deploy.
-version: 1.2.0
+version: 1.2.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -68,7 +68,7 @@ Any gate breach at any stage **halts and reverts to 0% canary weight** immediate
 
 ### Automation note
 
-The stage progression runs as manual, reviewed PRs (the frugal default for a Han Solo operator) or automated via **Argo Rollouts** — the GitOps-native upgrade path that drives Linkerd `HTTPRoute` weights from `AnalysisTemplate` results directly. Both are consistent with the GitOps change-as-PR discipline; Argo Rollouts adds an operator to the cluster — justify against frugality, record in an ADR when adopted.
+The stage progression runs as manual, reviewed PRs (the frugal default for a solo operator) or automated via **Argo Rollouts** — the GitOps-native upgrade path that drives Linkerd `HTTPRoute` weights from `AnalysisTemplate` results directly. Both are consistent with the GitOps change-as-PR discipline; Argo Rollouts adds an operator to the cluster — justify against frugality, record in an ADR when adopted.
 
 ---
 

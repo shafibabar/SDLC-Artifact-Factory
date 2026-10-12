@@ -116,7 +116,7 @@ Object whose `additionalProperties` values may be **string or number** depending
 
 ## `/sdlc-start` questionnaire → config-field mapping
 
-The `/sdlc-start` command asks Shafi a fixed set of questions — one per Tech Stack Defaults row, plus compliance scope and deployment model. For each, a "keep the default" answer writes **nothing**; an "override" answer writes exactly the overriding field. The file starts empty and grows only by explicit divergence.
+The `/sdlc-start` command asks the user a fixed set of questions — one per Tech Stack Defaults row, plus compliance scope and deployment model. For each, a "keep the default" answer writes **nothing**; an "override" answer writes exactly the overriding field. The file starts empty and grows only by explicit divergence.
 
 | Questionnaire prompt (paraphrased) | Field written on override | Written on "keep default"? |
 |---|---|---|
@@ -150,7 +150,7 @@ The `/sdlc-start` command asks Shafi a fixed set of questions — one per Tech S
 {
   "_meta": {
     "purpose": "Per-product configuration. Records only fields that differ from CLAUDE.md's Tech Stack Defaults and standard methodology parameters. Absence of a field means the CLAUDE.md default applies.",
-    "how_to_use": "1. Check this file before applying any CLAUDE.md default. 2. If a field is present here, it overrides CLAUDE.md. 3. If absent, use the CLAUDE.md default. 4. Only Shafi may change this file; every change is recorded in sdlc-context.json's decisions array.",
+    "how_to_use": "1. Check this file before applying any CLAUDE.md default. 2. If a field is present here, it overrides CLAUDE.md. 3. If absent, use the CLAUDE.md default. 4. Only the user may change this file; every change is recorded in sdlc-context.json's decisions array.",
     "last_updated": "2026-07-20",
     "updated_by": "D012 — /sdlc-start questionnaire, confirming MongoDB and Option B deployment for the pilot customer instance"
   },

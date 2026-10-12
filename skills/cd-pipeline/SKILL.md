@@ -7,7 +7,7 @@ description: >
   git revert, drift detection as an incident, and the secrets boundary that keeps
   credentials out of Git. Tool-agnostic model with Flux as the frugal default
   implementation. Used by the platform-engineer during Deploy.
-version: 1.2.0
+version: 1.2.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -36,7 +36,7 @@ This pipeline implements **Continuous Delivery**, not Continuous Deployment — 
 | **Continuous Delivery** | Every change that passes the full pipeline is *proven releasable*. A human decides when to promote to production. |
 | **Continuous Deployment** | Every change that clears all pipeline stages ships to production automatically — the human gate is removed entirely. |
 
-This repo implements **Continuous Delivery**. Shafi approves the first production promotion of each release (the canary-tenant PR requires explicit approval); subsequent fleet-wave PRs require platform-engineer review. The pipeline proves releasability; the human decides timing. Adopting Continuous Deployment requires a deliberate ADR — it is not the default.
+This repo implements **Continuous Delivery**. The user approves the first production promotion of each release (the canary-tenant PR requires explicit approval); subsequent fleet-wave PRs require platform-engineer review. The pipeline proves releasability; the human decides timing. Adopting Continuous Deployment requires a deliberate ADR — it is not the default.
 
 ---
 
@@ -70,7 +70,7 @@ Four parts, regardless of tool:
 | Concern | Flux | Argo CD | Weight for this product |
 |---|---|---|---|
 | Footprint | Small set of controllers, low memory | Heavier (API server, UI, Redis) | High — per-tenant clusters multiply every megabyte |
-| UI | None (CLI + Git) | Full web UI | Low — Han Solo operator works in Git anyway |
+| UI | None (CLI + Git) | Full web UI | Low — solo operator works in Git anyway |
 | Helm support | Native `HelmRelease` CRD | Renders charts to manifests | Medium — charts are the delivery unit (`helm-chart`) |
 | Multi-cluster fleet | Bootstrap per cluster from one repo | Hub-and-spoke from one control plane | Medium — either handles per-tenant stamps |
 
@@ -120,7 +120,7 @@ deploy/
 |---|---|---|
 | dev | Automated commit from CI on merge to main | None — dev is disposable |
 | staging | PR raised automatically; merged when dev post-deploy checks + nightly suites are green | Platform-engineer review |
-| production (per tenant) | PR per wave: canary tenant first, then fleet waves | Shafi approves the first production promotion of each release |
+| production (per tenant) | PR per wave: canary tenant first, then fleet waves | The product owner approves the first production promotion of each release |
 
 Per-tenant directories implement the fleet-wave model from `multi-tenancy-design`.
 

@@ -16,7 +16,7 @@ description: >
   scripts/validate-alerting-rules-design.sh. Deep derivation, saturation
   patterns, toil, and escalation content split across references/. Used by
   the platform-engineer during Deploy.
-version: 2.3.0
+version: 2.3.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -31,7 +31,7 @@ related: [skill-authoring-standards, slo-definition, prometheus-metrics-design, 
 
 ## Purpose
 
-Alerts are the contract between the system and the human on call: *interrupt me only when a user-visible promise is at risk, and tell me what to do about it*. A good alerting design pages rarely, pages accurately, and attaches a runbook to every page. A bad one trains its sole operator — Shafi's platform has exactly one — to ignore the pager, which is worse than having no alerts at all.
+Alerts are the contract between the system and the human on call: *interrupt me only when a user-visible promise is at risk, and tell me what to do about it*. A good alerting design pages rarely, pages accurately, and attaches a runbook to every page. A bad one trains its sole operator — the product owner's platform has exactly one — to ignore the pager, which is worse than having no alerts at all.
 
 This skill enforces the alerts as Prometheus rule groups evaluated by each tenant's Prometheus and routed by Alertmanager (self-hosted, frugal: email and chat webhooks, no paid paging SaaS). The alerts are defined *on* the Service Level Objectives from `slo-definition`, computed from the recorded series in `prometheus-metrics-design`, and resolved using the procedures in `runbook-authoring`.
 

@@ -6,7 +6,7 @@ description: >
   stakeholders. Covers the Power/Interest Grid, stakeholder register format,
   communication strategy per quadrant, and RACI for key decisions. Used by the
   product-strategist agent during the Strategy phase before GTM planning begins.
-version: 1.2.0
+version: 1.2.1
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -113,7 +113,7 @@ For the first product (Data Estate Mapping and Compliance Intelligence — a pri
 | IT / DevOps Lead | Influencer + implementer | 2 | 3 | Keep Informed |
 | CISO / IT Security | Blocker | 3 | 1 | Keep Satisfied — highest-risk relationship |
 | External SOC 2 auditor | Beneficiary | 2 | 1 | Monitor |
-| Shafi (product owner) | Internal | 3 | 3 | Manage Closely |
+| Product owner | Internal | 3 | 3 | Manage Closely |
 
 The CISO placement is the decisive one: high power, low current interest — exactly the profile that silently kills deployments. The mitigation belongs in the Blocker Risk Register: a security architecture brief showing zero data egress and mTLS-by-default, delivered *before* the deployment request is raised, not after it is blocked. Note also that the primary user (Maya) starts with less power than either the buyer or the blocker — a product that only satisfies her wins the evaluation and still loses the deal.
 

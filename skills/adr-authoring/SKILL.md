@@ -11,7 +11,7 @@ description: >
   numbering a new ADR (scaffold-adr.sh), or checking one before acceptance
   (validate-adr.sh). Used by the enterprise-architect agent throughout the
   Design phase.
-version: 4.0.0
+version: 4.0.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25

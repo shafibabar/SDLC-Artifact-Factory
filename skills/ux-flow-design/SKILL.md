@@ -8,7 +8,7 @@ description: >
   states that happy-path flows omit. Used during Design to specify navigation and
   screen transitions before high-fidelity UI, across the microfrontend fragment
   boundaries.
-version: 2.0.0
+version: 2.0.1
 phase: design
 owner: ux-architect
 created: 2026-06-25
@@ -63,7 +63,7 @@ cross-fragment hand-off notation: `references/flow-notation-and-types.md`.
 ## Flow Notation Basics
 
 Flows are written as ASCII node-and-arrow sequences — no diagramming tool, so
-Shafi reviews them as plain Markdown. Five node kinds cover every flow:
+The user reviews them as plain Markdown. Five node kinds cover every flow:
 
 | Symbol | Node kind | Meaning |
 |---|---|---|

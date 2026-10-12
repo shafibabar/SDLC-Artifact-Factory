@@ -3,7 +3,7 @@
 A complete, end-to-end explanatory data story built with every technique in this skill, grounded in
 this repo's product (a data-estate / compliance platform: Google Drive + S3 ingestion, PII entity
 extraction, PostgreSQL-backed classification, SOC 2 as the MVP compliance target). The audience is
-**Shafi** — a PM, not a programmer, reviewing without IDE tooling — and the pending decision is
+**the product owner** — a PM, not a programmer, reviewing without IDE tooling — and the pending decision is
 whether to cite automated classification coverage as SOC 2 audit evidence.
 
 ---
@@ -18,7 +18,7 @@ presented.** What follows is the *explanatory* subset — one point, one audienc
 
 ## Step 1 — Context framing (Lesson 1)
 
-- **Who:** Shafi (PM), reviewing in plain Markdown.
+- **Who:** the product owner (PM), reviewing in plain Markdown.
 - **What decision:** whether automated coverage is now solid enough to cite as SOC 2 evidence instead
   of the current manual quarterly sampling.
 - **What action:** approve citing automated coverage in the audit evidence package — or hold for
@@ -99,7 +99,7 @@ phase: data
 created: 2026-07-31
 summary: Classification coverage crossed the 90% SOC 2 target in week 9 of Q2 and held, so automated coverage can replace the manual audit sample.
 owner: data-engineer
-audience: Shafi (PM) — SOC 2 evidence decision
+audience: the product owner (PM) — SOC 2 evidence decision
 ---
 
 # Data Story — Classification Coverage Crossed the SOC 2 Target
@@ -131,7 +131,7 @@ tenant sits below target (disaggregation check).
 ## Call to Action
 - data-engineer: run the per-tenant breakdown this week to confirm no tenant is below 90%; if all
   clear, wire the coverage query into the SOC 2 evidence export by end of sprint.
-- Shafi: approve citing automated coverage as evidence, contingent on the per-tenant check passing.
+- The user: approve citing automated coverage as evidence, contingent on the per-tenant check passing.
 
 ## Integrity Check
 | Pattern | Checked? | Notes |
@@ -149,7 +149,7 @@ tenant sits below target (disaggregation check).
 
 ## Why this works
 
-Shafi gets, on one page and in reading order: what was normal (mid-70s, manual sample), the tension
+The user gets, on one page and in reading order: what was normal (mid-70s, manual sample), the tension
 (target unmet), the climax (week-9 crossing, annotated on the chart), the resolution (cite it, retire
 the sample), and the next action with owners and a deadline. The integrity check is not decoration —
 it visibly flags the one unresolved risk (aggregation possibly hiding a below-target tenant) and

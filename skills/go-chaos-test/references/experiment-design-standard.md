@@ -83,7 +83,7 @@ allowed to get.
 ## The Four Elements as a Test Header
 
 Every chaos experiment states all four as a comment block immediately above the test function —
-reviewable by Shafi without running the code:
+reviewable by the user without running the code:
 
 ```go
 // EXPERIMENT: Circuit Breaker opens on Postgres pool exhaustion

@@ -30,7 +30,7 @@ owner: requirements-analyst
 ## Participants
 - Executor: Maya Chen (Compliance Officer, design partner — Northwind Compliance Co.)
 - Facilitator: requirements-analyst
-- Sign-off: Shafi + Maya Chen
+- Sign-off: Product owner + Maya Chen
 
 ## Environment
 - Canary tenant: tenant-northwind

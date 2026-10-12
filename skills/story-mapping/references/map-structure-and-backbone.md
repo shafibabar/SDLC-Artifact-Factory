@@ -83,7 +83,7 @@ branches are allowed (a user may re-scan, or connect several sources before
 scanning) — mark them with an annotation rather than forcing a strict line.
 
 Because this repo cannot run Patton's live whole-team session, the adaptation is
-to **narrate the spine aloud with Shafi** as an explicit step before the map is
+to **narrate the spine aloud with the user** as an explicit step before the map is
 final — the closest available analog to the book's cross-functional walkthrough,
 and the moment where the "map is a conversation, not an artifact" value is
 approximated. This is distinct from the generic "present artifact, wait for

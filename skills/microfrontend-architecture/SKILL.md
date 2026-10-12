@@ -6,12 +6,12 @@ description: >
   aligned to Bounded Context boundaries), composition pattern selection
   (Module Federation via Vite, not Webpack), fragment ownership and
   independent-deployability discipline, and cross-fragment communication
-  rules. Adopted as a deliberate, Shafi-approved architecture decision
+  rules. Adopted as a deliberate, user-approved architecture decision
   (2026-07-22) anticipating multiple future products and teams — the
   organizational precondition every source book gates adoption on. Used by
   frontend-engineer during Implement, and by domain-modeler/enterprise-
   architect when Bounded Context boundaries double as fragment boundaries.
-version: 1.0.0
+version: 1.0.1
 phase: implement
 owner: frontend-engineer
 created: 2026-07-22
@@ -43,7 +43,7 @@ cost (multiple builds, a composition layer, cross-app contracts) for no
 benefit.
 
 This repo anticipates **multiple future products and teams contributing**
-— the precondition the books require. This is a deliberate decision Shafi
+— the precondition the books require. This is a deliberate decision the user
 made explicitly (2026-07-22, `sdlc-context.json` decision log), not an
 inferred default from the research alone; the research's own honest
 conclusion (see `research/micro-frontends/building-micro-frontends-mezzalira.md`'s

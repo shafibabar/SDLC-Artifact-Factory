@@ -10,7 +10,7 @@ description: >
   flags are UX hints only, the CI flag matrix that tests both branches of a
   flag, and the kill-switch pattern for pausing pipeline consumers without a
   deploy. Used by the platform-engineer during Deploy.
-version: 1.2.0
+version: 1.2.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -45,7 +45,7 @@ Four kinds, and they behave nothing alike. Filing a flag under the wrong kind is
 |---|---|---|---|---|
 | **Release flag** | Ship code dark, release it independently of deploy | **Temporary** — days to a few weeks | Platform-engineer, per rollout plan | `extractor.v2.enabled` |
 | **Ops / kill-switch** | Pause or degrade a subsystem during an incident without a deploy | Permanent infrastructure, rarely *on* | On-call, during an incident | `pipeline.entity-extractor.consumer.paused` |
-| **Experiment flag** | A/B or staged comparison to inform a product decision | Temporary — bounded by the experiment | Product decision (Shafi), platform-engineer implements | `ranking.model-b.enabled` |
+| **Experiment flag** | A/B or staged comparison to inform a product decision | Temporary — bounded by the experiment | Product decision (the product owner), platform-engineer implements | `ranking.model-b.enabled` |
 | **Entitlement flag** | What a tenant's plan or contract includes | **Permanent** product configuration | Sales/product, stored as tenant config, not a "flag" in spirit | `entitlement.advanced-classification` |
 
 Two of the four are meant to live forever (ops, entitlement); two are meant to die (release, experiment). Confusing the pairs is the failure mode: a release flag treated as permanent becomes an untestable maze of `if`s; an entitlement flag treated as disposable gets accidentally deleted along with a tenant's paid feature.
@@ -64,7 +64,7 @@ Permanent, and *expected* to sit `false`/`off` almost always. No removal date �
 
 ### Experiment flags
 
-Temporary like release flags, but the exit criterion is a decision, not a percentage — the experiment ends when the result is read, not when rollout completes. Owner is the platform-engineer; the decision that closes it is Shafi's or the product owner's, recorded as an ADR reference in the flag's removal record.
+Temporary like release flags, but the exit criterion is a decision, not a percentage — the experiment ends when the result is read, not when rollout completes. Owner is the platform-engineer; the decision that closes it is the product owner's, recorded as an ADR reference in the flag's removal record.
 
 ### Entitlement flags
 

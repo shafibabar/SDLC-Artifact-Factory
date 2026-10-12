@@ -233,4 +233,4 @@ semantics even without colour — matching the ASCII convention.
 7. Draw and label each relationship (initiator → target, what flows, protocol).
 8. Run the boundary anti-pattern checklist.
 9. Write the Element Catalog, Rationale, and Boundary Notes.
-10. Present to Shafi for approval before advancing to the Container diagram.
+10. Present to the user for approval before advancing to the Container diagram.

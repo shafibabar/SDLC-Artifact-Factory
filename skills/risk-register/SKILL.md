@@ -6,11 +6,11 @@ description: >
   likelihood, impact, derived severity, owner, mitigation strategy, and status
   (open, mitigated, accepted, closed). Decide whether a surfaced concern is a
   risk-register entry, a tactical open_question, or a one-time escalation to
-  Shafi. Apply Fairbanks' risk-driven judgment — scale architecture and
+  the product owner. Apply Fairbanks' risk-driven judgment — scale architecture and
   mitigation effort to an architecturally-significant risk, one that if
   unmitigated could force a costly re-design. Consulted at every phase gate and
   whenever an agent's Escalation Rules surface a persistent exposure.
-version: 2.1.0
+version: 2.1.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -25,18 +25,18 @@ related: [adr-authoring, methodology-review, glossary-management, multi-tenancy-
 
 ## Purpose
 
-The risk register is the product's running ledger of standing exposures — conditions that persist, could still go wrong phases later, and need someone watching them: "here is what we are exposed to, how likely it is, how bad it would be, and who is keeping an eye on it." Without it, standing exposures get raised once and forgotten, or re-raised by different agents as if new each time. Shafi's job is to make informed calls; he needs accumulated exposure in one place, not to rediscover it.
+The risk register is the product's running ledger of standing exposures — conditions that persist, could still go wrong phases later, and need someone watching them: "here is what we are exposed to, how likely it is, how bad it would be, and who is keeping an eye on it." Without it, standing exposures get raised once and forgotten, or re-raised by different agents as if new each time. The product owner's job is to make informed calls; they need accumulated exposure in one place, not to rediscover it.
 
 ## Risk vs. Open Question vs. Escalation
 
 These three are easy to conflate. They are not the same thing.
 
-| | **Open Question** (`sdlc-context.json → open_questions`) | **Escalation** (direct to Shafi) | **Risk Register Entry** |
+| | **Open Question** (`sdlc-context.json → open_questions`) | **Escalation** (direct to the product owner) | **Risk Register Entry** |
 |---|---|---|---|
-| Nature | A gap in information needed to proceed | A decision only Shafi can make, now | A standing exposure with ongoing likelihood and impact |
-| Lifespan | Short — resolved by an answer, then removed | Instantaneous — resolved by Shafi's call | Long — tracked until mitigated, accepted, or closed |
-| Resolved by | Getting the missing fact | Shafi answering yes/no/choose | Ongoing mitigation, monitored over time |
-| Where it lives | `sdlc-context.json → open_questions` | Conversation with Shafi; not persisted | `artifacts/[product]/governance/risk-register.md` |
+| Nature | A gap in information needed to proceed | A decision only the product owner can make, now | A standing exposure with ongoing likelihood and impact |
+| Lifespan | Short — resolved by an answer, then removed | Instantaneous — resolved by the product owner's call | Long — tracked until mitigated, accepted, or closed |
+| Resolved by | Getting the missing fact | The product owner answering yes/no/choose | Ongoing mitigation, monitored over time |
+| Where it lives | `sdlc-context.json → open_questions` | Conversation with the product owner; not persisted | `artifacts/[product]/governance/risk-register.md` |
 
 **The test:** if resolving it is a single answer that makes the concern go away, it is an open question or a one-time escalation — not a risk. If resolving it requires ongoing work, monitoring, or acceptance of exposure that could still materialize later, it belongs in the register.
 
@@ -48,9 +48,9 @@ Log a risk register entry when a concern surfaced by an agent's Escalation Rules
 - Has a material impact (technical, business, compliance, schedule, security, or data)
 - Needs a named owner watching it, not just one decision to close it out
 
-Escalate directly to Shafi (no register entry) when the concern is a one-time decision with a clear yes/no or choice, resolves immediately with no residual exposure, or is already covered by an existing entry (update it, don't duplicate).
+Escalate directly to the product owner (no register entry) when the concern is a one-time decision with a clear yes/no or choice, resolves immediately with no residual exposure, or is already covered by an existing entry (update it, don't duplicate).
 
-**Worked distinction:** "Should we use MongoDB for the entity-extraction Bounded Context?" is a one-time escalation — Shafi decides, the question closes. "Entity extraction could miss PII in low-quality scanned PDFs, leaving a compliance gap" is a risk — it needs mitigation (quality tests, confidence thresholds, human-review triggers) and monitoring across Data, Quality, and Customer Validation.
+**Worked distinction:** "Should we use MongoDB for the entity-extraction Bounded Context?" is a one-time escalation — the product owner decides, the question closes. "Entity extraction could miss PII in low-quality scanned PDFs, leaving a compliance gap" is a risk — it needs mitigation (quality tests, confidence thresholds, human-review triggers) and monitoring across Data, Quality, and Customer Validation.
 
 ## Risk Categories
 
@@ -75,7 +75,7 @@ Pick the single category where mitigation ownership sits; note any secondary ang
 | Likelihood | `Low` \| `Medium` \| `High` — chance it materializes within the current horizon |
 | Impact | `Low` \| `Medium` \| `High` — consequence if it does |
 | Severity | Derived from Likelihood × Impact (see scoring reference) |
-| Owner | Agent role or "Shafi" — accountable for tracking and mitigating |
+| Owner | Agent role or "product owner" — accountable for tracking and mitigating |
 | Mitigation strategy | Concrete action to reduce likelihood, reduce impact, or prepare a response |
 | Status | `open` \| `mitigated` \| `accepted` \| `closed` |
 | Phase identified | Which SDLC phase surfaced the risk |
@@ -89,7 +89,7 @@ The full 3×3 matrix, the calibrated Low/Medium/High definitions for each axis, 
 
 ## Status Lifecycle
 
-`open` → `mitigated` (likelihood or impact reduced by concrete action, but exposure not fully gone) → `closed` (the underlying condition is gone). Or `open` → `accepted` (Shafi has explicitly decided the exposure is tolerable, with rationale recorded) → `closed` only if the condition later disappears. A risk is **never silently removed** — like ADRs, closed and accepted risks stay in the register with their final status as part of the record.
+`open` → `mitigated` (likelihood or impact reduced by concrete action, but exposure not fully gone) → `closed` (the underlying condition is gone). Or `open` → `accepted` (the product owner has explicitly decided the exposure is tolerable, with rationale recorded) → `closed` only if the condition later disappears. A risk is **never silently removed** — like ADRs, closed and accepted risks stay in the register with their final status as part of the record.
 
 ## The Risk-Driven Principle
 
@@ -99,9 +99,9 @@ This is why a register entry's severity should be read as a *budget signal*: a `
 
 ## Where Risks Come From & Review
 
-Any active agent may append an entry directly — the register has no single producing agent. `security-architect` logs compliance/security risks in Design; `data-engineer`/`data-architect` log data-quality risks in Data; `platform-engineer` logs operational risks in Deploy. Logging a risk does not require a separate escalation to Shafi, though he reviews the register at every phase gate.
+Any active agent may append an entry directly — the register has no single producing agent. `security-architect` logs compliance/security risks in Design; `data-engineer`/`data-architect` log data-quality risks in Data; `platform-engineer` logs operational risks in Deploy. Logging a risk does not require a separate escalation to the product owner, though they review the register at every phase gate.
 
-At every phase gate (and on request): read the register in full; confirm each `open` entry's review cadence has been met; confirm every `Critical`/`High` mitigation is still active and not stalled; merge duplicates; summarize open `Critical`/`High` risks in the phase-gate report so Shafi sees standing exposure alongside the artifacts under review.
+At every phase gate (and on request): read the register in full; confirm each `open` entry's review cadence has been met; confirm every `Critical`/`High` mitigation is still active and not stalled; merge duplicates; summarize open `Critical`/`High` risks in the phase-gate report so the product owner sees standing exposure alongside the artifacts under review.
 
 ## Quality Criteria
 

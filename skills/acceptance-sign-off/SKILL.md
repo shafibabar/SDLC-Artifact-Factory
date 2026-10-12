@@ -4,7 +4,7 @@ description: >
   Teaches how to produce the formal go/no-go artifact that closes Customer
   Validation — the sign-off criteria checklist (including exploratory
   session findings alongside scripted UAT results), the two-party sign-off
-  authority (Shafi plus a customer/design-partner representative), the
+  authority (the user plus a customer/design-partner representative), the
   distinction between full sign-off, conditional sign-off (with a documented
   remediation plan and target date), and no-go, and this artifact's role as
   the trigger for widening the `canary-deployment` rollout and the
@@ -14,7 +14,7 @@ description: >
   scripts/validate-signoff.sh (mechanically checks the checklist, both
   parties, and a stated decision/rollout action). Used by the
   requirements-analyst during Customer Validation.
-version: 2.2.0
+version: 2.2.1
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -56,7 +56,7 @@ A checklist item left unchecked does not automatically mean no-go — it means t
 
 | Party | Role |
 |---|---|
-| **Shafi** | Product owner — accountable for the business decision to ship |
+| **Product owner** | Accountable for the business decision to ship |
 | **Customer/design-partner representative** | The named contact from the participating design partner (e.g., Maya Chen) — accountable for confirming the release is genuinely usable and acceptable from the customer's side |
 
 Both parties review the compiled evidence and both must agree for a sign-off (full or conditional) to be recorded. This is deliberate: a unilateral internal decision to ship is not "acceptance" — acceptance, by definition, requires the accepting party's affirmative agreement. If no design-partner tenant participated in this release slice (an internal-proxy-only UAT per `uat-plan`), the sign-off cannot be full — it is capped at conditional, with the specific limitation ("validated by internal proxy only, no external design-partner confirmation") stated as one of the open conditions.
@@ -142,7 +142,7 @@ UAT results and exploratory-session findings: `references/worked-example.md`.
 |---|---|---|
 | Checklist evidence-based | Every checklist item cites its source (`uat-plan`, `feedback-template`, `beta-program-design`) | Checklist items asserted without a traceable source |
 | Exploratory findings included | Exploratory-session results are checked and triaged alongside scripted UAT results, not treated as optional | A sign-off recorded while planned exploratory sessions never ran, or their findings were never triaged |
-| Two-party authority | Both Shafi and a customer/design-partner representative are named and recorded as agreeing | A unilateral internal decision recorded as "sign-off" |
+| Two-party authority | Both the product owner and a customer/design-partner representative are named and recorded as agreeing | A unilateral internal decision recorded as "sign-off" |
 | Correct outcome category | Full/Conditional/No-go matches the actual defect/pattern status per the decision rules | A release with an open Critical defect recorded as full or conditional sign-off |
 | Conditions are dated and owned | Every conditional item has a remediation plan, an owner, and a target date | Vague "we'll fix it later" with no owner or date |
 | Rollout action explicit | The canary/flag action following the decision is stated, not implied | Sign-off recorded with no stated effect on the rollout |
@@ -152,7 +152,7 @@ UAT results and exploratory-session findings: `references/worked-example.md`.
 
 ## Anti-Patterns
 
-**Unilateral sign-off.** Shafi alone deciding to ship, without the customer/design-partner representative's affirmative agreement, is not acceptance — it is an internal release decision wearing the wrong label. If no design partner participated, the outcome is capped at conditional, with that gap stated explicitly.
+**Unilateral sign-off.** The product owner alone deciding to ship, without the customer/design-partner representative's affirmative agreement, is not acceptance — it is an internal release decision wearing the wrong label. If no design partner participated, the outcome is capped at conditional, with that gap stated explicitly.
 
 **Silent conditional-to-full drift.** Treating a conditional sign-off's remediation items as optional once the release has shipped — the tracked follow-up (target date, re-verification) is part of the sign-off record, not a suggestion that quietly expires.
 

@@ -33,7 +33,7 @@ base_meta = {"purpose": "x", "how_to_use": "x", "last_updated": "2026-07-20", "u
 check("worked example", {
     "_meta": {
         "purpose": "Per-product configuration. Records only fields that differ from CLAUDE.md's Tech Stack Defaults and standard methodology parameters. Absence of a field means the CLAUDE.md default applies.",
-        "how_to_use": "1. Check this file before applying any CLAUDE.md default. 2. If a field is present here, it overrides CLAUDE.md. 3. If absent, use the CLAUDE.md default. 4. Only Shafi may change this file; every change is recorded in sdlc-context.json's decisions array.",
+        "how_to_use": "1. Check this file before applying any CLAUDE.md default. 2. If a field is present here, it overrides CLAUDE.md. 3. If absent, use the CLAUDE.md default. 4. Only the user may change this file; every change is recorded in sdlc-context.json's decisions array.",
         "last_updated": "2026-07-20",
         "updated_by": "D012 — /sdlc-start questionnaire, confirming MongoDB and Option B deployment for the pilot customer instance",
     },

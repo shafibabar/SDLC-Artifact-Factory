@@ -8,7 +8,7 @@ description: >
   actions separated by the line of visibility). Grounded in Stickdorn This Is Service
   Design Doing. Used during Ideate to see the end-to-end experience before designing
   screens.
-version: 2.1.0
+version: 2.1.1
 phase: ideate
 owner: ux-architect
 created: 2026-06-25

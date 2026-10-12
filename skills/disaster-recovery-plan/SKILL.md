@@ -11,7 +11,7 @@ description: >
   crypto-shredding interplay that keeps backups honoring per-subject erasure,
   the restore-test discipline that makes an untested backup not a backup, and
   per-tenant DR independence. Used by the platform-engineer during Deploy.
-version: 1.2.0
+version: 1.2.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -81,7 +81,7 @@ Backups must honor the same per-subject erasure guarantees as live data — a GD
 | Drills restore into an isolated environment, never production | DR drill environment torn down after, mirrors dev/staging disposability |
 | Drills measure, not assert | Wall-clock time from "declare disaster" to "service verified healthy" is recorded — that number *is* the RTO |
 | A failed or unmeasured drill blocks the "DR complete" claim | DR restore must be executed with measured RTO/RPO before first production deploy is DR-ready |
-| Drill failures escalate | A stated RTO/RPO a drill proves unachievable goes to Shafi; it is not quietly relaxed in the document |
+| Drill failures escalate | A stated RTO/RPO a drill proves unachievable goes to the product owner; it is not quietly relaxed in the document |
 
 Worked drill script, step-by-step restore order, and drill record format: `references/dr-drill-guide.md`.
 
@@ -113,7 +113,7 @@ A **failed experiment generates corrective action items** using the same structu
 | **Blast radius** | Large — full failure class (regional outage, cluster loss, data loss across a tenant) | Small — one replica, one dependency, one namespace |
 | **Schedule** | Quarterly, planned, measured against RTO/RPO | Weekly, lightweight, measured against a specific hypothesis |
 | **Purpose** | Prove recovery from the worst realistic failure class within stated RTO/RPO | Verify one failure assumption still holds; surface architectural drift |
-| **Failure consequence** | Escalated to Shafi (RTO/RPO breach is a commitment failure) | Corrective action items (near-miss postmortem per `incident-management`) |
+| **Failure consequence** | Escalated to the product owner (RTO/RPO breach is a commitment failure) | Corrective action items (near-miss postmortem per `incident-management`) |
 
 Both practices are necessary. The quarterly drill proves the system can survive a catastrophe. The weekly experiment proves it is not accumulating quiet fragility in the 89 days between catastrophe rehearsals.
 

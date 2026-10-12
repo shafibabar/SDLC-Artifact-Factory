@@ -12,7 +12,7 @@ description: >
   references/artifact-type-catalog.md; a populated worked example lives in
   references/manifest-worked-example.md; a copyable empty starting shape for
   a new product's manifest lives in assets/manifest-instance-template.json.
-version: 2.1.0
+version: 2.1.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -37,7 +37,7 @@ These serve different purposes and must not be conflated.
 | What it lists | Every artifact *type* the plugin can produce (a fixed, plugin-level schema) | Every artifact *instance* actually produced for one product |
 | Scope | Plugin-wide, product-agnostic | One per product, at `artifacts/[product]/_manifest.json` |
 | Changes when | A new skill is added, a component is restructured (rare) | Every time an artifact is created, updated, or superseded (constant) |
-| Consumed by | Hooks validating "is this a real artifact type," agents checking where to write output | The `post-artifact-created` hook, `pre-phase-advance` (checking required artifacts exist), Shafi reviewing product state |
+| Consumed by | Hooks validating "is this a real artifact type," agents checking where to write output | The `post-artifact-created` hook, `pre-phase-advance` (checking required artifacts exist), the product owner reviewing product state |
 | Lives in | `references/artifact-type-catalog.md`, as a worked table | The product's own artifact tree |
 
 The type catalog is the schema. The product manifest is the data. The full catalog table — one row per artifact type, covering every phase — is reference material consulted when an agent needs to look up a specific type's producing agent, path pattern, or required frontmatter; see `references/artifact-type-catalog.md`.
@@ -112,13 +112,13 @@ The manifest schema is formalized machine-readably as `schemas/sdlc-manifest.sch
 | Every artifact registered | Every file under `artifacts/[product]/` has a corresponding manifest entry | Files exist on disk with no manifest entry (untracked artifact) |
 | IDs are unique and stable | No two entries share an ID; an artifact's ID never changes across revisions | ID collision, or an ID reassigned after a rename |
 | Traceability populated | Every entry has a non-empty `traces_to` | Entries with no requirement/decision/event reference (orphaned manifest entry) |
-| Status accurate | `status` reflects the artifact's actual review state | An artifact marked `approved` that Shafi has not reviewed |
+| Status accurate | `status` reflects the artifact's actual review state | An artifact marked `approved` that the product owner has not reviewed |
 | Manifest matches filesystem | Every `path` in the manifest resolves to a real file; no manifest entry for a deleted file without `status: superseded` | Manifest drift — entries pointing at files that no longer exist, with no supersession recorded |
 | Type catalog conformance | Every entry's `type` matches a row in `references/artifact-type-catalog.md`, and its `path` matches that type's path pattern | An artifact type not represented in the catalog, or a path that deviates from the pattern without a documented reason |
 
 ## Anti-Patterns
 
-- **Untracked artifacts** — an agent writes a file to `artifacts/[product]/` without a corresponding manifest entry. The artifact becomes invisible to `pre-phase-advance` and to Shafi's review of "what exists so far."
+- **Untracked artifacts** — an agent writes a file to `artifacts/[product]/` without a corresponding manifest entry. The artifact becomes invisible to `pre-phase-advance` and to the user's review of "what exists so far."
 - **Colliding IDs** — two artifacts assigned the same ID because the sequence counter was read stale (e.g. two agents producing artifacts of the same type concurrently without re-reading the manifest first). IDs must be assigned atomically against the current manifest state.
 - **Orphaned manifest entries** — a file is deleted from disk but its manifest entry is left in place with `status: approved`, so the manifest lies about what currently exists. Deletion must either supersede the entry (if replaced) or explicitly remove it (if it was created in error and never approved).
 - **Manifest drift** — the manifest is updated by hand occasionally instead of on every artifact write, so it silently falls out of sync with the filesystem. This is why the manifest update is a hook responsibility, not a manual step an agent might skip.

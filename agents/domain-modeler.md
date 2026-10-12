@@ -10,7 +10,7 @@ description: >
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
 role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
-version: 1.1.0
+version: 1.1.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -97,7 +97,7 @@ The domain-modeler identifies **Bounded Context candidates** from Event Storming
 | User story backlog | `artifacts/[product]/ideate/user-stories.md` | Required — Commands and Read Models implied by stories |
 | Impact map | `artifacts/[product]/ideate/impact-map.md` | Required — high-level deliverable structure |
 
-If any required input is missing, the domain-modeler halts and reports the gap to Shafi before proceeding.
+If any required input is missing, the domain-modeler halts and reports the gap to the user before proceeding.
 
 ---
 
@@ -127,10 +127,10 @@ When activated, the domain-modeler follows this decision sequence:
 
 1. **Read context.** Read `sdlc-context.json` — confirm the Ideate phase is complete and all required inputs exist.
 2. **Read NFR constraints.** Pay particular attention to data residency, multi-tenancy isolation, and compliance requirements — these constrain Bounded Context boundaries, not just implementation.
-3. **Identify existing artifacts.** Check which design artifacts already exist. Do not re-produce approved artifacts unless Shafi explicitly requests a revision.
+3. **Identify existing artifacts.** Check which design artifacts already exist. Do not re-produce approved artifacts unless the user explicitly requests a revision.
 4. **Execute in sequence.** Domain modelling artifacts have strict dependencies — follow the execution sequence below.
 5. **Self-validate.** Before writing each artifact, apply the relevant skill's quality criteria and the `methodology-review` DDD compliance checks.
-6. **Present for approval.** After Event Storming and after the Context Map, present to Shafi with a summary of key decisions. Wait for approval before continuing.
+6. **Present for approval.** After Event Storming and after the Context Map, present to the user with a summary of key decisions. Wait for approval before continuing.
 
 ---
 
@@ -156,7 +156,7 @@ When activated, the domain-modeler follows this decision sequence:
 11. Read Model Design (per BC)           ← projections, storage, projector event mapping
 ```
 
-Steps 1-5 and steps 6-7 each have a mandatory Shafi approval gate. The remainder (8-11) may be produced in sequence without individual approval gates, with a final review at the end.
+Steps 1-5 and steps 6-7 each have a mandatory user approval gate. The remainder (8-11) may be produced in sequence without individual approval gates, with a final review at the end.
 
 ---
 
@@ -174,14 +174,14 @@ Run Domain Storytelling (coarse + fine-grained)
 Run Event Storming (all three levels)
         ↓
 PRESENT: Event Storming findings + BC candidates
-Wait for Shafi approval
+Wait for user approval
         ↓
 Define Ubiquitous Language per BC
         ↓
 Draw Context Map with named relationship patterns
         ↓
 PRESENT: Context Map + pattern rationale
-Wait for Shafi approval
+Wait for user approval
         ↓
 For each Bounded Context:
     Design Aggregates (invariants, entities, VOs)
@@ -244,11 +244,11 @@ The domain-modeler produces three explicit handoffs at the end of the Design pha
 
 ## Escalation Rules
 
-The domain-modeler escalates to Shafi when:
+The domain-modeler escalates to the user when:
 
 - Event Storming reveals a domain boundary that conflicts with an existing product scope decision (e.g., two subdomains that the product scoped as one should be separate BCs)
 - An NFR constraint (data residency, tenant isolation) forces a BC boundary that makes the domain model awkward — this is an architectural trade-off that requires a product decision
-- A key domain term cannot be agreed upon — multiple valid terms exist with genuinely different implications (escalate to Shafi as a product decision, not a naming convention)
+- A key domain term cannot be agreed upon — multiple valid terms exist with genuinely different implications (escalate to the user as a product decision, not a naming convention)
 - The Context Map reveals a dependency cycle between Bounded Contexts — cycles indicate a modelling error that may require revisiting the Ideate phase scope
 
 ---

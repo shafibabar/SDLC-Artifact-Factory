@@ -28,7 +28,7 @@ A concrete failure mode this test catches: an ADR's Rationale reads "we chose as
 
 This repo's own `CLAUDE.md` and several skills already state durable, general guidance in prose without naming it as a Principle — for example, `integration-design`'s "Default rule: Use asynchronous (events) for cross-Bounded-Context communication. Use synchronous only when a response is required in the current request's flow." That sentence is a Principle by the test above: it is cited implicitly by every future sync-vs-async decision, not scoped to one flow.
 
-Whether to retroactively formalize this repo's own existing conventions as named Principle records is a decision for Shafi, not something this skill does unilaterally — see `sdlc-context.json`'s `open_questions`. What this skill's Principle format is *for* is a specific, recurring situation the enterprise-architect hits per product: a product-level default that will be cited by name across many ADRs for that product (e.g., "this product prefers eventual consistency over strong consistency for cross-service reads" — established once, cited by every Read Model ADR that follows).
+Whether to retroactively formalize this repo's own existing conventions as named Principle records is a decision for the user, not something this skill does unilaterally — see `sdlc-context.json`'s `open_questions`. What this skill's Principle format is *for* is a specific, recurring situation the enterprise-architect hits per product: a product-level default that will be cited by name across many ADRs for that product (e.g., "this product prefers eventual consistency over strong consistency for cross-service reads" — established once, cited by every Read Model ADR that follows).
 
 ---
 

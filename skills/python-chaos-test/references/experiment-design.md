@@ -14,7 +14,7 @@ breakage.
 ## The Hypothesis Template
 
 Copy this block verbatim above every experiment's test function and fill each
-line. It is the artifact Shafi reviews to judge whether an experiment is
+line. It is the artifact the user reviews to judge whether an experiment is
 well-formed — before reading a line of Python.
 
 ```python

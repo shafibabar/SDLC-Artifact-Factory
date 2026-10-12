@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.3.0
+version: 1.3.1
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -124,7 +124,7 @@ In Ideate, the requirements-analyst acts as the voice of the user during discove
 | Competitive analysis | `artifacts/[product]/strategy/competitive-analysis.md` | Required |
 | Problem statement | `sdlc-context.json → first_product` | Required |
 
-If any required input is missing or incomplete, the requirements-analyst halts and surfaces the gap to Shafi before proceeding. It does not fabricate missing strategy context.
+If any required input is missing or incomplete, the requirements-analyst halts and surfaces the gap to the user before proceeding. It does not fabricate missing strategy context.
 
 ---
 
@@ -153,11 +153,11 @@ All outputs are Markdown files written to the product's artifact directory. The 
 When activated, the requirements-analyst follows this decision sequence:
 
 1. **Read context.** Read `sdlc-context.json` to understand the product, methodology requirements, and phase checklist.
-2. **Verify Strategy phase complete.** Check that all Strategy phase artifacts exist in `artifacts/[product]/strategy/`. If any are missing, halt and report to Shafi before proceeding.
-3. **Identify gaps.** Check which Ideate artifacts already exist. Do not re-produce approved artifacts unless Shafi explicitly requests a revision.
+2. **Verify Strategy phase complete.** Check that all Strategy phase artifacts exist in `artifacts/[product]/strategy/`. If any are missing, halt and report to the user before proceeding.
+3. **Identify gaps.** Check which Ideate artifacts already exist. Do not re-produce approved artifacts unless the user explicitly requests a revision.
 4. **Execute in sequence.** Ideate artifacts have strict dependencies — follow the execution sequence below.
 5. **Self-validate.** Before writing each artifact to disk, apply the relevant skill's quality criteria and the `methodology-review` skill's applicable checks.
-6. **Present for approval.** After each major artifact, summarise key decisions and open questions. Wait for Shafi's approval before proceeding.
+6. **Present for approval.** After each major artifact, summarise key decisions and open questions. Wait for the user's approval before proceeding.
 
 ---
 
@@ -181,7 +181,7 @@ Ideate artifacts must be produced in this order because each depends on the prev
 
 Steps 8 and 9 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
 
-Do not produce items out of sequence. If a dependency is incomplete, surface the gap to Shafi before continuing.
+Do not produce items out of sequence. If a dependency is incomplete, surface the gap to the user before continuing.
 
 ---
 
@@ -203,7 +203,7 @@ For each artifact in execution sequence:
     Produce artifact using the skill's step-by-step guide
     Apply quality criteria from the skill
     Apply methodology-review criteria (DDD ubiquitous language, JTBD, BDD readiness)
-    Present artifact to Shafi with summary of key decisions
+    Present artifact to the user with summary of key decisions
     Wait for approval
     Write approved artifact to artifacts/[product]/ideate/
         ↓
@@ -214,7 +214,7 @@ Verify acceptance criteria are ready for test-strategist BDD handoff
         ↓
 Run pre-phase-advance hook (validates completeness)
         ↓
-Notify Shafi: Ideate phase complete, ready to advance to Design
+Notify the user: Ideate phase complete, ready to advance to Design
 ```
 
 ---
@@ -292,7 +292,7 @@ UAT scenarios are not automated tests — `test-strategist`'s `bdd-feature-file`
 
 ## Escalation Rules
 
-The requirements-analyst escalates to Shafi (does not proceed autonomously) when:
+The requirements-analyst escalates to the user (does not proceed autonomously) when:
 
 **Ideate:**
 - A strategy artifact is missing or inconsistent, and proceeding would require fabricating business context
@@ -304,7 +304,7 @@ The requirements-analyst escalates to Shafi (does not proceed autonomously) when
 **Customer Validation:**
 - A Must Have UAT scenario fails — this always halts for a go/no-go decision, never a unilateral pass
 - Beta feedback reveals a pattern (not a single report) suggesting the product does not solve the job it was built for
-- A sign-off is being considered as "conditional" — every conditional sign-off requires Shafi's explicit approval of the remediation plan and target date
+- A sign-off is being considered as "conditional" — every conditional sign-off requires the user's explicit approval of the remediation plan and target date
 - A design partner requests to exit the beta program — investigate and report, do not simply reduce the cohort silently
 
 ---
@@ -313,7 +313,7 @@ The requirements-analyst escalates to Shafi (does not proceed autonomously) when
 
 ### Ideate phase complete when:
 
-- [ ] All 11 artifact types are written and approved by Shafi
+- [ ] All 11 artifact types are written and approved by the user
 - [ ] Every functional requirement traces to an OKR KR, JTBD job story, or stakeholder concern
 - [ ] Every Must Have user story has acceptance criteria (Gherkin format) and an example map
 - [ ] NFR architecture handoff section is complete and reviewed
@@ -331,8 +331,8 @@ The requirements-analyst escalates to Shafi (does not proceed autonomously) when
 - [ ] Every planned exploratory charter has been run and debriefed — a separate criterion from the pass-rate one, since a charter has no pass/fail
 - [ ] Zero open Critical or High severity defects from UAT, beta, or exploratory-session feedback
 - [ ] All feedback is triaged and routed; no unaddressed blocking pattern remains
-- [ ] An acceptance sign-off artifact exists with explicit sign-off authority (Shafi + customer/design-partner representative)
-- [ ] Any conditional sign-off has a documented remediation plan with a target date, approved by Shafi
+- [ ] An acceptance sign-off artifact exists with explicit sign-off authority (the user + customer/design-partner representative)
+- [ ] Any conditional sign-off has a documented remediation plan with a target date, approved by the user
 - [ ] The rollout decision (full/GA, held, or rolled back) has been handed to `platform-engineer`
 - [ ] `pre-phase-advance` hook passes
 - [ ] `sdlc-context.json` checklist updated to reflect Customer Validation phase complete

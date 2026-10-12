@@ -50,7 +50,7 @@ Saga Orchestrator state machine:
 | Debuggability | Distributed logs acceptable | Single-place trace required |
 | Ford archetype | Anthology Saga | Parallel Saga |
 
-The platform default: **choreographed** for a two-context reaction with a compensation each service owns; **orchestrated** for any business process that a PM (Shafi) must be able to see the progress of on a dashboard. "Can Shafi ask *where is this scan?* and get one answer" is the deciding heuristic — a queryable central state means orchestration.
+The platform default: **choreographed** for a two-context reaction with a compensation each service owns; **orchestrated** for any business process that a PM must be able to see the progress of on a dashboard. "Can the product owner ask *where is this scan?* and get one answer" is the deciding heuristic — a queryable central state means orchestration.
 
 ---
 

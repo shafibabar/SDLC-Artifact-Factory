@@ -226,7 +226,7 @@ ORDER BY day, entity_type;
 
 Surfaces as:
 - A chart widget on the internal data-quality dashboard (`dashboard-specification`) — the 7-day rolling average per entity type, with threshold lines at 0.90 and 0.85.
-- Referenced in the `data-storytelling` narrative brief presented to Shafi as a leading quality indicator.
+- Referenced in the `data-storytelling` narrative brief presented to the user as a leading quality indicator.
 
 ### Why No New Instrumentation Was Needed
 
@@ -238,7 +238,7 @@ The `confidence` score was a first-class field on `EntityExtracted` because `dat
 
 | Metric | Surfaces in |
 |---|---|
-| Activation rate | Shafi's internal product-health dashboard (`dashboard-specification`) |
+| Activation rate | The product owner's internal product-health dashboard (`dashboard-specification`) |
 | Extraction throughput | Internal ops dashboard; referenced in `data-pipeline-implementation`'s backpressure tuning |
 | Classification accuracy proxy | Internal data-quality dashboard; informs `data-quality-rules` threshold tuning |
 | Gap-closure rate | Compliance officer's audit-prep dashboard; SOC 2 Evidence Report (`reporting-spec`) |

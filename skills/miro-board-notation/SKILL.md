@@ -9,7 +9,7 @@ description: >
   hand in Miro today and automatable via a real Miro API/MCP connection
   later with no format changes. No live Miro connection exists yet in this
   environment — this skill defines the spec format only.
-version: 1.0.0
+version: 1.0.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-22
@@ -102,7 +102,7 @@ Color Legend: `green` = Core Domain, `gray` = Generic Subdomain.
 ## Applying This Notation
 
 No live Miro connection exists in this environment yet. A board spec
-written this way is immediately useful two ways regardless: Shafi (or
+written this way is immediately useful two ways regardless: The user (or
 anyone) can build it by hand in Miro directly from the tables, and once a
 real Miro API/MCP connection exists, the same tables map directly onto
 Miro's item/connector creation calls — no reformatting needed at that point.

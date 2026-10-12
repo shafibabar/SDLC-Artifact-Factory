@@ -6,7 +6,7 @@ description: >
   dimensional star/snowflake modeling for analytical (OLAP) models (Kimball), the
   OLTP-vs-OLAP model-shape decision, and PostgreSQL physical DDL patterns with pgx.
   Used during Design whenever a service needs a persistent schema or an analytical mart.
-version: 2.1.0
+version: 2.1.1
 phase: design
 owner: data-architect
 created: 2026-06-25
@@ -41,7 +41,7 @@ physical DDL before the concepts and relationships are agreed is the central fai
 
 | Pass | Answers | Contains | Reviewer |
 |---|---|---|---|
-| **Conceptual (CDM)** | What the business talks about | ER-Entity names + relationship verb phrases; no keys, no types | Shafi (PM), in one sitting |
+| **Conceptual (CDM)** | What the business talks about | ER-Entity names + relationship verb phrases; no keys, no types | The product owner (PM), in one sitting |
 | **Logical (LDM)** | The full rigorous structure | Every attribute, cardinality/optionality, primary/alternate/foreign keys, normalization | Technical, tech-independent |
 | **Physical (PDM)** | How this database stores it | PostgreSQL tables, types, indexes, deliberate denormalization | data-architect + backend-engineer |
 

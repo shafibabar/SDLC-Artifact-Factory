@@ -9,7 +9,7 @@ description: >
   goals, behaviors, pains, JTBD link), the honesty rule for labeling assumptions, what to leave out
   (demographics that do not drive design), and how a persona becomes the "As a <persona>" role in a
   user story.
-version: 2.1.0
+version: 2.1.1
 phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
@@ -143,7 +143,7 @@ requires it — see the examples reference for how to extend beyond the two prim
 5. Check anti-patterns: no pains, no current approach, invented demographics, or an unlabeled
    assumption all mean the persona is not done.
 6. Confirm every persona links to at least one JTBD and can serve as an "As a \<persona\>" story role.
-7. Present to Shafi for review before the personas feed `jtbd-analysis`.
+7. Present to the user for review before the personas feed `jtbd-analysis`.
 
 Template and two fully worked repo personas: `references/persona-template-and-examples.md`.
 Field definitions, grounding, proto→research lifecycle, and what to leave out:

@@ -26,7 +26,7 @@ The severity taxonomy gives every incident a shared label that sets concrete exp
 
 **Communications:**
 - Status page updated with "Investigating" within 10 minutes of declaration
-- Stakeholder notification (Shafi, any affected tenant contacts) within 15 minutes
+- Stakeholder notification (the product owner, any affected tenant contacts) within 15 minutes
 - Status page updates every 15 minutes until resolved
 - Resolution update published within 1 hour of full recovery
 
@@ -205,7 +205,7 @@ If any criterion is met: open the postmortem document within 24 hours, using the
 | 1 | On-call acknowledges and begins investigation | Within SLA window |
 | 2 | On-call posts initial diagnosis to incident channel | Within 15 min of acknowledgement |
 | 3 | On-call requests additional resources if diagnosis is not progressing | After 20 min without a confirmed hypothesis |
-| 4 | Notify Shafi (stakeholder) | SEV1: at declaration; SEV2: at 30 min if unresolved |
+| 4 | Notify the product owner (stakeholder) | SEV1: at declaration; SEV2: at 30 min if unresolved |
 | 5 | Consider external escalation (cloud provider support, vendor) | Only after internal diagnosis exhausted |
 
 ### Unacknowledged Alert Escalation
@@ -273,7 +273,7 @@ If any given week produces more than 3–5 genuine pages requiring active interv
 
 ### Sustainable On-Call Load (Solo-Operator Version)
 
-Google's SRE book recommends that on-call-related reactive work should not exceed 25–50% of total engineering time. For a solo operator, a practical weekly heuristic: if on-call response plus associated toil (restarting services, manual cleanup, incident-tracking updates) is consuming more than half a working day per week, that is an automation deficit worth escalating to Shafi as a resourcing or tooling decision, not a condition to absorb indefinitely.
+Google's SRE book recommends that on-call-related reactive work should not exceed 25–50% of total engineering time. For a solo operator, a practical weekly heuristic: if on-call response plus associated toil (restarting services, manual cleanup, incident-tracking updates) is consuming more than half a working day per week, that is an automation deficit worth escalating to the product owner as a resourcing or tooling decision, not a condition to absorb indefinitely.
 
 ### Post-Incident Toil Tracking
 

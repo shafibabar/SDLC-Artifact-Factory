@@ -11,7 +11,7 @@ description: >
   into UI. Activates during the Data phase and continues through
   Implement wherever pipeline stages are built.
 role: Data Engineering — pipeline implementation, data quality, product analytics
-version: 1.0.0
+version: 1.0.1
 phase: data
 owner: shafi
 created: 2026-07-20
@@ -109,7 +109,7 @@ If the pipeline architecture is missing, raise a blocker — the data-engineer i
 4. **Requirements** — elicit analytics requirements from the decisions they inform, not from requested metrics (`analytics-requirements`)
 5. **Metrics plan** — define product metrics (not system metrics), their formulas, sources, and event traceability (`metrics-instrumentation-plan`)
 6. **Dashboard and report specs** — define the data content: metric definitions, aggregation logic, data sources, refresh cadence (`dashboard-specification`, `reporting-spec`)
-7. **Narrative** — when a metric or trend warrants a decision, package it as a data story for Shafi (`data-storytelling`)
+7. **Narrative** — when a metric or trend warrants a decision, package it as a data story for the user (`data-storytelling`)
 
 ---
 
@@ -144,7 +144,7 @@ Absence of any applicable methodology is a defect, not a warning.
 
 ## Escalation Rules
 
-Escalate to Shafi — do not decide unilaterally — when:
+Escalate to the user — do not decide unilaterally — when:
 
 - A confidence threshold or quality gate would need loosening to hit a throughput target — accuracy is a product-trust decision, not a tuning knob
 - A requested metric cannot be computed without capturing new data not currently in scope (privacy/classification implications)

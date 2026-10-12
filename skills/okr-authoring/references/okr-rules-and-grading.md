@@ -34,7 +34,7 @@ A Key Result is a **measurable outcome that proves the Objective was reached**. 
 |---|---|---|
 | **Measurable** | Expressible as a number or a clean binary | "Improve satisfaction" → "CSAT from paying customers rises from 3.9 to 4.4" |
 | **Outcome-based** | Measures a change in customer/business *behavior*, not team activity | "Ship the connector" → "60% of new accounts connect a second source within 14 days" |
-| **Owned** | Exactly one accountable person/team | (unowned) → "Owner: Shafi" |
+| **Owned** | Exactly one accountable person/team | (unowned) → "Owner: The product owner" |
 | **Independently verifiable** | Checkable from data, without the team's self-assessment | "Team feels onboarding is smoother" → "Median setup time drops below 30 min (from telemetry)" |
 | **Not gameable** | Cannot be technically hit while the Objective's spirit is missed | "10 features shipped" → tie the count to the behavior those features were meant to produce |
 
@@ -116,7 +116,7 @@ The hardest judgment in OKR authoring is calibrating ambition. Two failure modes
 
 Resolving the tension: set each target at the level where your honest confidence of hitting it is about **70%**. Not 90% (sandbagged), not 20% (fantasy). The confidence figure is itself tracked (see cadence below) and is the earliest warning that a target was mis-calibrated.
 
-**Decoupling from performance review.** Sandbagging is worst when OKR grades feed compensation or ratings — people rationally lowball. Keep OKR grading a *learning* instrument, explicitly separate from performance evaluation. In this repo's solo-operator context (Shafi grades his own OKRs) there is no reward-gaming incentive, so the discipline reduces to intellectual honesty: set targets you're genuinely ~70% confident of, and read a 0.5 as information, not as a bad mark.
+**Decoupling from performance review.** Sandbagging is worst when OKR grades feed compensation or ratings — people rationally lowball. Keep OKR grading a *learning* instrument, explicitly separate from performance evaluation. In this repo's solo-operator context (the user grades their own OKRs) there is no reward-gaming incentive, so the discipline reduces to intellectual honesty: set targets you're genuinely ~70% confident of, and read a 0.5 as information, not as a bad mark.
 
 ---
 
@@ -138,7 +138,7 @@ Resolving the tension: set each target at the level where your honest confidence
 
 - Every **product** OKR names the **company** Objective it serves. A product OKR that supports no company Objective is either misaligned or evidence the company OKRs are incomplete.
 - Alignment is by **reference, not literal copy** — a product KR need not restate a company KR; it must show how moving it advances a company Objective.
-- **Solo operator:** for Shafi as sole operator, product and company OKRs collapse into one set — document them once, and note explicitly that the two levels are unified so the "which company Objective?" check is satisfied by design.
+- **Solo operator:** for the user as sole operator, product and company OKRs collapse into one set — document them once, and note explicitly that the two levels are unified so the "which company Objective?" check is satisfied by design.
 
 ---
 

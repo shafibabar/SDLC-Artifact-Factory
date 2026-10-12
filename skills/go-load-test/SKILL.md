@@ -21,7 +21,7 @@ description: >
   standard wiring k6 output into the OpenTelemetry/Prometheus/Grafana stack
   (references/backpressure-and-reporting-standard.md). Used by the
   test-strategist during Quality.
-version: 2.0.0
+version: 2.0.1
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -128,7 +128,7 @@ product in production: k6's metrics stream to `staging`'s Prometheus via the nat
 output, a reused Grafana dashboard overlays the client-side k6 view against the service's own RED
 recording rules and backpressure signals, and a Grafana annotation marks the run's window so a later
 reviewer sees "a load test happened here," not an anomaly. `docs/quality/load-report.md` is a
-reviewable-by-Shafi pointer (run id, dashboard link, verdict per gate) — never a second data copy.
+reviewable-by-the-user pointer (run id, dashboard link, verdict per gate) — never a second data copy.
 Full plumbing and dashboard contents: `references/backpressure-and-reporting-standard.md`.
 
 ---

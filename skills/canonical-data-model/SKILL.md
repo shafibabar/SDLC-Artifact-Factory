@@ -12,7 +12,7 @@ description: >
   multiple sources describe the same real-world entity — e.g. the same file seen
   via Google Drive and S3, or a Person named in both an extracted PDF and the
   identity provider.
-version: 2.1.0
+version: 2.1.1
 phase: design
 owner: data-architect
 created: 2026-06-25
@@ -119,7 +119,7 @@ When a Domain Event crosses a context boundary carrying master data, its payload
 
 Three master entities sharing one `match_decisions` mechanism and one survivorship section is, in substance, a **multi-domain MDM** design (Cervo & Allen). Whether that shared hub is deliberate infrastructure or an accident of file layout is a decision to record — and before adding a fourth master entity, decide explicitly whether it reuses the shared mechanism or defines its own. The `Tenant` (from `multi-tenancy-design`) vs `Organisation` question — same real-world thing, or a distinct fourth domain — must be resolved in writing, not left implicit.
 
-Governance splits the single "Data Steward" into accountable roles (Data Domain Owner per entity; Business vs Technical Steward; a Governance Council — at this repo's solo-operator scale, Shafi — for cross-domain conflicts) and defines the golden-record lifecycle including un-merge/split. Full treatment: **`references/mdm-governance.md`**.
+Governance splits the single "Data Steward" into accountable roles (Data Domain Owner per entity; Business vs Technical Steward; a Governance Council — at this repo's solo-operator scale, the product owner — for cross-domain conflicts) and defines the golden-record lifecycle including un-merge/split. Full treatment: **`references/mdm-governance.md`**.
 
 ---
 

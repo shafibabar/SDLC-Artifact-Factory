@@ -7,7 +7,7 @@ description: >
   logging, and gap analysis. Produces a Functional Requirements Document (FRD)
   that is the authoritative input to the Design phase. Used by the
   requirements-analyst agent during the Ideate phase.
-version: 1.2.0
+version: 1.2.1
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -108,7 +108,7 @@ After drafting the requirements set, run gap analysis against the strategic arti
 | Business rule coverage | Are all known business rules (data residency, compliance obligations) captured? |
 | Negative space | What has been explicitly NOT included — and is that documented? |
 
-Gaps found during gap analysis become open questions. Log them and resolve with Shafi before the Ideate phase closes.
+Gaps found during gap analysis become open questions. Log them and resolve with the user before the Ideate phase closes.
 
 ---
 

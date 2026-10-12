@@ -161,7 +161,7 @@ The on-call *is* the reader; telling them to escalate to on-call is circular. "A
 "If none of the above, investigate further" is an admission the tree wasn't finished. Every unresolved branch needs a named escalation — "escalate: backend-engineer (service-name), cause unknown, include the output of verification step 2" — not an open door.
 
 **Impact statements in internal jargon**
-"Consumer lag exceeds SLO threshold on partition 3" tells Shafi nothing about whether customers are affected right now. Translate: "Document processing for tenant-[TENANT_ID] is backed up — customers may see stale classification results for up to [N] minutes." The metric name can appear in the Trigger section; the Impact section is for the product-level consequence.
+"Consumer lag exceeds SLO threshold on partition 3" tells the user nothing about whether customers are affected right now. Translate: "Document processing for tenant-[TENANT_ID] is backed up — customers may see stale classification results for up to [N] minutes." The metric name can appear in the Trigger section; the Impact section is for the product-level consequence.
 
 **Runbooks that never get drilled**
 Authored once, referenced in an alert, never followed until a real incident — which is the worst possible first test of whether the runbook is correct. The freshness SLA and drill cadence exist to prevent this. A runbook at zero executions and zero drills is not a runbook.

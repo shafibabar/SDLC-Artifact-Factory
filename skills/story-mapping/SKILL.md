@@ -9,7 +9,7 @@ description: >
   walking skeleton, MVP slice, release slicing, cutting a horizontal slice,
   sequencing epics/stories into releases, seeing the whole product journey at a
   glance, or turning a flat backlog into a two-dimensional view during Ideate.
-version: 2.1.0
+version: 2.1.1
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -33,8 +33,8 @@ Patton's central thesis: **the map is a conversation, not an artifact.** The
 value is the shared understanding a cross-functional team builds *while* mapping
 — not the diagram it leaves behind. A map produced solo and handed over as a
 document has captured a picture, not the understanding that matters. In this
-repo's single-agent-then-Shafi-approves workflow that live session cannot happen
-literally; the deliberate adaptation is to **narrate the spine aloud with Shafi**
+repo's single-agent-then-user-approves workflow that live session cannot happen
+literally; the deliberate adaptation is to **narrate the spine aloud with the user**
 before the map is treated as final (see `references/map-structure-and-backbone.md`).
 
 ## The Two Axes

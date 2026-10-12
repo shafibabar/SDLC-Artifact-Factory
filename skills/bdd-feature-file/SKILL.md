@@ -15,7 +15,7 @@ description: >
   scripts/scaffold-bdd-feature-file.sh / scripts/validate-bdd-feature-file.sh.
   BDD is a mandatory methodology. Used by the test-strategist during Implement
   and Quality.
-version: 2.0.0
+version: 2.0.1
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -125,7 +125,7 @@ An Examples table answers "how many rows," a question the Golden Triangle doesn'
 
 ## Ubiquitous Language in Steps
 
-Step wording uses the **canonical glossary terms** — "data asset," "sensitivity level," "classify," "tenant." Never synonyms ("file," "label," "tag"). Because feature files are read by Shafi and bind to code, drift in step language is drift in the product. Step phrasing is declarative (what, not how): "she classifies the asset," not "she sends a PATCH to /v1/data-assets/{id}/classification" — the HTTP detail lives in the step definition, not the spec. This declarative discipline is this repo's permanent instance of Ken Pugh's ATDD point (`research/requirements-and-user-stories/lean-agile-atdd-pugh.md`) and Gojko Adzic's framing of Given/When/Then as illustrating a business rule, not scripting a UI interaction (`research/testing/specification-by-example-adzic.md`) — cited here as provenance, not an unattributed local rule.
+Step wording uses the **canonical glossary terms** — "data asset," "sensitivity level," "classify," "tenant." Never synonyms ("file," "label," "tag"). Because feature files are read by the user and bind to code, drift in step language is drift in the product. Step phrasing is declarative (what, not how): "she classifies the asset," not "she sends a PATCH to /v1/data-assets/{id}/classification" — the HTTP detail lives in the step definition, not the spec. This declarative discipline is this repo's permanent instance of Ken Pugh's ATDD point (`research/requirements-and-user-stories/lean-agile-atdd-pugh.md`) and Gojko Adzic's framing of Given/When/Then as illustrating a business rule, not scripting a UI interaction (`research/testing/specification-by-example-adzic.md`) — cited here as provenance, not an unattributed local rule.
 
 ---
 
@@ -191,7 +191,7 @@ This is half of what "living documentation" actually requires. `references/colla
 Produces Gherkin feature files plus their step definitions (written before implementation — BDD):
 
 ```
-features/*.feature                         (Gherkin scenarios — readable by Shafi)
+features/*.feature                         (Gherkin scenarios — readable by the user)
 internal/test/bdd/steps_*.go               (godog step definitions)
 tests/e2e/*.spec.ts                         (journey scenarios bound to Playwright)
 ```

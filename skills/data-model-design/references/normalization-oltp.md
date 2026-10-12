@@ -16,7 +16,7 @@ audience, and never skip to physical DDL before the concepts and relationships a
 ### Conceptual Data Model (CDM)
 
 ER-Entity names plus relationship verb phrases only — no keys, no data types. Small enough
-for Shafi (a non-programmer PM) to approve in one sitting. For the data-estate product:
+for the product owner (often a non-programmer PM) to approve in one sitting. For the data-estate product:
 
 ```
 DataSource ──(supplies)──▶ DataAsset ──(contains)──▶ ExtractedEntity

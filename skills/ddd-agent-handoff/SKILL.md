@@ -14,7 +14,7 @@ description: >
   canonical-data-model, adr-authoring, subdomain-distillation) rather than
   duplicating them. Use when a task touches more than one agent's DDD
   responsibility and the correct owner, mode, or sequencing is unclear.
-version: 2.1.0
+version: 2.1.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-22
