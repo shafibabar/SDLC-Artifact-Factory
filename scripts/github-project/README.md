@@ -53,14 +53,15 @@ sits open forever — this happened for real on issues #112-#115 and
 Run from the repo root: `python3 scripts/github-project/<script>.py ...`
 (the paired slash commands in `.claude/commands/` wrap these.)
 
-### `plan_start.py "<title>" --labels <l1,l2,...> [--body "<body>"]`
+### `plan_start.py "<title>" --labels <l1,l2,...> [--body "<body>"] [--priority P0-P3] [--complexity XS-XL] [--severity S1-S4]`
 Creates the parent issue, adds it to the Project, sets Status Todo -> In
 Planning, and tracks it as the active plan in local state. Fails if a plan is
 already active. `--labels` is required — at least one of `discovery`, `agent`,
 `skill`, `bug`, `documentation`, `enhancement` (comma-separated for more than
 one). Every issue, sub-issue, and PR this tooling creates must carry one of
 these (Shafi's decision, 2026-07-24); an unknown or empty label set fails
-before the GitHub mutation ever runs.
+before the GitHub mutation ever runs. The optional triage flags are written
+to the board as Triaged values (see [Insights fields](#insights-fields-and-charts)).
 
 ### `plan_status.py <planning|in-progress|in-review|done>`
 Updates the Status of the currently tracked parent issue. `done` maps to the
@@ -136,6 +137,40 @@ at In Review: it also runs `gh pr ready`, `gh pr merge --merge
 with a comment naming the merged PR, and sets Status: Done. Without a
 recorded `--base`, behavior is unchanged — stops at In Review, review/
 merge/close manual.
+
+## Insights fields and charts
+
+The board carries 14 reporting fields (#1266) that the 15 Insights charts slice
+by: Hierarchy, Work-Type, Campaign, Branch-Type, Merge-Target, Priority,
+Severity, Complexity, Effort-Points, Cycle-Days, Duration, Dependency,
+Blocked-By and Data-Source, plus the 14-day `Sprint` iteration field. The chart
+catalog, and how to read each chart, is in `discovery/insights/charts.md`.
+
+- **Rules:** `ghp/insights.py`, pure functions, tested by
+  `tests/scripts/github-project-insights.test.py`. Every value comes from
+  evidence: labels, sub-issue links, PR head/base, lines changed, blocked-by
+  links, and created/closed dates.
+- **Go-forward:** `plan_start`, `plan_exit`, `exec_start` and `exec_complete`
+  call `ghp/insights_sync.sync()` on the items they touch. Priority, Complexity
+  and Severity given with `--priority/--complexity/--severity` (on
+  `plan_start` or `save_draft add|update`) are written as
+  `Data-Source=Triaged`, and nothing ever overwrites them. A sync failure only
+  warns; it never fails the command.
+- **Backfill / resync:** `python3 scripts/github-project/backfill_insights.py`
+  prints the per-field distribution and the pending write count. Add `--apply`
+  to write. It's idempotent, so re-run it at the end of a campaign: `sync()`
+  doesn't recompute a parent's roll-up Complexity from all of its children,
+  and the backfill does. A full first run is about 19k writes and 75 min.
+- **Setup:** `setup_insights_fields.py` creates any missing field
+  (check-before-create) and sets the Sprint iterations from
+  `config.SPRINT_START / SPRINT_DAYS / SPRINT_COUNT`.
+- **Sprint horizon:** `SPRINT_COUNT = 10` covers sprints up to **2026-11-08**.
+  Before then, raise it, run `setup_insights_fields.py`, then run
+  `backfill_insights.py --apply`. Rewriting iterations can reset item values,
+  and the backfill restores them.
+- **Charts have no API.** They live only in the Insights UI.
+  `discovery/insights/chart-build-guide.html` holds the exact settings for
+  rebuilding them.
 
 ## Local state
 

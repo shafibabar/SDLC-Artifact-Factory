@@ -120,6 +120,24 @@ matchable by a `PreToolUse`/`PostToolUse` hook the same way this repo's own
   `/plan-exit` as the reliable path regardless of whether the hook's output
   is visible; the hook is a convenience nudge, not the workflow's backbone.
 
+## Insights fields (#1266) — resolved by name, charts UI-only
+
+- 11 single-select fields and 3 NUMBER fields were created by
+  `createProjectV2Field` with options, colours and descriptions. They are
+  resolved **by name** at runtime (`project.ensure_insights_fields()`), so
+  `config.py` holds option definitions, not IDs. Names are hyphenated
+  (`Work-Type`), so chart filters need no quoting.
+- The `Sprint` iteration field had 3 overlapping 7-day-apart iterations.
+  It was rewritten via `updateProjectV2Field(iterationConfiguration:)` to ten
+  14-day sprints from 2026-06-22.
+- **There is no API for Insights charts** (GitHub Docs, checked 2026-10-12).
+  Group by is documented only for current charts. Sum/Avg/Min/Max on the
+  Y-axis needs NUMBER fields. Claude in Chrome is unavailable under WSL, so
+  the charts were built by hand from `discovery/insights/chart-build-guide.html`.
+- Item field writes are batched as about 20 aliased
+  `updateProjectV2ItemFieldValue` mutations per request with a 1 s pause. A
+  full board run (19,102 values) took about 75 min with no rate-limit retries.
+
 ## Scope note: why this lives under `.claude/`, not `commands/`/`hooks/`
 
 `commands/*.md` and `hooks/hooks.json` at the repo root are the SDLC
