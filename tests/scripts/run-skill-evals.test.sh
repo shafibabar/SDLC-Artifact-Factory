@@ -56,8 +56,11 @@ expect "unreadable result -> ERROR exit 2" 2 "VERDICT: ERROR" \
 
 expect "no arguments -> usage, exit 2" 2 "usage:" "$RUNNER"
 expect "unknown skill -> exit 2" 2 "no such skill" "$RUNNER" no-such-skill-xyz
-expect "skill without a suite -> exit 2 naming the expected path" 2 "evals/adr-authoring/<case>/prompt.md" \
-  "$RUNNER" adr-authoring
-expect "unknown option -> exit 2" 2 "unknown option" "$RUNNER" adr-authoring --bogus 1
+# Point the suite root at a location that never holds suites, so this guard is
+# tested without depending on any real skill lacking evals (and never starts a
+# billed run if a skill gains a suite — which is how this test once launched one).
+expect "skill without a suite -> exit 2 naming the expected path" 2 "no-suites-here/adr-authoring/<case>/prompt.md" \
+  env SKILL_EVALS_ROOT=no-suites-here "$RUNNER" adr-authoring
+expect "unknown option -> exit 2 (before any run starts)" 2 "unknown option" "$RUNNER" adr-authoring --bogus 1
 
 smoke_test_summary

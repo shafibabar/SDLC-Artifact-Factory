@@ -1,10 +1,15 @@
 ---
+name: adr-[NNN]-[slug]
+version: 1.0.0
+phase: design
+owner: enterprise-architect
+created: [YYYY-MM-DD]
+summary: [one sentence, ≤ 200 chars — the decision and its main reason; indexed as its memory-engine abstract]
 adr-id: ADR-[NNN]
 title: [Title]
-summary: [one sentence, ≤ 200 chars — the decision and its main reason; indexed as its memory-engine abstract]
 status: Proposed
-date: [YYYY-MM-DD]
 deciders: [Who made this decision]
+traces_to: [the requirement, NFR, event or earlier ADR that made this decision necessary]
 ---
 
 # ADR-[NNN]: [Title]

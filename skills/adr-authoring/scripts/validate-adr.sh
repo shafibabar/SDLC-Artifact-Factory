@@ -40,7 +40,7 @@ CONTENT="$(cat "$FILE")"
 # Frontmatter block: the first --- ... --- at the top of the file.
 FRONTMATTER="$(printf '%s\n' "$CONTENT" | sed -n '/^---$/,/^---$/p' | sed '1d;$d')"
 
-for field in adr-id title summary status date deciders; do
+for field in name version phase owner created summary adr-id title status deciders; do
   if printf '%s\n' "$FRONTMATTER" | grep -qE "^${field}:"; then
     _check "frontmatter has '$field'" 1
   else

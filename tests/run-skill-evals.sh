@@ -79,7 +79,9 @@ done
 if [[ ! -d "$REPO_ROOT/skills/$SKILL" ]]; then
   echo "no such skill: $SKILL" >&2; exit 2
 fi
-SUITE="evals/$SKILL"
+# SKILL_EVALS_ROOT (repo-relative) exists for tests: it lets the "no suite"
+# path be exercised without depending on some real skill still lacking evals.
+SUITE="${SKILL_EVALS_ROOT:-evals}/$SKILL"
 if [[ ! -d "$REPO_ROOT/$SUITE" ]] || [[ -z "$(find "$REPO_ROOT/$SUITE" -name prompt.md -o -name case.yaml 2>/dev/null | grep -v /results/ | head -1)" ]]; then
   echo "no eval suite for '$SKILL' (expected $SUITE/<case>/prompt.md)" >&2; exit 2
 fi
