@@ -28,6 +28,15 @@ except Exception:
 subagent = payload.get("tool_input", {}).get("subagent_type", "")
 cwd = payload.get("cwd", ".")
 
+# An installed plugin's agents are invoked by their namespaced name
+# ("sdlc-artifact-factory:product-strategist"); only --plugin-dir/dev sessions
+# may use the bare name. Strip OUR prefix only — another plugin's agent that
+# happens to share a short name (e.g. "other-plugin:backend-engineer") is not
+# ours to gate. (#1247: without this the gate never matched for real users.)
+PLUGIN_PREFIX = "sdlc-artifact-factory:"
+if subagent.startswith(PLUGIN_PREFIX):
+    subagent = subagent[len(PLUGIN_PREFIX):]
+
 AGENT_PHASE = {
     "product-strategist": "strategy",
     "requirements-analyst": "ideate",

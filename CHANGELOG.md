@@ -10,6 +10,8 @@ Format: [Semantic Version] — Date — Description
 
 ### Fixed
 
+- 2026-10-12 — **Phase gate now fires for installed users (#1247).** An installed plugin's agents are invoked as `sdlc-artifact-factory:<agent>`, but `scripts/pre-phase-advance.sh` matched bare names only, so for every real user the gate allowed everything. It now strips this plugin's own prefix (never another plugin's). Three new cases in `tests/scripts/pre-phase-advance.test.sh`; the namespaced-deny case fails against the old script.
+
 - 2026-10-12 — **Operator's name no longer leaks into users' products (#1248).** Agents and skills told Claude to "present each artifact to Shafi"; in the dogfood run that name ended up in a stranger's stakeholder map, decisions and `/sdlc-status`. All 233 mentions across 13 agents, 81 files in 47 skills, and one schema now say **"the user"** (the person in the session: approvals, escalations) or **"the product owner"** (the role: stakeholder tables, risk/OKR owners, sign-off authority). `acceptance-sign-off`'s template now reads `[Name] (product owner)` and its validator checks for the role, not the name. New blocking arch test `tests/arch/no-operator-name.test.py` keeps the name out of `agents/ skills/ commands/ hooks/ schemas/`; it stays in this repo's own working docs and `scripts/github-project/`. 47 skills and 13 agents PATCH-bumped.
 
 ### Changed
