@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "purpose": "The plugin's tech-stack defaults: what every generated product uses unless its sdlc-config.json overrides a row. Shipped with the plugin, so /sdlc-start and every agent can read it in a user's repo (CLAUDE.md is not shipped). Mirrored for this repo's maintainers in CLAUDE.md § Tech Stack Defaults; tests/arch/tech-stack-defaults.test.py keeps the two identical.",
+    "how_to_use": "Look up a row by its override_key. If the product's sdlc-config.json has tech_stack_overrides.<override_key>, use that; otherwise use default here. Never copy an unchanged default into sdlc-config.json."
+  },
+  "defaults": [
+    { "concern": "Backend language", "default": "Go", "override_key": "primary_language" },
+    { "concern": "API framework", "default": "`net/http` + `chi`", "override_key": "api_framework" },
+    { "concern": "Frontend", "default": "React + TypeScript", "override_key": "frontend" },
+    { "concern": "Primary database", "default": "PostgreSQL + `pgx`", "override_key": "primary_database" },
+    { "concern": "Message broker", "default": "Redpanda", "override_key": "message_broker" },
+    { "concern": "Graph database", "default": "Apache AGE (PostgreSQL extension)", "override_key": "graph_database" },
+    { "concern": "CI/CD", "default": "GitHub Actions", "override_key": "ci_cd" },
+    { "concern": "IaC", "default": "OpenTofu + Helm", "override_key": "iac" },
+    { "concern": "Service mesh", "default": "Linkerd (automatic mTLS)", "override_key": "service_mesh" },
+    { "concern": "Container orchestration", "default": "Kubernetes", "override_key": "container_orchestration" },
+    { "concern": "Observability", "default": "OpenTelemetry + Prometheus + Tempo + Grafana", "override_key": "observability" }
+  ],
+  "optional_choices": [
+    { "concern": "Optional database", "default": null, "override_key": "optional_database", "note": "No default: an explicit choice recorded as a structured object (included, value, rationale) — see the skill's config field reference." }
+  ]
+}

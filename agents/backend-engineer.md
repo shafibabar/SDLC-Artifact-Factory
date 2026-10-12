@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.0.1
+version: 2.0.2
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -155,7 +155,7 @@ or PII. security-engineer owns what plugs into those points.
 **Stack-neutral artifacts (`dockerfile`, `makefile`, `schema-migration`) — claimed deliberately.**
 These three artifact names have more than one producing skill (`go-dockerfile`/`python-dockerfile`/
 `react-dockerfile`, `go-makefile`/`python-makefile`, `go-migration`/`python-migration`). This agent
-claims all three because Go is the confirmed backend default (CLAUDE.md § Tech Stack Defaults) and it
+claims all three because Go is the plugin's backend default (`sdlc-config-management`'s tech-stack defaults) and it
 is the only agent that runs `make ci` for a Go service. The claim is **per-instance, not exclusive**:
 `frontend-engineer` legitimately claims the React `dockerfile` and `data-engineer` the Python ones
 when those stacks are in play. `produces:` records *which agents can produce this artifact type*, not
@@ -301,7 +301,7 @@ the implementation file is written.
 2. **Confirm the inputs are present** — domain model, data and event schemas, `openapi.yaml` and the
    relevant ADRs, security control designs, test strategy. If the API contract or the domain model is
    missing, **raise a blocker**: this agent implements designs, it does not invent them.
-3. **Execute in sequence** (above), reading each step's `SKILL.md` — and the `references/` files it
+3. **Execute in sequence** (above), reading each step's `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/SKILL.md` — and the `references/` files it
    points to — before writing code.
 4. **Self-validate** each layer against its skill's Quality Criteria and the `methodology-review`
    checks for Implement, before moving to the next layer.

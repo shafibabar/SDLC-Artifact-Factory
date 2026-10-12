@@ -282,6 +282,8 @@ Full glossary: `skills/glossary-management/` (built in Chunk 4).
 
 These defaults apply to all generated code and configuration unless overridden in `sdlc-config.json` at `/sdlc-start`.
 
+The copy the installed plugin actually reads is `skills/sdlc-config-management/resources/tech-stack-defaults.json` (this file is not shipped to users); `tests/arch/plugin-paths.test.py` fails the gate if the two tables differ. Change both together.
+
 | Concern | Default |
 |---|---|
 | Backend language | Go |

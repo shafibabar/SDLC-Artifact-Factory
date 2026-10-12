@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.4.0
+version: 1.4.1
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -199,7 +199,7 @@ Verify Strategy phase artifacts exist
 Identify existing Ideate artifacts (skip if already approved)
         ↓
 For each artifact in execution sequence:
-    Read the relevant skill SKILL.md
+    Read the relevant skill's ${CLAUDE_PLUGIN_ROOT}/skills/<skill>/SKILL.md
     Read ubiquitous-language.md for canonical terms
     Read strategy inputs (OKRs, stakeholder map, GTM strategy, competitive analysis)
     Produce artifact using the skill's step-by-step guide
@@ -281,7 +281,7 @@ If the Quality phase gates have not passed or no deployed environment exists, ha
 
 UAT scenarios are not automated tests — `test-strategist`'s `bdd-feature-file`/`go-e2e-test` already proved the system behaves correctly in the Quality phase. UAT proves the system is *right* for real users; it is human-executed, once per release, against a live environment. Exploratory sessions (step 3, run in step 5) are a distinct activity from both — see `uat-plan`'s Exploratory Testing Component. A charter has no pass/fail, only findings; step 5 does not close having run zero exploratory sessions and still call itself complete.
 
-**The Agile Testing Quadrants, split across two agents**: `test-strategist` owns Q1 (unit/technology-facing-supporting), Q2 (BDD feature files — business-facing-supporting), and Q4 (performance/load/chaos — technology-facing-critiquing). This agent owns **Q3** (exploratory/UAT — business-facing, critiquing the product). This is a deliberate division of labor, not an artifact of how the phases happen to be organized — see the identical note in `agents/test-strategist.md`.
+**The Agile Testing Quadrants, split across two agents**: `test-strategist` owns Q1 (unit/technology-facing-supporting), Q2 (BDD feature files — business-facing-supporting), and Q4 (performance/load/chaos — technology-facing-critiquing). This agent owns **Q3** (exploratory/UAT — business-facing, critiquing the product). This is a deliberate division of labor, not an artifact of how the phases happen to be organized — see the identical note in `${CLAUDE_PLUGIN_ROOT}/agents/test-strategist.md`.
 
 ### Handoffs
 

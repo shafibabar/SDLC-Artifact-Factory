@@ -17,7 +17,7 @@ Self-contained — loadable without reading `SKILL.md` first. This is the exhaus
   "product": "<product name>",
   "product_slug": "<lowercase-hyphen slug, prefix of every artifact ID>",
   "tech_stack_overrides": {
-    "<Tech Stack Defaults row this product overrides>": "<override value>",
+    "<override_key of a tech-stack default this product overrides>": "<override value>",
     "optional_database": {
       "included": true,
       "value": "<database name>",
@@ -43,7 +43,7 @@ Self-contained — loadable without reading `SKILL.md` first. This is the exhaus
 | `_meta` | object | **Yes** | Versioning/tracking block, mirroring `sdlc-context.json`'s `_meta` convention. See sub-table below. |
 | `product` | string (minLength 1) | **Yes** | Human-readable product name (e.g. `"Data Estate Mapping and Compliance Intelligence"`). |
 | `product_slug` | string, pattern `^[a-z0-9]+(-[a-z0-9]+)*$` | **Yes** | Set once at `/sdlc-start`. Becomes the prefix in every artifact ID for this product (see `artifact-manifest`'s ID scheme). The pattern is the component-naming one, adopted from its home at CLAUDE.md § Naming Conventions — read the rule there. |
-| `tech_stack_overrides` | object | No | Override-only map of Tech Stack Defaults rows this product sets differently. Absent/empty = every default used unchanged. |
+| `tech_stack_overrides` | object | No | Override-only map of tech-stack default rows this product sets differently. Absent/empty = every default used unchanged. |
 | `compliance_frameworks` | array of strings | No | Frameworks and control families the product must satisfy. |
 | `deployment_model` | string (minLength 1) | No | The specific deployment option this product/instance uses. |
 | `methodology_parameters` | object | No | Product-specific overrides of narrow factory-wide calibration parameters. |
@@ -65,9 +65,9 @@ Self-contained — loadable without reading `SKILL.md` first. This is the exhaus
 
 ### `tech_stack_overrides` — keys
 
-The keys are **not a closed set**: they track whatever rows CLAUDE.md's Tech Stack Defaults table defines, which may grow over time. Two shapes are allowed:
+The keys are **not a closed set**: they track whatever rows `resources/tech-stack-defaults.json` defines, which may grow over time. Two shapes are allowed:
 
-- **`optional_database`** — a structured object, the one Tech Stack Defaults row CLAUDE.md exposes as an explicit *choice* rather than a fixed default. Required sub-fields (`additionalProperties: false`):
+- **`optional_database`** — a structured object, the one tech-stack row exposed as an explicit *choice* rather than a fixed default. Required sub-fields (`additionalProperties: false`):
 
   | Sub-field | Type | Required | Meaning |
   |---|---|---|---|
@@ -77,9 +77,9 @@ The keys are **not a closed set**: they track whatever rows CLAUDE.md's Tech Sta
 
 - **Any other row** (e.g. `graph_database`, `api_framework`, `primary_language`, `message_broker`) — matched by `additionalProperties`, a single string (minLength 1) naming the override value. Example: `"graph_database": "Neo4j Community"`.
 
-A row appears here **only** if it differs from the CLAUDE.md default. The Tech Stack Defaults rows (all overridable) are:
+A row appears here **only** if it differs from the default. The default rows (all overridable; canonical copy in `resources/tech-stack-defaults.json`) are:
 
-| Concern | CLAUDE.md default | Override key |
+| Concern | Default | Override key |
 |---|---|---|
 | Backend language | Go | `primary_language` |
 | API framework | `net/http` + `chi` | `api_framework` |
@@ -116,7 +116,7 @@ Object whose `additionalProperties` values may be **string or number** depending
 
 ## `/sdlc-start` questionnaire → config-field mapping
 
-The `/sdlc-start` command asks the user a fixed set of questions — one per Tech Stack Defaults row, plus compliance scope and deployment model. For each, a "keep the default" answer writes **nothing**; an "override" answer writes exactly the overriding field. The file starts empty and grows only by explicit divergence.
+The `/sdlc-start` command asks the user a fixed set of questions — one per tech-stack default row, plus compliance scope and deployment model. For each, a "keep the default" answer writes **nothing**; an "override" answer writes exactly the overriding field. The file starts empty and grows only by explicit divergence.
 
 | Questionnaire prompt (paraphrased) | Field written on override | Written on "keep default"? |
 |---|---|---|
@@ -149,8 +149,8 @@ The `/sdlc-start` command asks the user a fixed set of questions — one per Tec
 ```json
 {
   "_meta": {
-    "purpose": "Per-product configuration. Records only fields that differ from CLAUDE.md's Tech Stack Defaults and standard methodology parameters. Absence of a field means the CLAUDE.md default applies.",
-    "how_to_use": "1. Check this file before applying any CLAUDE.md default. 2. If a field is present here, it overrides CLAUDE.md. 3. If absent, use the CLAUDE.md default. 4. Only the user may change this file; every change is recorded in sdlc-context.json's decisions array.",
+    "purpose": "Per-product configuration. Records only fields that differ from the plugin's tech-stack defaults and standard methodology parameters. Absence of a field means the default applies.",
+    "how_to_use": "1. Check this file before applying any default. 2. If a field is present here, it overrides the default. 3. If absent, use the plugin's default. 4. Only the user may change this file; every change is recorded as a decision in the product's project memory.",
     "last_updated": "2026-07-20",
     "updated_by": "D012 — /sdlc-start questionnaire, confirming MongoDB and Option B deployment for the pilot customer instance"
   },
@@ -173,7 +173,7 @@ The `/sdlc-start` command asks the user a fixed set of questions — one per Tec
 
 ### Reading this config, field by field
 
-Everything **not** listed — `primary_language`, `api_framework`, `primary_database`, `message_broker`, `graph_database`, `ci_cd`, `iac`, `service_mesh`, `container_orchestration`, `observability`, `frontend` — uses the CLAUDE.md default unchanged, and correctly does not appear in the file. When `backend-engineer` begins a service it resolves each fact independently against the two-tier order:
+Everything **not** listed — `primary_language`, `api_framework`, `primary_database`, `message_broker`, `graph_database`, `ci_cd`, `iac`, `service_mesh`, `container_orchestration`, `observability`, `frontend` — uses the plugin's default unchanged, and correctly does not appear in the file. When `backend-engineer` begins a service it resolves each fact independently against the two-tier order:
 
 1. **API framework** — checks `tech_stack_overrides.api_framework`. Absent → falls back to `net/http` + chi.
 2. **Optional database** — checks `tech_stack_overrides.optional_database`. Present, `included: true` → uses MongoDB for the entity-extraction and crawl-metadata bounded contexts per the rationale's stated scope; still uses PostgreSQL (the unoverridden default) everywhere else.
@@ -189,7 +189,7 @@ Before treating a `sdlc-config.json` as valid, confirm:
 
 - [ ] `_meta`, `product`, `product_slug` all present; no top-level field outside the permitted set.
 - [ ] `product_slug` matches `^[a-z0-9]+(-[a-z0-9]+)*$` — the adopted pattern named in the field table above, whose home is CLAUDE.md § Naming Conventions.
-- [ ] Every `tech_stack_overrides` key actually differs from its CLAUDE.md default (no restated defaults).
+- [ ] Every `tech_stack_overrides` key actually differs from its default (no restated defaults).
 - [ ] `optional_database`, if present, has all three of `included`, `value`, `rationale`.
 - [ ] Every `compliance_frameworks` entry names its control families, not just the framework.
 - [ ] `deployment_model`, if present, names a specific documented option.
