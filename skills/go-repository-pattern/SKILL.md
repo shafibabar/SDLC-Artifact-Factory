@@ -15,13 +15,16 @@ description: >
   caller-supplied transaction via a Querier interface and WithTx),
   connection-pool usage (pgxpool.Pool as the default querier, Acquire only
   for an explicit connection-scoped session), and query-construction rules
-  (parameterised $N placeholders always, no string-built SQL, pgx has no
-  named-parameter syntax). Full pgx error table and transaction worked
+  (parameterised placeholders always — positional $N, or pgx.StrictNamedArgs
+  @name for long statements — never string-built SQL). Full pgx error table and transaction worked
   example in references/error-translation-and-transactions.md; query and
   pool depth in references/query-construction-and-connection-pooling.md.
+  Also covers the harder cases: routing reads to replicas without breaking
+  read-your-writes, keyset pagination over large tenant datasets, and the
+  event-sourced repository (conditional append on expected version).
   Implements the data-architect's schemas. Used by the backend-engineer
   during Implement.
-version: 2.0.0
+version: 3.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -29,7 +32,14 @@ tags: [implement, go, pgx, repository, postgres, outbox, optimistic-concurrency,
 produces: go-repository-implementation
 domain: backend
 status: stable
-related: [go-domain-model, go-error-handling, go-project-structure, go-migration, go-integration-test, go-service-layer, multi-tenancy-design]
+related: [go-domain-model, go-error-handling, go-project-structure, go-migration, go-integration-test, go-service-layer, multi-tenancy-design, cqrs-pattern]
+sources:
+  - research/software-architecture/designing-backend-systems-go-campbell.md
+  - research/software-architecture/the-go-programming-language-donovan-kernighan.md
+  - research/software-architecture/clean-architecture-martin.md
+  - research/software-architecture/clean-code-martin.md
+  - research/domain-driven-design/learning-ddd-khononov.md
+  - research/software-architecture/designing-data-intensive-applications-kleppmann.md
 ---
 
 # Go Repository Pattern
@@ -40,7 +50,7 @@ A repository is the only thing that knows how an Aggregate is persisted. It sati
 
 This repository is pgx-native throughout (`pgxpool.Pool`, `pgx.Batch`, `pgx.ErrNoRows`) — a deliberate, justified departure from the more portable-but-slower `database/sql`+`sqlx` mainstream default (Campbell, *Designing Backend Systems with Go*), made to use Postgres-specific features directly. Not an oversight to reconcile.
 
-A repository is Robert Martin's **Humble Object** pattern applied to persistence: thin, hard-to-unit-test wrapper code, verified by integration tests against a real database (`go-integration-test`), not unit tests with a mocked driver. Logic worth unit-testing — invariants, state transitions — lives in the Aggregate (`go-domain-model`), fully testable with no database at all.
+A repository is Robert Martin's **Humble Object** pattern (*Clean Architecture*, Ch. 26) applied to persistence: thin, hard-to-unit-test wrapper code, verified by integration tests against a real database (`go-integration-test`), not unit tests with a mocked driver. Logic worth unit-testing — invariants, state transitions — lives in the Aggregate (`go-domain-model`), fully testable with no database at all.
 
 ---
 
@@ -68,18 +78,22 @@ var _ domain.DataAssetRepository = (*DataAssetRepo)(nil)
 
 ## Reads — Parameterised and Tenant-Scoped
 
-Every query uses `$N` placeholders and filters by `tenant_id` from context (full rationale for both: `references/query-construction-and-connection-pooling.md`).
+Every query uses `$N` placeholders and filters by `tenant_id` from context (full rationale for both: `./references/query-construction-and-connection-pooling.md`).
 
 ```go
 func (r *DataAssetRepo) FindByID(ctx context.Context, id uuid.UUID) (*domain.DataAsset, error) {
     const q = `SELECT id, tenant_id, source_id, sensitivity_level, version
                  FROM data_assets WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL`
-    var (aid, tid, sid uuid.UUID; level string; version int64)
-    err := r.q.QueryRow(ctx, q, id, tenantID(ctx)).Scan(&aid, &tid, &sid, &level, &version)
+    var (
+        assetID, ownerTenantID, sourceID uuid.UUID
+        sensitivity                      string
+        version                          int64
+    )
+    err := r.q.QueryRow(ctx, q, id, tenantID(ctx)).Scan(&assetID, &ownerTenantID, &sourceID, &sensitivity, &version)
     if err != nil {
         return nil, translatePgError(err, domain.ErrNotFound)
     }
-    return domain.Reconstitute(aid, tid, sid, domain.SensitivityLevel(level), version), nil
+    return domain.Reconstitute(assetID, ownerTenantID, sourceID, domain.SensitivityLevel(sensitivity), version), nil
 }
 ```
 
@@ -87,7 +101,7 @@ func (r *DataAssetRepo) FindByID(ctx context.Context, id uuid.UUID) (*domain.Dat
 
 ## Error-Translation Standard
 
-Every pgx/pgconn error a repository method can receive is classified once, in a small private `translatePgError` helper living in the same file as the repository that calls it — never a shared `internal/infrastructure/errors.go` (`go-project-structure`'s anti-pattern: a dedicated infra errors file implies infrastructure owns a failure vocabulary; it only ever translates into the domain's). The complete table — `pgx.ErrNoRows`, `pgconn.PgError.Code` for unique (`23505`) and foreign-key (`23503`) violations, client `context.DeadlineExceeded`/`context.Canceled` vs. server-side `statement_timeout` (`57014`), and `40001` serialization failures — plus the full translation function: **`references/error-translation-and-transactions.md`**.
+Every pgx/pgconn error a repository method can receive is classified once, in a small private `translatePgError` helper living in the same file as the repository that calls it — never a shared `internal/infrastructure/errors.go` (`go-project-structure`'s anti-pattern: a dedicated infra errors file implies infrastructure owns a failure vocabulary; it only ever translates into the domain's). The complete table — `pgx.ErrNoRows`, `pgconn.PgError.Code` for unique (`23505`) and foreign-key (`23503`) violations, client `context.DeadlineExceeded`/`context.Canceled` vs. server-side `statement_timeout` (`57014`), and `40001` serialization failures — plus the full translation function: **`./references/error-translation-and-transactions.md`**.
 
 The rule with no exception: **no pgx or pgconn type ever crosses out of `internal/infrastructure/postgres/`.** A caller that needs to inspect `pgErr.Code` itself is a defect — the translation already happened.
 
@@ -109,19 +123,19 @@ type Querier interface { // satisfied structurally by *pgxpool.Pool and pgx.Tx
 func (r *DataAssetRepo) WithTx(tx pgx.Tx) *DataAssetRepo { return &DataAssetRepo{q: tx} }
 ```
 
-`FindByID` is safe pool-bound or tx-bound. **`Save` is a hard precondition on being tx-bound** — its `UPDATE` and outbox `INSERT` are two statements that only a shared `pgx.Tx` commits atomically; calling `Save` on a pool-bound repo is a code-review defect (see Quality Criteria). The application-layer `Handle` method that opens the `tx`, calls `assets.WithTx(tx)`, and `Commit`s at the end — using the identical named-return-plus-deferred-rollback idiom this skill used internally before — is fully worked in **`references/error-translation-and-transactions.md`**.
+`FindByID` is safe pool-bound or tx-bound. **`Save` is a hard precondition on being tx-bound** — its `UPDATE` and outbox `INSERT` are two statements that only a shared `pgx.Tx` commits atomically; calling `Save` on a pool-bound repo is a code-review defect (see Quality Criteria). The application-layer `Handle` method that opens the `tx`, calls `assets.WithTx(tx)`, and `Commit`s at the end — using the identical named-return-plus-deferred-rollback idiom this skill used internally before — is fully worked in **`./references/error-translation-and-transactions.md`**.
 
 ---
 
 ## Connection-Pool Usage Standard
 
-`*pgxpool.Pool`'s `Exec`/`Query`/`QueryRow` acquire and release a connection automatically, per call — this is the default and correct choice for every method in this skill, transactional or not (`pool.Begin` already acquires and holds a connection for the transaction's lifetime; no explicit `Acquire` needed). `Acquire` is the narrow exception for an explicit *connection-scoped session* outside a transaction — advisory locks, `LISTEN`/`NOTIFY` — where connection identity itself, not row/table consistency, is what's being coordinated. An `Acquire`d connection must be `Release()`d on every path; an un-released one is a pool leak with no reclaim timeout. Full worked example and the "Acquire vs. WithTx" decision: **`references/query-construction-and-connection-pooling.md`**.
+`*pgxpool.Pool`'s `Exec`/`Query`/`QueryRow` acquire and release a connection automatically, per call — this is the default and correct choice for every method in this skill, transactional or not (`pool.Begin` already acquires and holds a connection for the transaction's lifetime; no explicit `Acquire` needed). `Acquire` is the narrow exception for an explicit *connection-scoped session* outside a transaction — advisory locks, `LISTEN`/`NOTIFY` — where connection identity itself, not row/table consistency, is what's being coordinated. An `Acquire`d connection must be `Release()`d on every path; an un-released one is a pool leak with no reclaim timeout. Full worked example and the "Acquire vs. WithTx" decision: **`./references/query-construction-and-connection-pooling.md`**.
 
 ---
 
 ## Query-Construction Standard
 
-Parameterised `$N` placeholders always; never `fmt.Sprintf` (or any string-building) into a SQL string — this is pgx's extended query protocol sending SQL text and values as two separate messages, the mechanical reason a value can never be re-parsed as SQL. pgx has **no named-parameter syntax** (`:name`/`@Name` are `sqlx`/`sqlc` features this driver doesn't have) — the convention for four-or-more parameters is one clause per line with an inline `// $N` comment naming the Go value bound there. Multi-statement reads use `pgx.Batch`, never a loop of string-concatenated `UNION ALL`. Full rule, worked bad/good pair, and `pgx.Identifier` for the one legitimate dynamic-identifier case: **`references/query-construction-and-connection-pooling.md`**.
+Parameterised `$N` placeholders always; never `fmt.Sprintf` (or any string-building) into a SQL string — this is pgx's extended query protocol sending SQL text and values as two separate messages, the mechanical reason a value can never be re-parsed as SQL. For four or more parameters, use **`pgx.StrictNamedArgs`** (`@name` placeholders, pgx ≥ 5.6). pgx rewrites them to `$N` on the client, so values still travel separately and it is just as injection-safe. "Strict" also makes the query fail if a placeholder has no argument or an argument is unused, which catches drift that positional `$N` comments can't. On pgx < 5.6, or for short statements, use positional `$N` with one aligned `// $N` comment per argument. Avoid plain `pgx.NamedArgs`: a misspelled name silently binds `NULL`. Multi-statement reads use `pgx.Batch`, never a loop of string-concatenated `UNION ALL`. Full rule, worked bad/good pair, and `pgx.Identifier` for the one legitimate dynamic-identifier case: **`./references/query-construction-and-connection-pooling.md`**.
 
 ---
 
@@ -138,6 +152,16 @@ func tenantID(ctx context.Context) uuid.UUID {
 ```
 
 A missing tenant must never silently become a cross-tenant query — the application-layer backstop behind physical isolation (`multi-tenancy-design`).
+
+---
+
+## The Harder Cases — Read These When They Apply
+
+- **Lists over large tenant datasets** (thousands of rows per tenant, deep paging). Use keyset pagination on a tenant-leading index, never `OFFSET`, and batch related lookups with `pgx.Batch`. Read `./examples/02-tenant-list-keyset-pagination.md`.
+- **Reads routed to replicas** (a high-availability primary/replica setup). Replicas lag, so a user who just wrote can read stale data. Name the anomaly the read path must prevent, as Kleppmann does (*Designing Data-Intensive Applications*, Ch. 5): usually **read-your-writes** on post-command reads, sometimes **monotonic reads**. Route those reads to the primary; send only lag-tolerant queries to a replica. Read `./examples/03-replica-routing-read-your-writes.md`.
+- **An event-sourced Aggregate.** The persistence shape changes, but the concurrency rule does not. Append new events only if the stream is still at the expected version; a rejected append means a concurrent writer, the same signal as a compare-and-swap that touched 0 rows (Khononov, *Learning Domain-Driven Design*). Read `./examples/04-event-sourced-repository.md`.
+
+The simplest complete repository (read, compare-and-swap save, outbox) is `./examples/01-basic-repository.md`.
 
 ---
 
@@ -192,4 +216,4 @@ internal/infrastructure/postgres/dataasset_repo.go       (Querier, WithTx, trans
 internal/infrastructure/postgres/dataasset_repo_test.go  (integration test — go-integration-test)
 ```
 
-Full standards: `references/error-translation-and-transactions.md` (error table, transaction worked example) and `references/query-construction-and-connection-pooling.md` (query construction, `pgx.Batch`, connection-pool `Acquire`).
+Full standards: `./references/error-translation-and-transactions.md` (error table, transaction worked example) and `./references/query-construction-and-connection-pooling.md` (query construction, `pgx.Batch`, connection-pool `Acquire`).

@@ -218,22 +218,31 @@ func (r *DataAssetRepo) Save(ctx context.Context, a *domain.DataAsset) error {
     if ct.RowsAffected() == 0 {
         return fmt.Errorf("data asset %s: %w", a.ID(), domain.ErrConcurrentModification)
     }
-    for _, e := range a.PullEvents() {
-        payload, mErr := json.Marshal(e)
-        if mErr != nil {
-            return fmt.Errorf("marshalling %s: %w", e.EventType(), mErr)
+    return r.insertOutboxEvents(ctx, a)
+}
+
+// insertOutboxEvents drains the Aggregate's pending Domain Events into the
+// Transactional Outbox on the same Querier as the state change, so both commit
+// or roll back together.
+func (r *DataAssetRepo) insertOutboxEvents(ctx context.Context, a *domain.DataAsset) error {
+    for _, event := range a.PullEvents() {
+        payload, err := json.Marshal(event)
+        if err != nil {
+            return fmt.Errorf("marshalling %s: %w", event.EventType(), err)
         }
-        if _, err = r.q.Exec(ctx, `
+        if _, err := r.q.Exec(ctx, `
             INSERT INTO outbox (id, aggregate_id, tenant_id, event_type, payload, occurred_at)
             VALUES ($1,$2,$3,$4,$5, now())`,
-            uuid.New(), a.ID(), a.TenantID(), e.EventType(), payload,
+            uuid.New(), a.ID(), a.TenantID(), event.EventType(), payload,
         ); err != nil {
-            return translatePgError(fmt.Errorf("writing outbox %s: %w", e.EventType(), err), nil)
+            return translatePgError(fmt.Errorf("writing outbox %s: %w", event.EventType(), err), nil)
         }
     }
     return nil
 }
 ```
+
+`Save` reads at one level of abstraction: change the state (compare-and-swap), then record what happened (`insertOutboxEvents`). The outbox loop is extracted as its own named step, per Martin's single-level-of-abstraction rule (*Clean Code*, Ch. 3), and loop variables are spelled out (`event`, not `e`).
 
 No `Begin`, no `defer tx.Rollback`, no `Commit` — every path in `Save` now either
 returns an error (the caller's `defer tx.Rollback(ctx)` unwinds everything) or returns
