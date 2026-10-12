@@ -11,7 +11,7 @@ description: >
   numbering a new ADR (scaffold-adr.sh), or checking one before acceptance
   (validate-adr.sh). Used by the enterprise-architect agent throughout the
   Design phase.
-version: 4.0.1
+version: 4.0.2
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -48,7 +48,7 @@ An ADR is an investment, so spend it where a wrong decision is expensive. Fairba
 2. **Breadth of dependency.** How many other decisions, components or teams rely on it?
 3. **Uncertainty.** How likely is it that we're wrong, or that circumstances shift?
 
-Write an ADR when the first two are high, more so as uncertainty rises: service decomposition, Context Map patterns, the tenancy model, cross-context integration style, API versioning strategy, data residency enforcement, and any deviation from a **stack-level** default in CLAUDE.md's Tech Stack Defaults table (language, API framework, primary database, message broker, CI/CD, IaC, service mesh, orchestration, observability). These are Richards & Ford's "architecture is the stuff that's hard to change" (*Fundamentals of Software Architecture*, Ch. 1).
+Write an ADR when the first two are high, more so as uncertainty rises: service decomposition, Context Map patterns, the tenancy model, cross-context integration style, API versioning strategy, data residency enforcement, and any deviation from a **stack-level** tech-stack default (`sdlc-config-management`) (language, API framework, primary database, message broker, CI/CD, IaC, service mesh, orchestration, observability). These are Richards & Ford's "architecture is the stuff that's hard to change" (*Fundamentals of Software Architecture*, Ch. 1).
 
 **Deliberately write no ADR** when a decision is cheap to reverse and narrowly scoped, even if it is mildly non-obvious: a library hidden behind an interface, a config default, code style. **The gate takes precedence:** a library or tool that sits behind your own interface is not a stack-level choice, so picking one, whether or not it is the library some agent usually reaches for, never needs an ADR on the "deviation" rule alone. For the listed stack-level concerns, choosing the default is already recorded; write an ADR only to deviate from it. Over-recording is a real cost: the decisions that matter get buried. For a worked triage of six candidate decisions, read `./examples/04-when-not-to-write-an-adr.md`.
 

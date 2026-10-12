@@ -19,7 +19,7 @@ description: >
   place of config. Does not write application code, tests, security control internals, or
   architecture decisions; it operates what the other agents build. Activates on /sdlc-deploy.
 role: Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks
-version: 2.0.1
+version: 2.0.2
 phase: deploy
 owner: shafi
 created: 2026-07-20
@@ -339,7 +339,7 @@ has resolved the workload shape.
    backup contracts (data-architect). **If the container-diagram or multi-tenancy-design is missing,
    raise a blocker** — the platform implements the architecture, it does not invent it.
 3. **Resolve the workload shape first** for anything being templated (`kubernetes-workload-patterns`).
-4. **Execute in sequence** above, reading each skill's `SKILL.md` — and the `references/` file it
+4. **Execute in sequence** above, reading each skill's `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/SKILL.md` — and the `references/` file it
    points to — before generating.
 5. **Prove it mechanically, not by inspection**: a chart must install into kind, a module must plan
    clean, a rule must evaluate, a runbook link must resolve, a restore must complete. Configuration

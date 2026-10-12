@@ -9,7 +9,7 @@ description: >
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.0.0
+version: 3.0.1
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -167,7 +167,7 @@ writes them in Ideate, from the ICP and outcomes recorded here.
 2. **Identify gaps.** Check which strategy artifacts exist; do not re-produce unless the user asks for a revision.
 3. **Confirm inputs.** If the problem statement is ambiguous in a way that would materially change the
    vision, the ICP, or positioning, ask the user before proceeding — do not assume market, user, or goals.
-4. **Execute in sequence** (above), reading each skill's `SKILL.md` and following its guide.
+4. **Execute in sequence** (above), reading each skill's `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/SKILL.md` and following its guide.
 5. **Self-validate** each artifact against its skill's Quality Criteria and the `methodology-review`
    checks relevant to Strategy before writing it.
 6. **Present for approval**, summarising the key decisions, and wait for the user before the next artifact.

@@ -4,7 +4,7 @@ description: >
   sdlc-config.json — the per-product configuration file the /sdlc-start
   questionnaire writes, recording only tech-stack, compliance-framework,
   deployment-model, and methodology-parameter choices that OVERRIDE
-  CLAUDE.md's Tech Stack Defaults. Covers the override-only principle, the
+  the plugin's tech-stack defaults. Covers the override-only principle, the
   two-tier config-then-default precedence lookup an agent performs before
   applying any default, who may change the file (only the user, via a recorded
   decision), _meta.last_updated / updated_by tracking, and validation against
@@ -12,7 +12,7 @@ description: >
   tech-stack fact (api_framework, primary_database, graph_database,
   optional_database, deployment_model), by the /sdlc-start command that writes
   it, and by hooks checking an artifact matches the product's real config.
-version: 2.0.1
+version: 3.0.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -27,30 +27,30 @@ related: [artifact-manifest, methodology-review, skill-authoring-standards]
 
 ## Purpose
 
-CLAUDE.md's Tech Stack Defaults table gives this plugin a sensible starting configuration for every product it builds — Go, `net/http` + chi, PostgreSQL, Redpanda, and so on. Not every product needs every default. `sdlc-config.json` is the per-product record of where a specific product's configuration diverges from those defaults, populated interactively by the `/sdlc-start` questionnaire and consulted by every agent for the remainder of that product's build.
+The plugin's tech-stack defaults give every product it builds a sensible starting configuration — Go, `net/http` + chi, PostgreSQL, Redpanda, and so on. They ship with the plugin in **`./resources/tech-stack-defaults.json`** (one row per concern, with its `override_key`), so they can be read in any product repo; this repo's CLAUDE.md mirrors them for maintainers. Not every product needs every default. `sdlc-config.json` is the per-product record of where a specific product's configuration diverges from those defaults, populated interactively by the `/sdlc-start` questionnaire and consulted by every agent for the remainder of that product's build.
 
-This skill defines the config file's shape, the precedence rule between it and CLAUDE.md, who may change it and how, and the obligation every agent has to check it before falling back to a CLAUDE.md default. The exhaustive field reference (every field, type, constraint), the questionnaire-question-to-field mapping, and a full worked config for this repo's data-estate product live in **`references/config-field-reference.md`**, derived directly from `schemas/sdlc-config.schema.json`.
+This skill defines the config file's shape, the precedence rule between it and the defaults, who may change it and how, and the obligation every agent has to check it before falling back to a default. The exhaustive field reference (every field, type, constraint), the questionnaire-question-to-field mapping, and a full worked config for this repo's data-estate product live in **`references/config-field-reference.md`**, derived directly from `schemas/sdlc-config.schema.json`.
 
 ## Precedence Rule
 
-**`sdlc-config.json` overrides CLAUDE.md defaults. CLAUDE.md defaults apply wherever a product does not override them.**
+**`sdlc-config.json` overrides the plugin's defaults. The defaults apply wherever a product does not override them.**
 
 This is a two-tier lookup, always performed in this order:
 
 1. Check `sdlc-config.json` for the field in question. If present, use it — it is the product's deliberate choice.
-2. If absent, use the corresponding default from CLAUDE.md's Tech Stack Defaults table (or the relevant methodology/naming/artifact-standard section for non-tech-stack fields).
+2. If absent, use the row with that `override_key` in `./resources/tech-stack-defaults.json` (or the plugin's methodology, naming or artifact standard for non-tech-stack fields).
 
-There is no third tier. An agent never invents a configuration choice that exists in neither file — an unresolvable gap is an open question for the user, handled per the working agreements in CLAUDE.md and `sdlc-context.json`, not a default to be improvised.
+There is no third tier. An agent never invents a configuration choice that exists in neither file — an unresolvable gap is an open question for the user, handled as an open question in the product's project memory, not a default to be improvised.
 
 No agent resolves an entire product configuration once and caches it informally — each fact is looked up field-by-field against the same two-tier order, so a partial config update (the user overrides one more field mid-project) is picked up correctly by every subsequent artifact without any agent needing to "know" the change happened through a channel other than the file itself.
 
 ## The Override-Only Principle
 
-`sdlc-config.json` never repeats a CLAUDE.md default unchanged. If a product uses Go, `net/http` + chi, PostgreSQL, and Redpanda exactly as CLAUDE.md specifies, none of those fields appear in `sdlc-config.json` at all — the file may be nearly empty, and that is correct, not incomplete.
+`sdlc-config.json` never repeats a default unchanged. If a product uses Go, `net/http` + chi, PostgreSQL, and Redpanda exactly as the defaults specify, none of those fields appear in `sdlc-config.json` at all — the file may be nearly empty, and that is correct, not incomplete.
 
 This matters for two reasons:
 
-1. **Drift risk.** A repeated-but-unchanged field is a second copy of a fact that already lives in CLAUDE.md. If CLAUDE.md's default later changes, every product config that redundantly copied the old value now silently contradicts the new default instead of inheriting it.
+1. **Drift risk.** A repeated-but-unchanged field is a second copy of a fact that already lives in the defaults file. If a default later changes, every product config that redundantly copied the old value now silently contradicts the new default instead of inheriting it.
 2. **Signal clarity.** A config file containing only overrides tells a reader, at a glance, exactly what makes this product different from the factory norm. A file padded with restated defaults hides the two or three fields that actually matter.
 
 The four override categories are: **tech-stack overrides**, **compliance-framework selections**, **deployment-model choice**, and **per-product methodology parameters**. `references/config-field-reference.md` gives the exact JSON shape, type, and required/optional status of each, matching the schema.
@@ -80,13 +80,13 @@ Changing `sdlc-config.json` mid-project is a decision, not a file edit:
 
 Every agent already reads `sdlc-context.json` first before producing an artifact. This skill extends that rule to `sdlc-config.json`:
 
-**Before applying any CLAUDE.md default, an agent must check whether `sdlc-config.json` overrides it for this product.** Concretely: `backend-engineer` does not assume `net/http` + chi without checking `sdlc-config.json → tech_stack_overrides.api_framework`; `platform-engineer` does not assume a deployment model without checking `sdlc-config.json → deployment_model`. The check costs one file read and prevents an entire artifact from being built against the wrong configuration.
+**Before applying any default, an agent must check whether `sdlc-config.json` overrides it for this product.** Concretely: `backend-engineer` does not assume `net/http` + chi without checking `sdlc-config.json → tech_stack_overrides.api_framework`; `platform-engineer` does not assume a deployment model without checking `sdlc-config.json → deployment_model`. The check costs one file read and prevents an entire artifact from being built against the wrong configuration.
 
-An agent that applies a CLAUDE.md default without checking for an override is silently discarding a decision the user already made at `/sdlc-start` or in a later config change. This is a defect, not a stylistic gap.
+An agent that applies a default without checking for an override is silently discarding a decision the user already made at `/sdlc-start` or in a later config change. This is a defect, not a stylistic gap.
 
 ## Relationship to `/sdlc-start`
 
-`sdlc-config.json` is created once, at the start of a product's build, by the `/sdlc-start` command's interactive questionnaire (see `sdlc-context.json → tech_stack.sdlc_start_questionnaire`). The command asks the user a fixed set of questions — one per Tech Stack Defaults row, plus compliance scope and deployment model — and for each, a "keep the default" answer writes nothing to the file, while an "override" answer writes exactly the overriding field. This is what keeps the override-only principle mechanically enforced: the file starts empty and grows only by explicit divergence. The full question-to-field mapping is in `references/config-field-reference.md`.
+`sdlc-config.json` is created once, at the start of a product's build, by the `/sdlc-start` command's interactive questionnaire. The command asks the user a fixed set of questions — one per row in `./resources/tech-stack-defaults.json`, plus compliance scope and deployment model — and for each, a "keep the default" answer writes nothing to the file, while an "override" answer writes exactly the overriding field. This is what keeps the override-only principle mechanically enforced: the file starts empty and grows only by explicit divergence. The full question-to-field mapping is in `references/config-field-reference.md`.
 
 `/sdlc-start` is a command (a workflow), not this skill — this skill defines the standard the command's output must conform to.
 
@@ -94,7 +94,7 @@ An agent that applies a CLAUDE.md default without checking for an override is si
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Override-only | Every field present differs from the CLAUDE.md default | A field restates the value CLAUDE.md already specifies |
+| Override-only | Every field present differs from the default | A field restates the value the defaults file already specifies |
 | Precedence respected | Every agent checks `sdlc-config.json` before applying a default | An agent applies a default without checking for an override |
 | Change authorized | Every value traces to a decision the product owner made | A config value with no corresponding decision or `/sdlc-start` record |
 | Rationale recorded | Mid-project changes have a matching `sdlc-context.json → decisions` entry | Config edited with no decision entry |
@@ -103,8 +103,8 @@ An agent that applies a CLAUDE.md default without checking for an override is si
 
 ## Anti-Patterns
 
-- **Default restatement** — copying CLAUDE.md's defaults into the file "for clarity." Creates a second source of truth that goes stale when defaults evolve. This is the primary anti-pattern this skill exists to prevent.
-- **Silent override-ignoring** — an agent applies the CLAUDE.md default without having checked `sdlc-config.json` first; the artifact no longer matches the product's real configuration.
+- **Default restatement** — copying the defaults into the file "for clarity." Creates a second source of truth that goes stale when defaults evolve. This is the primary anti-pattern this skill exists to prevent.
+- **Silent override-ignoring** — an agent applies the default without having checked `sdlc-config.json` first; the artifact no longer matches the product's real configuration.
 - **Unauthorized config changes** — an agent edits `sdlc-config.json` on its own judgment mid-build, without the user's approval and without a decision entry.
 - **Orphaned overrides** — a field is added for a decision later reversed but never removed, so the config keeps overriding a choice nobody holds. Reverting a decision means removing the field.
 - **Vague deployment/compliance fields** — `"deployment_model": "private"` without naming which documented option, or `"compliance_frameworks": ["SOC 2"]` without the specific control families. Values must be specific enough to act on without a follow-up question.

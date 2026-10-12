@@ -5,6 +5,8 @@ disable-model-invocation: true
 
 Drive the Implement phase of the SDLC Artifact Factory.
 
+Invoke every agent named below via the Agent tool with `subagent_type: "sdlc-artifact-factory:<agent-name>"`; each agent's definition is `${CLAUDE_PLUGIN_ROOT}/agents/<agent-name>.md` — never search the filesystem for it.
+
 1. Read `sdlc-context.json`. Confirm the Design phase is complete (domain model, architecture, API contracts, security design all exist and are approved). If not, tell the user to complete `/sdlc-design` first and stop.
 2. Check which services and test standards already exist. Do not regenerate approved work unless the user explicitly asks for a revision.
 3. **Invoke `test-strategist` first**, to establish the test strategy, the Test Pyramid targets, and the BDD feature files from the Ideate phase's Gherkin acceptance criteria. This must exist before test-first implementation can begin.

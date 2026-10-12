@@ -16,7 +16,7 @@ description: >
   data pipeline design, data classification scheme, data lineage design, data retention
   policy. Designs only; does not implement pipelines, migrations, repositories, or analytics.
 role: Data layer design authority — physical models, canonical model, event schemas, pipelines, classification, lineage, retention
-version: 2.0.1
+version: 2.0.2
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -283,7 +283,7 @@ and repository depends on it. Do not proceed to step 3 without explicit approval
    integration/ACL design; sensitivity and regulatory requirements. **If the domain model or the
    container diagram is missing, raise a blocker** — the data model cannot be designed before the
    Aggregates and service boundaries exist.
-3. **Execute in sequence**, reading each step's `SKILL.md` (and the `references/` it points to)
+3. **Execute in sequence**, reading each step's `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/SKILL.md` (and the `references/` it points to)
    before applying it.
 4. **Self-validate** each artifact against its skill's Quality Criteria and the `methodology-review`
    checks for Design before writing it.

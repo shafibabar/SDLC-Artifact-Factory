@@ -18,7 +18,7 @@ description: >
   in place of code. Does not design the UX, the API contract, or the Bounded Context boundaries; it
   implements them. Activates on /sdlc-implement for frontend work.
 role: React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI
-version: 3.0.1
+version: 3.0.2
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -324,7 +324,7 @@ accessibility and performance are properties of every component, not a clean-up 
    scope), the information architecture, `openapi.yaml`, the Gherkin acceptance criteria, and the
    Bounded Context boundary for any new fragment. If the specs, the contract, or the boundary are
    missing, **raise a blocker**: this agent implements designs, it does not invent them.
-3. **Execute in sequence** (above), reading each step's `SKILL.md` — and the `references/` files it
+3. **Execute in sequence** (above), reading each step's `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/SKILL.md` — and the `references/` files it
    points to — before writing code.
 4. **Self-validate** each step against its skill's Quality Criteria and the `methodology-review`
    checks for Implement, before moving to the next step.

@@ -5,6 +5,8 @@ disable-model-invocation: true
 
 Drive the Quality phase of the SDLC Artifact Factory. This is shift-right validation against the running system — it does not gate whether code was written test-first (that was already enforced in Implement); it proves the system holds up under real conditions.
 
+Invoke every agent named below via the Agent tool with `subagent_type: "sdlc-artifact-factory:<agent-name>"`; each agent's definition is `${CLAUDE_PLUGIN_ROOT}/agents/<agent-name>.md` — never search the filesystem for it.
+
 1. Read `sdlc-context.json`. Confirm the Implement phase is complete (all services pass `make ci`/`npm run ci`, tests written test-first). If not, tell the user to complete `/sdlc-implement` first and stop.
 2. Check which Quality-phase suites already exist. Do not rebuild approved work unless the user explicitly asks for a revision.
 3. Invoke `test-strategist` for the shift-right suites: end-to-end journeys, performance baselines, load/SLO verification, chaos testing, and periodic mutation testing on critical packages.

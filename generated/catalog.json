@@ -1884,7 +1884,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "2.0.1"
+        "version": "2.0.2"
       },
       {
         "created": "2026-06-25",
@@ -1929,7 +1929,7 @@
           "Read",
           "Write"
         ],
-        "version": "2.0.1"
+        "version": "2.0.2"
       },
       {
         "created": "2026-07-20",
@@ -2108,7 +2108,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "3.0.1"
+        "version": "3.0.2"
       },
       {
         "created": "2026-07-20",
@@ -2176,7 +2176,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "2.0.1"
+        "version": "2.0.2"
       },
       {
         "created": "2026-06-24",
@@ -2227,7 +2227,7 @@
           "Read",
           "Write"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-06-24",
@@ -2271,7 +2271,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.4.0"
+        "version": "1.4.1"
       },
       {
         "created": "2026-06-25",
@@ -2386,7 +2386,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "1.2.1"
+        "version": "1.2.2"
       },
       {
         "created": "2026-06-25",
@@ -2826,7 +2826,7 @@
           "principles",
           "trade-offs"
         ],
-        "version": "4.0.1"
+        "version": "4.0.2"
       },
       {
         "created": "2026-06-25",
@@ -5076,7 +5076,7 @@
           "quality",
           "schema"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-25",
@@ -9063,7 +9063,7 @@
         "has_evals": false,
         "has_examples": false,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
         "has_templates": false,
@@ -9088,7 +9088,7 @@
           "sdlc-config",
           "tech-stack"
         ],
-        "version": "2.0.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10141,7 +10141,7 @@
     "skills_with_examples": 4,
     "skills_with_produces": 187,
     "skills_with_references": 182,
-    "skills_with_resources": 1,
+    "skills_with_resources": 2,
     "skills_with_scripts": 10,
     "skills_with_sources": 4,
     "skills_with_status": 187,

@@ -5,6 +5,8 @@ disable-model-invocation: true
 
 Drive the Design phase of the SDLC Artifact Factory. This phase invokes five agents in a strict dependency order — do not reorder or parallelize the first two steps.
 
+Invoke every agent named below via the Agent tool with `subagent_type: "sdlc-artifact-factory:<agent-name>"`; each agent's definition is `${CLAUDE_PLUGIN_ROOT}/agents/<agent-name>.md` — never search the filesystem for it.
+
 1. Read `sdlc-context.json`. Confirm the Ideate phase is complete. If not, tell the user to complete `/sdlc-ideate` first and stop.
 2. Check which Design artifacts already exist per agent. Do not re-produce approved artifacts unless the user explicitly asks for a revision.
 3. **Invoke `domain-modeler` first.** It Event Storms the domain(s) and produces the Ubiquitous Language, Context Map, Aggregate designs, Domain Event catalog, Command catalog, and Read Model designs. Everything downstream depends on this. Wait for it to complete and be approved.

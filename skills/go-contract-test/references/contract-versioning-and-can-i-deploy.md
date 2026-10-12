@@ -12,7 +12,7 @@ CLAUDE.md's Budget and Frugality section requires open-source tooling over paid,
 
 | Option | Cost | Fit |
 |---|---|---|
-| **Pact Broker** (`pactfoundation/pact-broker` Docker image, Postgres-backed) | Open source, self-hosted, no license | **The frugal default for this repo** — Postgres is already this stack's primary database (CLAUDE.md Tech Stack Defaults), so the Broker's storage need adds no new operational surface |
+| **Pact Broker** (`pactfoundation/pact-broker` Docker image, Postgres-backed) | Open source, self-hosted, no license | **The frugal default for this repo** — Postgres is already this stack's primary database (the plugin's tech-stack defaults), so the Broker's storage need adds no new operational surface |
 | **PactFlow** | Commercial SaaS | Adds bi-directional contract testing (provider publishes OpenAPI, consumer publishes expectations, PactFlow diffs them with no Verifier run) at the cost of losing exact-interaction-replay guarantees. Flag against the frugality constraint before ever adopting — requires explicit approval, per CLAUDE.md |
 
 Run the self-hosted Broker as one more service in the same OpenTofu/Helm-managed cluster this repo already provisions everything else in — not a new vendor relationship. Do not reach for PactFlow to avoid the (small, one-time) work of standing up the open-source Broker.

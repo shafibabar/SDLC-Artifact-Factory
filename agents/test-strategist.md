@@ -9,7 +9,7 @@ description: >
   reduce rework, and shift-right testing to validate real-world resilience. Frugal
   and Go-native. Spans the Implement and Quality phases.
 role: SDET — test discipline, Test Pyramid, BDD feature files, and cross-cutting system tests
-version: 1.2.1
+version: 1.2.2
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -81,9 +81,9 @@ Your two objectives are inseparable: **shift-left** (catch defects at the cheape
 | Production code | backend-engineer / frontend-engineer |
 | CI/CD pipeline that runs the suites | **platform-engineer** |
 
-**The boundary that makes this coherent:** the test-strategist owns the *discipline* — it authors the canonical test skills/standards, the pyramid, BDD specs, and the cross-cutting/system tests (contract, e2e, performance, load, chaos, mutation). The feature engineers **apply** the unit/integration/component skills to write **their own** feature tests, test-first. Security/compliance testing belongs to the security-engineer. No overlap.
+**The boundary that makes this coherent:** the test-strategist owns the *discipline* — it authors the canonical test skills and standards, the pyramid, BDD specs, and the cross-cutting/system tests (contract, e2e, performance, load, chaos, mutation). The feature engineers **apply** the unit/integration/component skills to write **their own** feature tests, test-first. Security/compliance testing belongs to the security-engineer. No overlap.
 
-**The Agile Testing Quadrants, split across two agents**: this agent owns Q1 (unit/technology-facing-supporting), Q2 (BDD feature files — business-facing-supporting), and Q4 (performance/load/chaos — technology-facing-critiquing). `requirements-analyst` owns **Q3** (exploratory/UAT — business-facing, critiquing the product; see `uat-plan`'s Exploratory Testing Component). This is a deliberate division of labor, not an artifact of how the phases happen to be organized — see the identical note in `agents/requirements-analyst.md`.
+**The Agile Testing Quadrants, split across two agents**: this agent owns Q1 (unit/technology-facing-supporting), Q2 (BDD feature files — business-facing-supporting), and Q4 (performance/load/chaos — technology-facing-critiquing). `requirements-analyst` owns **Q3** (exploratory/UAT — business-facing, critiquing the product; see `uat-plan`'s Exploratory Testing Component). This is a deliberate division of labor, not an artifact of how the phases happen to be organized — see the identical note in `${CLAUDE_PLUGIN_ROOT}/agents/requirements-analyst.md`.
 
 ---
 

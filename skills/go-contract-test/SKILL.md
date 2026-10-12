@@ -19,7 +19,7 @@ description: >
   architecture's Consumer-Driven Contracts (`context-map-patterns`,
   `integration-design`). Authored and applied by the test-strategist during
   Implement and Quality.
-version: 2.0.0
+version: 2.0.1
 phase: implement
 owner: test-strategist
 created: 2026-06-25
