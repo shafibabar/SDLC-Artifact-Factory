@@ -12,7 +12,7 @@ description: >
   tech-stack fact (api_framework, primary_database, graph_database,
   optional_database, deployment_model), by the /sdlc-start command that writes
   it, and by hooks checking an artifact matches the product's real config.
-version: 3.1.0
+version: 3.2.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -62,6 +62,8 @@ Most of CLAUDE.md's five non-negotiable methodologies (DDD, Event Storming, TDD,
 A methodology parameter is never used to weaken one of the five non-negotiables themselves — it tunes a calibration point *within* a methodology's implementation, never whether the methodology applies at all. The full parameter table with example overrides is in `references/config-field-reference.md`.
 
 ## Validation Against the Schema
+
+**The one exception to override-only is `scale_profile`** (`lean` / `standard` / `enterprise`): it is always written at `/sdlc-start`, because the user explicitly confirms it and it changes how much every phase produces. It never relaxes a methodology. See `references/config-field-reference.md`.
 
 `sdlc-config.json` is formalized machine-readably as `schemas/sdlc-config.schema.json` (Draft 2020-12; see `settings.json → env.SDLC_CONFIG_SCHEMA`). The schema encodes the override-only shape directly: only `_meta`, `product`, and `product_slug` are required; every content field (`tech_stack_overrides`, `compliance_frameworks`, `deployment_model`, `methodology_parameters`) is optional, so a product that overrides nothing still validates. `product_slug` deliberately adopts the same pattern component names use — `^[a-z0-9]+(-[a-z0-9]+)*$`, whose canonical home is **CLAUDE.md § Naming Conventions** — because it becomes the prefix of every artifact ID this plugin emits (see `artifact-manifest`).
 

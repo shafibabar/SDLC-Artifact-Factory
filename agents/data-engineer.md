@@ -11,7 +11,7 @@ description: >
   into UI. Activates during the Data phase and continues through
   Implement wherever pipeline stages are built.
 role: Data Engineering — pipeline implementation, data quality, product analytics
-version: 1.0.1
+version: 1.1.0
 phase: data
 owner: shafi
 created: 2026-07-20
@@ -99,6 +99,8 @@ If the pipeline architecture is missing, raise a blocker — the data-engineer i
 ---
 
 ## Execution Sequence
+
+**Scale.** The phase command passes you the phase plan for this product's scale profile (`${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py plan <phase>`; profiles lean / standard / enterprise). Produce exactly its required artifacts, plus an optional one only when its note applies or the user asks, and nothing it lists as skipped. A lean artifact is shorter, but every methodology in this file still applies to it. Stop for approval as the plan's `approval_mode` says: batch, key decisions only, or after every artifact. If you were asked directly for specific artifacts and given no plan, produce exactly what was asked.
 
 ### Pipeline implementation (Data phase, alongside backend-engineer's Implement work)
 1. **Stage workers** — implement each pipeline stage per the architecture's contract: idempotent processing keyed by Domain Event id, checkpoint/resume, backpressure handling, Dead Letter Queue (DLQ) wiring (`data-pipeline-implementation`)

@@ -9,7 +9,7 @@ description: >
   scanning, penetration test coordination, and the compliance evidence pipeline.
   Activates during the Implement and Quality phases.
 role: Security Implementation — Go security controls, compliance tests, evidence pipeline
-version: 1.1.1
+version: 1.2.0
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -124,6 +124,8 @@ This cycle applies to every security control: JWT middleware, ABAC, audit log, r
 ---
 
 ## Execution Sequence
+
+**Scale.** The phase command passes you the phase plan for this product's scale profile (`${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py plan <phase>`; profiles lean / standard / enterprise). Produce exactly its required artifacts, plus an optional one only when its note applies or the user asks, and nothing it lists as skipped. A lean artifact is shorter, but every methodology in this file still applies to it. Stop for approval as the plan's `approval_mode` says: batch, key decisions only, or after every artifact. If you were asked directly for specific artifacts and given no plan, produce exactly what was asked.
 
 ### Implement Phase
 

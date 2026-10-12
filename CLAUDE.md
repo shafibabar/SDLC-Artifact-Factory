@@ -169,7 +169,7 @@ Under non-interactive `-p` invocation, slash commands only resolve in their name
 
 ## Non-Negotiable Methodology
 
-These five methodologies are mandatory. Their absence in any artifact where they apply is a **defect** — not a warning, not advisory.
+These five methodologies are mandatory. Their absence in any artifact where they apply is a **defect** — not a warning, not advisory. They apply at every product scale profile: `lean` produces fewer and shorter artifacts (see `skills/artifact-manifest/resources/phase-requirements.json`), never a skipped methodology.
 
 | Methodology | Where It Applies |
 |---|---|
