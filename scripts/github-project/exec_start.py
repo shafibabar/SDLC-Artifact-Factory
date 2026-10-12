@@ -20,7 +20,7 @@ import re
 import subprocess
 import sys
 
-from ghp import config, gh, project, state
+from ghp import config, gh, insights_sync, project, state
 
 _REPO_ROOT = state._REPO_ROOT
 
@@ -96,6 +96,10 @@ def main():
         gh.add_labels(pr_number_match.group(1), labels)
 
         project.set_status(item_id, "in_progress")
+        # The new PR lands on the board via the Project's auto-add workflow, if
+        # one is set; sync() skips it when it isn't there yet. exec-complete
+        # syncs it again once it exists.
+        insights_sync.sync([args.issue_number, int(pr_number_match.group(1))])
 
         st["executions"][str(args.issue_number)] = {
             "branch": branch, "pr_url": pr_url, "status": "in_progress",

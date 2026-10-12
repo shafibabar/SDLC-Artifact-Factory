@@ -14,7 +14,7 @@ Safe to re-run: rows already created (tracked in local state) are skipped.
 import argparse
 import sys
 
-from ghp import gh, project, state
+from ghp import gh, insights_sync, project, state
 
 
 def _sort_key(draft_id):
@@ -36,6 +36,9 @@ def print_table(rows):
         print(f"      depends_on:  {deps}")
         print(f"      sequence:    {row['sequence'] or '(none)'}")
         print(f"      labels:      {', '.join(row.get('labels', [])) or '(none)'}")
+        triage = row.get("triage") or {}
+        if triage:
+            print(f"      triage:      {', '.join(f'{k}={v}' for k, v in triage.items())}")
 
 
 def main():
@@ -108,6 +111,12 @@ def main():
                           f"{dep_id} (#{created[dep_id]['number']})")
                 except gh.GhError as e:
                     print(f"  warning: could not link {row_id} -> {dep_id}: {e}", file=sys.stderr)
+
+        # Insights fields on the parent and every sub-issue: hierarchy, campaign,
+        # dependencies and so on, plus any --priority/--complexity/--severity
+        # set on a row (written as Triaged).
+        triaged = {info["number"]: rows[rid].get("triage") or {} for rid, info in created.items() if rid in rows}
+        insights_sync.sync([plan["issue_number"]] + [i["number"] for i in created.values()], triaged=triaged)
 
         # Move parent to In Progress and record the sub-issues, then clear the draft.
         project.set_status(plan["item_id"], "in_progress")

@@ -132,5 +132,38 @@ check("sprint clamps early", insights.sprint(issue(1, created="2026-06-20T00:00:
       "Sprint 2026 01")
 check("data source", out["I100"]["Data-Source"], "Derived")
 
+# plan_writes: idempotence, Triaged protection, explicit triage overrides
+from ghp import insights_sync  # noqa: E402
+
+
+def node(n, values, **kw):
+    """A ProjectV2 item node for issue n with the given current field values."""
+    f = issue(n, **kw)
+    return {"id": f"I{n}", "type": "ISSUE",
+            "fieldValues": {"nodes": [{"name": v, "field": {"name": k}} for k, v in values.items()]},
+            "content": {"number": n, "title": f["title"], "createdAt": f["created"], "closedAt": f["closed"],
+                        "labels": {"nodes": [{"name": l} for l in f["labels"]]}, "parent": None,
+                        "subIssues": {"totalCount": 0},
+                        "issueDependenciesSummary": {"totalBlockedBy": 0, "totalBlocking": 0}}}
+
+
+fresh = node(7, {})
+derived, writes = insights_sync.plan_writes([fresh])
+check("fresh item gets every field", {w[1] for w in writes} >= {"Hierarchy", "Priority", "Sprint", "Data-Source"}, True)
+full = node(7, {k: v for k, v in derived["I7"].items() if v is not None and not isinstance(v, float)})
+full["fieldValues"]["nodes"] += [{"number": v, "field": {"name": k}} for k, v in derived["I7"].items()
+                                 if isinstance(v, float)]
+check("idempotent re-run writes nothing", insights_sync.plan_writes([full])[1], [])
+tri = node(7, {"Data-Source": "Triaged", "Priority": "P0", "Complexity": "XL"})
+w = {f: v for _, f, v in insights_sync.plan_writes([tri])[1]}
+check("Triaged priority kept", "Priority" in w, False)
+check("Triaged complexity kept", "Complexity" in w, False)
+check("non-protected field still written", w.get("Hierarchy"), "Standalone")
+w = {f: v for _, f, v in insights_sync.plan_writes([fresh], triaged={7: {"Priority": "P1", "Complexity": "L"}})[1]}
+check("override sets priority", w.get("Priority"), "P1")
+check("override recomputes effort", w.get("Effort-Points"), 5.0)
+check("override marks Triaged", w.get("Data-Source"), "Triaged")
+check("only= limits targets", insights_sync.plan_writes([fresh, node(8, {})], only={8})[1][0][0], "I8")
+
 print(f"\n{passed} passed, {len(failed)} failed")
 sys.exit(1 if failed else 0)
