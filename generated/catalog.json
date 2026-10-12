@@ -602,9 +602,7 @@
       ]
     },
     "impact-map": {
-      "agents": [
-        "product-strategist"
-      ],
+      "agents": [],
       "skills": [
         "impact-mapping"
       ]
@@ -622,9 +620,7 @@
       ]
     },
     "jtbd-analysis": {
-      "agents": [
-        "product-strategist"
-      ],
+      "agents": [],
       "skills": [
         "jtbd-analysis"
       ]
@@ -1181,9 +1177,7 @@
       ]
     },
     "user-persona": {
-      "agents": [
-        "product-strategist"
-      ],
+      "agents": [],
       "skills": [
         "user-persona"
       ]
@@ -1690,13 +1684,10 @@
         "business-model-canvas",
         "competitive-analysis",
         "go-to-market-strategy",
-        "impact-map",
-        "jtbd-analysis",
         "mission-statement",
         "okr",
         "stakeholder-map",
         "strategic-roadmap",
-        "user-persona",
         "vision-statement"
       ],
       "owners": [
@@ -2198,13 +2189,10 @@
           "business-model-canvas",
           "competitive-analysis",
           "go-to-market-strategy",
-          "impact-map",
-          "jtbd-analysis",
           "mission-statement",
           "okr",
           "stakeholder-map",
           "strategic-roadmap",
-          "user-persona",
           "vision-statement"
         ],
         "role": "Product Strategy — full Strategy phase ownership",
@@ -2239,7 +2227,7 @@
           "Read",
           "Write"
         ],
-        "version": "2.0.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -2283,7 +2271,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.3.1"
+        "version": "1.4.0"
       },
       {
         "created": "2026-06-25",
@@ -10129,7 +10117,7 @@
     "artifacts": 181,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 74,
+    "edges_agent_produces": 71,
     "edges_agent_skills": 179,
     "edges_skill_produces": 188,
     "edges_skill_related": 816,
@@ -10428,14 +10416,6 @@
       },
       {
         "agent": "product-strategist",
-        "artifact": "impact-map"
-      },
-      {
-        "agent": "product-strategist",
-        "artifact": "jtbd-analysis"
-      },
-      {
-        "agent": "product-strategist",
         "artifact": "mission-statement"
       },
       {
@@ -10449,10 +10429,6 @@
       {
         "agent": "product-strategist",
         "artifact": "strategic-roadmap"
-      },
-      {
-        "agent": "product-strategist",
-        "artifact": "user-persona"
       },
       {
         "agent": "product-strategist",

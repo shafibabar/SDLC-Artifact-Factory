@@ -29,6 +29,7 @@ Prints PASS/FAIL lines; exits 0 iff every check passed. Standalone-runnable:
 
 import importlib.util
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -234,12 +235,16 @@ ps = m.resolve("product-strategist")
 ps_rec = ps["record"] if ps else {}
 check("product-strategist domain == strategy (authored)", ps_rec.get("domain") == "strategy")
 check("product-strategist status == stable (authored)", ps_rec.get("status") == "stable")
+# Filesystem truth, not a pinned count (#1256 changed the agent's outputs).
+_ps_text = (REPO_ROOT / "agents" / "product-strategist.md").read_text()
+_ps_block = re.search(r"^produces:\n((?:  - .+\n)+)", _ps_text, re.M)
+_ps_authored = [l.strip()[2:].strip() for l in _ps_block.group(1).splitlines()] if _ps_block else []
 check(
-    "product-strategist produces parsed as an 11-artifact block list",
+    "product-strategist produces parsed as the block list its file declares",
     isinstance(ps_rec.get("produces"), list)
-    and len(ps_rec["produces"]) == 11
-    and "vision-statement" in ps_rec["produces"]
-    and "okr" in ps_rec["produces"],
+    and len(_ps_authored) > 1
+    and ps_rec["produces"] == _ps_authored
+    and "vision-statement" in ps_rec["produces"],
 )
 check(
     "scalar 'produces:' normalizes to a list for agents exactly as for skills",
