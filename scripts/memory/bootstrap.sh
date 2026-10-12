@@ -49,6 +49,12 @@ if [ -f "$MARKER" ]; then
   exit 0
 fi
 
+# Opt-out: a repo that doesn't want the ~220 MB local install keeps the
+# dependency-free keyword search instead. Create .sdlc-memory/.skip-install.
+if [ -f "$MEM_DIR/.skip-install" ]; then
+  exit 0
+fi
+
 # This hook runs before every Agent invocation (see scripts/memory-bootstrap.sh)
 # -- if install failed (offline, no pip, etc.) don't eat the full install
 # latency again on every single agent call. Retry at most once per hour.
@@ -78,7 +84,7 @@ fi
 if "$VENV_DIR/bin/pip" install --quiet fastembed sqlite-vec >/dev/null 2>&1; then
   touch "$MARKER"
   rm -f "$FAILED_MARKER"
-  echo "sdlc-memory: fastembed + sqlite-vec installed in $VENV_DIR"
+  echo "sdlc-memory: installed $(du -sh "$VENV_DIR" 2>/dev/null | cut -f1) into $VENV_DIR"
 else
   echo "sdlc-memory: dependency install failed (offline?); falling back to dependency-free matching" >&2
   date +%s > "$FAILED_MARKER"

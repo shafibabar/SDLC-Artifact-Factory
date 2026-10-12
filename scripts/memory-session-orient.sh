@@ -32,6 +32,11 @@ def done(extra=None):
 os.environ["SDLC_MEMORY_REPO_ROOT"] = cwd
 sys.path.insert(0, mem_dir)
 
+# Orientation is read-only: in a repo with no index yet there is nothing to
+# show, and creating .sdlc-memory/ here (before any .gitignore) was #1258.
+if not os.path.exists(os.path.join(cwd, ".sdlc-memory", "index.db")):
+    done()
+
 try:
     import store
     conn = store.connect()
