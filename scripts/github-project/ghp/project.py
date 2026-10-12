@@ -176,3 +176,138 @@ def add_blocked_by(issue_id, blocking_issue_id):
         }}
         """
     )
+
+
+_insights_cache = None
+
+
+def _project_fields():
+    data = gh.graphql(
+        f"""
+        query {{
+          node(id: "{config.PROJECT_ID}") {{
+            ... on ProjectV2 {{
+              fields(first: 50) {{
+                nodes {{
+                  ... on ProjectV2FieldCommon {{ id name dataType }}
+                  ... on ProjectV2SingleSelectField {{ options {{ id name }} }}
+                  ... on ProjectV2IterationField {{
+                    configuration {{
+                      iterations {{ id title startDate duration }}
+                      completedIterations {{ id title startDate duration }}
+                    }}
+                  }}
+                }}
+              }}
+            }}
+          }}
+        }}
+        """
+    )
+    return {f["name"]: f for f in data["node"]["fields"]["nodes"] if f.get("name")}
+
+
+def ensure_insights_fields():
+    """Create any missing Insights field (check-before-create) and return
+    {field name: {"id", "options": {option name: option id}}} for every
+    Insights field plus the Sprint iteration field ("options" = iterations
+    keyed by title). Existing fields are never altered, so re-running is safe."""
+    global _insights_cache
+    if _insights_cache:
+        return _insights_cache
+    fields = _project_fields()
+    created = False
+    for name, options in config.INSIGHTS_SINGLE_SELECT.items():
+        if name in fields:
+            continue
+        opts = ", ".join(
+            f"{{name: {gh.gql_string(o)}, color: {c}, description: {gh.gql_string(d)}}}"
+            for o, c, d in options
+        )
+        gh.graphql(
+            f"""
+            mutation {{
+              createProjectV2Field(input: {{
+                projectId: "{config.PROJECT_ID}"
+                dataType: SINGLE_SELECT
+                name: {gh.gql_string(name)}
+                singleSelectOptions: [{opts}]
+              }}) {{ projectV2Field {{ ... on ProjectV2FieldCommon {{ id }} }} }}
+            }}
+            """
+        )
+        created = True
+    for name in config.INSIGHTS_NUMBER:
+        if name in fields:
+            continue
+        gh.graphql(
+            f"""
+            mutation {{
+              createProjectV2Field(input: {{
+                projectId: "{config.PROJECT_ID}"
+                dataType: NUMBER
+                name: {gh.gql_string(name)}
+              }}) {{ projectV2Field {{ ... on ProjectV2FieldCommon {{ id }} }} }}
+            }}
+            """
+        )
+        created = True
+    if created:
+        fields = _project_fields()
+    out = {}
+    for name in list(config.INSIGHTS_SINGLE_SELECT) + list(config.INSIGHTS_NUMBER):
+        f = fields[name]
+        out[name] = {"id": f["id"], "options": {o["name"]: o["id"] for o in f.get("options", [])}}
+    sprint = fields[config.SPRINT_FIELD_NAME]
+    conf = sprint["configuration"]
+    out[config.SPRINT_FIELD_NAME] = {
+        "id": sprint["id"],
+        "options": {i["title"]: i["id"] for i in conf["iterations"] + conf["completedIterations"]},
+        "iterations": conf["iterations"] + conf["completedIterations"],
+    }
+    _insights_cache = out
+    return out
+
+
+def sprint_plan():
+    """The (title, startDate) list the Sprint field should hold."""
+    import datetime as _dt
+
+    start = _dt.date.fromisoformat(config.SPRINT_START)
+    return [
+        (f"Sprint 2026 {n + 1:02d}", (start + _dt.timedelta(days=n * config.SPRINT_DAYS)).isoformat())
+        for n in range(config.SPRINT_COUNT)
+    ]
+
+
+def ensure_sprints():
+    """Make the Sprint iteration field hold exactly sprint_plan(). A no-op when it
+    already does. Replacing iterations clears item values on removed ones; the
+    backfill reassigns every item, so that is safe here."""
+    global _insights_cache
+    current = ensure_insights_fields()[config.SPRINT_FIELD_NAME]["iterations"]
+    have = sorted((i["title"], i["startDate"], i["duration"]) for i in current)
+    want = sorted((t, s, config.SPRINT_DAYS) for t, s in sprint_plan())
+    if have == want:
+        return False
+    its = ", ".join(
+        f"{{title: {gh.gql_string(t)}, startDate: \"{s}\", duration: {config.SPRINT_DAYS}}}"
+        for t, s in sprint_plan()
+    )
+    field_id = ensure_insights_fields()[config.SPRINT_FIELD_NAME]["id"]
+    gh.graphql(
+        f"""
+        mutation {{
+          updateProjectV2Field(input: {{
+            fieldId: "{field_id}"
+            iterationConfiguration: {{
+              startDate: "{config.SPRINT_START}"
+              duration: {config.SPRINT_DAYS}
+              iterations: [{its}]
+            }}
+          }}) {{ projectV2Field {{ ... on ProjectV2FieldCommon {{ id }} }} }}
+        }}
+        """
+    )
+    _insights_cache = None
+    return True

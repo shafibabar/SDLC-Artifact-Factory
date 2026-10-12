@@ -28,7 +28,7 @@ import re
 import subprocess
 import sys
 
-from ghp import gh, project, state
+from ghp import gh, insights_sync, project, state
 
 _REPO_ROOT = state._REPO_ROOT
 
@@ -106,6 +106,8 @@ def main():
         base = (exec_info or {}).get("base")
         if not base:
             print("Review/merge/close remain manual.")
+            pr_match = re.search(r"/pull/(\d+)", (exec_info or {}).get("pr_url") or "")
+            insights_sync.sync([args.issue_number] + ([int(pr_match.group(1))] if pr_match else []))
         else:
             pr_url = (exec_info or {}).get("pr_url")
             pr_number = pr_number_from_url(pr_url)
@@ -126,6 +128,9 @@ def main():
             state.save(st)
 
             print(f"PR #{pr_number} merged into `{base}`. Sub-issue #{args.issue_number} closed, Status -> Done.")
+            # Closed now, so Cycle-Days, Duration and Complexity (from the PR's
+            # final size) are known.
+            insights_sync.sync([args.issue_number, int(pr_number)])
     except gh.GhError as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
