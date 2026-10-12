@@ -40,6 +40,8 @@ A whole-repo traversal to find refactor ideas. It looks at the components **as t
 | 10 | Maintainability | maintainability | pending | 10-maintainability.md |
 | 11 | Portability | portability | pending | 11-portability.md |
 | 12 | Synthesis: ranked backlog + P5–P9 re-plan | all | pending | 12-synthesis.md |
+| 13 | Proposal: product state and approvals (#1251, #1253) | usage | **awaiting Shafi's decisions** | [13-proposal-product-state.md](13-proposal-product-state.md) |
+| 14 | Proposal: scale output to the product (#1257) | usage | **awaiting Shafi's decisions** | [14-proposal-output-scaling.md](14-proposal-output-scaling.md) |
 
 ## Refactor campaign progress (scope expanded 2026-10-11: discover + augment)
 
