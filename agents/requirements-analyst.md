@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.3.1
+version: 1.4.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -125,6 +125,8 @@ In Ideate, the requirements-analyst acts as the voice of the user during discove
 | Problem statement | `sdlc-context.json → first_product` | Required |
 
 If any required input is missing or incomplete, the requirements-analyst halts and surfaces the gap to the user before proceeding. It does not fabricate missing strategy context.
+
+User personas, the JTBD analysis and the impact map are written **only** here, in Ideate (product-strategist applies that thinking but does not write those files). If a product from an earlier run already has one of them under `strategy/`, use it as input and supersede it with the Ideate version (mark the old manifest entry `superseded`) — never keep two live copies.
 
 ---
 

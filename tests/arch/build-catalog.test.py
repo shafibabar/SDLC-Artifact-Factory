@@ -349,10 +349,21 @@ check("REAL: every agent_produces edge is reflected in the artifact index",
 # P5 child 1 enriched product-strategist; the remaining 12 agents follow. Once
 # P5 closes, these become 13/13 — until then the invariant is 'the enriched ones
 # actually reach the catalog', which is what this child fixes.
+def _authored_produces(agent):
+    """The agent's `produces:` block list, read straight from its file."""
+    import re as _re
+    text = (REPO_ROOT / "agents" / f"{agent}.md").read_text()
+    block = _re.search(r"^produces:\n((?:  - .+\n)+)", text, _re.M)
+    return [l.strip()[2:].strip() for l in block.group(1).splitlines()] if block else []
+
+
 _ps = next((a for a in real["components"]["agents"] if a["name"] == "product-strategist"), {})
 check("REAL: product-strategist's authored manifest fields reach the catalog",
       _ps.get("domain") == "strategy" and _ps.get("status") == "stable"
-      and len(_ps.get("produces") or []) == 11)
+      # Compare against the agent file itself, not a pinned count: the agent's
+      # outputs legitimately change (#1256 moved three to requirements-analyst).
+      and sorted(_ps.get("produces") or []) == sorted(_authored_produces("product-strategist"))
+      and len(_authored_produces("product-strategist")) > 1)
 check("REAL: product-strategist appears as a producing agent in the artifact index",
       all("product-strategist" in real["artifacts"][art]["agents"]
           for art in (_ps.get("produces") or [])))
