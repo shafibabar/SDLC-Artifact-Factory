@@ -14,11 +14,20 @@
       "parent_issue": "#1224",
       "integration_branch": "fresh-eyes/phase-a-standard",
       "children": "#1225 A2 sources: \u00b7 #1226 A4 has_<folder>/has_evals \u00b7 #1227 A3 lint-skill-layout \u00b7 #1228 A6 evals runner \u00b7 #1229 A5 migrate-skill-layout \u00b7 #1230 A1 codify spec",
-      "status": "complete on its integration branch when #1230 merges; merges to main as one PR"
+      "status": "complete \u2014 merged to main via PR #1237 (851ac0a), CI green"
     },
-    "next": "Phase B pilot (3 skills: vision-statement, adr-authoring, one Go backend skill) -> Shafi reviews -> Phase C domain waves, one GitHub issue per skill.",
+    "next": "Shafi reviews the Phase B PR. On approval: merge to main, then plan Phase C waves (one GitHub issue per skill).",
     "decisions": "Full migration to the folder spec; evals via claude plugin eval at root evals/<skill>/ (runner refuses skills/); per-skill GitHub issues; examples scaled to the skill (simple -> enterprise); subagents run sequentially.",
-    "effect_on_architecture_review_campaign": "PAUSED at P5 (5/15) \u2014 not abandoned. The Fresh-Eyes synthesis recommends keep/change/drop for P5\u2013P9."
+    "effect_on_architecture_review_campaign": "PAUSED at P5 (5/15) \u2014 not abandoned. The Fresh-Eyes synthesis recommends keep/change/drop for P5\u2013P9.",
+    "phase_b": {
+      "parent_issue": "#1238",
+      "integration_branch": "fresh-eyes/phase-b-pilot",
+      "children": "#1239 vision-statement 2.0.0 \u00b7 #1240 adr-authoring 4.0.0 \u00b7 #1241 go-repository-pattern 3.0.0",
+      "status": "all 3 children merged to the integration branch; PR to main OPEN, awaiting Shafi review \u2014 do not merge or start Phase C without his go",
+      "defects_found": "vision taught positioning; ADRs blocked by the plugin's own hook; false pgx named-parameter claim",
+      "eval_results": "vision 3/3 +1.00 ($1.76) \u00b7 adr 3/3 +1.00 ($1.96, after a failing first round) \u00b7 repo 3/3 +0.67 ($2.07)"
+    },
+    "lessons_for_phase_c": "Evals must have positive per-case delta (replace zero-delta cases). Tests must never pin a live skill's shape (use fixtures + filesystem truth). Compile-check Go examples (Go 1.23.4 toolchain fetched to scratch worked). Read research recommendations explicitly: all three pilot skills had flagged-but-unapplied fixes."
   },
   "architecture_review_campaign": {
     "_note": "Resume pointer for the Architecture Review campaign. On cold start read ARCHITECTURE-REVIEW-CAMPAIGN.md (master charter), then this block, then the GitHub Project board / open issues, then continue from the first incomplete child. Charter is the full model + standards; this block is the live position.",
