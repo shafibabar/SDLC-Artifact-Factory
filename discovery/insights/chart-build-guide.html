@@ -1,0 +1,181 @@
+<title>SKILL GEN Insights Build Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: a single working column. A short orientation block, then one card per chart, each a checklist step with copyable settings. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1d2330; --muted:#5b6475; --line:#dde1e8;
+  --accent:#2f5bd3; --accent-soft:#e7edfc; --done:#1f7a4d; --done-soft:#e3f3ea; --warn:#9a5b00; --warn-soft:#fdf1dc;
+  --display:"Fraunces",Georgia,serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12151b; --surface:#1a1f28; --fg:#e4e8ef; --muted:#9aa3b4; --line:#2c3341;
+  --accent:#8aa8ff; --accent-soft:#1f2a47; --done:#5fd39a; --done-soft:#173326; --warn:#f0b65a; --warn-soft:#3a2a12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151b; --surface:#1a1f28; --fg:#e4e8ef; --muted:#9aa3b4; --line:#2c3341;
+  --accent:#8aa8ff; --accent-soft:#1f2a47; --done:#5fd39a; --done-soft:#173326; --warn:#f0b65a; --warn-soft:#3a2a12; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:32px 64px;display:grid;gap:28px}
+h1{font:600 clamp(28px,5vw,38px)/1.15 var(--display);margin:0;text-wrap:balance}
+h2{font:600 20px/1.3 var(--display);margin:0;text-wrap:balance}
+p{margin:0;max-width:68ch}
+.lede{color:var(--muted);font-size:16px}
+a{color:var(--accent)}
+code,.mono{font-family:var(--mono);font-size:13px}
+.intro{display:grid;gap:14px}
+.steps{display:grid;gap:8px;margin:0;padding-left:20px}
+.note{background:var(--warn-soft);color:var(--fg);border-left:3px solid var(--warn);padding:12px 14px;border-radius:4px;display:grid;gap:6px}
+.note b{color:var(--warn)}
+.progress{display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:10px;z-index:2;border-bottom:1px solid var(--line)}
+.bar{flex:1 1 200px;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--done);transition:width .25s}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:13px}
+.cards{display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:12px;min-width:0}
+.card.is-done{border-color:var(--done);background:linear-gradient(var(--done-soft),var(--done-soft)) top/100% 3px no-repeat,var(--surface)}
+.head{display:flex;gap:12px;align-items:flex-start}
+.num{font:500 13px var(--mono);color:var(--muted);min-width:2.2em;padding-top:3px}
+.head .t{flex:1;min-width:0;display:grid;gap:2px}
+.q{color:var(--muted);font-size:14px}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;padding-top:3px}
+.chk input{width:18px;height:18px;accent-color:var(--done)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.cell{display:grid;gap:2px;background:var(--bg);border-radius:6px;padding:8px 10px;min-width:0}
+.cell span{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.cell b{font-weight:500;overflow-wrap:anywhere}
+.copyrow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.copyrow .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);align-self:center;min-width:3.6em}
+.copyrow code{flex:1 1 220px;background:var(--accent-soft);padding:7px 10px;border-radius:6px;overflow-x:auto;white-space:nowrap;min-width:0}
+button{font:500 13px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button:focus-visible,.chk input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.reads{font-size:14px;color:var(--muted)}
+.reads b{color:var(--fg);font-weight:500}
+.fallback{font-size:13px;color:var(--warn)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl{overflow-x:auto}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>SKILL GEN Insights Build Guide</h1>
+    <p class="lede">You'll create fifteen charts on the SKILL GEN Project (#1266, sub-issue #1273). The data fields behind them are already on the board. Each card below holds the exact settings: copy the name, set the four dropdowns, paste the filter, then save.</p>
+    <ol class="steps">
+      <li>Open <a href="https://github.com/users/shafibabar/projects/1/insights" target="_blank" rel="noopener">the project's Insights</a>. The built-in <em>Burn up</em> chart can stay.</li>
+      <li>Click <b>+ New chart</b> in the left menu.</li>
+      <li>Rename it: click the ▾ next to the chart name, paste the <b>Name</b>, and press Return.</li>
+      <li>Click <b>Configure</b> and set <b>Layout</b>, <b>X-axis</b>, <b>Group by</b> and <b>Y-axis</b> exactly as the card shows.</li>
+      <li>Paste the <b>Filter</b> into the box above the chart, then click <b>Save changes</b>.</li>
+      <li>Tick the card's <b>Built</b> box. The ticks stay saved in this browser.</li>
+    </ol>
+    <div class="note">
+      <p><b>If a setting is missing.</b> GitHub doesn't document every option for user-owned projects. If <i>Time</i> isn't offered on the X-axis (that makes a historical chart), or a field won't appear in a dropdown, use the card's fallback line and tell Claude which one you used.</p>
+      <p><b>Data is still filling in.</b> The backfill writes about 19,000 values in the background. Charts recompute live, so you can build them now; the bars grow as it finishes.</p>
+    </div>
+  </header>
+
+  <div class="progress" aria-live="polite">
+    <div class="bar"><i id="barfill"></i></div>
+    <span class="count" id="count">0 of 15 built</span>
+    <button type="button" id="reset">Clear ticks</button>
+  </div>
+
+  <section class="cards" id="cards"></section>
+
+  <section class="intro">
+    <h2>What the fields mean</h2>
+    <p class="reads">Every item on the board carries these fields. They're filled automatically by <code>backfill_insights.py</code> and the plan/exec tooling. <b>Data-Source</b> tells you which values a person set (Triaged) and which ones rules derived from evidence (Derived).</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Field</th><th>Values</th><th>Derived from</th></tr></thead>
+      <tbody>
+        <tr><td>Hierarchy</td><td>Parent · Sub-issue · Standalone · Sub-issue PR · Integration PR · Direct PR</td><td>Native sub-issue links, PR base branch</td></tr>
+        <tr><td>Work-Type</td><td>Discovery · Skill · Agent · Governance · Tooling · Bug · Docs · Enhancement</td><td>Labels, title prefix, branch prefix</td></tr>
+        <tr><td>Campaign</td><td>Foundation · Skill-Refactor · Arch-Review · Fresh-Eyes · Research · Maintenance</td><td>Top-level parent, branch, date</td></tr>
+        <tr><td>Branch-Type / Merge-Target</td><td>issue-integration · issue-sub · arch · feature · research · fix · discovery · other / main · integration</td><td>PR head and base branch</td></tr>
+        <tr><td>Priority / Severity</td><td>P0–P3 / S1–S4, N/A</td><td>Bug keywords, blocking links, parent role</td></tr>
+        <tr><td>Complexity / Effort-Points</td><td>XS 1 · S 2 · M 3 · L 5 · XL 8</td><td>Lines changed in linked PRs (+1 step over 15 files)</td></tr>
+        <tr><td>Cycle-Days / Duration</td><td>number / &lt;1h · &lt;1d · 1-3d · 3-7d · &gt;7d · Open</td><td>Created → closed</td></tr>
+        <tr><td>Dependency / Blocked-By</td><td>Blocked · Blocking · Both · Independent / count</td><td>Native blocked-by relationships</td></tr>
+        <tr><td>Sprint</td><td>Sprint 2026 01 – 10 (14 days from 22 Jun)</td><td>Closed date, else created date</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<script>
+const charts = [
+  {name:"Campaign burn-up — will Fresh-Eyes land?", layout:"Stacked area", x:"Time", g:"— (status is the series)", y:"Count of items", f:"campaign:Fresh-Eyes is:issue",
+   reads:"The gap between total scope and Done is work remaining. A flat top means scope has stopped growing.", fb:"No Time on the X-axis: use Stacked column, X = Sprint, Group by = Status."},
+  {name:"Sprint velocity — are we speeding up?", layout:"Stacked column", x:"Sprint", g:"Work-Type", y:"Sum of Effort-Points", f:"is:closed is:issue",
+   reads:"Points finished each sprint, split by kind of work. Use the last three sprints to project the next one."},
+  {name:"Sprint throughput — how much flows through?", layout:"Stacked column", x:"Sprint", g:"Hierarchy", y:"Count of items", f:"is:closed",
+   reads:"Items closed per sprint, shown as parents, sub-issues and PRs. Many PRs per sub-issue means small, frequent merges."},
+  {name:"WIP & flow — where is work piling up?", layout:"Stacked bar", x:"Status", g:"Hierarchy", y:"Count of items", f:"-status:Done",
+   reads:"Open work by stage. A tall In Review bar points to the human-approval bottleneck."},
+  {name:"Hierarchy shape — how is each campaign broken down?", layout:"Stacked column", x:"Campaign", g:"Hierarchy", y:"Count of items", f:"is:issue",
+   reads:"Parents against sub-issues against standalone issues per campaign. Arch-Review ran mostly as standalone issues."},
+  {name:"Purpose mix — what kind of work is each campaign?", layout:"Stacked column", x:"Campaign", g:"Work-Type", y:"Count of items", f:"is:issue",
+   reads:"Discovery against build against governance against bugs. A rising Bug share is an early quality warning."},
+  {name:"Cycle time by type — what is slow?", layout:"Column", x:"Work-Type", g:"None", y:"Average of Cycle-Days", f:"is:closed is:issue",
+   reads:"Average days from created to closed. Compare types, not single items."},
+  {name:"Duration spread — how long do items live?", layout:"Stacked column", x:"Duration", g:"Hierarchy", y:"Count of items", f:"is:closed",
+   reads:"Most sub-issues close within an hour. The >7d bucket holds the long-running parents and outliers to look at."},
+  {name:"Complexity vs time — does size predict duration?", layout:"Column", x:"Complexity", g:"None", y:"Average of Cycle-Days", f:"is:closed is:issue",
+   reads:"Bars should rise from XS to XL. Where they don't, sizing isn't driving the time; waiting is."},
+  {name:"Complexity per sprint — is the load changing?", layout:"Stacked column", x:"Sprint", g:"Complexity", y:"Count of items", f:"is:issue",
+   reads:"The mix of small and large work each sprint. A sprint heavy with L/XL usually means lower item throughput."},
+  {name:"Branch flow — how does code reach main?", layout:"Stacked bar", x:"Branch-Type", g:"Merge-Target", y:"Count of items", f:"is:pr",
+   reads:"Branch families against where they merge. Most work lands on integration branches first, then one PR goes to main."},
+  {name:"Priority backlog — what is open and how urgent?", layout:"Stacked bar", x:"Priority", g:"Status", y:"Count of items", f:"is:open",
+   reads:"Open items by priority and stage. Any P0 not In progress needs attention.", fb:"If open items are few, drop the filter to see the full history."},
+  {name:"Bug severity — how bad are the defects?", layout:"Stacked column", x:"Severity", g:"Status", y:"Count of items", f:"work-type:Bug is:issue",
+   reads:"Defects by severity, against whether they're fixed. S1/S2 still open are the release risk."},
+  {name:"Dependency risk — what is blocked?", layout:"Stacked bar", x:"Dependency", g:"Priority", y:"Count of items", f:"is:issue -status:Done",
+   reads:"Open issues that wait on, or hold up, other work, split by priority.", fb:"If it's empty (nothing open is linked), remove -status:Done to see historical dependency density."},
+  {name:"Data trust — how much is triaged vs derived?", layout:"Bar", x:"Data-Source", g:"Priority", y:"Count of items", f:"",
+   reads:"How much of the priority and complexity data a person set and how much came from rules. Read the other charts with this in mind."}
+];
+const KEY="skillgen-insights-built";
+let built={}; try{built=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function copy(text,btn){
+  const ok=()=>{btn.textContent="Copied";setTimeout(()=>btn.textContent="Copy",1200)};
+  try{navigator.clipboard.writeText(text).then(ok,()=>select(btn))}catch(e){select(btn)}
+}
+function select(btn){const c=btn.previousElementSibling;const r=document.createRange();r.selectNodeContents(c);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent="Press Ctrl+C"}
+function copyRow(label,val){
+  const row=el("div","copyrow");row.append(el("span","lbl",label));
+  const c=el("code",null,val?esc(val):'<span style="color:var(--muted)">(leave empty)</span>');row.append(c);
+  if(val){const b=el("button",null,"Copy");b.type="button";b.onclick=()=>copy(val,b);row.append(b)}
+  return row;
+}
+function render(){
+  const root=document.getElementById("cards");root.innerHTML="";
+  charts.forEach((c,i)=>{
+    const card=el("article","card"+(built[i]?" is-done":""));
+    const [title,q]=c.name.split(" — ");
+    const head=el("div","head");
+    head.append(el("span","num",String(i+1).padStart(2,"0")));
+    const t=el("div","t");t.append(el("h2",null,esc(title)),el("span","q",esc(q)));head.append(t);
+    const lab=el("label","chk");const cb=el("input");cb.type="checkbox";cb.id="built-"+i;cb.checked=!!built[i];
+    cb.onchange=()=>{built[i]=cb.checked;try{localStorage.setItem(KEY,JSON.stringify(built))}catch(e){}card.classList.toggle("is-done",cb.checked);tally()};
+    lab.append(cb,document.createTextNode("Built"));head.append(lab);
+    card.append(head,copyRow("Name",c.name));
+    const g=el("div","grid");
+    [["Layout",c.layout],["X-axis",c.x],["Group by",c.g],["Y-axis",c.y]].forEach(([k,v])=>{const d=el("div","cell");d.append(el("span",null,k),el("b",null,esc(v)));g.append(d)});
+    card.append(g,copyRow("Filter",c.f),el("p","reads","<b>How to read it.</b> "+esc(c.reads)));
+    if(c.fb)card.append(el("p","fallback","Fallback: "+esc(c.fb)));
+    root.append(card);
+  });
+  tally();
+}
+function tally(){const n=charts.filter((_,i)=>built[i]).length;document.getElementById("count").textContent=n+" of "+charts.length+" built";document.getElementById("barfill").style.width=(100*n/charts.length)+"%"}
+document.getElementById("reset").onclick=()=>{built={};try{localStorage.removeItem(KEY)}catch(e){}render()};
+render();
+</script>
