@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/scaffold-adr.sh — skill-owned script for skills/adr-authoring.
-# Purpose: generate a new ADR file from assets/adr-template.md, resolving
+# Purpose: generate a new ADR file from templates/adr-template.md, resolving
 #          the next ADR-NNN automatically by scanning existing files —
 #          replaces hand-copying the template and hand-counting numbers,
 #          which is exactly the kind of collision two concurrent decisions
@@ -19,7 +19,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(dirname "$SCRIPT_DIR")"
-TEMPLATE="$SKILL_DIR/assets/adr-template.md"
+TEMPLATE="$SKILL_DIR/templates/adr-template.md"
 
 if [ $# -lt 2 ]; then
   echo "Usage: scaffold-adr.sh <product> <slug> [title]" >&2
@@ -28,6 +28,12 @@ fi
 
 PRODUCT="$1"
 SLUG="$2"
+# The slug becomes part of the filename AND the frontmatter name (via sed), so
+# it must be kebab-case: anything else would corrupt either.
+if ! [[ "$SLUG" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+  echo "error: slug must be kebab-case (a-z, 0-9, single hyphens): '$SLUG'" >&2
+  exit 1
+fi
 TITLE="${3:-}"
 
 if [ -z "$TITLE" ]; then
@@ -67,6 +73,7 @@ ESCAPED_TITLE=$(printf '%s' "$TITLE" | sed -e 's/[\/&]/\\&/g')
 
 sed \
   -e "s/\[NNN\]/$NEXT/g" \
+  -e "s/\[slug\]/$SLUG/g" \
   -e "s/\[Title\]/$ESCAPED_TITLE/g" \
   -e "s/\[YYYY-MM-DD\]/$DATE/g" \
   "$TEMPLATE" > "$OUT"

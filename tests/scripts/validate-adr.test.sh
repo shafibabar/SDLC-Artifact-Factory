@@ -27,11 +27,15 @@ fi
 # Consequences subsection, and Related ADRs) must fail with the right count.
 cat > "$SCRATCH_DIR/broken.md" <<'EOF'
 ---
+name: adr-999-missing-deciders-and-trade-off
+version: 1.0.0
+phase: design
+owner: enterprise-architect
+created: 2026-07-23
+summary: Fixture ADR deliberately missing deciders and trade-off sections.
 adr-id: ADR-999
 title: Missing Deciders And Trade-off
-summary: Fixture ADR deliberately missing deciders and trade-off sections.
 status: Proposed
-date: 2026-07-23
 ---
 
 # ADR-999: Missing Deciders And Trade-off

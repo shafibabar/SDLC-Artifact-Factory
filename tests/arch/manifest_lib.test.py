@@ -10,7 +10,7 @@ to the live component tree. Asserts:
   * exact component counts (187 skills, 13 agents, 15 commands) — a drift here
     means a component was added/removed without the manifest noticing;
   * filesystem-DERIVED booleans are computed correctly for a known skill
-    (adr-authoring has references/ + assets/ + scripts/ + a contract test);
+    (derived flags are checked against filesystem truth for every skill);
   * authored frontmatter is parsed correctly (fields, inline lists, block
     lists, folded '>' descriptions);
   * the PyYAML path and the minimal fallback parser agree (both are exercised);
@@ -106,64 +106,61 @@ check(
     ),
 )
 
-# --- known-skill DERIVED facts: adr-authoring --------------------------------
-adr = m.resolve("adr-authoring")
-check("resolve('adr-authoring') returns a skill", adr is not None and adr["kind"] == "skill")
-adr_rec = adr["record"] if adr else {}
-check("adr-authoring has_references (derived, non-empty dir)", adr_rec.get("has_references") is True)
-check("adr-authoring has_assets (derived, non-empty dir)", adr_rec.get("has_assets") is True)
-check("adr-authoring has_scripts (derived, non-empty dir)", adr_rec.get("has_scripts") is True)
-check("adr-authoring has_contract_test (derived from tests/skills/)", adr_rec.get("has_contract_test") is True)
+# --- DERIVED facts match filesystem truth, for EVERY skill --------------------
+# These used to be pinned to adr-authoring's shape at one point in time (has
+# assets/, has a contract test). The Fresh-Eyes waves change every skill's
+# layout, so pinning a real skill made this test break whenever that skill was
+# refactored. Instead: for every skill, each derived flag must equal what the
+# filesystem says — stronger (187 skills, not one) and refactor-proof.
+def _nonempty(p):
+    return p.is_dir() and any(p.iterdir())
+_mismatch = []
+for r in skills:
+    sd = REPO_ROOT / r["dir"]
+    for d in m.SKILL_SUBDIRS:
+        if r[f"has_{d}"] != _nonempty(sd / d):
+            _mismatch.append(f"{r['name']}.has_{d}")
+    if r["has_contract_test"] != (REPO_ROOT / "tests" / "skills" / f"{r['name']}.contract.sh").is_file():
+        _mismatch.append(f"{r['name']}.has_contract_test")
+check(f"every skill's derived has_* flags equal filesystem truth ({len(skills)} skills)", _mismatch == [])
+check("resolve('adr-authoring') returns a skill record",
+      (m.resolve("adr-authoring") or {}).get("kind") == "skill")
+_disc = {f"has_{d}" for d in ("references", "assets", "scripts")}
+check("derivation discriminates (some skills have, some lack, each of references/assets/scripts)",
+      all(any(r[k] for r in skills) and not all(r[k] for r in skills) for k in _disc))
 
-# --- known-skill AUTHORED frontmatter: adr-authoring -------------------------
-# Compare against the version read straight from the file rather than a pinned
-# literal: this asserts the parser reports what the source says, without the
-# test breaking on every ordinary version bump of adr-authoring.
-import re as _re
-_adr_src_version = _re.search(
-    r"^version:\s*(\S+)\s*$",
-    (REPO_ROOT / "skills/adr-authoring/SKILL.md").read_text().split("\n---\n", 1)[0],
-    _re.M,
-).group(1)
-check(f"adr-authoring version == source ({_adr_src_version})", adr_rec.get("version") == _adr_src_version)
-check("adr-authoring phase == design", adr_rec.get("phase") == "design")
-check("adr-authoring owner == enterprise-architect", adr_rec.get("owner") == "enterprise-architect")
-check("adr-authoring inline tags parsed (7 tags)", adr_rec.get("tags") == [
-    "design", "architecture", "adr", "decision-records", "trade-offs", "principles", "governance",
-])
-check("adr-authoring related parsed as list", adr_rec.get("related") == [
-    "skill-authoring-standards", "nfr-specification",
-])
-check(
-    "adr-authoring folded description parsed to one clean line",
-    isinstance(adr_rec.get("description"), str)
-    and adr_rec["description"].startswith("Teaches how to write Architecture Decision Records")
-    and "\n" not in adr_rec["description"],
+# --- AUTHORED frontmatter: the parser contract, on a synthetic fixture -------
+# Previously pinned to adr-authoring (inline lists, folded description) and
+# event-schema-design (block lists). Same contract, now refactor-proof.
+_fx_fm = m.parse_frontmatter(
+    "---\n"
+    "name: fixture-skill\n"
+    "description: >\n"
+    "  Teaches how to write Architecture Decision Records and when not to,\n"
+    "  across two folded lines.\n"
+    "version: 4.0.0\n"
+    "phase: design\n"
+    "owner: enterprise-architect\n"
+    "created: 2026-06-25\n"
+    "tags: [design, architecture, adr, decision-records, trade-offs, principles, governance]\n"
+    "related: [skill-authoring-standards, nfr-specification]\n"
+    "sources:\n"
+    "  - research/software-architecture/just-enough-software-architecture-fairbanks.md\n"
+    "  - research/software-architecture/documenting-software-architectures-clements.md\n"
+    "---\nbody\n"
 )
-
-# --- a control skill that DOES NOT own the optional dirs / test --------------
-# Pick a skill whose references/assets/scripts differ from adr's, proving the
-# derivation is real per-skill and not hard-coded True everywhere.
-neg = next(
-    (
-        r for r in skills
-        if not r["has_references"] and not r["has_assets"] and not r["has_scripts"]
-    ),
-    None,
-)
-check("at least one skill has no references/assets/scripts (derivation discriminates)", neg is not None)
-
-# --- block-list frontmatter style (event-schema-design) ----------------------
-esd = m.resolve("event-schema-design")
-esd_rec = esd["record"] if esd else {}
-check(
-    "block-style 'related:' list parsed (event-schema-design)",
-    esd_rec.get("related") == ["domain-event-catalog", "go-domain-model", "data-retention-policy", "cqrs-pattern"],
-)
-check(
-    "block-style 'tags:' list parsed (event-schema-design, 7 tags)",
-    len(esd_rec.get("tags") or []) == 7 and "cloudevents" in (esd_rec.get("tags") or []),
-)
+check("folded description parsed to one clean line",
+      isinstance(_fx_fm.get("description"), str)
+      and _fx_fm["description"].startswith("Teaches how to write Architecture Decision Records")
+      and "\n" not in _fx_fm["description"])
+check("inline tags list parsed (7 tags)", _fx_fm.get("tags") == [
+    "design", "architecture", "adr", "decision-records", "trade-offs", "principles", "governance"])
+check("inline related list parsed", _fx_fm.get("related") == ["skill-authoring-standards", "nfr-specification"])
+check("block-style sources list parsed", _fx_fm.get("sources") == [
+    "research/software-architecture/just-enough-software-architecture-fairbanks.md",
+    "research/software-architecture/documenting-software-architectures-clements.md"])
+check("scalars parsed (version, phase, owner)",
+      (_fx_fm.get("version"), _fx_fm.get("phase"), _fx_fm.get("owner")) == ("4.0.0", "design", "enterprise-architect"))
 
 # --- optional fields default correctly where absent --------------------------
 # P2 (Skill Manifest Enrichment) is complete: all 186 skills now author

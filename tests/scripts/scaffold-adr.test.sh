@@ -25,10 +25,33 @@ else
   _fail "scaffold-adr: frontmatter and heading filled in correctly" "placeholders not replaced as expected"
 fi
 
-if grep -q "^date: $(date +%Y-%m-%d)$" "$OUT1"; then
-  _pass "scaffold-adr: date filled in with today's date"
+if grep -q "^created: $(date +%Y-%m-%d)$" "$OUT1"; then
+  _pass "scaffold-adr: created filled in with today's date"
 else
-  _fail "scaffold-adr: date filled in with today's date" "date placeholder not replaced"
+  _fail "scaffold-adr: created filled in with today's date" "created placeholder not replaced"
+fi
+
+if grep -q "^name: adr-001-use-transactional-outbox$" "$OUT1"; then
+  _pass "scaffold-adr: artifact name filled from number + slug"
+else
+  _fail "scaffold-adr: artifact name filled from number + slug" "got: $(grep '^name:' "$OUT1")"
+fi
+
+# REGRESSION: a scaffolded ADR must pass the plugin's own blocking artifact hook
+# (scripts/validate-artifact-structure.sh) — before the Fresh-Eyes pilot the ADR
+# frontmatter lacked name/version/phase/owner/created, so writing one with the
+# Write tool was DENIED.
+HOOK_OUT="$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Write','tool_input':{'file_path':'/p/'+sys.argv[1],'content':open(sys.argv[1]).read()}}))" "$OUT1" | "$REPO_ROOT/scripts/validate-artifact-structure.sh")"
+if echo "$HOOK_OUT" | grep -q '"permissionDecision": "deny"'; then
+  _fail "scaffold-adr: scaffolded ADR passes validate-artifact-structure" "$HOOK_OUT"
+else
+  _pass "scaffold-adr: scaffolded ADR passes validate-artifact-structure"
+fi
+
+if bash "$REPO_ROOT/skills/adr-authoring/scripts/scaffold-adr.sh" acme 'Bad/Slug' >/dev/null 2>&1; then
+  _fail "scaffold-adr: a non-kebab slug is rejected" "exit 0 on 'Bad/Slug'"
+else
+  _pass "scaffold-adr: a non-kebab slug is rejected"
 fi
 
 if grep -q "deciders: \[Who made this decision\]" "$OUT1" && grep -q -- "- \[ADR-NNN — related or dependent decision\]" "$OUT1"; then
