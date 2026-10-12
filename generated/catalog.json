@@ -5877,9 +5877,9 @@
         "dir": "skills/go-repository-pattern",
         "domain": "backend",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
         "has_resources": false,
         "has_scripts": false,
@@ -5892,6 +5892,7 @@
           "go-repository-implementation"
         ],
         "related": [
+          "cqrs-pattern",
           "go-domain-model",
           "go-error-handling",
           "go-integration-test",
@@ -5900,7 +5901,14 @@
           "go-service-layer",
           "multi-tenancy-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/software-architecture/clean-architecture-martin.md",
+          "research/software-architecture/clean-code-martin.md",
+          "research/software-architecture/designing-backend-systems-go-campbell.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+        ],
         "status": "stable",
         "tags": [
           "error-translation",
@@ -5914,7 +5922,7 @@
           "tenant",
           "transactions"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10124,8 +10132,8 @@
     "edges_agent_produces": 74,
     "edges_agent_skills": 179,
     "edges_skill_produces": 188,
-    "edges_skill_related": 815,
-    "edges_skill_sources": 12,
+    "edges_skill_related": 816,
+    "edges_skill_sources": 18,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10137,17 +10145,17 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 12,
+    "research_files_cited": 18,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 183,
+    "skills_with_contract_test": 182,
     "skills_with_domain": 187,
-    "skills_with_evals": 3,
-    "skills_with_examples": 3,
+    "skills_with_evals": 4,
+    "skills_with_examples": 4,
     "skills_with_produces": 187,
     "skills_with_references": 182,
     "skills_with_resources": 1,
     "skills_with_scripts": 10,
-    "skills_with_sources": 3,
+    "skills_with_sources": 4,
     "skills_with_status": 187,
     "skills_with_steps": 0,
     "skills_with_templates": 3
@@ -13509,6 +13517,10 @@
         "skill": "go-project-structure"
       },
       {
+        "related": "cqrs-pattern",
+        "skill": "go-repository-pattern"
+      },
+      {
         "related": "go-domain-model",
         "skill": "go-repository-pattern"
       },
@@ -15201,6 +15213,30 @@
       {
         "skill": "adr-authoring",
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/clean-architecture-martin.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/clean-code-martin.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/designing-backend-systems-go-campbell.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
       },
       {
         "skill": "skill-authoring-standards",
