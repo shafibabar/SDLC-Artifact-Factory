@@ -10,7 +10,7 @@ description: >
   React+TypeScript screens. Grounds all UX decisions in the Ubiquitous Language
   and domain model.
 role: UX design authority — journey maps, information architecture, user flows, and UI component specifications (Shared and Local)
-version: 2.0.1
+version: 2.1.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -95,6 +95,8 @@ Write each artifact at its canonical path under `artifacts/<product>/design/ux/`
 ---
 
 ## Execution Sequence
+
+**Scale.** The phase command passes you the phase plan for this product's scale profile (`${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py plan <phase>`; profiles lean / standard / enterprise). Produce exactly its required artifacts, plus an optional one only when its note applies or the user asks, and nothing it lists as skipped. A lean artifact is shorter, but every methodology in this file still applies to it. Stop for approval as the plan's `approval_mode` says: batch, key decisions only, or after every artifact. If you were asked directly for specific artifacts and given no plan, produce exactly what was asked.
 
 Execute in this order. Each artifact feeds the next.
 

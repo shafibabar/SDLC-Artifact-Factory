@@ -9,7 +9,7 @@ description: >
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.0.1
+version: 3.1.0
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -141,6 +141,8 @@ carries the substance.
 ---
 
 ## Execution Sequence
+
+**Scale.** The phase command passes you the phase plan for this product's scale profile (`${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py plan <phase>`; profiles lean / standard / enterprise). Produce exactly its required artifacts, plus an optional one only when its note applies or the user asks, and nothing it lists as skipped. A lean artifact is shorter, but every methodology in this file still applies to it. Stop for approval as the plan's `approval_mode` says: batch, key decisions only, or after every artifact. If you were asked directly for specific artifacts and given no plan, produce exactly what was asked.
 
 Strategy artifacts are produced in dependency order. Do not produce items out of sequence; if a later
 artifact's inputs are missing because an earlier one is incomplete, surface the gap to the user first.

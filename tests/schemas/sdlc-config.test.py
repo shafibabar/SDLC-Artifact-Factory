@@ -52,6 +52,8 @@ check("arbitrary tech-stack override key", {"_meta": base_meta, "product": "x", 
 
 # Negative cases
 check("missing _meta", {"product": "x", "product_slug": "x"}, False)
+check("scale_profile lean", {"_meta": base_meta, "product": "x", "product_slug": "x", "scale_profile": "lean"}, True)
+check("scale_profile outside the three profiles", {"_meta": base_meta, "product": "x", "product_slug": "x", "scale_profile": "small"}, False)
 check("missing product_slug", {"_meta": base_meta, "product": "x"}, False)
 check("bad product_slug uppercase", {"_meta": base_meta, "product": "x", "product_slug": "BadSlug"}, False)
 check("bad date format", {"_meta": {**base_meta, "last_updated": "not-a-date"}, "product": "x", "product_slug": "x"}, False)

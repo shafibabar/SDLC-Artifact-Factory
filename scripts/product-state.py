@@ -12,6 +12,7 @@ reads what it writes.
   approve <artifact path> [<artifact path> ...]
   complete <phase> [--override "<reason>"]
   status
+  plan [<phase>]      what this phase produces at the product's scale profile
 
 What a phase requires comes from
 skills/artifact-manifest/resources/phase-requirements.json. Output is JSON on
@@ -93,13 +94,39 @@ def save(path: Path, manifest: dict) -> None:
 
 
 def profile_of(root: Path) -> str:
+    """The product's scale profile (proposal 14); enterprise when unset (today's full set)."""
     config = root / "sdlc-config.json"
     if config.exists():
         try:
-            return json.loads(config.read_text()).get("scale_profile") or DEFAULT_PROFILE
+            profile = json.loads(config.read_text()).get("scale_profile") or DEFAULT_PROFILE
         except ValueError:
-            pass
+            return DEFAULT_PROFILE
+        if profile not in requirements()["_meta"]["profiles"]:
+            fail(2, f"sdlc-config.json scale_profile '{profile}' is not one of "
+                    f"{', '.join(requirements()['_meta']['profiles'])}.")
+        return profile
     return DEFAULT_PROFILE
+
+
+def phase_plan(phase: str, profile: str) -> dict:
+    """What `phase` produces at `profile`: required, optional (with when), skipped."""
+    req = requirements()
+    plan = {"phase": phase, "scale_profile": profile, "required": [], "optional": [], "skipped": []}
+    for e in req["phases"].get(phase, []):
+        level = e["profiles"].get(profile, "required")
+        if level == "skip":
+            plan["skipped"].append(e["artifact"])
+            continue
+        item = {"artifact": e["artifact"], "path": e["paths"][0], "agent": e["agent"]}
+        if e.get("note"):
+            item["note"] = e["note"]
+        plan["required" if level == "required" else "optional"].append(item)
+    guide = req.get("guidance", {}).get(profile, {})
+    plan["approval_mode"] = guide.get("approval_mode")
+    plan["approval_mode_note"] = guide.get("approval_mode_note")
+    if guide.get(phase):
+        plan["guidance"] = guide[phase]
+    return plan
 
 
 def phase_check(manifest: dict, phase: str, profile: str) -> dict:
@@ -220,11 +247,23 @@ def cmd_status(root: Path, args) -> None:
         "product_slug": manifest.get("product_slug"),
         "problem_statement": manifest.get("problem_statement"),
         "scale_profile": profile_of(root),
+        "approval_mode": requirements().get("guidance", {}).get(profile_of(root), {}).get("approval_mode"),
         "current_phase": current,
         "phases": manifest.get("phases", {}),
         "artifact_counts_by_phase": counts,
         "current_phase_check": phase_check(manifest, current, profile_of(root)),
     }, indent=2))
+
+
+def cmd_plan(root: Path, args) -> None:
+    order = requirements()["_meta"]["phase_order"]
+    phase = args.phase
+    if phase is None:
+        found = [root / "artifacts" / args.product / "_manifest.json"] if args.product else manifests(root)
+        phase = load(found[0]).get("current_phase", "strategy") if found and found[0].exists() else "strategy"
+    if phase not in order:
+        fail(2, f"Unknown phase '{phase}'. Phases: {', '.join(order)}.")
+    print(json.dumps({"ok": True, **phase_plan(phase, profile_of(root))}, indent=2))
 
 
 def main(argv: list[str]) -> int:
@@ -241,9 +280,12 @@ def main(argv: list[str]) -> int:
     p.add_argument("phase")
     p.add_argument("--override", help="approve despite missing items; the reason is recorded")
     sub.add_parser("status")
+    p = sub.add_parser("plan")
+    p.add_argument("phase", nargs="?")
     args = parser.parse_args(argv)
     root = repo_root()
-    {"init": cmd_init, "approve": cmd_approve, "complete": cmd_complete, "status": cmd_status}[args.cmd](root, args)
+    {"init": cmd_init, "approve": cmd_approve, "complete": cmd_complete, "status": cmd_status,
+     "plan": cmd_plan}[args.cmd](root, args)
     return 0
 
 

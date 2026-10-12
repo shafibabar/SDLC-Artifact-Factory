@@ -45,6 +45,7 @@ Self-contained — loadable without reading `SKILL.md` first. This is the exhaus
 | `product_slug` | string, pattern `^[a-z0-9]+(-[a-z0-9]+)*$` | **Yes** | Set once at `/sdlc-start`. Becomes the prefix in every artifact ID for this product (see `artifact-manifest`'s ID scheme). The pattern is the component-naming one, adopted from its home at CLAUDE.md § Naming Conventions — read the rule there. |
 | `tech_stack_overrides` | object | No | Override-only map of tech-stack default rows this product sets differently. Absent/empty = every default used unchanged. |
 | `compliance_frameworks` | array of strings | No | Frameworks and control families the product must satisfy. |
+| `scale_profile` | `lean` \| `standard` \| `enterprise` | Written at `/sdlc-start` | How much each phase produces for this product. The one field written even though it has a default (enterprise), because it is an explicit choice the user confirms. Changing it later is a recorded decision. |
 | `deployment_model` | string (minLength 1) | No | The specific deployment option this product/instance uses. |
 | `methodology_parameters` | object | No | Product-specific overrides of narrow factory-wide calibration parameters. |
 
@@ -93,6 +94,10 @@ A row appears here **only** if it differs from the default. The default rows (al
 | Container orchestration | Kubernetes | `container_orchestration` |
 | Observability | OTel + Prometheus + Tempo + Grafana | `observability` |
 | Optional database | (none — explicit choice) | `optional_database` (structured object) |
+
+### `scale_profile`
+
+`lean` (internal or single-team tool), `standard` (B2B SaaS, a few services, one region) or `enterprise` (multi-tenant, regulated, high availability). `/sdlc-start` recommends one from the problem statement and the user confirms it. It selects, per phase, which artifacts are required, optional or skipped, and the approval mode, from `../../artifact-manifest/resources/phase-requirements.json` (read through `product-state.py plan <phase>`). It never relaxes a methodology. An older config without it means `enterprise`.
 
 ### `compliance_frameworks`
 

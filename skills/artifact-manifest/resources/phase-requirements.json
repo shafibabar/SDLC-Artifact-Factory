@@ -1,8 +1,10 @@
 {
   "_meta": {
     "purpose": "What each SDLC phase must produce before it can be approved, and where each artifact lives. Read by scripts/product-state.py (phase completion) and the pre-phase-advance hook (via the manifest), and by phase commands and agents to know canonical paths.",
-    "how_to_use": "paths are globs relative to artifacts/<product>/. A phase is complete when every artifact whose profile value is 'required' has at least one approved manifest entry matching one of its paths. Phases with no required artifacts (implement, data, deploy produce code, verified by CI) are completed by the user's explicit phase approval alone. 'optional' artifacts are produced when their note's trigger applies.",
+    "how_to_use": "paths are globs relative to artifacts/<product>/. Each artifact has a level per scale profile (sdlc-config.json scale_profile; default enterprise): 'required' (the phase can't be approved without an approved copy), 'optional' (produce it when its note's trigger applies or the user asks), 'skip' (not produced at this profile). Phases with no required artifacts (implement, data, deploy produce code, verified by CI) are completed by the user's explicit phase approval alone. The five methodologies (DDD, Event Storming, TDD, BDD, SOLID) apply at every profile; lean produces fewer, shorter artifacts, never skips a methodology.",
     "profiles": [
+      "lean",
+      "standard",
       "enterprise"
     ],
     "phase_order": [
@@ -25,6 +27,8 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -35,6 +39,8 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -45,6 +51,8 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -55,6 +63,8 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "optional",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -66,6 +76,8 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -77,6 +89,8 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -88,8 +102,11 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: one page."
       },
       {
         "artifact": "okr-set",
@@ -99,8 +116,11 @@
         ],
         "agent": "product-strategist",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: one objective."
       }
     ],
     "ideate": [
@@ -111,6 +131,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -121,8 +143,11 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: short — only the NFRs that change a design decision."
       },
       {
         "artifact": "user-personas",
@@ -131,8 +156,11 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: 1–2 proto-personas with the job each hires the product for (JTBD folded in)."
       },
       {
         "artifact": "jtbd-analysis",
@@ -141,6 +169,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -151,6 +181,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "required"
         }
       },
@@ -161,6 +193,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -171,8 +205,11 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: MoSCoW priority inline in the backlog; the backlog is also the functional requirements."
       },
       {
         "artifact": "acceptance-criteria",
@@ -181,6 +218,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         },
         "note": "One file per story; at least one required."
@@ -192,6 +231,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "optional",
+          "standard": "required",
           "enterprise": "required"
         },
         "note": "One file per story; at least one required."
@@ -203,6 +244,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "optional",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -213,6 +256,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       }
@@ -225,6 +270,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "optional"
         }
       },
@@ -235,8 +282,11 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: big-picture only, timeboxed; it still identifies the Bounded Contexts (Event Storming stays mandatory at every profile)."
       },
       {
         "artifact": "event-storming-process",
@@ -245,6 +295,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "optional"
         }
       },
@@ -255,6 +307,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -265,6 +319,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         },
         "note": "One per Bounded Context."
@@ -276,8 +332,23 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
+      },
+      {
+        "artifact": "domain-model",
+        "paths": [
+          "design/domain-model.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "lean": "required",
+          "standard": "skip",
+          "enterprise": "skip"
+        },
+        "note": "lean only: one document covering the Aggregates, Domain Events, Commands and Read Models of every Bounded Context (the standard/enterprise per-context catalogs replace it)."
       },
       {
         "artifact": "aggregate-design",
@@ -287,6 +358,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         },
         "note": "One per Bounded Context."
@@ -298,6 +371,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -308,6 +383,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -318,6 +395,8 @@
         ],
         "agent": "domain-modeler",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -328,6 +407,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -338,6 +419,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -348,6 +431,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         },
         "note": "One per service."
@@ -359,6 +444,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "optional",
+          "standard": "optional",
           "enterprise": "optional"
         },
         "note": "Only decisions that pass the adr-authoring risk gate get one."
@@ -370,6 +457,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "optional"
         }
       },
@@ -380,6 +469,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         },
         "note": "One per service."
@@ -391,6 +482,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -401,6 +494,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "required"
         }
       },
@@ -411,6 +506,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "optional"
         },
         "note": "Only for a multi-tenant product."
@@ -422,6 +519,8 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -432,6 +531,8 @@
         ],
         "agent": "ux-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -442,6 +543,8 @@
         ],
         "agent": "ux-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -452,6 +555,8 @@
         ],
         "agent": "ux-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -462,6 +567,8 @@
         ],
         "agent": "ux-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -472,6 +579,8 @@
         ],
         "agent": "data-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -482,6 +591,8 @@
         ],
         "agent": "data-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "skip",
           "enterprise": "required"
         }
       },
@@ -492,6 +603,8 @@
         ],
         "agent": "data-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -502,6 +615,8 @@
         ],
         "agent": "data-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "required"
         }
       },
@@ -512,6 +627,8 @@
         ],
         "agent": "data-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -522,6 +639,8 @@
         ],
         "agent": "data-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "required"
         }
       },
@@ -532,8 +651,11 @@
         ],
         "agent": "data-architect",
         "profiles": {
+          "lean": "optional",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: produce if the product stores personal or regulated data."
       },
       {
         "artifact": "threat-model",
@@ -542,8 +664,11 @@
         ],
         "agent": "security-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: STRIDE-lite — one table of the top threats per trust boundary."
       },
       {
         "artifact": "zero-trust-design",
@@ -552,6 +677,8 @@
         ],
         "agent": "security-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "required"
         }
       },
@@ -562,6 +689,8 @@
         ],
         "agent": "security-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -573,6 +702,8 @@
         ],
         "agent": "security-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -583,8 +714,11 @@
         ],
         "agent": "security-architect",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: short — where secrets live and who can read them."
       },
       {
         "artifact": "privacy-design",
@@ -593,8 +727,11 @@
         ],
         "agent": "security-architect",
         "profiles": {
+          "lean": "optional",
+          "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: required if the product stores personal data."
       },
       {
         "artifact": "compliance-design",
@@ -603,6 +740,8 @@
         ],
         "agent": "security-architect",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "optional"
         },
         "note": "Required when the product is in a compliance scope (sdlc-config.json compliance_frameworks)."
@@ -618,6 +757,8 @@
         ],
         "agent": "security-engineer",
         "profiles": {
+          "lean": "optional",
+          "standard": "optional",
           "enterprise": "optional"
         },
         "note": "Required when the product is in a compliance scope."
@@ -632,6 +773,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       },
@@ -642,6 +785,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "optional"
         }
       },
@@ -652,6 +797,8 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "optional",
+          "standard": "optional",
           "enterprise": "optional"
         }
       },
@@ -662,9 +809,34 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
+          "lean": "required",
+          "standard": "required",
           "enterprise": "required"
         }
       }
     ]
+  },
+  "guidance": {
+    "lean": {
+      "approval_mode": "batch",
+      "approval_mode_note": "Produce the phase's artifacts together, then present one summary table for a single review.",
+      "implement": "One deployable service unless the domain clearly needs more; TDD and SOLID unchanged.",
+      "deploy": "Single region, no service mesh, no chaos testing; a simple managed or single-cluster setup.",
+      "quality": "End-to-end tests for the Must Have journeys; performance and load checks only against stated NFRs; no chaos or mutation runs."
+    },
+    "standard": {
+      "approval_mode": "key-decisions",
+      "approval_mode_note": "Stop for approval only at the artifacts that change direction (e.g. vision, Context Map, Container Diagram); batch the rest into one review per phase.",
+      "implement": "A few services along Bounded Context lines.",
+      "deploy": "One region; service mesh optional; canary releases.",
+      "quality": "Full Test Pyramid; mutation testing on critical packages; chaos testing optional."
+    },
+    "enterprise": {
+      "approval_mode": "per-artifact",
+      "approval_mode_note": "Stop for approval after every artifact (today's behaviour).",
+      "implement": "Services per Bounded Context; tenancy isolation per the multi-tenancy design.",
+      "deploy": "Multi-region / high availability per the NFRs; service mesh (mTLS); canary and blue-green; DR drills.",
+      "quality": "Full Test Pyramid plus performance, load, chaos and mutation testing; compliance verification."
+    }
   }
 }

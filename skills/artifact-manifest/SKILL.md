@@ -12,7 +12,7 @@ description: >
   references/artifact-type-catalog.md; a populated worked example lives in
   references/manifest-worked-example.md; a copyable empty starting shape for
   a new product's manifest lives in assets/manifest-instance-template.json.
-version: 2.3.0
+version: 2.4.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -106,7 +106,7 @@ Each product has exactly one state file: `artifacts/[product]/_manifest.json`. I
 - The `post-artifact-created` hook writes **artifact entries**. Whenever an agent writes a file under `artifacts/[product]/`, it appends (or updates) that file's entry, assigns its ID (`<product>-<type>-<sequence>`), stamps `created`/`updated`, and copies three fields from the artifact's own frontmatter on every write: `version`, `owner` (as `producing_agent`) and `traces_to`. It infers the trace's kind from the reference (`D…`/`ADR-…` → decision, a PascalCase event name → domain-event, anything else → requirement) and **never invents one**: an artifact whose frontmatter has no `traces_to` gets no `traces_to` entry, which is the orphan the Quality Criteria below flag. A rewrite of the artifact never resets an approval.
 - `scripts/product-state.py` writes **everything a human decides**, run by the phase commands only after the user has explicitly approved: `init` (at `/sdlc-start`: product, problem statement, `current_phase`), `approve <path>` (an entry's `status: approved` and `approved_on`), and `complete <phase>` (the phase's entry in `phases`, then `current_phase` moves on). `status` reports all of it in one JSON block.
 
-**What "phase complete" means** comes from `./resources/phase-requirements.json`: for each phase, the artifacts it requires, their canonical paths (globs under `artifacts/[product]/`), and the producing agent. `complete <phase>` refuses, naming what is missing or unapproved, until every required artifact has an approved entry. Phases whose output is code (implement, data, deploy) have no required documents and complete on the user's approval alone, because CI verifies the code. Only an explicit user decision overrides a refusal, and the reason is stored with the phase. The `pre-phase-advance` hook then lets an agent start only when its preceding phase is approved.
+**What "phase complete" means** comes from `./resources/phase-requirements.json`: for each phase and each scale profile (`sdlc-config.json → scale_profile`: lean, standard or enterprise), the artifacts that are required, optional or skipped, their canonical paths (globs under `artifacts/[product]/`), and the producing agent. `complete <phase>` refuses, naming what is missing or unapproved, until every required artifact has an approved entry. Phases whose output is code (implement, data, deploy) have no required documents and complete on the user's approval alone, because CI verifies the code. Only an explicit user decision overrides a refusal, and the reason is stored with the phase. The `pre-phase-advance` hook then lets an agent start only when its preceding phase is approved.
 
 The manifest schema is formalized machine-readably as `schemas/sdlc-manifest.schema.json` (see `settings.json → env.SDLC_MANIFEST_SCHEMA`) — it validates the per-product manifest INSTANCE (the JSON shape in `references/manifest-worked-example.md` and `assets/manifest-instance-template.json`); the master artifact-type catalog stays a prose table in `references/artifact-type-catalog.md`, since it is described as extended by new skills over time and `type` is deliberately not a closed enum in the schema.
 

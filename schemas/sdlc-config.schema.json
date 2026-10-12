@@ -55,6 +55,11 @@
       "items": { "type": "string", "minLength": 1 },
       "description": "Which compliance frameworks and control families this product must satisfy. Specific enough to act on — 'SOC 2 - CC6, CC7, A1', never just 'SOC 2' (see Anti-Patterns: Vague deployment/compliance fields)."
     },
+    "scale_profile": {
+      "type": "string",
+      "enum": ["lean", "standard", "enterprise"],
+      "description": "How much each phase produces for this product (proposal 14): lean (internal or single-team tool), standard (B2B SaaS, a few services, one region), enterprise (multi-tenant, regulated, high availability). Recommended at /sdlc-start from the problem statement and confirmed by the user; changing it later is a recorded decision. Always written, because it is a choice with no silent default. Absent (older configs) means enterprise. What each profile produces: skills/artifact-manifest/resources/phase-requirements.json."
+    },
     "deployment_model": {
       "type": "string",
       "minLength": 1,
