@@ -6,20 +6,26 @@ by a stable draft id (d1, d2, ...) so that modifying or rejecting one row
 never touches the others.
 
   save-draft add --title T --description D --labels l1,l2 [--depends-on d1,d2] [--sequence 3.a]
+                 [--priority P0-P3] [--complexity XS-XL] [--severity S1-S4]
   save-draft update <id> [--title T] [--description D] [--labels l1,l2] [--depends-on d1,d2] [--sequence 3.a]
+                 [--priority P0-P3] [--complexity XS-XL] [--severity S1-S4]
   save-draft reject <id>
   save-draft list
   save-draft clear
 
 --labels is required on add: at least one of discovery, agent, skill, bug,
 documentation, enhancement (comma-separated for more than one).
+
+--priority/--complexity/--severity are optional. plan-exit sets them on the
+created sub-issue as Triaged values. Anything left out is derived
+(ghp/insights.py).
 """
 import argparse
 import json
 import re
 import sys
 
-from ghp import gh, state
+from ghp import config, gh, state
 
 SEQUENCE_RE = re.compile(r"^\d+(\.[a-z])?$")
 
@@ -41,6 +47,15 @@ def _warn_sequence(value):
             f"dotted-letter notation (e.g. 1, 2, 3.a, 3.b) — saved as-is.",
             file=sys.stderr,
         )
+
+
+def _triage(args):
+    return {f: getattr(args, f.lower()) for f in config.TRIAGE_FLAGS if getattr(args, f.lower(), None)}
+
+
+def add_triage_args(p):
+    for f in config.TRIAGE_FLAGS:
+        p.add_argument(f"--{f.lower()}", choices=[o for o, _, _ in config.INSIGHTS_SINGLE_SELECT[f] if o != "N/A"])
 
 
 def cmd_add(args, st):
@@ -67,6 +82,7 @@ def cmd_add(args, st):
         "depends_on": depends_on,
         "sequence": args.sequence or "",
         "labels": labels,
+        "triage": _triage(args),
     }
     state.save(st)
     print(f"added {row_id}: {args.title}")
@@ -100,6 +116,7 @@ def cmd_update(args, st):
             print(f"error: {e}", file=sys.stderr)
             sys.exit(1)
         row["labels"] = labels
+    row.setdefault("triage", {}).update(_triage(args))
     state.save(st)
     print(f"updated {args.id}")
 
@@ -140,6 +157,7 @@ def main():
     p_add.add_argument("--depends-on")
     p_add.add_argument("--sequence")
     p_add.add_argument("--labels", required=True, help="Comma-separated canonical labels")
+    add_triage_args(p_add)
     p_add.set_defaults(func=cmd_add)
 
     p_update = sub.add_parser("update")
@@ -149,6 +167,7 @@ def main():
     p_update.add_argument("--depends-on")
     p_update.add_argument("--sequence")
     p_update.add_argument("--labels", help="Comma-separated canonical labels")
+    add_triage_args(p_update)
     p_update.set_defaults(func=cmd_update)
 
     p_reject = sub.add_parser("reject")

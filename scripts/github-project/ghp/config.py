@@ -128,6 +128,11 @@ INSIGHTS_SINGLE_SELECT = {
 
 INSIGHTS_NUMBER = ("Effort-Points", "Cycle-Days", "Blocked-By")
 
+# Fields a person may set by hand (--priority/--complexity/--severity on
+# plan-start and save-draft). Setting any of them marks the item
+# Data-Source=Triaged, and the backfill then never overwrites it.
+TRIAGE_FLAGS = ("Priority", "Complexity", "Severity")
+
 # Sprint iterations: consecutive 14-day sprints from the first sprint's Monday.
 SPRINT_FIELD_NAME = "Sprint"
 SPRINT_START = "2026-06-22"
