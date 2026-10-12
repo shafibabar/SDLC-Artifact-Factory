@@ -49,6 +49,20 @@ Each line's vision names the **same protagonist family** and a future state that
 
 The company metric is defined so that it can only rise if all three lines' metrics rise. That is the mechanical check that the line visions are consequences of the company vision, not rivals.
 
+## Step 5 — Below the lines: teams get objectives, not visions
+
+Each line has three to five engineering teams. Their draft "team visions" were withdrawn. The teams change shape at every annual reorganisation, and two of the drafts had already started to pull apart: Discover's ingestion team wanted "every source connected in minutes", while its tenancy team wanted "nothing processed outside the tenant's region". The company vision had already settled that trade-off ("wherever that data lives"), so the teams didn't need to settle it again.
+
+Each team gets an objective drawn from the strategy, traced to its line's north star:
+
+| Team (in Discover) | Objective this half (`okr-authoring`) | Feeds |
+|---|---|---|
+| Connectors | Cut time-to-first-classification for a new Google Drive source from 2 days to 2 hours | Classified share of connected estate |
+| Classification | Raise classified share for enterprise tenants over 1M files from 61% to 85% | Classified share of connected estate |
+| Regional runtime | Run classification inside each tenant's residency region with no cross-region copy | "Wherever that data lives" (a constraint on every objective) |
+
+**The one sub-vision that does pass.** The platform engineering group serves every line's engineers, a distinct protagonist the company vision depends on. It earns its own vision under the four tests: a durable area, a distinct protagonist, a future state traced to the parent ("each line can ship to a new residency region without platform work"), and it changes decisions about the shared platform that no line's vision would settle.
+
 ## Why this is the hard case
 
-At platform scale, the failure mode is not a weak sentence. It is **many reasonable visions that don't compose**. The cascade test settles it: each line names the same protagonist, delivers a named slice of the company's future state, and has a north star that rolls up.
+At platform scale, the failure mode is not a weak sentence. It is **many reasonable visions that don't compose**. The cascade test settles it: each line names the same protagonist, delivers a named slice of the company's future state, and has a north star that rolls up. Below the lines, teams get objectives rather than visions; the only exception is an area with a genuinely distinct protagonist, like the internal platform.

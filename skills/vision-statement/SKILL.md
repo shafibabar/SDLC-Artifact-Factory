@@ -5,8 +5,9 @@ description: >
   of the future a product is building toward, with the customer as the protagonist,
   plus the decisions the vision rules out and the north star it implies. Use when
   writing, reviewing or revising a product vision, separating vision from mission
-  or from the positioning statement, telling the vision to a team or investor, or
-  setting a north star metric. Used by the product-strategist agent at the start
+  or from the positioning statement, telling the vision to a team or investor,
+  deciding whether a product area or team needs its own vision, or setting a
+  north star metric. Used by the product-strategist agent at the start
   of every Strategy phase (/sdlc-strategy) to anchor every later artifact.
 version: 2.0.0
 phase: strategy
@@ -65,6 +66,23 @@ The artifact also carries two consequences of the vision:
 
 ---
 
+## One Product, Many Teams
+
+A shared vision is what lets many teams decide independently and still build one product. That does **not** mean each team writes its own vision. The chain is Cagan's: **one product vision → product strategy (which problems first) → team objectives** (`okr-authoring`). A team stays connected by knowing which part of the shared future it is moving, not by holding a picture of its own.
+
+**Default: one vision per product; teams get objectives, not visions.** A vision should last 3–5+ years, but team boundaries change with every reorganisation. Team-level visions also tend to diverge (one team optimises for "every source connected in minutes", another for "no data leaves the tenant boundary"), and the conflict surfaces only where their work meets.
+
+**A sub-vision is warranted only when all four hold:**
+
+1. **Durable area, not a team.** It belongs to a product line or platform that outlives any team structure.
+2. **A distinct slice or a distinct protagonist.** Either it delivers one named slice of the parent's future state for the same protagonist (a product line), or it serves a genuinely different user the parent depends on (an internal developer platform whose protagonist is the product's engineers).
+3. **Traceable, never rival.** Its future state is a consequence of the parent's, and nothing it pursues is something the parent rules out. Its north star rolls up into the parent's.
+4. **Changes decisions.** Deleting it would make teams decide differently. If nothing would change, it is a slogan; delete it.
+
+An MVP or a single-line product needs one vision. Read `./examples/03-enterprise-platform-cascade.md` for a full cascade, including what the teams below each line get instead of a vision.
+
+---
+
 ## How to Write One
 
 1. **Start from the need, not the product.** Read the problem statement in the product's context file. Name the protagonist and the need behind their stated want.
@@ -78,7 +96,7 @@ The artifact also carries two consequences of the vision:
 **Examples, simple to complex:**
 - An internal tool, the simplest case: read `./examples/01-internal-tool.md`.
 - A B2B SaaS product, including rewriting a positioning-template "vision" into a real one: read `./examples/02-b2b-saas-rewrite.md`.
-- An enterprise multi-tenant platform where a company vision cascades into product visions: read `./examples/03-enterprise-platform-cascade.md`.
+- An enterprise multi-tenant platform where a company vision cascades into product-line visions, and teams below them get objectives instead: read `./examples/03-enterprise-platform-cascade.md`.
 
 ---
 
@@ -95,6 +113,7 @@ The artifact also carries two consequences of the vision:
 | Technology-agnostic | Outcomes and beliefs, not implementation | Names a stack, platform or protocol |
 | Stable | Survives any single product decision for 3+ years | Invalidated by one roadmap change |
 | North star | Implies one measurable metric | No metric could track it |
+| Cascade (sub-visions only) | Passes all four sub-vision tests; names its parent and the slice it delivers | Written for a team, or pursues something the parent rules out |
 
 ---
 
@@ -108,5 +127,6 @@ The artifact also carries two consequences of the vision:
 | **Unfalsifiable** | "To help every company manage data better" | Rules nothing out, so no decision is settled |
 | **Disguised mission** | "We scan storage and classify sensitive data" | Present-tense work belongs in `mission-statement` |
 | **Technology-locked** | "The best Kubernetes-native governance tool" | Technology changes; the vision must outlast it |
+| **A vision per team** | "Ingestion team vision: every source connected in minutes" | Teams reorganise faster than visions should change, and team visions pull apart; the team needs an objective drawn from the strategy |
 
 Use the canonical terms from `glossary-management`: **North Star Metric**, **Jobs To Be Done** (the need is the job), **Outcome-Driven Development** (the future state is an outcome, not a feature).

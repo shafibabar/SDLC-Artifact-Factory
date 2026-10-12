@@ -1,6 +1,6 @@
 # Vision Statement — Artifact Template
 
-Self-contained. Copy everything below the line into `artifacts/<product>/strategy/vision-statement.md` and replace every `[bracketed]` value. Delete the optional "Telling the vision" section if you didn't produce one.
+Self-contained. Copy everything below the line into `artifacts/<product>/strategy/vision-statement.md` and replace every `[bracketed]` value. Delete the optional "Telling the vision" section if you didn't produce one, and the "Parent Vision" section unless this is a product-area vision that passed the skill's four sub-vision tests.
 
 ---
 
@@ -39,6 +39,12 @@ traces_to: [the problem statement / decision this vision answers]
 ## North Star Implication
 
 **[Metric name]** — [definition and unit]. [One line on why moving it means the vision is being achieved.]
+
+## Parent Vision (product-area visions only)
+
+**Parent:** [link to the product or company vision this one serves]
+**Slice it delivers:** [the named part of the parent's future state, or the distinct protagonist it serves and why the parent depends on them]
+**Rolls up into:** [the parent north star this one's north star feeds]
 
 ## Telling the Vision (optional)
 
