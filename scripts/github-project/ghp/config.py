@@ -36,3 +36,100 @@ CANONICAL_LABELS = ("discovery", "agent", "skill", "bug", "documentation", "enha
 REQUIRED_SCOPES = ("repo", "project")
 
 STATE_FILE = "scripts/github-project/.state.json"
+
+# --- Insights fields (#1266) -------------------------------------------------
+# Custom fields that the SKILL GEN Project's Insights charts slice by. Each one
+# is resolved by NAME at runtime (project.insights_fields()), so no field or
+# option IDs are hard-coded here. Names are hyphenated so chart filters need no
+# quoting (e.g. `work-type:Bug`). Option order is the order a chart's axis shows.
+# Colours are ProjectV2SingleSelectFieldOptionColor values.
+INSIGHTS_SINGLE_SELECT = {
+    "Hierarchy": [
+        ("Parent", "PURPLE", "Issue with sub-issues (a plan / campaign phase)"),
+        ("Sub-issue", "BLUE", "Issue under a parent"),
+        ("Standalone", "GRAY", "Issue with no parent and no sub-issues"),
+        ("Sub-issue PR", "GREEN", "PR merging into an integration branch"),
+        ("Integration PR", "ORANGE", "issue-N-* integration branch -> main"),
+        ("Direct PR", "YELLOW", "Any other PR straight to main"),
+    ],
+    "Work-Type": [
+        ("Discovery", "BLUE", "Research / investigation before building"),
+        ("Skill", "PURPLE", "Skill content or structure"),
+        ("Agent", "PINK", "Agent definitions"),
+        ("Governance", "ORANGE", "Architecture-review / linters / schemas / catalog"),
+        ("Tooling", "YELLOW", "Plan/exec scripts, tests, harness"),
+        ("Bug", "RED", "Defect fix"),
+        ("Docs", "GRAY", "Documentation / housekeeping"),
+        ("Enhancement", "GREEN", "Other feature work"),
+    ],
+    "Campaign": [
+        ("Foundation", "GRAY", "Original feature/<n> build chunks"),
+        ("Skill-Refactor", "PURPLE", "Per-skill depth refactors (issue-NNN)"),
+        ("Arch-Review", "ORANGE", "Architecture Review campaign (arch-*)"),
+        ("Fresh-Eyes", "GREEN", "Fresh-Eyes refactor (2026-10-11 ->)"),
+        ("Research", "BLUE", "research/ library building"),
+        ("Maintenance", "YELLOW", "Everything else"),
+    ],
+    "Branch-Type": [
+        ("issue-integration", "ORANGE", "issue-N-* branch whose PR targets main"),
+        ("issue-sub", "GREEN", "issue-N-* branch whose PR targets an integration branch"),
+        ("arch", "PURPLE", "arch-* branches"),
+        ("feature", "GRAY", "feature/<n>-* chunk branches"),
+        ("research", "BLUE", "research* branches"),
+        ("fix", "RED", "fix* / bug* branches"),
+        ("discovery", "PINK", "discovery/* / fresh-* branches"),
+        ("other", "YELLOW", "Any other branch"),
+        ("n/a", "GRAY", "Issues (no branch of their own)"),
+    ],
+    "Merge-Target": [
+        ("main", "ORANGE", "PR base is main"),
+        ("integration", "GREEN", "PR base is an integration branch"),
+        ("n/a", "GRAY", "Issues"),
+    ],
+    "Priority": [
+        ("P0", "RED", "Critical: broken gate / blocking defect"),
+        ("P1", "ORANGE", "High: blocks other work or leads the active campaign"),
+        ("P2", "YELLOW", "Medium: default"),
+        ("P3", "GRAY", "Low: docs / housekeeping"),
+    ],
+    "Severity": [
+        ("S1", "RED", "Blocker: gate/CI broken, data loss, work blocked"),
+        ("S2", "ORANGE", "Major: wrong output / behaviour"),
+        ("S3", "YELLOW", "Minor: default for defects"),
+        ("S4", "GRAY", "Cosmetic: wording, typo, formatting"),
+        ("N/A", "GRAY", "Not a defect"),
+    ],
+    "Complexity": [
+        ("XS", "GRAY", "< 20 lines changed"),
+        ("S", "BLUE", "< 150 lines"),
+        ("M", "GREEN", "< 600 lines"),
+        ("L", "ORANGE", "< 2000 lines"),
+        ("XL", "RED", ">= 2000 lines (or bumped for > 15 files)"),
+    ],
+    "Duration": [
+        ("<1h", "GREEN", "Created to closed in under an hour"),
+        ("<1d", "BLUE", "Under a day"),
+        ("1-3d", "YELLOW", "1 to 3 days"),
+        ("3-7d", "ORANGE", "3 to 7 days"),
+        (">7d", "RED", "Over a week"),
+        ("Open", "GRAY", "Not closed yet"),
+    ],
+    "Dependency": [
+        ("Blocked", "RED", "Has an open-or-closed blocked-by link"),
+        ("Blocking", "ORANGE", "Blocks another issue"),
+        ("Both", "PURPLE", "Blocked by and blocking"),
+        ("Independent", "GRAY", "No dependency links"),
+    ],
+    "Data-Source": [
+        ("Derived", "GRAY", "Priority/Severity/Complexity derived by backfill rules"),
+        ("Triaged", "GREEN", "Set deliberately by a person"),
+    ],
+}
+
+INSIGHTS_NUMBER = ("Effort-Points", "Cycle-Days", "Blocked-By")
+
+# Sprint iterations: consecutive 14-day sprints from the first sprint's Monday.
+SPRINT_FIELD_NAME = "Sprint"
+SPRINT_START = "2026-06-22"
+SPRINT_DAYS = 14
+SPRINT_COUNT = 10  # through 2026-11-08; extend when the board runs past it
