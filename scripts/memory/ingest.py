@@ -28,6 +28,10 @@ COMPLIANCE_RE = re.compile(r"^(?:.*/)?compliance/(?:([^/]+)/)?(.+)\.md$")
 GLOSSARY_RE = re.compile(r"^(?:.*/)?glossary/(.+)\.md$")
 ADR_RE = re.compile(r"^(?:.*/)?decisions/adr/(.+)\.md$")
 CONTEXT_JSON_RE = re.compile(r"^sdlc-context\.json$")
+# Project memory nodes: decisions, open questions, build checklist, written by
+# /sdlc-start, agents, or migrate_context.py. Leaf names never start with "."
+# (that is where directory nodes keep their .abstract.md/.overview.md sidecars).
+SELF_RE = re.compile(r"^\.sdlc-memory/tree/self/([a-z_]+)/([^/.][^/]*)\.md$")
 
 DIR_ABSTRACT_DEFAULTS = {
     "product": "Artifacts and decisions for product {name}.",
@@ -40,11 +44,16 @@ DIR_ABSTRACT_DEFAULTS = {
     "compliance-framework": "{name} compliance source materials and provenance notes.",
     "glossary-root": "Ubiquitous Language glossary.",
     "adr-root": "Architecture Decision Records.",
+    "self-root": "Project memory for this repository: decisions, open questions and progress.",
+    "self-collection": "Project {name} recorded for this repository.",
 }
 
 
 def classify(repo_root: Path, abs_path: Path) -> Optional[dict[str, Any]]:
-    rel = abs_path.relative_to(repo_root).as_posix()
+    try:
+        rel = abs_path.resolve().relative_to(repo_root.resolve()).as_posix()
+    except ValueError:
+        return None  # outside this repo -- not ours to index
     if (m := ARTIFACT_RE.match(rel)):
         product, phase, tail = m.groups()
         stem = tail[:-3] if tail.endswith(".md") else tail
@@ -92,6 +101,14 @@ def classify(repo_root: Path, abs_path: Path) -> Optional[dict[str, Any]]:
         uri = f"sdlc://adr/{stem}"
         parents = [("sdlc://adr", "adr-root", {})]
         return {"uri": uri, "context_type": "resource", "parents": parents}
+    if (m := SELF_RE.match(rel)):
+        collection, stem = m.groups()
+        uri = f"sdlc://self/{collection}/{stem}"
+        parents = [
+            ("sdlc://self", "self-root", {}),
+            (f"sdlc://self/{collection}", "self-collection", {"name": collection.replace("_", " ")}),
+        ]
+        return {"uri": uri, "context_type": "memory", "parents": parents, "self_collection": collection}
     if CONTEXT_JSON_RE.match(rel):
         return {"uri": "sdlc://context", "context_type": "memory", "parents": []}
     return None
@@ -136,6 +153,43 @@ def ensure_ancestors(conn, embedder: Embedder, repo_root: Path, parents: list[tu
         ensure_directory_node(conn, embedder, repo_root, uri, prev_uri, kind, kwargs, now_iso)
         prev_uri = uri
     return prev_uri  # type: ignore[return-value]
+
+
+_HEADING_ID_RE = re.compile(r"^[A-Za-z]+[-_ ]?\d+\s*[:\u2014\u2013-]?\s*")
+_FIELD_RE = r"^\s*(?:\*\*)?{name}:(?:\*\*)?\s*(.+?)\s*$"
+
+
+def _field(text: str, name: str) -> str:
+    m = re.search(_FIELD_RE.format(name=name), text, re.M | re.I)
+    return m.group(1).strip() if m else ""
+
+
+def build_self_texts(collection: str, raw_text: str) -> tuple[str, str, str]:
+    """(abstract, overview) for a sdlc://self/<collection>/<id> node, matching
+    the overview conventions migrate_context.py writes and self_status.py reads:
+    open_questions -> "Status: <status>" (open unless it says resolved),
+    build_checklist -> "<title> -- <status>", decisions -> "<decision> (<date>)".
+    Accepts plain markdown (the memory-recall rule) or frontmatter fields."""
+    fields, body = parse_frontmatter(raw_text)
+    text = body if fields else raw_text
+    heading = next((l.lstrip("#").strip() for l in text.splitlines() if l.strip().startswith("#")), "")
+    heading_rest = _HEADING_ID_RE.sub("", heading, count=1).strip()
+    status = (fields.get("status", "") if fields else "") or _field(text, "Status")
+    date = (str(fields.get("date", "")) if fields else "") or _field(text, "Date")
+
+    if collection == "open_questions":
+        abstract = (fields.get("summary", "") if fields else "") or _field(text, "Question") or heading_rest or first_paragraph(text, 200)
+        overview = f"Status: {status or 'open'}"
+    elif collection == "decisions":
+        abstract = (fields.get("summary", "") if fields else "") or _field(text, "Decision") or heading_rest or first_paragraph(text, 200)
+        overview = f"{abstract} ({date})" if date else abstract
+    elif collection == "build_checklist":
+        abstract = heading or first_paragraph(text, 200)
+        overview = f"{abstract} -- {status}" if status else abstract
+    else:
+        abstract = (fields.get("summary", "") if fields else "") or heading_rest or first_paragraph(text, 200)
+        overview = first_paragraph(text)
+    return abstract[:200], overview, raw_text
 
 
 def build_texts(rel_path: str, raw_text: str) -> tuple[str, str, str]:
@@ -260,7 +314,10 @@ def ingest_file(conn, embedder: Embedder, repo_root: Path, path: Path) -> Option
 
     raw_text = path.read_text(errors="replace")
     rel_path = path.relative_to(repo_root).as_posix()
-    abstract, overview, content = build_texts(rel_path, raw_text)
+    if info.get("self_collection"):
+        abstract, overview, content = build_self_texts(info["self_collection"], raw_text)
+    else:
+        abstract, overview, content = build_texts(rel_path, raw_text)
     content_for_embedding = content[:3000]
 
     uri = info["uri"]
@@ -283,7 +340,8 @@ def main(argv: list[str]) -> int:
     parser.add_argument("paths", nargs="*", help="File paths to ingest")
     parser.add_argument(
         "--all", action="store_true",
-        help="Reindex artifacts/, research/, skills/, compliance/, glossary/, decisions/adr/, sdlc-context.json",
+        help="Reindex artifacts/, research/, skills/, compliance/, glossary/, decisions/adr/, "
+             ".sdlc-memory/tree/self/ (decisions, open questions, checklist), sdlc-context.json",
     )
     args = parser.parse_args(argv)
 
@@ -297,6 +355,7 @@ def main(argv: list[str]) -> int:
         patterns = (
             "artifacts/**/*.md", "research/**/*.md", "skills/*/SKILL.md",
             "compliance/**/*.md", "glossary/*.md", "decisions/adr/*.md",
+            ".sdlc-memory/tree/self/*/*.md",
         )
         for pattern in patterns:
             targets.extend(repo_root.glob(pattern))
@@ -308,15 +367,28 @@ def main(argv: list[str]) -> int:
         targets.append(pp if pp.is_absolute() else repo_root / pp)
 
     ingested = 0
+    skipped: list[str] = []
+    explicit = {str(t) for t in targets[len(targets) - len(args.paths):]} if args.paths else set()
     for path in targets:
         if not path.exists() or not path.is_file():
+            if str(path) in explicit:
+                skipped.append(f"{path} (no such file)")
             continue
         uri = ingest_file(conn, embedder, repo_root, path)
         if uri:
             ingested += 1
             print(f"ingested {path} -> {uri}")
+        elif str(path) in explicit:
+            skipped.append(f"{path} (not an indexable location)")
     print(f"done: {ingested} file(s) indexed (embedder backend: {embedder.backend})")
-    return 0
+    # An explicitly named file that was not indexed is an error the caller must
+    # see (#1249: a decision silently reported "0 file(s) indexed"). The write
+    # hook ignores the exit code, so calling ingest on every write stays safe.
+    for s in skipped:
+        print(f"SKIPPED: {s} -- indexable: artifacts/<product>/<phase>/, research/, "
+              "skills/<name>/SKILL.md, compliance/, glossary/, decisions/adr/, "
+              ".sdlc-memory/tree/self/<collection>/<id>.md, sdlc-context.json", file=sys.stderr)
+    return 1 if skipped else 0
 
 
 if __name__ == "__main__":
