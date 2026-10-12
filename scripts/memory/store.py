@@ -21,7 +21,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Iterable, Optional
 
-from common import context_id, db_path, memory_root
+from common import context_id, db_path, ensure_memory_dir, memory_root
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS contexts (
@@ -54,7 +54,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS contexts_fts USING fts5(
 
 def connect(repo_root: Optional[Path] = None) -> sqlite3.Connection:
     path = db_path(repo_root)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_memory_dir(repo_root)
     conn = sqlite3.connect(str(path))
     conn.row_factory = sqlite3.Row
     _try_load_sqlite_vec(conn)

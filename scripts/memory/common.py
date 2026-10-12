@@ -63,6 +63,31 @@ def memory_root(repo_root: Optional[Path] = None) -> Path:
     return root / MEMORY_DIRNAME
 
 
+# Same marker and entries scripts/memory/bootstrap.sh writes, so whichever runs
+# first adds them once. The durable memory (.sdlc-memory/tree/**) is meant to be
+# committed; the venv and the derived index are not.
+GITIGNORE_MARKER = "# sdlc-memory (added by SDLC-Artifact-Factory's memory engine)"
+GITIGNORE_ENTRIES = (".sdlc-memory/.venv/", ".sdlc-memory/index.db")
+
+
+def ensure_memory_dir(repo_root: Optional[Path] = None) -> Path:
+    """Create .sdlc-memory/ and, in the same step, the .gitignore entries for its
+    local-only files (#1258: the index used to appear before .gitignore did)."""
+    root = repo_root or find_repo_root()
+    mem = root / MEMORY_DIRNAME
+    gitignore = root / ".gitignore"
+    try:
+        existing = gitignore.read_text() if gitignore.exists() else ""
+        if GITIGNORE_MARKER not in existing:
+            block = "\n".join((GITIGNORE_MARKER, *GITIGNORE_ENTRIES)) + "\n"
+            sep = "" if not existing or existing.endswith("\n\n") else ("\n" if existing.endswith("\n") else "\n\n")
+            gitignore.write_text(existing + sep + block)
+    except OSError:
+        pass  # read-only checkout: memory still works, the user just sees untracked files
+    mem.mkdir(parents=True, exist_ok=True)
+    return mem
+
+
 def tree_root(repo_root: Optional[Path] = None) -> Path:
     return memory_root(repo_root) / "tree"
 
@@ -88,7 +113,7 @@ def load_config(repo_root: Optional[Path] = None) -> dict[str, Any]:
 
 def ensure_config(repo_root: Optional[Path] = None) -> dict[str, Any]:
     cfg_path = config_path(repo_root)
-    cfg_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_memory_dir(repo_root)
     if not cfg_path.exists():
         cfg_path.write_text(json.dumps(DEFAULT_CONFIG, indent=2) + "\n")
     return load_config(repo_root)

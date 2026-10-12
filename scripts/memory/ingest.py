@@ -202,6 +202,21 @@ def build_texts(rel_path: str, raw_text: str) -> tuple[str, str, str]:
             data = {}
         product = data.get("product", {}) if isinstance(data, dict) else {}
         phase = data.get("phase", {}) if isinstance(data, dict) else {}
+        first = data.get("first_product", {}) if isinstance(data, dict) else {}
+        meta = data.get("_meta", {}) if isinstance(data, dict) else {}
+        if isinstance(first, dict) and first:
+            # A product repo's context (written by /sdlc-start): name it, say where
+            # it stands. #1258: the abstract used to be the file's raw first 150
+            # characters ("{\n  \"_meta\": {...").
+            name = first.get("name") or first.get("codename") or "This product"
+            status = str(first.get("status", "")).strip()
+            problem = str(first.get("problem_statement") or first.get("core_value") or first.get("summary") or "").strip()
+            abstract = (f"{name} — {status}" if status else str(name))[:200]
+            overview = " ".join(x for x in (abstract + ".", problem[:400]) if x).strip()
+            return abstract, overview, raw_text
+        if isinstance(meta, dict) and meta.get("purpose"):
+            abstract = str(meta["purpose"]).strip()[:200]
+            return abstract, abstract, raw_text
         if product:
             name = product.get("name") or product.get("codename") or rel_path
             core_value = product.get("core_value", "")
