@@ -31,7 +31,7 @@
   "$defs": {
     "artifactEntry": {
       "type": "object",
-      "required": ["id", "type", "path", "version", "status", "phase", "producing_agent", "traces_to", "created", "updated"],
+      "required": ["id", "type", "path", "version", "status", "phase", "producing_agent", "created", "updated"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -73,7 +73,7 @@
         },
         "traces_to": {
           "type": "object",
-          "description": "CLAUDE.md's Artifact Standards traceability requirement, made concrete. An artifact with no traces_to is an orphan (see artifact-manifest's Anti-Patterns).",
+          "description": "CLAUDE.md's Artifact Standards traceability requirement, made concrete. Optional in the schema because the post-artifact-created hook can only copy it from the artifact's own traces_to frontmatter and must never invent one (artifact-manifest's Anti-Patterns: Traceability theater). An entry without it is an orphan, which artifact-manifest's 'Traceability populated' quality criterion flags.",
           "required": ["kind", "ref"],
           "additionalProperties": false,
           "properties": {

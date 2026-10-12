@@ -12,7 +12,7 @@ description: >
   references/artifact-type-catalog.md; a populated worked example lives in
   references/manifest-worked-example.md; a copyable empty starting shape for
   a new product's manifest lives in assets/manifest-instance-template.json.
-version: 2.1.1
+version: 2.2.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -101,7 +101,7 @@ An artifact with no `traces_to` value is an orphan — see Anti-Patterns.
 
 `sdlc-context.json` is the factory's own memory — build position, decisions, phase checklist. The product manifest is the same idea applied per-artifact, per-product: instead of one JSON file tracking the plugin's own build, each product gets one JSON file tracking every artifact that product's SDLC run has produced.
 
-Once the `post-artifact-created` hook is built, its job is exactly this: whenever an agent writes an artifact file, the hook appends (or updates) the corresponding entry in `artifacts/[product]/_manifest.json`, assigns the ID via `generate-artifact-id` if one was not already assigned, and stamps `created`/`updated`. This is analogous to how `sdlc-context.json`'s own `_meta.last_updated` and `_meta.updated_by` fields are maintained by hand today and will be governed the same way once the hook exists.
+The `post-artifact-created` hook is the manifest's **only writer of entries**: whenever an agent writes a file under `artifacts/[product]/`, it appends (or updates) that file's entry, assigns its ID (`<product>-<type>-<sequence>`), stamps `created`/`updated`, and copies three fields from the artifact's own frontmatter on every write: `version`, `owner` (as `producing_agent`) and `traces_to`. It infers the trace's kind from the reference (`D…`/`ADR-…` → decision, a PascalCase event name → domain-event, anything else → requirement) and **never invents one**: an artifact whose frontmatter has no `traces_to` gets no `traces_to` entry, which is the orphan the Quality Criteria below flag. Agents edit only `status`, `superseded_by` and `traces_to`; a rewrite of the artifact never resets an approval.
 
 The manifest schema is formalized machine-readably as `schemas/sdlc-manifest.schema.json` (see `settings.json → env.SDLC_MANIFEST_SCHEMA`) — it validates the per-product manifest INSTANCE (the JSON shape in `references/manifest-worked-example.md` and `assets/manifest-instance-template.json`); the master artifact-type catalog stays a prose table in `references/artifact-type-catalog.md`, since it is described as extended by new skills over time and `type` is deliberately not a closed enum in the schema.
 
