@@ -2054,7 +2054,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.2.0"
+        "version": "1.3.0"
       },
       {
         "created": "2026-06-25",
@@ -2802,15 +2802,15 @@
         "created": "2026-06-25",
         "dir": "skills/adr-authoring",
         "domain": "architecture",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
         "has_resources": false,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "adr-authoring",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -2818,10 +2818,16 @@
           "architecture-decision-record"
         ],
         "related": [
+          "api-contract-design",
           "nfr-specification",
           "skill-authoring-standards"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/api-first-transformation-lane.md",
+          "research/software-architecture/documenting-software-architectures-clements.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+        ],
         "status": "stable",
         "tags": [
           "adr",
@@ -2832,7 +2838,7 @@
           "principles",
           "trade-offs"
         ],
-        "version": "3.2.0"
+        "version": "4.0.0"
       },
       {
         "created": "2026-06-25",
@@ -5871,9 +5877,9 @@
         "dir": "skills/go-repository-pattern",
         "domain": "backend",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
         "has_resources": false,
         "has_scripts": false,
@@ -5886,6 +5892,7 @@
           "go-repository-implementation"
         ],
         "related": [
+          "cqrs-pattern",
           "go-domain-model",
           "go-error-handling",
           "go-integration-test",
@@ -5894,7 +5901,14 @@
           "go-service-layer",
           "multi-tenancy-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/software-architecture/clean-architecture-martin.md",
+          "research/software-architecture/clean-code-martin.md",
+          "research/software-architecture/designing-backend-systems-go-campbell.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+        ],
         "status": "stable",
         "tags": [
           "error-translation",
@@ -5908,7 +5922,7 @@
           "tenant",
           "transactions"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -9992,22 +10006,35 @@
         "dir": "skills/vision-statement",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
-        "has_references": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
         "has_resources": false,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "vision-statement",
         "owner": "product-strategist",
         "phase": "strategy",
         "produces": [
           "vision-statement"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "mission-statement",
+          "okr-authoring"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
+          "research/storytelling-and-narrative/business-storytelling-for-dummies.md",
+          "research/storytelling-and-narrative/the-best-story-wins.md"
+        ],
         "status": "stable",
         "tags": [
           "north-star",
@@ -10015,7 +10042,7 @@
           "strategy",
           "vision"
         ],
-        "version": "1.2.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-31",
@@ -10105,8 +10132,8 @@
     "edges_agent_produces": 74,
     "edges_agent_skills": 179,
     "edges_skill_produces": 188,
-    "edges_skill_related": 809,
-    "edges_skill_sources": 2,
+    "edges_skill_related": 816,
+    "edges_skill_sources": 18,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10118,20 +10145,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 2,
-    "skills_with_assets": 15,
-    "skills_with_contract_test": 185,
+    "research_files_cited": 18,
+    "skills_with_assets": 14,
+    "skills_with_contract_test": 182,
     "skills_with_domain": 187,
-    "skills_with_evals": 1,
-    "skills_with_examples": 1,
+    "skills_with_evals": 4,
+    "skills_with_examples": 4,
     "skills_with_produces": 187,
-    "skills_with_references": 181,
+    "skills_with_references": 182,
     "skills_with_resources": 1,
     "skills_with_scripts": 10,
-    "skills_with_sources": 1,
+    "skills_with_sources": 4,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 1
+    "skills_with_templates": 3
   },
   "edges": {
     "agent_produces": [
@@ -11938,6 +11965,10 @@
         "skill": "access-control-model"
       },
       {
+        "related": "api-contract-design",
+        "skill": "adr-authoring"
+      },
+      {
         "related": "nfr-specification",
         "skill": "adr-authoring"
       },
@@ -13484,6 +13515,10 @@
       {
         "related": "mock-generation",
         "skill": "go-project-structure"
+      },
+      {
+        "related": "cqrs-pattern",
+        "skill": "go-repository-pattern"
       },
       {
         "related": "go-domain-model",
@@ -15106,6 +15141,26 @@
         "skill": "value-stream-map"
       },
       {
+        "related": "competitive-analysis",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "mission-statement",
+        "skill": "vision-statement"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "vision-statement"
+      },
+      {
         "related": "conductor-workflow-authoring",
         "skill": "workflow-orchestration"
       },
@@ -15144,12 +15199,76 @@
     ],
     "skill_sources": [
       {
+        "skill": "adr-authoring",
+        "source": "research/software-architecture/api-first-transformation-lane.md"
+      },
+      {
+        "skill": "adr-authoring",
+        "source": "research/software-architecture/documenting-software-architectures-clements.md"
+      },
+      {
+        "skill": "adr-authoring",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "adr-authoring",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/clean-architecture-martin.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/clean-code-martin.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/designing-backend-systems-go-campbell.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "go-repository-pattern",
+        "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+      },
+      {
         "skill": "skill-authoring-standards",
         "source": "research/ai-agent-engineering/context-engineering-for-ai-agents-zhu.md"
       },
       {
         "skill": "skill-authoring-standards",
         "source": "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/storytelling-and-narrative/the-best-story-wins.md"
       }
     ]
   }

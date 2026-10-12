@@ -3,8 +3,8 @@
 Full worked material referenced from `SKILL.md`'s "Query-Construction Standard" and
 "Connection-Pool Usage Standard" sections. Self-contained — reads without the parent
 body already in context. Covers: why parameterised queries are the SQL-injection
-defence (not a style preference), pgx's positional-only placeholder syntax and the
-convention that replaces named parameters, `pgx.Batch` for multi-statement reads, and
+defence (not a style preference), positional `$N` versus pgx's named arguments
+(`StrictNamedArgs`) and when to use each, `pgx.Batch` for multi-statement reads, and
 exactly when a repository method needs `Acquire` instead of the pool's convenience
 methods.
 
@@ -54,21 +54,54 @@ the need itself as worth a design review before writing it.
 
 ---
 
-## 2. Positional Parameters Only — There Is No Named-Parameter Syntax in pgx
+## 2. Positional `$N` or `pgx.StrictNamedArgs` — Choosing the Placeholder Style
 
-pgx's placeholder syntax is exclusively positional: `$1`, `$2`, `$3`, ... — the same
-syntax Postgres itself uses at the wire protocol level. There is no native named-
-parameter binding in pgx (no `:tenant_id`, no `@TenantID`) — that is a feature of
-`sqlx`/`sqlc`-generated code layered on top of `database/sql`, and this skill's
-justified departure to pgx-native code (see `SKILL.md`'s Purpose) means it is not
-available here.
+Postgres's wire protocol only knows positional placeholders (`$1`, `$2`, …). pgx v5
+adds **named arguments on top**, through its `QueryRewriter` interface:
 
-**The readability convention for four or more parameters:** align the SQL constant
-one clause per line, and comment the argument list with the Go value each `$N` binds
-to, in the same order — this is the closest a pgx query gets to self-documenting
-without a feature the driver doesn't have:
+- `pgx.NamedArgs` (since v5.0.0) and `pgx.StrictNamedArgs` (since v5.6.0) take
+  `@name` placeholders. Names are case-sensitive and start with a letter or underscore.
+- pgx rewrites `@name` to `$N` on the client before sending. The values still travel
+  in a separate protocol message from the SQL text, so named arguments are exactly as
+  injection-safe as positional ones. They are a readability feature, not a different
+  security model.
+- `StrictNamedArgs` also returns an error if the SQL uses a name with no argument, or
+  if an argument is never used. Plain `NamedArgs` binds a misspelled name as `NULL`,
+  silently. That is why plain `NamedArgs` is not used here.
+- Named and positional arguments can't be mixed in one call. The named-argument map is
+  the call's only argument.
+
+(An earlier version of this skill stated that pgx has no named-parameter syntax. That
+was wrong: it was verified against pgx v5.7.1's `named_args.go` and changelog.)
+
+**The convention:**
+
+| Statement | Use |
+|---|---|
+| 1–3 parameters | Positional `$N`; the order is obvious at a glance |
+| 4+ parameters, pgx ≥ 5.6 | `pgx.StrictNamedArgs`: the names document themselves, and drift fails loudly |
+| 4+ parameters, pgx < 5.6 | Positional `$N`, one clause per line, with an aligned `// $N` comment per argument |
 
 ```go
+// pgx >= 5.6 — StrictNamedArgs
+const q = `
+    UPDATE data_assets
+       SET sensitivity_level = @sensitivity, classified_by = @classified_by,
+           classified_at = @classified_at, version = version + 1, updated_at = now()
+     WHERE id = @id AND tenant_id = @tenant_id AND version = @expected_version`
+
+tag, err := r.q.Exec(ctx, q, pgx.StrictNamedArgs{
+    "sensitivity":      string(a.Sensitivity()),
+    "classified_by":    a.ClassifiedBy(),
+    "classified_at":    a.ClassifiedAt(),
+    "id":               a.ID(),
+    "tenant_id":        a.TenantID(),
+    "expected_version": a.Version(),
+})
+```
+
+```go
+// pgx < 5.6 — positional, annotated
 const q = `
     UPDATE data_assets
        SET sensitivity_level = $1, classified_by = $2, classified_at = $3,
@@ -85,8 +118,7 @@ _, err := r.q.Exec(ctx, q,
 )
 ```
 
-A query whose `$N` count grows past what one screen of aligned comments can track
-cleanly (roughly eight or more) is a signal the statement itself is doing too much —
+A query that needs roughly eight or more parameters, in either style, is a signal the statement itself is doing too much —
 split it, or reach for `pgx.Batch` (below) rather than adding a ninth positional
 parameter to a single statement.
 

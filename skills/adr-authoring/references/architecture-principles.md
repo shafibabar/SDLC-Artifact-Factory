@@ -122,7 +122,7 @@ requirements documented in `integration-design`.
 ```
 
 A second illustrative Principle, this time formalizing a default already
-stated in prose inside `skills/api-contract-design/SKILL.md`'s Purpose
+stated in prose in the `api-contract-design` skill's Purpose
 section (per Kin Lane's *The API-First Transformation*,
 `research/software-architecture/api-first-transformation-lane.md`):
 
@@ -182,3 +182,19 @@ file per Principle (unlike ADRs, which are point-in-time and immutable):
 `artifacts/[product]/design/decisions/PRINCIPLES.md` — a table of
 Principle ID, Statement, and which ADRs cite it, alongside the full
 Principle records below the table.
+
+Because the catalog is a product artifact, the file itself opens with the
+plugin's standard artifact frontmatter (the per-Principle `principle-id`
+blocks are records *inside* it, not the file's frontmatter) — without it the
+write is denied by the artifact-structure hook:
+
+```markdown
+---
+name: principles-catalog
+version: [bump MINOR when a Principle is added, MAJOR when one is retired]
+phase: design
+owner: enterprise-architect
+created: [YYYY-MM-DD]
+summary: [One sentence naming how many Principles stand and their themes, e.g. "4 standing Principles: async across contexts, APIs as products, tenant data never pooled for enterprise, residency by region."]
+---
+```

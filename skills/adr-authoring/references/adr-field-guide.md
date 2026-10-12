@@ -2,17 +2,23 @@
 
 Self-contained — loadable without reading `SKILL.md` first.
 
-This is the **annotated** version — every placeholder explains what belongs there and why. For a literal, fill-in-and-go copy with no explanatory brackets, use `assets/adr-template.md` directly, or run `scripts/scaffold-adr.sh <product> <slug>` to generate a new ADR file from it with the frontmatter and next `ADR-NNN` already resolved.
+This is the **annotated** version — every placeholder explains what belongs there and why. For a literal, fill-in-and-go copy with no explanatory brackets, use `../templates/adr-template.md` directly, or run `../scripts/scaffold-adr.sh <product> <slug>` to generate a new ADR file from it with the frontmatter and next `ADR-NNN` already resolved.
 
 ---
 
 ```markdown
 ---
+name: adr-[NNN]-[slug]                  # the plugin's artifact name: number + kebab slug
+version: 1.0.0                          # artifact version; an Accepted ADR is never re-versioned, it is superseded
+phase: design
+owner: enterprise-architect
+created: [YYYY-MM-DD]
+summary: [One sentence, ≤ 200 chars: the decision AND its main trade-off — indexed verbatim as the ADR's search abstract]
 adr-id: ADR-[NNN]
 title: [Short imperative title — "Use Transactional Outbox for Event Publication"]
 status: [Proposed | Accepted | Deprecated | Superseded by ADR-NNN]
-date: [YYYY-MM-DD]
 deciders: [Who made this decision]
+traces_to: [The requirement, NFR, Domain Event or earlier ADR that made this decision necessary]
 ---
 
 # ADR-[NNN]: [Title]
@@ -47,7 +53,7 @@ these options — not just 2 options with 1 obvious axis — add a trade-off
 matrix here. Rows are characteristics (availability, consistency, latency,
 cost, decoupling, ...), columns are the options above. A two-option,
 single-axis decision does not need one; forcing a matrix onto a simple
-trade-off just adds ceremony. See `references/worked-example.md` Example 2
+trade-off just adds ceremony. See `../examples/02-three-characteristics-trade-off-matrix.md`
 for a filled-in matrix.]
 
 | Characteristic | Option A | Option B | Option C |

@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.2.0
+version: 1.3.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -128,7 +128,7 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 2. **Read NFR architecture handoff.** The NFR specification's Architecture Handoff section contains the NFRs that directly constrain architecture decisions. These are the first inputs considered — not the last.
 3. **Identify existing artifacts.** Skip approved artifacts. Do not re-produce without Shafi's request.
 4. **Execute in sequence.** Architecture artifacts have dependencies — follow the sequence below.
-5. **Write ADRs as you go.** Every non-obvious decision is an ADR. Write it at the point the decision is made, not at the end. If an ADR's own reasoning would apply unchanged to many future, unrelated decisions for this product (not just the one at hand), pull that generalization into the Principle Catalog instead of leaving it buried in the ADR's Rationale — see `adr-authoring`'s decision-vs-principle test.
+5. **Write ADRs as you go — for decisions that earn one.** A decision that is costly to change and widely depended on is an ADR; a cheap, narrow, reversible one deliberately is not (`adr-authoring`'s risk gate). Write it at the point the decision is made, not at the end. If an ADR's own reasoning would apply unchanged to many future, unrelated decisions for this product (not just the one at hand), pull that generalization into the Principle Catalog instead of leaving it buried in the ADR's Rationale — see `adr-authoring`'s decision-vs-principle test.
 6. **Present at gates.** Two mandatory Shafi approval gates: after the Container Diagram and after all Component Diagrams. API contracts are produced after the second gate.
 
 ---
@@ -240,7 +240,7 @@ The architecture design portion of the Design phase is complete when all of the 
 - [ ] Integration Design complete — all integrations inventoried, resilience patterns defined, Consumer-Driven Contract plan documented
 - [ ] Component Diagram complete per service — four-layer structure, SOLID compliance
 - [ ] API Contract (OpenAPI spec) complete per service — all Commands and Read Models covered, versioned, authenticated
-- [ ] All non-obvious decisions documented as ADRs with status `Accepted`
+- [ ] Every decision that passes `adr-authoring`'s risk gate is documented as an ADR with status `Accepted`
 - [ ] All three implementation handoffs documented
 - [ ] Architecture Summary written
 - [ ] `pre-phase-advance` hook passes for architecture artifacts
