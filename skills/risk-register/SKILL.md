@@ -10,7 +10,7 @@ description: >
   mitigation effort to an architecturally-significant risk, one that if
   unmitigated could force a costly re-design. Consulted at every phase gate and
   whenever an agent's Escalation Rules surface a persistent exposure.
-version: 2.1.1
+version: 2.1.2
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -31,12 +31,12 @@ The risk register is the product's running ledger of standing exposures — cond
 
 These three are easy to conflate. They are not the same thing.
 
-| | **Open Question** (`sdlc-context.json → open_questions`) | **Escalation** (direct to the product owner) | **Risk Register Entry** |
+| | **Open Question** (project memory → `open_questions`) | **Escalation** (direct to the product owner) | **Risk Register Entry** |
 |---|---|---|---|
 | Nature | A gap in information needed to proceed | A decision only the product owner can make, now | A standing exposure with ongoing likelihood and impact |
 | Lifespan | Short — resolved by an answer, then removed | Instantaneous — resolved by the product owner's call | Long — tracked until mitigated, accepted, or closed |
 | Resolved by | Getting the missing fact | The product owner answering yes/no/choose | Ongoing mitigation, monitored over time |
-| Where it lives | `sdlc-context.json → open_questions` | Conversation with the product owner; not persisted | `artifacts/[product]/governance/risk-register.md` |
+| Where it lives | `.sdlc-memory/tree/self/open_questions/` (per `memory-recall`) | Conversation with the product owner; not persisted | `artifacts/[product]/governance/risk-register.md` |
 
 **The test:** if resolving it is a single answer that makes the concern go away, it is an open question or a one-time escalation — not a risk. If resolving it requires ongoing work, monitoring, or acceptance of exposure that could still materialize later, it belongs in the register.
 

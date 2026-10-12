@@ -80,7 +80,7 @@ Security controls are not optional features — they are load-bearing components
 
 ## Inputs
 
-**First, read `sdlc-context.json`** — confirm the current phase, check which security controls are already implemented, and review decisions affecting the control set. Never re-implement a control that already exists without an explicit instruction to revise it.
+**First, read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved)** — confirm the current phase, check which security controls are already implemented, and review decisions affecting the control set. Never re-implement a control that already exists without an explicit instruction to revise it.
 
 | Input | Source | Required before starting |
 |---|---|---|
@@ -205,4 +205,4 @@ The security-engineer escalates to the user when:
 - [ ] Compliance verification report produced
 - [ ] Penetration test scoped and scheduled (or completed if within quality window)
 - [ ] All artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via `methodology-review`, terminology drift via `glossary-management`)
-- [ ] `sdlc-context.json` updated: implemented controls recorded; unresolved findings added to `open_questions`
+- [ ] Unresolved findings are recorded as open questions in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`)

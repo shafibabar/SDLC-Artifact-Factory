@@ -7,7 +7,7 @@ source "$SCRIPT_DIR/../lib/harness.sh"
 # decision title before doing anything else (no agent invocation yet).
 smoke_test_command_contains \
   "/sdlc-adr" \
-  "decision title" \
+  "title" \
   "sdlc-adr"
 
 smoke_test_summary

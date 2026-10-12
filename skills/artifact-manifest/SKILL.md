@@ -12,7 +12,7 @@ description: >
   references/artifact-type-catalog.md; a populated worked example lives in
   references/manifest-worked-example.md; a copyable empty starting shape for
   a new product's manifest lives in assets/manifest-instance-template.json.
-version: 2.2.0
+version: 2.3.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -58,7 +58,7 @@ Examples: `dataestate-adr-001`, `dataestate-user-story-014`, `dataestate-go-serv
 
 IDs are assigned once, at creation, and never change — even across a rename, a path move, or a status change to `superseded`. The ID is the artifact's permanent handle; the `path` field in the manifest is what moves.
 
-A future `generate-artifact-id` tool (see `sdlc-context.json → tools.planned`) mechanizes this scheme: given a product slug and artifact type, it reads the current manifest, finds the highest existing sequence for that type, and returns the next ID. Until that tool exists, the producing agent computes the next sequence by reading the manifest directly.
+A future `generate-artifact-id` tool would mechanize this scheme (today the `post-artifact-created` hook assigns IDs the same way): given a product slug and artifact type, it reads the current manifest, finds the highest existing sequence for that type, and returns the next ID. Until that tool exists, the producing agent computes the next sequence by reading the manifest directly.
 
 Artifact types that produce source trees rather than a single Markdown file (Go services, React components, Helm charts) still get one manifest entry per meaningful unit — see `references/manifest-worked-example.md` for how a directory-shaped artifact gets a stable ID.
 
@@ -97,11 +97,16 @@ An artifact with no `traces_to` value is an orphan — see Anti-Patterns.
 
 `draft` → `approved` → (optionally) `superseded`. A `superseded` entry is never deleted from the manifest — it stays, with its `status` updated and, where applicable, a `superseded_by` field pointing at the ID that replaced it. This mirrors the ADR rule in `adr-authoring`: the record of what existed before is part of the traceability chain, not clutter to be removed.
 
-## Connection to `sdlc-context.json` and the `post-artifact-created` Hook
+## The Manifest Is the Product's State
 
-`sdlc-context.json` is the factory's own memory — build position, decisions, phase checklist. The product manifest is the same idea applied per-artifact, per-product: instead of one JSON file tracking the plugin's own build, each product gets one JSON file tracking every artifact that product's SDLC run has produced.
+Each product has exactly one state file: `artifacts/[product]/_manifest.json`. It records every artifact the product's SDLC run has produced, which of them the user has approved, and which phase the product is in. A product repo has no `sdlc-context.json` (that name belongs to this plugin's own build memory); its decisions and open questions live in project memory (`memory-recall`), and its configuration in `sdlc-config.json` (`sdlc-config-management`).
 
-The `post-artifact-created` hook is the manifest's **only writer of entries**: whenever an agent writes a file under `artifacts/[product]/`, it appends (or updates) that file's entry, assigns its ID (`<product>-<type>-<sequence>`), stamps `created`/`updated`, and copies three fields from the artifact's own frontmatter on every write: `version`, `owner` (as `producing_agent`) and `traces_to`. It infers the trace's kind from the reference (`D…`/`ADR-…` → decision, a PascalCase event name → domain-event, anything else → requirement) and **never invents one**: an artifact whose frontmatter has no `traces_to` gets no `traces_to` entry, which is the orphan the Quality Criteria below flag. Agents edit only `status`, `superseded_by` and `traces_to`; a rewrite of the artifact never resets an approval.
+**Two writers, never overlapping:**
+
+- The `post-artifact-created` hook writes **artifact entries**. Whenever an agent writes a file under `artifacts/[product]/`, it appends (or updates) that file's entry, assigns its ID (`<product>-<type>-<sequence>`), stamps `created`/`updated`, and copies three fields from the artifact's own frontmatter on every write: `version`, `owner` (as `producing_agent`) and `traces_to`. It infers the trace's kind from the reference (`D…`/`ADR-…` → decision, a PascalCase event name → domain-event, anything else → requirement) and **never invents one**: an artifact whose frontmatter has no `traces_to` gets no `traces_to` entry, which is the orphan the Quality Criteria below flag. A rewrite of the artifact never resets an approval.
+- `scripts/product-state.py` writes **everything a human decides**, run by the phase commands only after the user has explicitly approved: `init` (at `/sdlc-start`: product, problem statement, `current_phase`), `approve <path>` (an entry's `status: approved` and `approved_on`), and `complete <phase>` (the phase's entry in `phases`, then `current_phase` moves on). `status` reports all of it in one JSON block.
+
+**What "phase complete" means** comes from `./resources/phase-requirements.json`: for each phase, the artifacts it requires, their canonical paths (globs under `artifacts/[product]/`), and the producing agent. `complete <phase>` refuses, naming what is missing or unapproved, until every required artifact has an approved entry. Phases whose output is code (implement, data, deploy) have no required documents and complete on the user's approval alone, because CI verifies the code. Only an explicit user decision overrides a refusal, and the reason is stored with the phase. The `pre-phase-advance` hook then lets an agent start only when its preceding phase is approved.
 
 The manifest schema is formalized machine-readably as `schemas/sdlc-manifest.schema.json` (see `settings.json → env.SDLC_MANIFEST_SCHEMA`) — it validates the per-product manifest INSTANCE (the JSON shape in `references/manifest-worked-example.md` and `assets/manifest-instance-template.json`); the master artifact-type catalog stays a prose table in `references/artifact-type-catalog.md`, since it is described as extended by new skills over time and `type` is deliberately not a closed enum in the schema.
 

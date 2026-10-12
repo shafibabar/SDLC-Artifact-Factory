@@ -9,7 +9,7 @@ description: >
   outside the system being built), and the diagram artifact template. The first
   architecture view produced, before Container and Component views. Used at the
   start of Design.
-version: 2.1.1
+version: 2.1.2
 phase: design
 owner: enterprise-architect
 created: 2026-06-25

@@ -12,7 +12,7 @@ description: >
   tech-stack fact (api_framework, primary_database, graph_database,
   optional_database, deployment_model), by the /sdlc-start command that writes
   it, and by hooks checking an artifact matches the product's real config.
-version: 3.0.0
+version: 3.1.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -72,13 +72,13 @@ One validator caveat: JSON Schema's `format: date` is annotation-only unless the
 Changing `sdlc-config.json` mid-project is a decision, not a file edit:
 
 1. **Only the user authorizes a config change.** No agent changes the file on its own initiative — a tech-stack or compliance-scope change is exactly the consequential, cross-cutting choice CLAUDE.md's Session Startup and Agent Behaviour Rules reserve for the user's approval.
-2. **The rationale is recorded in `sdlc-context.json → decisions`.** Every config change gets a decision entry — what changed, why, and what alternative was rejected — following the shape of existing entries (e.g. D006, D009). The config file records *what* the current state is; the decisions array records *why* it changed.
-3. **The config file's own `_meta` increments.** `_meta.last_updated` and `_meta.updated_by` follow `sdlc-context.json`'s `_meta` convention — updated on every change, with `updated_by` pointing at the decision ID that authorized it.
+2. **The rationale is recorded as a decision in project memory (`.sdlc-memory/tree/self/decisions/D<NNN>.md`, per `memory-recall`).** Every config change gets a decision entry — what changed, why, and what alternative was rejected. The config file records *what* the current state is; the decision records *why* it changed.
+3. **The config file's own `_meta` increments.** `_meta.last_updated` and `_meta.updated_by` are updated on every change, with `updated_by` pointing at the decision ID that authorized it.
 4. **Downstream artifacts are not silently invalidated.** If a config change affects artifacts already produced under the old configuration (e.g. switching `graph_database` after a data model assumed Apache AGE), the affected artifacts are flagged for revision via the artifact manifest's `status` field (`artifact-manifest`) — not left to quietly drift.
 
 ## Agent Obligation: Check Config Before Defaulting
 
-Every agent already reads `sdlc-context.json` first before producing an artifact. This skill extends that rule to `sdlc-config.json`:
+Every agent already reads the product's state (its manifest) before producing an artifact. This skill extends that rule to `sdlc-config.json`:
 
 **Before applying any default, an agent must check whether `sdlc-config.json` overrides it for this product.** Concretely: `backend-engineer` does not assume `net/http` + chi without checking `sdlc-config.json → tech_stack_overrides.api_framework`; `platform-engineer` does not assume a deployment model without checking `sdlc-config.json → deployment_model`. The check costs one file read and prevents an entire artifact from being built against the wrong configuration.
 
@@ -97,7 +97,7 @@ An agent that applies a default without checking for an override is silently dis
 | Override-only | Every field present differs from the default | A field restates the value the defaults file already specifies |
 | Precedence respected | Every agent checks `sdlc-config.json` before applying a default | An agent applies a default without checking for an override |
 | Change authorized | Every value traces to a decision the product owner made | A config value with no corresponding decision or `/sdlc-start` record |
-| Rationale recorded | Mid-project changes have a matching `sdlc-context.json → decisions` entry | Config edited with no decision entry |
+| Rationale recorded | Mid-project changes have a matching decision in project memory | Config edited with no decision entry |
 | Downstream impact tracked | Artifacts under a superseded config are flagged via the manifest | Artifacts left assuming the old config |
 | `_meta` maintained | `last_updated`/`updated_by` reflect the latest change | Stale `_meta` after a change |
 
@@ -108,7 +108,7 @@ An agent that applies a default without checking for an override is silently dis
 - **Unauthorized config changes** — an agent edits `sdlc-config.json` on its own judgment mid-build, without the user's approval and without a decision entry.
 - **Orphaned overrides** — a field is added for a decision later reversed but never removed, so the config keeps overriding a choice nobody holds. Reverting a decision means removing the field.
 - **Vague deployment/compliance fields** — `"deployment_model": "private"` without naming which documented option, or `"compliance_frameworks": ["SOC 2"]` without the specific control families. Values must be specific enough to act on without a follow-up question.
-- **Config drift from `sdlc-context.json`** — a config value contradicting something already confirmed in `sdlc-context.json → tech_stack.confirmed` or `→ first_product`, introduced without reconciling the two.
+- **Config drift from recorded decisions** — a config value contradicting a decision already recorded in project memory, introduced without a new decision that supersedes it.
 
 ## Output Format
 

@@ -1,14 +1,13 @@
 #!/bin/bash
+# Strategy in progress with nothing written: /sdlc-next recommends /sdlc-strategy.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
-
-# Same real state as sdlc-status: an incomplete build_checklist chunk exists,
-# so /sdlc-next must name it and refuse to start building — not recommend a
-# phase-driver command.
-smoke_test_command_contains \
+smoke_test_scratch_init
+smoke_test_product_fixture "$SCRATCH_DIR/product" strategy '{"strategy":{"status":"in-progress"}}'
+SMOKE_CWD="$SCRATCH_DIR/product" smoke_test_command_contains \
   "/sdlc-next" \
-  "ai-ml-architect" \
+  "/sdlc-strategy" \
   "sdlc-next"
 
 smoke_test_summary

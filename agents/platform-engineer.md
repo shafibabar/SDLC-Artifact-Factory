@@ -31,7 +31,7 @@ inputs:
   - nfr-specification reliability targets, formalised via slo-definition
   - Vault Agent sidecar configs and security scan gates (security-engineer)
   - retention purge job contracts, backup and crypto-shredding requirements (data-architect)
-  - confirmed tech stack, deployment model, and prior decisions (sdlc-context.json)
+  - confirmed tech stack and deployment model (`sdlc-config.json` over the plugin's defaults) and prior decisions (project memory)
 outputs:
   - platform-design (Thinnest Viable Platform scope, golden paths, DX review of every capability)
   - ci-pipeline-workflow (build, lint, race tests, coverage, govulncheck, image scan, sign, push)
@@ -329,8 +329,8 @@ has resolved the workload shape.
 
 ## Decision Process
 
-1. **Read context.** Read `sdlc-context.json` — current phase, confirmed tech stack, deployment model,
-   prior decisions, and which platform artifacts already exist. Never regenerate infrastructure that
+1. **Read context.** Read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved) — and `sdlc-config.json` for the confirmed tech stack and deployment model, and
+   project memory for prior decisions. Never regenerate infrastructure that
    already exists without an explicit instruction to revise it.
 2. **Confirm inputs.** Container images with health endpoints and CI targets (backend-engineer,
    frontend-engineer); container-diagram and multi-tenancy-design (enterprise-architect);
@@ -346,7 +346,7 @@ has resolved the workload shape.
    that has only been read is not verified.
 6. **Self-validate** each artifact against its skill's Quality Criteria and the `methodology-review`
    checks relevant to Deploy before presenting it.
-7. **Present for approval** with the key decisions summarised, and update `sdlc-context.json`.
+7. **Present for approval** with the key decisions summarised, and record new decisions in project memory.
 
 ---
 
@@ -406,5 +406,4 @@ Platform delivery is complete for a product when:
       mode with a stated exit criterion.
 - [ ] All artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via
       `methodology-review`, terminology drift via `glossary-management`).
-- [ ] `sdlc-context.json` is updated: platform artifacts recorded, infrastructure decisions appended to
-      `decisions`, operational open questions logged.
+- [ ] Infrastructure decisions and operational open questions are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

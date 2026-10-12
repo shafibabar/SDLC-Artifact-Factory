@@ -1,5 +1,9 @@
 #!/bin/bash
-# Formalizes the manual test cases run during Chunk 20 development.
+# Contract for scripts/pre-phase-advance.sh. Since proposal 13 the gate reads
+# product state from artifacts/<product>/_manifest.json: an agent may start
+# only when its preceding phase is approved there (written by
+# scripts/product-state.py). Manifests from before product state existed fall
+# back to the old "preceding phase folder is non-empty" check.
 # Deliberately no `set -e` — a failing case must not abort the remaining
 # cases or the summary; smoke_test_script/summary carry the pass/fail state.
 set -uo pipefail
@@ -7,55 +11,52 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
 smoke_test_scratch_init
 
-# Case 1: real repo state, no product in progress -> allow
-smoke_test_script "pre-phase-advance" \
-  '{"tool_input":{"subagent_type":"requirements-analyst"},"cwd":"'"$REPO_ROOT"'"}' \
-  "allow"
+payload() { printf '{"tool_input":{"subagent_type":"%s"},"cwd":"%s"}' "$1" "$2"; }
+P="$SCRATCH_DIR/p"; mkdir -p "$P/artifacts/lunch"
+manifest() {  # $1 = JSON for "phases" (or "" for a pre-proposal-13 manifest)
+  if [[ -n "$1" ]]; then
+    printf '{"product":"Lunch","product_slug":"lunch","current_phase":"ideate","phases":%s,"artifacts":[]}' "$1"
+  else
+    printf '{"product":"Lunch","product_slug":"lunch","artifacts":[]}'
+  fi > "$P/artifacts/lunch/_manifest.json"
+}
 
-# Case 2: synthetic product in progress, missing prerequisite phase artifacts -> deny
-mkdir -p "$SCRATCH_DIR/artifacts/testproduct"
-python3 -c "
-import json
-d = json.load(open('$REPO_ROOT/sdlc-context.json'))
-d['first_product']['status'] = 'In progress'
-json.dump(d, open('$SCRATCH_DIR/sdlc-context.json','w'))
-"
-smoke_test_script "pre-phase-advance" \
-  '{"tool_input":{"subagent_type":"requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
-  "deny" "strategy"
+# 1. No product in this repo (e.g. the plugin's own repo) -> allow
+smoke_test_script "pre-phase-advance" "$(payload requirements-analyst "$REPO_ROOT")" "allow"
 
-# Case 3: same synthetic product, prerequisite now satisfied -> allow
-mkdir -p "$SCRATCH_DIR/artifacts/testproduct/strategy"
-touch "$SCRATCH_DIR/artifacts/testproduct/strategy/vision.md"
-smoke_test_script "pre-phase-advance" \
-  '{"tool_input":{"subagent_type":"requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
-  "allow"
+# 2. Preceding phase in progress -> deny, naming the phase
+manifest '{"strategy":{"status":"in-progress"}}'
+smoke_test_script "pre-phase-advance" "$(payload requirements-analyst "$P")" "deny" "strategy phase hasn't been approved"
 
-# Case 3b (#1247): installed-plugin invocation uses the NAMESPACED agent name.
-# Remove the prerequisite again and expect the same deny as Case 2.
-rm -rf "$SCRATCH_DIR/artifacts/testproduct/strategy"
-smoke_test_script "pre-phase-advance" \
-  '{"tool_input":{"subagent_type":"sdlc-artifact-factory:requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
-  "deny" "strategy"
+# 3. (#1247) the namespaced agent name is gated the same way
+smoke_test_script "pre-phase-advance" "$(payload sdlc-artifact-factory:requirements-analyst "$P")" "deny" "strategy"
 
-# Case 3c: another plugin's agent sharing a short name is not ours to gate.
-smoke_test_script "pre-phase-advance" \
-  '{"tool_input":{"subagent_type":"other-plugin:requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
-  "allow"
+# 4. A file in the strategy folder is NOT enough any more: approval is what counts
+mkdir -p "$P/artifacts/lunch/strategy" && touch "$P/artifacts/lunch/strategy/vision-statement.md"
+smoke_test_script "pre-phase-advance" "$(payload requirements-analyst "$P")" "deny" "product-state.py complete strategy"
 
-# Case 3d: namespaced name with the prerequisite satisfied -> allow
-mkdir -p "$SCRATCH_DIR/artifacts/testproduct/strategy"
-touch "$SCRATCH_DIR/artifacts/testproduct/strategy/vision.md"
-smoke_test_script "pre-phase-advance" \
-  '{"tool_input":{"subagent_type":"sdlc-artifact-factory:requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
-  "allow"
+# 5. Preceding phase approved -> allow (bare and namespaced)
+manifest '{"strategy":{"status":"approved","approved_on":"2026-10-12"},"ideate":{"status":"in-progress"}}'
+smoke_test_script "pre-phase-advance" "$(payload requirements-analyst "$P")" "allow"
+smoke_test_script "pre-phase-advance" "$(payload sdlc-artifact-factory:requirements-analyst "$P")" "allow"
 
-# Case 4: non-plugin agent type -> always allow
-smoke_test_script "pre-phase-advance" \
-  '{"tool_input":{"subagent_type":"general-purpose"},"cwd":"'"$SCRATCH_DIR"'"}' \
-  "allow"
+# 6. Approved by override -> allow
+manifest '{"strategy":{"status":"approved","approved_on":"2026-10-12","override":"user said go"}}'
+smoke_test_script "pre-phase-advance" "$(payload requirements-analyst "$P")" "allow"
 
-# Case 5: malformed JSON -> fail open (allow)
+# 7. Strategy has no prerequisite; another plugin's agent is not ours to gate
+manifest '{"strategy":{"status":"in-progress"}}'
+smoke_test_script "pre-phase-advance" "$(payload product-strategist "$P")" "allow"
+smoke_test_script "pre-phase-advance" "$(payload other-plugin:requirements-analyst "$P")" "allow"
+smoke_test_script "pre-phase-advance" "$(payload general-purpose "$P")" "allow"
+
+# 8. Pre-proposal-13 manifest: falls back to the folder check
+manifest ""
+smoke_test_script "pre-phase-advance" "$(payload requirements-analyst "$P")" "allow"
+rm -rf "$P/artifacts/lunch/strategy"
+smoke_test_script "pre-phase-advance" "$(payload requirements-analyst "$P")" "deny" "strategy"
+
+# 9. Malformed JSON -> fail open (allow)
 output="$(echo 'not json {{{' | "$REPO_ROOT/scripts/pre-phase-advance.sh" 2>&1)"
 if [[ "$output" == *'"continue": true'* ]]; then
   echo "PASS: scripts/pre-phase-advance (case: malformed-input-fails-open)"

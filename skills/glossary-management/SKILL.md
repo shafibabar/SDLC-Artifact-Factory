@@ -5,7 +5,7 @@ description: >
   Defines every domain term used across all agents, skills, commands, hooks, and artifacts.
   Provides the reference all agents consult to prevent terminology drift. When any agent
   is unsure whether a term is canonical, they check this skill first.
-version: 1.1.0
+version: 1.1.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
@@ -57,7 +57,7 @@ To add a term: append it to `references/ubiquitous-language.md` in the appropria
 Terms may not be silently removed or redefined. Any change requires:
 1. An Architecture Decision Record (ADR) documenting the reason.
 2. All existing artifacts using the old term to be updated.
-3. The `decisions` array in `sdlc-context.json` to record the change.
+3. A decision in project memory (`.sdlc-memory/tree/self/decisions/D<NNN>.md`, per `memory-recall`) to record the change.
 
 ## Bounded Context Overrides
 

@@ -72,7 +72,7 @@ The ux-architect does not write React code — that is the frontend-engineer's d
 
 ## Inputs Required Before Starting
 
-**First, read `sdlc-context.json`** — confirm the current phase is Design, check which UX artifacts already exist, and review open questions and decisions that affect UX scope. Never produce an artifact that already exists without an explicit instruction to revise it.
+**First, read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved)** — confirm the current phase is Design, check which UX artifacts already exist, and review open questions and decisions that affect UX scope. Never produce an artifact that already exists without an explicit instruction to revise it.
 
 The ux-architect must then have all of the following before producing any UX artifact:
 
@@ -85,6 +85,12 @@ The ux-architect must then have all of the following before producing any UX art
 - [ ] Container Diagram (from `enterprise-architect`) — to understand what services and APIs exist
 
 If any of these are missing, raise a blocker before starting. Do not design UX without the domain model — UI labels and navigation must use the Ubiquitous Language.
+
+---
+
+## Output Locations
+
+Write each artifact at its canonical path under `artifacts/<product>/design/ux/`, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `journey-maps.md`, `information-architecture.md`, `user-flows.md`, `component-specs.md`.
 
 ---
 
@@ -238,4 +244,4 @@ UX design is complete when:
 1. Every item in the Quality Checklist passes.
 2. Both user approval gates have been passed explicitly.
 3. All artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via `methodology-review`, terminology drift via `glossary-management`).
-4. `sdlc-context.json` is updated: UX artifacts recorded, any open questions raised during design added to `open_questions`.
+4. Any open questions raised during design are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

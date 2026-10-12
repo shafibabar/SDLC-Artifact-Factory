@@ -20,7 +20,8 @@
       "Bash(npm run:*)",
       "Bash(npx:*)",
       "Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)",
-      "Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
+      "Bash(bash ${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)",
+      "Bash(${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py:*)"
     ]
   },
 

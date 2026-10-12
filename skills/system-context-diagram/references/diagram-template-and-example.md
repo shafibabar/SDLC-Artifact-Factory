@@ -218,8 +218,8 @@ semantics even without colour — matching the ASCII convention.
 
 ## Producing the Artifact — Ordered Steps
 
-1. Read the product name and one-line purpose from `sdlc-context.json →
-   first_product`.
+1. Read the product name and problem statement from the product manifest
+   (`artifacts/<product>/_manifest.json`).
 2. Inventory personas (`user-persona`) → one person element each.
 3. Inventory External System (pink) cards from Event Storming → candidate
    external systems.

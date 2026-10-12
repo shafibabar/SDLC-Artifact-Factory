@@ -120,7 +120,7 @@ def fresh_manifest():
     return {
         "_meta": {
             "purpose": f"Registry of every artifact produced for product {product}: what exists, where, its status and what it traces to.",
-            "how_to_use": "Maintained by the post-artifact-created hook on every artifact write. Agents change only status, superseded_by and traces_to; never add or remove entries by hand.",
+            "how_to_use": "Artifact entries are maintained by the post-artifact-created hook on every write. Approvals and phase completion are recorded only by scripts/product-state.py, after the user approves. Never edit by hand.",
             "last_updated": "",
             "updated_by": "post-artifact-created hook",
         },
@@ -142,12 +142,17 @@ else:
     # Upgrade a manifest written in the pre-#1252 minimal shape, keeping its entries.
     base = fresh_manifest()
     meta = manifest.get("_meta") if isinstance(manifest.get("_meta"), dict) else {}
-    manifest = {
+    upgraded = {
         "_meta": {k: meta.get(k) or base["_meta"][k] for k in base["_meta"]},
         "product": manifest.get("product") or product,
         "product_slug": manifest.get("product_slug") or product,
-        "artifacts": manifest["artifacts"],
     }
+    # Product state written by scripts/product-state.py is carried over untouched.
+    for key in ("problem_statement", "current_phase", "phases"):
+        if key in manifest:
+            upgraded[key] = manifest[key]
+    upgraded["artifacts"] = manifest["artifacts"]
+    manifest = upgraded
 
 now = datetime.date.today().isoformat()
 fm = frontmatter(file_path)
@@ -176,7 +181,7 @@ entry["producing_agent"] = owner if SLUG.match(owner) else entry.get("producing_
 if trace:
     entry["traces_to"] = trace
 entry["updated"] = now
-order = ["id", "type", "path", "version", "status", "superseded_by", "phase",
+order = ["id", "type", "path", "version", "status", "approved_on", "superseded_by", "phase",
          "producing_agent", "traces_to", "created", "updated"]
 for i, a in enumerate(manifest["artifacts"]):
     a.setdefault("version", "1.0.0")

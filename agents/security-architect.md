@@ -20,7 +20,7 @@ inputs:
   - context-map (from domain-modeler — cross-context data flows)
   - multi-tenancy-design (from enterprise-architect — isolation model)
   - user-personas (from Ideate — user roles for ABAC model)
-  - first-product details (from sdlc-context.json — compliance framework targets)
+  - compliance framework targets (`sdlc-config.json` → `compliance_frameworks`)
 outputs:
   - threat-model artifact
   - zero-trust-design artifact
@@ -85,7 +85,7 @@ The security-architect produces design artifacts only. The security-engineer imp
 | Context Map | `artifacts/[product]/design/context-map.md` | Required — cross-context data flows for privacy inventory |
 | Multi-Tenancy Design | `artifacts/[product]/design/architecture/multi-tenancy-design.md` | Required — isolation model inputs to threat model |
 | User personas | `artifacts/[product]/ideate/user-personas.md` | Required — user roles for ABAC model |
-| sdlc-context.json | `sdlc-context.json` | Required — compliance framework targets; first product details |
+| Product config | `sdlc-config.json` | Required — compliance framework targets (`compliance_frameworks`) |
 
 ---
 
@@ -166,4 +166,4 @@ The security-architect escalates to the user when:
 - [ ] Privacy Design complete — personal data inventory, purpose limitation, erasure paths, DPIA if triggered
 - [ ] Compliance Design complete — all in-scope controls decomposed; Compliance as Code plan defined
 - [ ] Security implementation handoff written and reviewed
-- [ ] `sdlc-context.json` checklist updated
+- [ ] Every artifact has been presented for the user's approval; the phase command records approvals and phase completion with `product-state.py`.

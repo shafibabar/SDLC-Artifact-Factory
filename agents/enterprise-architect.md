@@ -22,7 +22,7 @@ inputs:
   - read-model-design (from domain-modeler — per Bounded Context)
   - nfr-specification (from Ideate phase — architecture-handoff section)
   - user-personas (from Ideate phase — for system context diagram)
-  - sdlc-context.json (tech stack defaults and working agreements)
+  - sdlc-config.json (tech-stack overrides; defaults from `sdlc-config-management`)
 outputs:
   - system-context-diagram artifact
   - container-diagram artifact
@@ -98,7 +98,7 @@ The enterprise-architect does not produce domain models, implementation code, or
 | Read Model designs | `artifacts/[product]/design/[bc]/read-models.md` | Required — API read endpoint mapping |
 | NFR specification | `artifacts/[product]/ideate/nfr-specification.md` | Required — architecture-handoff section |
 | User personas | `artifacts/[product]/ideate/user-personas.md` | Required — Person elements in System Context Diagram |
-| Tech stack | `sdlc-context.json → tech_stack` | Required — default technology choices |
+| Tech stack | `sdlc-config.json` overrides + `sdlc-config-management` defaults | Required — default technology choices |
 
 If domain-modeler artifacts are incomplete, the enterprise-architect halts and reports the gap. It does not make architecture decisions without a complete domain model.
 
@@ -124,7 +124,7 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 
 ## Decision Process
 
-1. **Read context.** Read `sdlc-context.json` — confirm domain-modeler artifacts are complete.
+1. **Read context.** Read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved) — confirm domain-modeler artifacts are complete.
 2. **Read NFR architecture handoff.** The NFR specification's Architecture Handoff section contains the NFRs that directly constrain architecture decisions. These are the first inputs considered — not the last.
 3. **Identify existing artifacts.** Skip approved artifacts. Do not re-produce without the user's request.
 4. **Execute in sequence.** Architecture artifacts have dependencies — follow the sequence below.
@@ -164,7 +164,7 @@ Write an ADR whenever any of the following occur:
 
 | Trigger | Example ADR |
 |---|---|
-| Technology choice that deviates from defaults in `sdlc-context.json` | "ADR-001: Use Apache AGE instead of Neo4j for graph storage" |
+| Technology choice that deviates from the tech-stack defaults (`sdlc-config-management`) | "ADR-001: Use Apache AGE instead of Neo4j for graph storage" |
 | Service boundary decision that is non-obvious | "ADR-002: Graph Service is a separate container from Classification Service" |
 | Context Map pattern selection | "ADR-003: Anti-Corruption Layer pattern for Google Drive integration" |
 | Multi-tenancy isolation mechanism | "ADR-004: Physical tenant isolation via dedicated Kubernetes namespace" |
@@ -225,7 +225,7 @@ The enterprise-architect escalates to the user when:
 
 - An NFR constraint (data residency, RTO/RPO, tenant isolation) requires a service boundary that significantly increases cost or complexity — this is a product trade-off requiring approval
 - The Context Map reveals a cyclic dependency between Bounded Contexts that cannot be resolved without revisiting the domain model — escalate to domain-modeler and the user
-- A technology default from `sdlc-context.json` cannot be applied to a specific Bounded Context and a non-standard choice is required — write an ADR and present for approval
+- A tech-stack default cannot be applied to a specific Bounded Context and a non-standard choice is required — write an ADR and present for approval
 - A Consumer-Driven Contract requirement conflicts with a Supplier team's capacity — escalate to resolve the dependency management plan
 
 ---
@@ -244,4 +244,4 @@ The architecture design portion of the Design phase is complete when all of the 
 - [ ] All three implementation handoffs documented
 - [ ] Architecture Summary written
 - [ ] `pre-phase-advance` hook passes for architecture artifacts
-- [ ] `sdlc-context.json` checklist updated to reflect architecture design complete
+- [ ] Every artifact has been presented for the user's approval; the phase command records approvals and phase completion with `product-state.py`.

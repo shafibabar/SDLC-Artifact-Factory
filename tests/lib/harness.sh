@@ -97,7 +97,16 @@ smoke_test_command_contains() {
   if [[ "$invocation" == /* && "$invocation" != *:* ]]; then
     invocation="/${PLUGIN_NAME}:${invocation:1}"
   fi
-  output="$(timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" -p "$invocation" --output-format text 2>&1)"
+  # SMOKE_CWD runs the command inside a fixture product repo (smoke_test_product_fixture)
+  # instead of this plugin repo, which has no product.
+  # Inside a fixture the plugin's state and memory scripts are pre-approved on the
+  # command line: a fresh temp folder is untrusted, so Claude Code ignores any
+  # .claude/settings.json there, and under -p there is no one to approve a prompt.
+  local allow=()
+  if [[ -n "${SMOKE_CWD:-}" ]]; then
+    allow=(--allowedTools "Bash($REPO_ROOT/scripts/product-state.py:*),Bash($REPO_ROOT/scripts/memory/run.sh:*)")
+  fi
+  output="$(cd "${SMOKE_CWD:-$PWD}" && timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" "${allow[@]}" -p "$invocation" --output-format text 2>&1)"
   if [[ -z "$output" ]]; then
     _fail "commands/$name" "empty response (timeout or invocation error)"
     return 1
@@ -109,6 +118,18 @@ smoke_test_command_contains() {
     _fail "commands/$name" "response did not contain expected substring '$expect'. Got: ${output:0:300}"
     return 1
   fi
+}
+
+# smoke_test_product_fixture <dir> <current_phase> <phases-json>
+# Creates a minimal product repo for command tests: a git repo with
+# artifacts/lunch/_manifest.json in the given state. (Permissions for the
+# plugin's scripts are passed by smoke_test_command_contains when SMOKE_CWD is set.)
+smoke_test_product_fixture() {
+  local dir="$1" phase="$2" phases="$3"
+  mkdir -p "$dir/artifacts/lunch"
+  git -C "$dir" init -q 2>/dev/null
+  printf '{"_meta":{"purpose":"x","how_to_use":"x","last_updated":"2026-10-12","updated_by":"x"},"product":"Lunch Order Tracker","product_slug":"lunch","problem_statement":"A 20-person office orders lunch together.","current_phase":"%s","phases":%s,"artifacts":[]}\n' \
+    "$phase" "$phases" > "$dir/artifacts/lunch/_manifest.json"
 }
 
 # smoke_test_script <script-name> <stdin-json> <expected-decision: allow|deny|warn> [expect-substring-in-reason]

@@ -2508,7 +2508,7 @@
       },
       {
         "allowed_tools": [
-          "Read, Glob, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
+          "Read, Glob, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
         ],
         "argument_hint": null,
         "description": "Tell the user exactly what to run next",
@@ -2556,10 +2556,10 @@
       },
       {
         "allowed_tools": [
-          "Read, Glob, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
+          "Read, Glob, Bash(${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py:*), Bash(${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh:*)"
         ],
         "argument_hint": null,
-        "description": "Report current position in the factory build or in a product's SDLC journey",
+        "description": "Report where the product stands in its SDLC journey",
         "disable_model_invocation": false,
         "file": "commands/sdlc-status.md",
         "has_test": true,
@@ -3034,7 +3034,7 @@
         "has_evals": false,
         "has_examples": false,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
         "has_templates": false,
@@ -3054,7 +3054,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.2.0"
+        "version": "2.3.0"
       },
       {
         "created": "2026-06-25",
@@ -4814,7 +4814,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "created": "2026-07-31",
@@ -8989,7 +8989,7 @@
           "risk-driven",
           "risk-register"
         ],
-        "version": "2.1.1"
+        "version": "2.1.2"
       },
       {
         "created": "2026-06-24",
@@ -9088,7 +9088,7 @@
           "sdlc-config",
           "tech-stack"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -9472,7 +9472,7 @@
           "system-boundary",
           "system-context"
         ],
-        "version": "2.1.1"
+        "version": "2.1.2"
       },
       {
         "created": "2026-06-25",
@@ -10141,7 +10141,7 @@
     "skills_with_examples": 4,
     "skills_with_produces": 187,
     "skills_with_references": 182,
-    "skills_with_resources": 2,
+    "skills_with_resources": 3,
     "skills_with_scripts": 10,
     "skills_with_sources": 4,
     "skills_with_status": 187,
