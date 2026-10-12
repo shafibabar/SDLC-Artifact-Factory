@@ -31,6 +31,25 @@ smoke_test_script "pre-phase-advance" \
   '{"tool_input":{"subagent_type":"requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
   "allow"
 
+# Case 3b (#1247): installed-plugin invocation uses the NAMESPACED agent name.
+# Remove the prerequisite again and expect the same deny as Case 2.
+rm -rf "$SCRATCH_DIR/artifacts/testproduct/strategy"
+smoke_test_script "pre-phase-advance" \
+  '{"tool_input":{"subagent_type":"sdlc-artifact-factory:requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
+  "deny" "strategy"
+
+# Case 3c: another plugin's agent sharing a short name is not ours to gate.
+smoke_test_script "pre-phase-advance" \
+  '{"tool_input":{"subagent_type":"other-plugin:requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
+  "allow"
+
+# Case 3d: namespaced name with the prerequisite satisfied -> allow
+mkdir -p "$SCRATCH_DIR/artifacts/testproduct/strategy"
+touch "$SCRATCH_DIR/artifacts/testproduct/strategy/vision.md"
+smoke_test_script "pre-phase-advance" \
+  '{"tool_input":{"subagent_type":"sdlc-artifact-factory:requirements-analyst"},"cwd":"'"$SCRATCH_DIR"'"}' \
+  "allow"
+
 # Case 4: non-plugin agent type -> always allow
 smoke_test_script "pre-phase-advance" \
   '{"tool_input":{"subagent_type":"general-purpose"},"cwd":"'"$SCRATCH_DIR"'"}' \
