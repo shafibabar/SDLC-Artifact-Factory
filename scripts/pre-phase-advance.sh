@@ -1,7 +1,8 @@
 #!/bin/bash
 # pre-phase-advance.sh — PreToolUse hook, matcher: Agent
 # Purpose: block an agent from being invoked when its phase's prerequisite
-#          phase has no artifacts yet, for a product currently in progress.
+#          phase has not been approved (product state in the manifest,
+#          written by scripts/product-state.py), for a product in progress.
 # Contract: JSON on stdin (PreToolUse schema). Exit 0 to allow, JSON with
 #           hookSpecificOutput.permissionDecision:"deny" + reason to block.
 # Consolidates the originally separate pre-phase-advance, pre-code-generation,
@@ -88,33 +89,35 @@ preceding = PRECEDING_PHASE[phase]
 if preceding is None:
     allow()  # strategy has no prerequisite
 
-context_path = pathlib.Path(cwd) / "sdlc-context.json"
-if not context_path.exists():
-    allow()  # can't determine product state — don't block
+# Product state lives in the manifest (proposal 13). No manifest = no product
+# started in this repo, so there is nothing to gate (plugin development, other repos).
+manifests = sorted(pathlib.Path(cwd).glob("artifacts/*/_manifest.json"))
+if not manifests:
+    allow()
+if len(manifests) > 1:
+    allow()  # several products: the gate can't tell which one this agent is for
 
 try:
-    ctx = json.loads(context_path.read_text())
+    manifest = json.loads(manifests[0].read_text())
 except Exception:
-    allow()  # malformed context — don't block on our own governance failing
+    allow()  # malformed manifest — don't block on our own governance failing
 
-first_product = ctx.get("first_product", {})
-status = first_product.get("status", "")
-if "not yet started" in status.lower():
-    allow()  # no product in progress — nothing to gate (factory dev/testing)
+phases = manifest.get("phases")
+if isinstance(phases, dict):
+    if phases.get(preceding, {}).get("status") == "approved":
+        allow()
+    deny(
+        f"'{subagent}' works in the {phase} phase, but the {preceding} phase hasn't been approved yet. "
+        f"Run /sdlc-status to see what's missing or unapproved; when the user approves the {preceding} "
+        f"phase, record it with product-state.py complete {preceding}. If the user explicitly wants to "
+        f"proceed anyway, run product-state.py complete {preceding} --override \"<their reason>\" first."
+    )
 
-artifacts_root = pathlib.Path(cwd) / "artifacts"
-if not artifacts_root.exists():
-    allow()  # no product artifact tree yet — don't block
-
-# Find the product's artifact directory (first subdirectory under artifacts/)
-product_dirs = [d for d in artifacts_root.iterdir() if d.is_dir()]
-if not product_dirs:
-    allow()
-
-preceding_dir = product_dirs[0] / preceding
+# A manifest from before product state existed: fall back to the old check
+# (the preceding phase's folder has at least one file).
+preceding_dir = manifests[0].parent / preceding
 if preceding_dir.exists() and any(preceding_dir.iterdir()):
     allow()
-
 deny(
     f"'{subagent}' operates in the {phase} phase, which requires the {preceding} "
     f"phase's artifacts to exist first (expected under artifacts/<product>/{preceding}/). "

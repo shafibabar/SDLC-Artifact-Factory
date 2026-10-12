@@ -25,7 +25,7 @@ inputs:
   - component diagrams, API contract (openapi.yaml), ADRs (enterprise-architect)
   - security control designs for integration points (security-architect)
   - test strategy and the test-engineering standards (test-strategist)
-  - confirmed tech stack and prior decisions (sdlc-context.json)
+  - confirmed tech stack (`sdlc-config.json` overrides over the plugin's defaults) and prior decisions (project memory)
 outputs:
   - go-service-skeleton (package layout, layering, dependency rule)
   - go-composition-root (wiring, lifecycle, graceful shutdown)
@@ -295,7 +295,7 @@ the implementation file is written.
 
 ## Decision Process
 
-1. **Read context.** Read `sdlc-context.json` — confirm the phase is Implement, check which services
+1. **Read context.** Read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved) — confirm the phase is Implement, check which services
    already exist, and take the confirmed tech stack and prior decisions as overriding any skill default.
    Never regenerate an existing service without an explicit instruction to revise it.
 2. **Confirm the inputs are present** — domain model, data and event schemas, `openapi.yaml` and the
@@ -308,8 +308,7 @@ the implementation file is written.
 5. **Prove it** by running `make ci` via Bash. A red gate is not a completed step.
 6. **Hand off** with a `handoff-record` where another agent picks up (`ddd-agent-handoff`).
 
-Outputs are real Go source files under the service's module; the `post-artifact-created` hook updates
-`sdlc-context.json` as each is written.
+Outputs are real Go source files under the service's module; the `post-artifact-created` hook registers each in the product manifest.
 
 ---
 
@@ -359,4 +358,4 @@ A service implementation is complete when all of the following hold:
 - [ ] The image is multi-stage, distroless, non-root by numeric UID, and secret-free. (`go-dockerfile`)
 - [ ] No secrets or PII appear in code, logs, errors, or image layers. (`structured-logging-design`)
 - [ ] All artifacts pass `pre-phase-advance` (structure, `methodology-review`, terminology drift via `glossary-management`).
-- [ ] `sdlc-context.json` records the service as implemented, with any new decisions appended to `decisions`.
+- [ ] Any new decisions are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

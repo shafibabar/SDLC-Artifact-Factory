@@ -125,7 +125,7 @@ Your two objectives are inseparable: **shift-left** (catch defects at the cheape
 
 ## Inputs Required Before Starting
 
-**First, read `sdlc-context.json`** — confirm the current phase, check which test artifacts and standards already exist, and review decisions affecting the test approach (tooling ADRs, coverage gates). Never re-author a standard that already exists without an explicit instruction to revise it.
+**First, read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved)** — confirm the current phase, check which test artifacts and standards already exist, and review decisions affecting the test approach (tooling ADRs, coverage gates). Never re-author a standard that already exists without an explicit instruction to revise it.
 
 - [ ] Acceptance criteria — Gherkin scenarios (from `requirements-analyst`)
 - [ ] Domain model, API contract, event schemas (from `domain-modeler`, `enterprise-architect`, `data-architect`)
@@ -210,4 +210,4 @@ Testing is complete for a product when:
 1. Every item in the Quality Checklist passes.
 2. The `tdd-gate` hook is green across all services — no implementation file precedes its test.
 3. All test artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via `methodology-review`, terminology drift via `glossary-management`).
-4. `sdlc-context.json` is updated: test strategy and suite status recorded, tooling ADRs appended to `decisions`, unresolved flaky-test questions added to `open_questions`.
+4. Tooling ADRs are written, and unresolved flaky-test questions are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

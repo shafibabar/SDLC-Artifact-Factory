@@ -8,7 +8,7 @@ You are starting a new product through the SDLC Artifact Factory. Follow these s
 
 ## 1. Check for an existing product
 
-Read `sdlc-context.json`. If `first_product.status` is anything other than "Not yet started" (or a product context otherwise already exists), STOP and tell the user: a product is already in progress; run `/sdlc-status` to see where it stands, or confirm explicitly that they want to start a second product before proceeding.
+Run `"${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py" status`. If it reports a product, STOP and tell the user: a product is already in progress in this repo; run `/sdlc-status` to see where it stands. (This repo's product state lives in `artifacts/<product>/_manifest.json`; do not look for or read any `sdlc-context.json`.)
 
 ## 2. Capture the problem statement
 
@@ -20,6 +20,10 @@ Read the plugin's tech-stack defaults at `${CLAUDE_PLUGIN_ROOT}/skills/sdlc-conf
 
 ## 4. Record the product and hand off to Strategy
 
-Update `sdlc-context.json`: set `first_product` (or the equivalent product entry) with the problem statement and confirmed/overridden config — this section is still tracked there directly (it's static, not a growing log). If any default was overridden, record it as a decision the memory-engine way instead of appending to `sdlc-context.json` (see `${CLAUDE_PLUGIN_ROOT}/skills/memory-recall/SKILL.md`): write `.sdlc-memory/tree/self/decisions/D0<next>.md` with the decision and rationale, then run `"${CLAUDE_PLUGIN_ROOT}/scripts/memory/run.sh" "${CLAUDE_PLUGIN_ROOT}/scripts/memory/ingest.py" .sdlc-memory/tree/self/decisions/D0<next>.md` to index it.
+Pick a short product slug (lowercase words joined by hyphens, e.g. `lunch-tracker`) and confirm it with the user along with the product name. Then:
+
+- Run `"${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py" init <slug> --name "<product name>" --problem "<the problem statement>"`. This creates `artifacts/<slug>/_manifest.json`, the one place the product's phase and approvals are kept.
+- Write `sdlc-config.json` per the `sdlc-config-management` skill, with **only** the overrides the user chose (it may hold just `_meta`, `product` and `product_slug`).
+- If any default was overridden, record it as a decision in project memory: write `.sdlc-memory/tree/self/decisions/D0<next>.md` with the decision and rationale (see `${CLAUDE_PLUGIN_ROOT}/skills/memory-recall/SKILL.md`). Writing it indexes it automatically.
 
 Then proceed exactly as `/sdlc-strategy` does: invoke the `product-strategist` agent via the Agent tool (`subagent_type: "sdlc-artifact-factory:product-strategist"`; its definition is `${CLAUDE_PLUGIN_ROOT}/agents/product-strategist.md` — never search the filesystem for it), giving it the problem statement and confirmed tech/business context. Report back to the user what was produced and what phase gate comes next.

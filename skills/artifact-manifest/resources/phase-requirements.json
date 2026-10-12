@@ -1,0 +1,670 @@
+{
+  "_meta": {
+    "purpose": "What each SDLC phase must produce before it can be approved, and where each artifact lives. Read by scripts/product-state.py (phase completion) and the pre-phase-advance hook (via the manifest), and by phase commands and agents to know canonical paths.",
+    "how_to_use": "paths are globs relative to artifacts/<product>/. A phase is complete when every artifact whose profile value is 'required' has at least one approved manifest entry matching one of its paths. Phases with no required artifacts (implement, data, deploy produce code, verified by CI) are completed by the user's explicit phase approval alone. 'optional' artifacts are produced when their note's trigger applies.",
+    "profiles": [
+      "enterprise"
+    ],
+    "phase_order": [
+      "strategy",
+      "ideate",
+      "design",
+      "implement",
+      "data",
+      "quality",
+      "deploy",
+      "customer-validation"
+    ]
+  },
+  "phases": {
+    "strategy": [
+      {
+        "artifact": "vision-statement",
+        "paths": [
+          "strategy/vision-statement.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "mission-statement",
+        "paths": [
+          "strategy/mission-statement.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "stakeholder-map",
+        "paths": [
+          "strategy/stakeholder-map.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "competitive-analysis",
+        "paths": [
+          "strategy/competitive-analysis.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "business-model-canvas",
+        "paths": [
+          "strategy/business-model-canvas.md",
+          "strategy/lean-canvas.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "gtm-strategy",
+        "paths": [
+          "strategy/gtm-strategy.md",
+          "strategy/positioning-gtm-strategy.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "strategic-roadmap",
+        "paths": [
+          "strategy/roadmap.md",
+          "strategy/strategic-roadmap.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "okr-set",
+        "paths": [
+          "strategy/okrs.md",
+          "strategy/okr-set.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "enterprise": "required"
+        }
+      }
+    ],
+    "ideate": [
+      {
+        "artifact": "functional-requirements",
+        "paths": [
+          "ideate/requirements.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "nfr-specification",
+        "paths": [
+          "ideate/nfr-specification.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "user-personas",
+        "paths": [
+          "ideate/user-personas.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "jtbd-analysis",
+        "paths": [
+          "ideate/jtbd-analysis.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "impact-map",
+        "paths": [
+          "ideate/impact-map.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "epic-list",
+        "paths": [
+          "ideate/epics.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "user-story-backlog",
+        "paths": [
+          "ideate/user-stories.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "acceptance-criteria",
+        "paths": [
+          "ideate/acceptance-criteria/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        },
+        "note": "One file per story; at least one required."
+      },
+      {
+        "artifact": "example-maps",
+        "paths": [
+          "ideate/example-maps/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        },
+        "note": "One file per story; at least one required."
+      },
+      {
+        "artifact": "story-map",
+        "paths": [
+          "ideate/story-map.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "moscow-prioritisation",
+        "paths": [
+          "ideate/moscow.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      }
+    ],
+    "design": [
+      {
+        "artifact": "domain-stories",
+        "paths": [
+          "design/domain-stories/*.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "optional"
+        }
+      },
+      {
+        "artifact": "event-storming-big-picture",
+        "paths": [
+          "design/event-storming/big-picture.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "event-storming-process",
+        "paths": [
+          "design/event-storming/process-*.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "optional"
+        }
+      },
+      {
+        "artifact": "event-storming-design-level",
+        "paths": [
+          "design/event-storming/design-level.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "ubiquitous-language",
+        "paths": [
+          "design/*/ubiquitous-language.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        },
+        "note": "One per Bounded Context."
+      },
+      {
+        "artifact": "context-map",
+        "paths": [
+          "design/context-map.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "aggregate-design",
+        "paths": [
+          "design/*/aggregates.md",
+          "design/*/aggregate-design.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        },
+        "note": "One per Bounded Context."
+      },
+      {
+        "artifact": "domain-event-catalog",
+        "paths": [
+          "design/*/domain-event-catalog.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "command-catalog",
+        "paths": [
+          "design/*/command-catalog.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "read-model-design",
+        "paths": [
+          "design/*/read-models.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "system-context-diagram",
+        "paths": [
+          "design/architecture/system-context.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "container-diagram",
+        "paths": [
+          "design/architecture/container-diagram.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "component-diagram",
+        "paths": [
+          "design/*/component-diagram.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "required"
+        },
+        "note": "One per service."
+      },
+      {
+        "artifact": "architecture-decision-record",
+        "paths": [
+          "design/decisions/ADR-*.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "optional"
+        },
+        "note": "Only decisions that pass the adr-authoring risk gate get one."
+      },
+      {
+        "artifact": "principle-catalog",
+        "paths": [
+          "design/decisions/PRINCIPLES.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "optional"
+        }
+      },
+      {
+        "artifact": "api-contract",
+        "paths": [
+          "design/*/openapi.yaml"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "required"
+        },
+        "note": "One per service."
+      },
+      {
+        "artifact": "api-contract-summary",
+        "paths": [
+          "design/*/api-contract-summary.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "integration-design",
+        "paths": [
+          "design/architecture/integration-design.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "multi-tenancy-design",
+        "paths": [
+          "design/architecture/multi-tenancy-design.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "optional"
+        },
+        "note": "Only for a multi-tenant product."
+      },
+      {
+        "artifact": "architecture-summary",
+        "paths": [
+          "design/architecture/README.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "user-journey-maps",
+        "paths": [
+          "design/ux/journey-maps.md"
+        ],
+        "agent": "ux-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "information-architecture",
+        "paths": [
+          "design/ux/information-architecture.md"
+        ],
+        "agent": "ux-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "user-flows",
+        "paths": [
+          "design/ux/user-flows.md"
+        ],
+        "agent": "ux-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "ui-component-specs",
+        "paths": [
+          "design/ux/component-specs.md"
+        ],
+        "agent": "ux-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "data-model",
+        "paths": [
+          "design/data/data-model.md"
+        ],
+        "agent": "data-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "canonical-data-model",
+        "paths": [
+          "design/data/canonical-data-model.md"
+        ],
+        "agent": "data-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "event-schema",
+        "paths": [
+          "design/data/event-schemas.md"
+        ],
+        "agent": "data-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "data-pipeline-design",
+        "paths": [
+          "design/data/pipeline-design.md"
+        ],
+        "agent": "data-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "data-classification-scheme",
+        "paths": [
+          "design/data/data-classification.md"
+        ],
+        "agent": "data-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "data-lineage-design",
+        "paths": [
+          "design/data/data-lineage.md"
+        ],
+        "agent": "data-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "data-retention-policy",
+        "paths": [
+          "design/data/data-retention-policy.md"
+        ],
+        "agent": "data-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "threat-model",
+        "paths": [
+          "design/security/threat-model.md"
+        ],
+        "agent": "security-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "zero-trust-design",
+        "paths": [
+          "design/security/zero-trust-design.md"
+        ],
+        "agent": "security-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "security-architecture",
+        "paths": [
+          "design/security/security-architecture.md"
+        ],
+        "agent": "security-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "access-control-model",
+        "paths": [
+          "design/security/access-control-model.md",
+          "design/access-control-model.md"
+        ],
+        "agent": "security-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "secrets-management-design",
+        "paths": [
+          "design/security/secrets-management.md"
+        ],
+        "agent": "security-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "privacy-design",
+        "paths": [
+          "design/security/privacy-design.md"
+        ],
+        "agent": "security-architect",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "compliance-design",
+        "paths": [
+          "design/security/compliance-design.md"
+        ],
+        "agent": "security-architect",
+        "profiles": {
+          "enterprise": "optional"
+        },
+        "note": "Required when the product is in a compliance scope (sdlc-config.json compliance_frameworks)."
+      }
+    ],
+    "implement": [],
+    "data": [],
+    "quality": [
+      {
+        "artifact": "compliance-verification-report",
+        "paths": [
+          "quality/compliance-verification-report.md"
+        ],
+        "agent": "security-engineer",
+        "profiles": {
+          "enterprise": "optional"
+        },
+        "note": "Required when the product is in a compliance scope."
+      }
+    ],
+    "deploy": [],
+    "customer-validation": [
+      {
+        "artifact": "uat-plan",
+        "paths": [
+          "customer-validation/uat-plan.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      },
+      {
+        "artifact": "beta-program-design",
+        "paths": [
+          "customer-validation/beta-program/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "optional"
+        }
+      },
+      {
+        "artifact": "feedback-log",
+        "paths": [
+          "customer-validation/feedback/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "optional"
+        }
+      },
+      {
+        "artifact": "acceptance-sign-off",
+        "paths": [
+          "customer-validation/sign-off/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "enterprise": "required"
+        }
+      }
+    ]
+  }
+}

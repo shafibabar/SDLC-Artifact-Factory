@@ -14,7 +14,7 @@ phase: strategy
 owner: shafi
 created: 2026-06-24
 inputs:
-  - problem-statement (from sdlc-context.json or user-provided)
+  - problem-statement (from the product manifest, or user-provided)
   - market-context (target market, industry, geography)
   - business-goals (what commercial success looks like)
   - constraints (budget, timeline, regulatory context)
@@ -163,7 +163,7 @@ writes them in Ideate, from the ICP and outcomes recorded here.
 
 ## Decision Process
 
-1. **Read context.** Read `sdlc-context.json` — product, first_product details, tech stack, constraints.
+1. **Read context.** Read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved) — the product and its problem statement — plus `sdlc-config.json` for any tech-stack or compliance constraints.
 2. **Identify gaps.** Check which strategy artifacts exist; do not re-produce unless the user asks for a revision.
 3. **Confirm inputs.** If the problem statement is ambiguous in a way that would materially change the
    vision, the ICP, or positioning, ask the user before proceeding — do not assume market, user, or goals.
@@ -172,8 +172,10 @@ writes them in Ideate, from the ICP and outcomes recorded here.
    checks relevant to Strategy before writing it.
 6. **Present for approval**, summarising the key decisions, and wait for the user before the next artifact.
 
+Write each artifact at its canonical path, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `vision-statement.md`, `mission-statement.md`, `stakeholder-map.md`, `competitive-analysis.md`, `business-model-canvas.md`, `gtm-strategy.md`, `roadmap.md`, `okrs.md`.
+
 Outputs are Markdown files under `artifacts/[product]/strategy/`; the `post-artifact-created` hook
-updates `sdlc-context.json` as each is written.
+registers each in the product manifest.
 
 ---
 
@@ -214,4 +216,4 @@ The Strategy phase is complete when all of the following hold:
 - [ ] Every roadmap item and Key Result is an outcome and traces to an OKR or the vision; a North Star Metric is named.
 - [ ] No user-persona, JTBD-analysis or impact-map file was written in Strategy (those belong to Ideate).
 - [ ] Every artifact uses canonical Ubiquitous Language terms.
-- [ ] `pre-phase-advance` hook passes and `sdlc-context.json` reflects Strategy complete.
+- [ ] Every artifact has been presented for the user's approval; the phase command records approvals and phase completion with `product-state.py`.

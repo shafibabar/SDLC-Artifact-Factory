@@ -363,13 +363,12 @@ Every agent in this plugin must:
 
 ## Phase Gate Rules
 
-A phase does not advance until all required artifacts for that phase pass governance hook validation.
+A phase does not advance until the user has approved it. A product's state lives in one file, `artifacts/<product>/_manifest.json`:
+- The `post-artifact-created` hook registers every artifact written.
+- `scripts/product-state.py` records what the user decides: `approve <path>` after the user approves an artifact, and `complete <phase>` once every artifact the phase requires is approved. What "required" means, and each artifact's canonical path, is `skills/artifact-manifest/resources/phase-requirements.json`. Only the user's explicit say-so overrides a refusal, and the reason is stored.
+- The `pre-phase-advance` hook lets an agent start only when its preceding phase is approved in the manifest.
 
-The `pre-phase-advance` hook checks:
-- All required artifacts for the current phase exist
-- All artifacts pass `validate-artifact-structure`
-- All artifacts pass `methodology-compliance-check`
-- Ubiquitous language terms are consistent (`terminology-drift-detector`)
+Every artifact is also checked as it is written: `validate-artifact-structure` (frontmatter) on write, and methodology and terminology review by the `type: "agent"` hooks (whether those run for installed users is being investigated in #1255).
 
 The `tdd-gate` hook checks:
 - For every implementation file, a corresponding test file must exist with a date/commit earlier than or equal to the implementation file.

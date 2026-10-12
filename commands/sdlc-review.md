@@ -5,9 +5,9 @@ allowed-tools: Read, Glob, Agent
 disable-model-invocation: true
 ---
 
-Run a methodology review — this is the same check `pre-phase-advance` will run automatically once hooks exist, available on demand before then.
+Run a methodology review on demand: the same criteria the methodology-review hook applies as artifacts are written, for one artifact or a whole phase.
 
-1. The target is `$ARGUMENTS` — either a specific artifact path or a phase name (review every artifact in that phase). If empty, ask the user which.
+1. The target is `$ARGUMENTS` — either a specific artifact path or a phase name (review every artifact in that phase). If empty, ask exactly: "Which artifact path or phase name should I review?" and stop until they answer.
 2. Invoke a general-purpose subagent via the Agent tool, instructing it to:
    - Read `${CLAUDE_PLUGIN_ROOT}/skills/methodology-review/SKILL.md` and `${CLAUDE_PLUGIN_ROOT}/skills/glossary-management/SKILL.md` for the review criteria
    - Read the target artifact(s)

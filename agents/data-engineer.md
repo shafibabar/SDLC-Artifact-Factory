@@ -85,7 +85,7 @@ You implement designs; you do not invent them. The data-architect designs the pi
 
 ## Inputs Required Before Starting
 
-**First, read `sdlc-context.json`** — confirm the current phase, check which pipeline stages and analytics artifacts already exist, and review decisions affecting data quality thresholds or metric definitions. Never rebuild a pipeline stage or re-specify a dashboard that already exists without an explicit instruction to revise it.
+**First, read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved)** — confirm the current phase, check which pipeline stages and analytics artifacts already exist, and review decisions affecting data quality thresholds or metric definitions. Never rebuild a pipeline stage or re-specify a dashboard that already exists without an explicit instruction to revise it.
 
 - [ ] Data pipeline architecture — stage topology, delivery semantics, per-stage contracts (from `data-architect`)
 - [ ] Lineage capture design (from `data-architect`)
@@ -160,4 +160,4 @@ Data engineering work is complete for a scope when:
 2. Data quality gates are in place with measured pass/quarantine/reject rates reviewed against the confidence thresholds.
 3. Every dashboard/report content spec traces to an OKR or the North Star Metric and has been handed to the ux-architect.
 4. All artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via `methodology-review`, terminology drift via `glossary-management`).
-5. `sdlc-context.json` is updated: pipeline stages and analytics artifacts recorded, dependency exceptions appended to `decisions`, open questions on metric scope logged.
+5. Dependency exceptions and open questions on metric scope are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

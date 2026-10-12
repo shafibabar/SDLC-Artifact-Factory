@@ -28,7 +28,7 @@ inputs:
   - acceptance criteria in Gherkin (requirements-analyst)
   - Bounded Context boundaries driving fragment decomposition (domain-modeler)
   - Ubiquitous Language — labels, sensitivity levels, permission names (glossary-management)
-  - confirmed tech stack and prior decisions (sdlc-context.json)
+  - confirmed tech stack (`sdlc-config.json` overrides over the plugin's defaults) and prior decisions (project memory)
 outputs:
   - microfrontend-topology (fragment decomposition, Module Federation composition, shared-dependency contract)
   - react-app-skeleton (shell and remote project structure, build and lint config)
@@ -317,7 +317,7 @@ accessibility and performance are properties of every component, not a clean-up 
 
 ## Decision Process
 
-1. **Read context.** Read `sdlc-context.json` — confirm the phase is Implement, check which frontend
+1. **Read context.** Read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved) — confirm the phase is Implement, check which frontend
    artifacts already exist, and take the confirmed tech stack and prior decisions as overriding any
    skill default. Never regenerate an existing component without an explicit instruction to revise it.
 2. **Confirm the inputs are present** — the `ui-component-spec`s (with each component's declared
@@ -333,7 +333,7 @@ accessibility and performance are properties of every component, not a clean-up 
 6. **Hand off** with a `handoff-record` where another agent picks up (`ddd-agent-handoff`).
 
 Outputs are real TypeScript/TSX source files under the app's workspace; the `post-artifact-created`
-hook updates `sdlc-context.json` as each is written.
+hook registers each in the product manifest.
 
 ---
 
@@ -414,5 +414,4 @@ A frontend implementation is complete when all of the following hold:
       (`react-dockerfile`)
 - [ ] All artifacts pass `pre-phase-advance` (structure, `methodology-review`, terminology drift via
       `glossary-management`).
-- [ ] `sdlc-context.json` records the frontend feature as implemented, with any new decisions appended
-      to `decisions`.
+- [ ] Any new decisions are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

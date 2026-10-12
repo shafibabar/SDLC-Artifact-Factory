@@ -21,7 +21,7 @@ inputs:
   - epic-list (from Ideate phase — bounded context candidates)
   - user-story-backlog (from Ideate phase)
   - impact-map (from Ideate phase)
-  - problem-statement (from sdlc-context.json)
+  - problem-statement (from the product manifest, `artifacts/<product>/_manifest.json`)
 outputs:
   - domain-story artifact (one or more — coarse + fine-grained)
   - event-storming-session artifact (big picture + process + design levels)
@@ -103,7 +103,7 @@ If any required input is missing, the domain-modeler halts and reports the gap t
 
 ## Outputs
 
-All outputs are Markdown files written to the product's artifact directory. The `post-artifact-created` hook updates `sdlc-context.json` when each file is written.
+All outputs are Markdown files written to the product's artifact directory. The `post-artifact-created` hook registers each in the product manifest.
 
 | Artifact | File path pattern | Skill used |
 |---|---|---|
@@ -125,7 +125,7 @@ All outputs are Markdown files written to the product's artifact directory. The 
 
 When activated, the domain-modeler follows this decision sequence:
 
-1. **Read context.** Read `sdlc-context.json` — confirm the Ideate phase is complete and all required inputs exist.
+1. **Read context.** Read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved) — confirm the Ideate phase is complete and all required inputs exist.
 2. **Read NFR constraints.** Pay particular attention to data residency, multi-tenancy isolation, and compliance requirements — these constrain Bounded Context boundaries, not just implementation.
 3. **Identify existing artifacts.** Check which design artifacts already exist. Do not re-produce approved artifacts unless the user explicitly requests a revision.
 4. **Execute in sequence.** Domain modelling artifacts have strict dependencies — follow the execution sequence below.
@@ -165,7 +165,7 @@ Steps 1-5 and steps 6-7 each have a mandatory user approval gate. The remainder 
 ```
 Receive /sdlc-design or /sdlc-event-storm
         ↓
-Read sdlc-context.json — confirm Ideate phase complete
+Read artifacts/<product>/_manifest.json — confirm Ideate phase complete
         ↓
 Read NFR specification for architecture-constraining NFRs
         ↓
@@ -269,4 +269,4 @@ The domain modelling portion of the Design phase is complete when all of the fol
 - [ ] Read Model designs complete per BC — projectors, storage, rebuild procedure
 - [ ] All three handoffs (enterprise-architect, data-architect, test-strategist) documented
 - [ ] `pre-phase-advance` hook passes for domain-modeling artifacts
-- [ ] `sdlc-context.json` checklist updated to reflect domain-modeling complete
+- [ ] Every artifact has been presented for the user's approval; the phase command records approvals and phase completion with `product-state.py`.

@@ -23,12 +23,33 @@
       "type": "string",
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     },
+    "problem_statement": { "type": "string", "minLength": 1 },
+    "current_phase": { "$ref": "#/$defs/phase" },
+    "phases": {
+      "type": "object",
+      "description": "Per-phase state, written only by scripts/product-state.py (proposal 13). A phase is approved once its required artifacts (skills/artifact-manifest/resources/phase-requirements.json) are approved and the user approves the phase; an override records why it was approved anyway.",
+      "propertyNames": { "$ref": "#/$defs/phase" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": { "type": "string", "enum": ["in-progress", "approved"] },
+          "approved_on": { "type": "string", "format": "date" },
+          "override": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "artifacts": {
       "type": "array",
       "items": { "$ref": "#/$defs/artifactEntry" }
     }
   },
   "$defs": {
+    "phase": {
+      "type": "string",
+      "enum": ["strategy", "ideate", "design", "implement", "data", "quality", "deploy", "customer-validation"]
+    },
     "artifactEntry": {
       "type": "object",
       "required": ["id", "type", "path", "version", "status", "phase", "producing_agent", "created", "updated"],
@@ -57,6 +78,11 @@
         "status": {
           "type": "string",
           "enum": ["draft", "approved", "superseded"]
+        },
+        "approved_on": {
+          "type": "string",
+          "format": "date",
+          "description": "When the user approved this artifact; set by scripts/product-state.py approve."
         },
         "superseded_by": {
           "type": "string",

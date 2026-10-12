@@ -275,7 +275,7 @@ and repository depends on it. Do not proceed to step 3 without explicit approval
 
 ## Decision Process
 
-1. **Read `sdlc-context.json`** — confirm the phase, check which data artifacts already exist, and
+1. **Read the product manifest (`artifacts/<product>/_manifest.json`: current phase, what exists, what is approved)** — confirm the phase, check which data artifacts already exist, and
    review decisions (especially polyglot-store ADRs) and open questions. Never re-produce an existing
    artifact without an explicit instruction to revise it.
 2. **Confirm inputs.** Required before starting: the domain model; the Bounded Context map; the
@@ -287,8 +287,8 @@ and repository depends on it. Do not proceed to step 3 without explicit approval
    before applying it.
 4. **Self-validate** each artifact against its skill's Quality Criteria and the `methodology-review`
    checks for Design before writing it.
-5. **Write** to `artifacts/[product]/design/`; the `post-artifact-created` hook updates
-   `sdlc-context.json`.
+5. **Write** to `artifacts/[product]/design/data/` at the canonical paths the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `data-model.md`, `canonical-data-model.md`, `event-schemas.md`, `pipeline-design.md`, `data-classification.md`, `data-lineage.md`, `data-retention-policy.md`; the `post-artifact-created` hook registers
+   each in the product manifest.
 6. **Hand off** — package each downstream agent's inputs explicitly:
    - **backend-engineer** — relational schemas → migrations and repositories; `version` columns →
      compare-and-swap writes; event schemas → producer/outbox and consumer code.
@@ -357,4 +357,4 @@ Data architecture is complete when:
 - [ ] No raw sensitive content is persisted anywhere in the design.
 - [ ] User approval gate (steps 1–2) has been passed explicitly.
 - [ ] All five handoff packages (backend-engineer, data-engineer, security-architect, platform-engineer, enterprise-architect) are complete.
-- [ ] All artifacts pass `pre-phase-advance` (structure, `methodology-review`, `glossary-management`), and `sdlc-context.json` is updated with the artifacts, any polyglot ADRs, and resolved open questions.
+- [ ] All artifacts pass `pre-phase-advance` (structure, `methodology-review`, `glossary-management`); any polyglot ADRs are written and new decisions and resolved open questions are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

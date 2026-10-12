@@ -1,12 +1,11 @@
 #!/bin/bash
+# Deploy not yet approved: /sdlc-validate must stop and point back to /sdlc-deploy.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
-
-# Real state: Deploy phase not complete, no canary/staging environment ->
-# must halt and tell the user to run /sdlc-deploy first, per the command's
-# own literal wording.
-smoke_test_command_contains \
+smoke_test_scratch_init
+smoke_test_product_fixture "$SCRATCH_DIR/product" deploy '{"strategy":{"status":"approved","approved_on":"2026-10-12"},"ideate":{"status":"approved","approved_on":"2026-10-12"},"design":{"status":"approved","approved_on":"2026-10-12"},"implement":{"status":"approved","approved_on":"2026-10-12"},"data":{"status":"approved","approved_on":"2026-10-12"},"quality":{"status":"approved","approved_on":"2026-10-12"},"deploy":{"status":"in-progress"}}'
+SMOKE_CWD="$SCRATCH_DIR/product" smoke_test_command_contains \
   "/sdlc-validate" \
   "/sdlc-deploy" \
   "sdlc-validate"

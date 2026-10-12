@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 Facilitate an Event Storming session, independent of a full `/sdlc-design` run — use this when a new subdomain needs modelling later, or to re-run storming on an existing domain.
 
-1. Read `sdlc-context.json` for product context. The domain or subdomain to storm is `$ARGUMENTS`; if empty, ask the user which one.
+1. Run `"${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py" status` for product context (if no product exists, tell the user to run `/sdlc-start` and stop). The domain or subdomain to storm is `$ARGUMENTS`; if empty, ask the user which one.
 2. Invoke the `domain-modeler` agent via the Agent tool (`subagent_type: "sdlc-artifact-factory:domain-modeler"`; its definition is `${CLAUDE_PLUGIN_ROOT}/agents/domain-modeler.md` — never search the filesystem for it), directing it specifically to the `event-storming-facilitation` skill for this domain. Give it any existing Ideate-phase requirements relevant to this domain.
 3. The agent produces the Domain Story (if needed), the Event Storm session output (Domain Events, Commands, Aggregates, Bounded Context boundaries, hotspots), and updates the Ubiquitous Language and Context Map for this domain.
 4. Confirm any downstream artifacts that already exist (Container Diagram, API contracts) are flagged for review if this session changed Bounded Context boundaries — those artifacts do not update themselves.

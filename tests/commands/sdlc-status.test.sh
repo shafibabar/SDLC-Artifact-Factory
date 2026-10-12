@@ -1,13 +1,13 @@
 #!/bin/bash
+# /sdlc-status reports the product from its manifest (not the plugin's own build checklist).
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
-
-# Real repo state: build_checklist has one incomplete chunk (22, ai-ml-architect).
-# /sdlc-status must name it (branch 1 of its own logic), not report a fully-built factory.
-smoke_test_command_contains \
+smoke_test_scratch_init
+smoke_test_product_fixture "$SCRATCH_DIR/product" ideate '{"strategy":{"status":"approved","approved_on":"2026-10-12"},"ideate":{"status":"in-progress"}}'
+SMOKE_CWD="$SCRATCH_DIR/product" smoke_test_command_contains \
   "/sdlc-status" \
-  "ai-ml-architect" \
+  "Lunch Order Tracker" \
   "sdlc-status"
 
 smoke_test_summary
