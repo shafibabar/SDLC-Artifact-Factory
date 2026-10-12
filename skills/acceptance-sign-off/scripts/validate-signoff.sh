@@ -48,10 +48,10 @@ else
   _check "checklist has at least one item" 0
 fi
 
-if printf '%s\n' "$CONTENT" | grep -qF 'Shafi (product owner)'; then
-  _check "Shafi named as sign-off authority" 1
+if printf '%s\n' "$CONTENT" | grep -qF '(product owner)'; then
+  _check "product owner named as sign-off authority" 1
 else
-  _check "Shafi named as sign-off authority" 0
+  _check "product owner named as sign-off authority" 0
 fi
 
 if printf '%s\n' "$CONTENT" | grep -qF '[Name, role, company]'; then

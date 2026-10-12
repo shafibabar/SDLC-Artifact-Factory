@@ -23,7 +23,7 @@ owner: requirements-analyst
 - [ ] Beta program graduation criteria met for the relevant stage (if applicable)
 
 ## Sign-Off Authority
-- Shafi (product owner)
+- [Name] (product owner)
 - [Name, role, company] (customer/design-partner representative)
 
 ## Decision: [FULL SIGN-OFF / CONDITIONAL SIGN-OFF / NO-GO]

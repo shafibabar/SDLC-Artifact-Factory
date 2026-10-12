@@ -10,7 +10,7 @@ description: >
   as a Key Result ("launch the onboarding flow", "ship the connector",
   "features shipped: 10"). Sets the measurable goals downstream discovery
   (impact-mapping, story-mapping) traces back to.
-version: 2.1.0
+version: 2.1.1
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -79,7 +79,7 @@ What each grading band means (0.0-0.3 / 0.4-0.6 / 0.7-1.0), the sandbagging-vs-m
 ## Cadence and Alignment
 
 - **Set quarterly**, review with a lightweight **weekly check-in** (update confidence, flag blockers) — set-and-forget is the most common failure mode.
-- **Cascade:** every product OKR names the company Objective it supports. For a solo operator (Shafi), product and company OKRs are one set — document them once.
+- **Cascade:** every product OKR names the company Objective it supports. For a solo operator (the user), product and company OKRs are one set — document them once.
 - **Confidence, not just target:** each KR carries a running confidence (start ~70%) that moves week to week and is the earliest signal a KR is off track.
 
 ---

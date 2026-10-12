@@ -133,9 +133,9 @@ Hendrickson is explicit that the value of exploration comes from a **skilled hum
 So the division of labor for this repo is:
 
 - **An agent (the `requirements-analyst` acting as facilitator) authors the charter and the heuristics checklist.** This is a concrete artifact an agent *can* produce well — a focused mission plus the angles of attack to try.
-- **A human executor does the actual exploring** — a design partner, or Shafi as internal proxy, using the charter as a mission brief and their own curiosity to follow what they find.
+- **A human executor does the actual exploring** — a design partner, or the user as internal proxy, using the charter as a mission brief and their own curiosity to follow what they find.
 
-An agent attempting to "explore" a UI autonomously (clicking through screenshots) would be simulating scripted testing under an exploratory label — not doing what the book describes. State the split plainly rather than pretend equivalence. This does not introduce a *new* scarce-human-bandwidth constraint: the existing UAT model already depends on a design partner or Shafi-proxy per `uat-plan`; the charter simply makes that dependency visible, because a genuine exploratory session cannot be scripted away the way a scenario execution nominally could be handed to a proxy following steps.
+An agent attempting to "explore" a UI autonomously (clicking through screenshots) would be simulating scripted testing under an exploratory label — not doing what the book describes. State the split plainly rather than pretend equivalence. This does not introduce a *new* scarce-human-bandwidth constraint: the existing UAT model already depends on a design partner or the user as proxy per `uat-plan`; the charter simply makes that dependency visible, because a genuine exploratory session cannot be scripted away the way a scenario execution nominally could be handed to a proxy following steps.
 
 ---
 

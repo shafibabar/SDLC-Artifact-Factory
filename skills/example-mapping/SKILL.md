@@ -10,7 +10,7 @@ description: >
   stories and BDD feature files by making implicit rules explicit through
   concrete examples. Used by the requirements-analyst agent during the Ideate
   phase, before acceptance criteria are drafted.
-version: 1.3.0
+version: 1.3.1
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -91,7 +91,7 @@ A finished example map: one yellow card at the top; blue cards in a row beneath 
 
 ### Participants (Three Amigos model)
 
-In a team context, example mapping is a "Three Amigos" session — product, development, and testing, each contributing their perspective. In solo mode (Han Solo), the requirements-analyst agent plays all three roles explicitly:
+In a team context, example mapping is a "Three Amigos" session — product, development, and testing, each contributing their perspective. In solo mode, the requirements-analyst agent plays all three roles explicitly:
 
 - **Product perspective:** What is the user trying to accomplish? What would they expect?
 - **Development perspective:** What rules need to be implemented? What edge cases will arise?

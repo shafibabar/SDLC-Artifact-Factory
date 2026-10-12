@@ -9,7 +9,7 @@ description: >
   check against manipulative presentation (truncated axes, cherry-picked windows, misleading
   aggregation). Grounded in Knaflic, Storytelling with Data. Distinct from domain-storytelling
   (a DDD modeling technique). Use when analysis results must persuade or inform a decision.
-version: 2.1.0
+version: 2.1.1
 phase: data
 owner: data-engineer
 created: 2026-07-20
@@ -65,7 +65,7 @@ Knaflic's *Storytelling with Data* is the primary source. Its six lessons are th
 Before choosing any chart, answer four questions. Get these wrong and every downstream design choice
 is wrong relative to the wrong target:
 
-- **Who** is the audience? (For this repo, often Shafi — a PM, not a programmer, reviewing without IDE
+- **Who** is the audience? (For this repo, often the product owner — a PM, not a programmer, reviewing without IDE
   tooling. CLAUDE.md's reviewability standard applies to narrative artifacts too.)
 - **What decision** does this analysis feed? An analysis with no pending decision is monitoring, not a
   story — reconsider whether a story is even the right artifact.

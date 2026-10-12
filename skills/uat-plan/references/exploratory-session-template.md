@@ -79,7 +79,7 @@ immediately designing the next probe from it is the part hardest to hand
 to an agent running a fixed prompt. **The adaptation this repo uses**: the
 requirements-analyst (facilitator) drafts the charter and relevant
 heuristics checklist; the actual exploring is done by the human executor
-(design partner, or Shafi acting as proxy per `SKILL.md`'s Participant
+(design partner, or the user acting as proxy per `SKILL.md`'s Participant
 Roles) using the charter as a mission brief. This keeps the book's core
 claim intact (exploration needs human judgment) while giving the agent a
 concrete artifact it can genuinely author. **Do not** have an agent

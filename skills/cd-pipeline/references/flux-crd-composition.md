@@ -247,7 +247,7 @@ run against staging. A 30-minute SLO soak window passes clean.
 
 **Step 5 — Canary production promotion**
 
-PR opened for `deploy/clusters/tenants/tenant-canary/`. Shafi approves.
+PR opened for `deploy/clusters/tenants/tenant-canary/`. The user approves.
 
 Flux converges the canary tenant. In-cluster `canary-deployment` shifts traffic:
 10% → 30-min SLO check → 50% → 30-min SLO check → 100%.
@@ -305,7 +305,7 @@ Secret: [deploy-key-secret-name]
 |---|---|---|---|
 | dev | Auto-commit by CI | None | 15 min |
 | staging | Automated PR | Platform-engineer | 30 min |
-| tenant-canary | Manual PR | Shafi | Per canary step |
+| tenant-canary | Manual PR | The product owner | Per canary step |
 | fleet tenants | Batched PRs | Platform-engineer | Per canary step |
 
 ## Rollback Procedure
@@ -323,7 +323,7 @@ CFR: [n%] — target ≤ 15%
 ## Drift Response
 Alert route: [Alertmanager route name]
 Incident severity: P2
-Escalation: Platform-engineer on-call → Shafi if production
+Escalation: Platform-engineer on-call → the product owner if production
 
 ## Traceability
 NFR IDs: [availability NFR], [RTO NFR]

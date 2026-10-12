@@ -29,10 +29,10 @@ else
   _fail "validate-signoff: reports exactly 3 failed checks on a fresh scaffold" "expected '3 check(s) failed'"
 fi
 
-if echo "$OUTPUT" | grep -q "PASS: Shafi named as sign-off authority" && echo "$OUTPUT" | grep -q "PASS: Sign-Off Criteria Checklist section present"; then
+if echo "$OUTPUT" | grep -q "PASS: product owner named as sign-off authority" && echo "$OUTPUT" | grep -q "PASS: Sign-Off Criteria Checklist section present"; then
   _pass "validate-signoff: does not false-fail the checks that are already correct on a fresh scaffold"
 else
-  _fail "validate-signoff: does not false-fail the checks that are already correct on a fresh scaffold" "expected Shafi/checklist checks to pass even on a fresh scaffold"
+  _fail "validate-signoff: does not false-fail the checks that are already correct on a fresh scaffold" "expected product-owner/checklist checks to pass even on a fresh scaffold"
 fi
 
 # Filling in all three fields makes it pass entirely.

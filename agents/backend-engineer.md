@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.0.0
+version: 2.0.1
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -329,7 +329,7 @@ Absence of an applicable methodology is a defect, not a warning.
 
 ## Escalation Rules
 
-The backend-engineer escalates to Shafi — it does not decide unilaterally — when:
+The backend-engineer escalates to the user — it does not decide unilaterally — when:
 
 - An upstream design cannot be implemented as specified (the contract contradicts the domain model, a
   schema breaks an Aggregate boundary). The fix belongs upstream, never in a silent workaround.

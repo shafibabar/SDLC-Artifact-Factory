@@ -4,7 +4,7 @@ description: >
   Teaches how to plan User Acceptance Testing for the Customer Validation
   phase — deriving UAT scope from MoSCoW Must Have stories, defining
   participant roles (design partners or an internal proxy as executors, the
-  requirements-analyst as facilitator, Shafi plus a customer stakeholder as
+  requirements-analyst as facilitator, the product owner plus a customer stakeholder as
   sign-off authority), the canary tenant or staging environment UAT runs
   against, entry and exit criteria, the schedule structure, and — per
   Elisabeth Hendrickson's exploratory testing practice — a time-boxed
@@ -13,7 +13,7 @@ description: >
   proves a deployed release behaves correctly for real users before wide
   rollout — it is the final human-in-the-loop gate, not pre-deployment QA.
   Used by the requirements-analyst during Customer Validation.
-version: 2.1.0
+version: 2.1.1
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -61,9 +61,9 @@ UAT is a facilitated activity with named, non-overlapping roles. No role execute
 | Role | Who | Responsibility |
 |---|---|---|
 | **Executor** | A design partner from the stakeholder register's design-partner cohort (`stakeholder-mapping`), acting as their real persona | Runs each UAT scenario **and each exploratory session** in the live/live-like environment, records pass/fail and observations |
-| **Internal proxy executor** | An internal stand-in (e.g., Shafi acting as Maya Chen) | Used **only** when no design partner is available yet for this release slice — never a permanent substitute; every UAT plan states whether it used a design partner or a proxy, and a proxy-only sign-off is downgraded to conditional (see `acceptance-sign-off`) |
+| **Internal proxy executor** | An internal stand-in (e.g., the product owner acting as Maya Chen) | Used **only** when no design partner is available yet for this release slice — never a permanent substitute; every UAT plan states whether it used a design partner or a proxy, and a proxy-only sign-off is downgraded to conditional (see `acceptance-sign-off`) |
 | **Facilitator** | requirements-analyst | Prepares scenarios (`uat-scenario`) **and drafts exploratory charters**, briefs executors, observes without leading (see anti-leading-question guidance in `feedback-template`), captures defects and feedback, compiles results |
-| **Sign-off authority** | Shafi + a customer/design-partner representative | Reviews the compiled results against exit criteria and issues the `acceptance-sign-off` decision — two-party, never unilateral |
+| **Sign-off authority** | The product owner + a customer/design-partner representative | Reviews the compiled results against exit criteria and issues the `acceptance-sign-off` decision — two-party, never unilateral |
 
 ---
 
@@ -118,7 +118,7 @@ UAT is time-boxed. An open-ended UAT window loses urgency and blocks the release
 | Day 0 | Entry criteria verified; executors briefed; scenarios distributed; exploratory charters drafted |
 | Day 1–3 | Scripted scenario execution **and** exploratory sessions, same executor(s), same environment; facilitator observes and logs defects/feedback live |
 | Day 4 | Facilitator compiles results; triage pass on all captured feedback (`feedback-template`), scripted and exploratory alike |
-| Day 5 | Sign-off meeting — Shafi + customer representative review against exit criteria (`acceptance-sign-off`) |
+| Day 5 | Sign-off meeting — the product owner + customer representative review against exit criteria (`acceptance-sign-off`) |
 
 Exploratory sessions run **alongside** scripted execution, not as a separate phase — they share the same time-box (Day 1–3), the same executor, and the same environment. For a design-partner cohort of 3 companies validating a small Must Have slice, 5 business days is typically sufficient. Larger slices or a design-partner cohort with limited availability may extend the execution window (Day 1–3 → Day 1–7) but the compile-and-decide tail (facilitator compile, triage, sign-off) should not stretch — a slow decision after data is in hand is a process failure, not a testing one.
 
@@ -132,7 +132,7 @@ Each session is scoped by a **charter**: *"Explore [target/area], with [resource
 
 A short heuristics checklist for generating test ideas within a charter: **CRUD** (create/read/update/delete and their interactions), **Boundaries** (min/max/zero/off-by-one), **Position/Goldilocks** (first/last/none/many), **Interruptions** (stop mid-workflow and resume — a high-yield heuristic for state-management bugs scripted tests rarely cover), **Configuration variance** (browser/device/locale/permission/flag differences), and the **Saboteur mindset** (deliberately trying to break things a well-behaved user never would).
 
-**Honesty about who explores**: the requirements-analyst (facilitator) drafts the charter; a human executor (design partner or Shafi-as-proxy) actually explores. An agent reasoning over a UI without a live human driving is not exploratory testing under this definition — it's scripted testing wearing an exploratory label. State this plainly rather than gloss over it.
+**Honesty about who explores**: the requirements-analyst (facilitator) drafts the charter; a human executor (design partner or the user as proxy) actually explores. An agent reasoning over a UI without a live human driving is not exploratory testing under this definition — it's scripted testing wearing an exploratory label. State this plainly rather than gloss over it.
 
 Full session-record template, the SFDIPOT coverage audit, and charter-generates-charter discipline: `references/exploratory-session-template.md`.
 

@@ -32,7 +32,7 @@ owner: requirements-analyst
       export progress indicator, Low), both triaged into the checklist below
 
 ## Sign-Off Authority
-- Shafi (product owner)
+- Riya Desai (product owner)
 - Maya Chen, Compliance Officer, Northwind Compliance Co. (design-partner
   representative)
 

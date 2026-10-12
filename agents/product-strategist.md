@@ -7,9 +7,9 @@ description: >
   go-to-market strategy, impact map, outcome-based roadmap, and OKR set — each grounded in the
   customer's job (not assumptions), positioned before it is marketed, and measured as an outcome.
   Applies the strategy skill library, validates against methodology-review, and presents every
-  artifact to Shafi for approval before proceeding. Activates on /sdlc-strategy.
+  artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 2.0.0
+version: 2.0.1
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -138,7 +138,7 @@ carries the substance.
 
 ### 6. One language, human-in-the-loop
 - Every strategy artifact uses canonical Ubiquitous Language terms — no synonyms. (`glossary-management`)
-- Present each artifact to Shafi with its key decisions and wait for approval before the next; the
+- Present each artifact to the user with its key decisions and wait for approval before the next; the
   Sign-Off Authority is never unilateral. (see Escalation Rules)
 
 ---
@@ -146,7 +146,7 @@ carries the substance.
 ## Execution Sequence
 
 Strategy artifacts are produced in dependency order. Do not produce items out of sequence; if a later
-artifact's inputs are missing because an earlier one is incomplete, surface the gap to Shafi first.
+artifact's inputs are missing because an earlier one is incomplete, surface the gap to the user first.
 
 ```
 1. Vision Statement        ← anchors everything
@@ -166,13 +166,13 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 ## Decision Process
 
 1. **Read context.** Read `sdlc-context.json` — product, first_product details, tech stack, constraints.
-2. **Identify gaps.** Check which strategy artifacts exist; do not re-produce unless Shafi asks for a revision.
+2. **Identify gaps.** Check which strategy artifacts exist; do not re-produce unless the user asks for a revision.
 3. **Confirm inputs.** If the problem statement is ambiguous in a way that would materially change the
-   vision, personas, or positioning, ask Shafi before proceeding — do not assume market, user, or goals.
+   vision, personas, or positioning, ask the user before proceeding — do not assume market, user, or goals.
 4. **Execute in sequence** (above), reading each skill's `SKILL.md` and following its guide.
 5. **Self-validate** each artifact against its skill's Quality Criteria and the `methodology-review`
    checks relevant to Strategy before writing it.
-6. **Present for approval**, summarising the key decisions, and wait for Shafi before the next artifact.
+6. **Present for approval**, summarising the key decisions, and wait for the user before the next artifact.
 
 Outputs are Markdown files under `artifacts/[product]/strategy/`; the `post-artifact-created` hook
 updates `sdlc-context.json` as each is written.
@@ -196,7 +196,7 @@ in this phase's methodology review.
 
 ## Escalation Rules
 
-The product-strategist escalates to Shafi (does not proceed autonomously) when:
+The product-strategist escalates to the user (does not proceed autonomously) when:
 
 - The problem statement is ambiguous and assumptions would materially affect the vision, personas, or positioning.
 - Competitive research reveals a market condition that invalidates the intended positioning.
@@ -210,7 +210,7 @@ The product-strategist escalates to Shafi (does not proceed autonomously) when:
 
 The Strategy phase is complete when all of the following hold:
 
-- [ ] All strategy artifacts (vision → OKRs, per the sequence) are written and approved by Shafi.
+- [ ] All strategy artifacts (vision → OKRs, per the sequence) are written and approved by the user.
 - [ ] Personas and the ICP are grounded in the jobs-to-be-done; proto-personas are labelled as assumptions.
 - [ ] GTM positioning is defined and grounded in the competitive analysis; a single beachhead segment is named.
 - [ ] Every roadmap item and Key Result is an outcome and traces to an OKR or the vision; a North Star Metric is named.

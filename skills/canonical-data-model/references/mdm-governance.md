@@ -17,17 +17,17 @@ Grounded in Cervo & Allen (*Multi-Domain Master Data Management*) and Loshin. **
 | **Technical Data Steward / Data Custodian** | Correctly *implementing and enforcing* the rule in code and pipelines | A bug or misconfiguration (an implementation error) |
 | **Data Governance Council** | Arbitrating when two Data Domain Owners' rules conflict; accountable for the whole multi-domain program | An unresolved cross-domain conflict |
 
-A cross-domain conflict example the single-steward model cannot express: `Person`'s survivorship escalates a record to `Restricted` because of contained PII, while the `Organisation` domain's rules would classify the containing entity differently. The Council (at solo scale, Shafi) is the documented arbitration path.
+A cross-domain conflict example the single-steward model cannot express: `Person`'s survivorship escalates a record to `Restricted` because of contained PII, while the `Organisation` domain's rules would classify the containing entity differently. The Council (at solo scale, the product owner) is the documented arbitration path.
 
-**Solo-operator scaling.** Represent this as a *decision-rights table Shafi approves*, not a literal committee:
+**Solo-operator scaling.** Represent this as a *decision-rights table the user approves*, not a literal committee:
 
 | Domain | Data Domain Owner | Business steward decisions | Technical steward decisions | Conflict arbiter |
 |---|---|---|---|---|
-| Person | Shafi (delegated) | source priority, thresholds | pipeline implementation | Shafi |
-| Organisation | Shafi (delegated) | matching key, hierarchy rules | pipeline implementation | Shafi |
-| DataSource | Shafi (delegated) | dedup rules | connector implementation | Shafi |
+| Person | The product owner (delegated) | source priority, thresholds | pipeline implementation | The product owner |
+| Organisation | The product owner (delegated) | matching key, hierarchy rules | pipeline implementation | The product owner |
+| DataSource | The product owner (delegated) | dedup rules | connector implementation | The product owner |
 
-The row structure is the deliverable; who fills each cell can all be Shafi today.
+The row structure is the deliverable; who fills each cell can all be the user today.
 
 ### Three distinct steward queues
 
@@ -152,8 +152,8 @@ Hierarchy management, the four MDM styles, per-domain owners, and cross-domain r
 
 ## Checklist
 
-- [ ] Steward authority split into Data Domain Owner / Business Steward / Technical Steward, expressed as a decision-rights table (all Shafi today is fine).
-- [ ] Cross-domain conflict arbitration path named (the Council role = Shafi at solo scale).
+- [ ] Steward authority split into Data Domain Owner / Business Steward / Technical Steward, expressed as a decision-rights table (all the product owner today is fine).
+- [ ] Cross-domain conflict arbitration path named (the Council role = the user at solo scale).
 - [ ] Three steward queues (match / sensitivity / quality) named as distinct work.
 - [ ] Golden-record lifecycle state model documented; un-merge and split are retraction + replay, never DELETE.
 - [ ] Shared-hub-vs-per-domain infrastructure decision recorded; re-decided before any fourth master entity.

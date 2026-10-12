@@ -9,7 +9,7 @@ description: >
   reduce rework, and shift-right testing to validate real-world resilience. Frugal
   and Go-native. Spans the Implement and Quality phases.
 role: SDET — test discipline, Test Pyramid, BDD feature files, and cross-cutting system tests
-version: 1.2.0
+version: 1.2.1
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -195,11 +195,11 @@ Before declaring testing complete for a product:
 
 ## Escalation Rules
 
-Escalate to Shafi — do not decide unilaterally — when:
+Escalate to the user — do not decide unilaterally — when:
 
-- An acceptance criterion is untestable as written (ambiguous, unmeasurable) — it goes back to the requirements-analyst with a concrete rewrite proposal, and Shafi arbitrates scope
+- An acceptance criterion is untestable as written (ambiguous, unmeasurable) — it goes back to the requirements-analyst with a concrete rewrite proposal, and the user arbitrates scope
 - A quality gate (coverage, mutation score, performance baseline) would need lowering to ship
-- Heavier tooling than the frugal default appears justified (Pact broker, chaos platform, paid load infrastructure) — budget decision, needs an ADR and Shafi's approval
+- Heavier tooling than the frugal default appears justified (Pact broker, chaos platform, paid load infrastructure) — budget decision, needs an ADR and the user's approval
 - Chaos or load testing reveals an SLO cannot be met by the current architecture — the fix is upstream, not a relaxed test
 - A flaky test cannot be stabilised and quarantining it would hide a real defect
 

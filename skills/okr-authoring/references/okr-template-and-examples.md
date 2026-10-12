@@ -93,9 +93,9 @@ Baseline: 0 (pre-launch) | Target: 5 | By: end of Q3 2026.
 
 | Key Result | Metric | Baseline | Target | Dir | Owner | Conf |
 |---|---|---|---|---|---|---|
-| KR1.1 | % of trial users who discover their first compliance gap within 30 min of connecting a source | n/a (pre-launch) | 80% | ↑ | Shafi | 70% |
-| KR1.2 | Median time from Google Drive connection to full sensitivity classification (estates ≤ 100k files) | n/a | ≤ 30 min | ↓ | Shafi | 60% |
-| KR1.3 | Design-partner deployments completed without any support contact | 0 of 3 | 3 of 3 | ↑ | Shafi | 70% |
+| KR1.1 | % of trial users who discover their first compliance gap within 30 min of connecting a source | n/a (pre-launch) | 80% | ↑ | The product owner | 70% |
+| KR1.2 | Median time from Google Drive connection to full sensitivity classification (estates ≤ 100k files) | n/a | ≤ 30 min | ↓ | The product owner | 60% |
+| KR1.3 | Design-partner deployments completed without any support contact | 0 of 3 | 3 of 3 | ↑ | The product owner | 70% |
 
 **Why this passes:** the Objective is qualitative and time-bound; if all three KRs land, "zero to trustworthy compliance picture in one session" is genuinely accomplished; every KR is measurable from telemetry with no self-assessment; and none can be gamed without actually delivering the onboarding outcome — an onboarding wizard users abandon fails KR1.1 regardless of effort spent.
 
@@ -117,9 +117,9 @@ The rejected outputs are not discarded — they become **Initiatives** under thi
 
 | Key Result | Metric | Baseline | Target | Dir | Owner | Conf |
 |---|---|---|---|---|---|---|
-| KR2.1 | % of flagged compliance gaps resolved within 5 business days of surfacing | 40% (design-partner pilot) | 70% | ↑ | Shafi | 65% |
-| KR2.2 | % of surfaced findings a Compliance Officer marks "false positive" | 22% | ≤ 8% | ↓ | Shafi | 60% |
-| KR2.3 | Weekly active Compliance Officers across design-partner accounts | 40 | 120 | ↑ | Shafi | 70% |
+| KR2.1 | % of flagged compliance gaps resolved within 5 business days of surfacing | 40% (design-partner pilot) | 70% | ↑ | The product owner | 65% |
+| KR2.2 | % of surfaced findings a Compliance Officer marks "false positive" | 22% | ≤ 8% | ↓ | The product owner | 60% |
+| KR2.3 | Weekly active Compliance Officers across design-partner accounts | 40 | 120 | ↑ | The product owner | 70% |
 
 **Why this passes:** trust is intangible, so the Objective stays qualitative; the KRs operationalize trust as *acted-on findings* (KR2.1), *signal quality* (KR2.2), and *sustained use* (KR2.3) — three independent behavior changes that together evidence the Objective. KR2.1's baseline of 40% is measured from the pilot, not guessed, so a 70% target is a real +30-point stretch, not a mystery number.
 
@@ -139,9 +139,9 @@ The rejected outputs are not discarded — they become **Initiatives** under thi
 
 | Key Result | Metric | Baseline | Target | Dir | Owner | Conf |
 |---|---|---|---|---|---|---|
-| KR3.1 | Achieve SOC 2 Type II certification (binary) | not started | achieved | — | Shafi | 70% |
-| KR3.2 | % of design partners who complete a security review without a blocking finding | n/a | 100% (3 of 3) | ↑ | Shafi | 55% |
-| KR3.3 | Mean time to patch a flagged CVE in the deployment image | n/a | ≤ 3 days | ↓ | Shafi | 65% |
+| KR3.1 | Achieve SOC 2 Type II certification (binary) | not started | achieved | — | The product owner | 70% |
+| KR3.2 | % of design partners who complete a security review without a blocking finding | n/a | 100% (3 of 3) | ↑ | The product owner | 55% |
+| KR3.3 | Mean time to patch a flagged CVE in the deployment image | n/a | ≤ 3 days | ↓ | The product owner | 65% |
 
 **Why this passes:** the Objective names a state of the world ("demonstrably safe to run"), not a task. KR3.1 is a legitimate **binary** KR — graded 1.0 if achieved, 0.0 if not, no partial credit for effort (see `references/okr-rules-and-grading.md` §4). KR3.2 and KR3.3 are continuous, keeping the Objective's grade informative rather than all-or-nothing.
 

@@ -24,7 +24,7 @@ owner: requirements-analyst
 [Checklist with source citations, including exploratory sessions run/debriefed]
 
 ## Sign-Off Authority
-- Shafi (product owner)
+- [Name] (product owner)
 - [Name, role, company] (customer/design-partner representative)
 
 ## Decision: [FULL SIGN-OFF / CONDITIONAL SIGN-OFF / NO-GO]

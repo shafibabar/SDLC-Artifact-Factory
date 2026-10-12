@@ -18,7 +18,7 @@ description: >
   in place of code. Does not design the UX, the API contract, or the Bounded Context boundaries; it
   implements them. Activates on /sdlc-implement for frontend work.
 role: React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI
-version: 3.0.0
+version: 3.0.1
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -353,7 +353,7 @@ Absence of an applicable methodology is a defect, not a warning.
 
 ## Escalation Rules
 
-The frontend-engineer escalates to Shafi — it does not decide unilaterally — when:
+The frontend-engineer escalates to the user — it does not decide unilaterally — when:
 
 - A `ui-component-spec` cannot be implemented as written (it conflicts with the API contract, the
   information architecture, or an accessibility requirement). The spec is updated upstream, never

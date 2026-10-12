@@ -19,7 +19,7 @@ description: >
   place of config. Does not write application code, tests, security control internals, or
   architecture decisions; it operates what the other agents build. Activates on /sdlc-deploy.
 role: Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks
-version: 2.0.0
+version: 2.0.1
 phase: deploy
 owner: shafi
 created: 2026-07-20
@@ -367,7 +367,7 @@ methodology review. Absence of any **applicable** methodology is a defect, not a
 
 ## Escalation Rules
 
-The platform-engineer escalates to Shafi (does not decide unilaterally) when:
+The platform-engineer escalates to the user (does not decide unilaterally) when:
 
 - **Any spend decision arises** — managed service vs self-hosted, cluster sizing beyond the plan, paid
   tooling of any kind. Budget is a product decision.

@@ -64,7 +64,7 @@
     },
     "gates": {
       "type": "array",
-      "description": "Phase/stage gates. Each gate is positioned relative to a stage (after or before) and declares its KIND — a semantic 'approval' (human, e.g. Shafi) or a mechanical 'hook' (deterministic enforcement, charter §6). A gate DECLARES a checkpoint; it never encodes what to do on failure (that is not workflow data — rollback is git, block is a hook exit code).",
+      "description": "Phase/stage gates. Each gate is positioned relative to a stage (after or before) and declares its KIND — a semantic 'approval' (human, e.g. the user) or a mechanical 'hook' (deterministic enforcement, charter §6). A gate DECLARES a checkpoint; it never encodes what to do on failure (that is not workflow data — rollback is git, block is a hook exit code).",
       "items": {
         "type": "object",
         "additionalProperties": false,

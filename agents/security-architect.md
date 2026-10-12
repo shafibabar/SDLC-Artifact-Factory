@@ -10,7 +10,7 @@ description: >
   within and between those services. Activates when /sdlc-design is invoked after
   the architecture diagrams are complete.
 role: Security Design — threat model, Zero Trust, ABAC, privacy, compliance-as-code design
-version: 1.1.0
+version: 1.1.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -148,9 +148,9 @@ At the end of the Design phase, the security-architect produces an explicit impl
 
 ## Escalation Rules
 
-The security-architect escalates to Shafi when:
+The security-architect escalates to the user when:
 
-- A STRIDE threat cannot be mitigated within the current architecture — the mitigation requires an architecture change that was already approved in the Container Diagram (Shafi must decide whether to revise the architecture or accept the residual risk)
+- A STRIDE threat cannot be mitigated within the current architecture — the mitigation requires an architecture change that was already approved in the Container Diagram (the user must decide whether to revise the architecture or accept the residual risk)
 - GDPR DPIA analysis identifies a high-residual-risk processing activity that the product's core value proposition depends on (requires a product decision about acceptable risk)
 - A compliance control requirement conflicts with a product feature (e.g., a compliance control requires data retention that conflicts with a user's right to erasure)
 

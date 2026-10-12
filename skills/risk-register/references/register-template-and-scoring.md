@@ -153,7 +153,7 @@ Four calibrated entries for the running product. Each shows the derivation
 1. Is this a **standing exposure**, not a one-time question? (Apply the SKILL body's test.)
 2. Both axes assigned a reasoned Low/Medium/High, each anchored to the horizon?
 3. Severity **derived** from the matrix above, not hand-picked?
-4. A named owner (agent role or "Shafi") who can act on it?
+4. A named owner (agent role or "product owner") who can act on it?
 5. Mitigation names a **specific** action/control/monitor, not a sentiment?
 6. Searched the register for an existing entry covering the same exposure?
 7. Review cadence set to match the severity's row in §3?

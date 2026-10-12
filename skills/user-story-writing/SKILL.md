@@ -6,7 +6,7 @@ description: >
   Negotiable, Valuable, Estimable, Small, Testable), story-splitting patterns for
   stories that are too big, and the coupling to acceptance criteria. Used during
   Ideate to capture requirements as small, testable, valuable increments.
-version: 2.1.0
+version: 2.1.1
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -69,7 +69,7 @@ Ron Jeffries' Three Cs, popularized by Mike Cohn (*User Stories Applied*, 2004),
 | C | What it is | In this repo |
 |---|---|---|
 | **Card** | The short written story — a token, not a spec | The `As a / I want / so that` text |
-| **Conversation** | Where the real detail is negotiated, over time | Shafi's review + the analyst reasoning through perspectives |
+| **Conversation** | Where the real detail is negotiated, over time | The product owner's review + the analyst reasoning through perspectives |
 | **Confirmation** | The conditions that prove the conversation was delivered | The `acceptance-criteria` artifact |
 
 A story is **a promise of a conversation** — the card intentionally defers detail.

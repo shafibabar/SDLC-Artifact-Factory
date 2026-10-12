@@ -141,7 +141,7 @@ across a context boundary — a Customer/Supplier relationship for
 |---|---|---|---|---|
 | H1 | Can the engine reclassify a human-overridden asset? | Process uncertainty | Modeled as a DataAsset invariant (no) | Resolved |
 | H2 | Does "source" in Compliance mean the connector or just an ID? | Language disagreement | Ubiquitous-language session — it is an ID reference only | Resolved |
-| H3 | Who owns retention periods when a source spans tenants? | Scope dispute | Escalated to Shafi (product decision) | Deferred |
+| H3 | Who owns retention periods when a source spans tenants? | Scope dispute | Escalated to the product owner (product decision) | Deferred |
 
 ---
 

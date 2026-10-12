@@ -142,7 +142,7 @@ two agents both believing a row fits *them*):
 3. If the disagreement is about vocabulary, `glossary-management` is the
    tiebreaker, per `SKILL.md`'s existing rule.
 4. If neither resolves it, record the dispute as an `open_questions` entry
-   with `status: blocked` and escalate to Shafi rather than one agent
+   with `status: blocked` and escalate to the product owner rather than one agent
    unilaterally proceeding.
 
 ## Resumption: Operational Pause vs. Breakthrough

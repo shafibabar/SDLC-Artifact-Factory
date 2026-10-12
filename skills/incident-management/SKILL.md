@@ -2,7 +2,7 @@
 name: incident-management
 description: >
   Teaches blameless incident management — the incident severity taxonomy, the on-call response protocol, and the blameless postmortem artifact: timeline construction, multiple contributing factors (never a single root cause), corrective actions with owners and target dates, and the just-culture principle that maximises honest disclosure. The artifact type the runbook-authoring post-incident hook feeds into, distinct from a runbook edit. Used by the platform-engineer during Deploy.
-version: 1.0.0
+version: 1.0.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-31

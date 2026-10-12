@@ -7,7 +7,7 @@ description: >
   pass/fail against a stated resilience assumption (circuit breaker engages,
   consumer recovers, no data loss). The Python analog of go-chaos-test; frugal
   (toxiproxy, not a chaos platform).
-version: 1.0.0
+version: 1.0.1
 phase: quality
 owner: backend-engineer
 created: 2026-07-31
@@ -72,7 +72,7 @@ the async abort-loop wiring, and the blast-radius scoping table:
 ## The Four Elements as a Test Header
 
 Every experiment carries this comment block immediately above its test
-function — reviewable by Shafi before reading a line of Python:
+function — reviewable by the user before reading a line of Python:
 
 ```python
 # EXPERIMENT:   Circuit Breaker opens when the Postgres link is severed

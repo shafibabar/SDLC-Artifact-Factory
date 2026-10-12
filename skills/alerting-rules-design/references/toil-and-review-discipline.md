@@ -19,7 +19,7 @@ Google's stated policy is that SRE teams should spend no more than **50% of thei
 
 That valve does not exist here. This repo has one `platform-engineer` agent who is simultaneously "SRE" and the entire ops function, with no product-dev team to hand anything back to. Applying the 50% ceiling as an organizational policy would be borrowing a mechanism this repo doesn't have.
 
-What *does* transfer: the ceiling still works as a **personal-sustainability heuristic**. A rising, unaddressed toil footprint — the same manual remediation recurring week after week — is not something the platform can absorb by rebalancing across a team; it is a signal worth surfacing to Shafi directly, because the only real fix at headcount one is a headcount or tooling-investment decision, and that decision is his to make, not something this skill or its review discipline can resolve on its own. The review's job is to make that signal visible early, not to enforce a percentage.
+What *does* transfer: the ceiling still works as a **personal-sustainability heuristic**. A rising, unaddressed toil footprint — the same manual remediation recurring week after week — is not something the platform can absorb by rebalancing across a team; it is a signal worth surfacing to the user directly, because the only real fix at headcount one is a headcount or tooling-investment decision, and that decision is theirs to make, not something this skill or its review discipline can resolve on its own. The review's job is to make that signal visible early, not to enforce a percentage.
 
 ## The Toil Line in the Monthly Review
 

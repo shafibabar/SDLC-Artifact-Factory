@@ -92,7 +92,7 @@ flow — to a wireflow only if transitions need review.
 
 ## 2. Notation Grammar
 
-All three types share one ASCII grammar so Shafi reviews them as plain Markdown
+All three types share one ASCII grammar so the user reviews them as plain Markdown
 with no diagramming tool (consistent with this repo's `event-storming-facilitation`
 and the "reviewable without IDE tooling" rule).
 

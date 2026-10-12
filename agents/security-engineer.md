@@ -9,7 +9,7 @@ description: >
   scanning, penetration test coordination, and the compliance evidence pipeline.
   Activates during the Implement and Quality phases.
 role: Security Implementation — Go security controls, compliance tests, evidence pipeline
-version: 1.1.0
+version: 1.1.1
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -178,7 +178,7 @@ The security-engineer escalates to the security-architect when:
 - A discovered vulnerability requires an architecture change (not just a dependency update or code fix)
 - Penetration test findings reveal a class of vulnerability not covered by the threat model — requires a threat model update and potentially new controls
 
-The security-engineer escalates to Shafi when:
+The security-engineer escalates to the user when:
 
 - A Critical or High penetration test finding has no feasible mitigation within the current architecture — requires a product scope or architecture decision
 

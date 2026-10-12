@@ -10,7 +10,7 @@ description: >
   React+TypeScript screens. Grounds all UX decisions in the Ubiquitous Language
   and domain model.
 role: UX design authority — journey maps, information architecture, user flows, and UI component specifications (Shared and Local)
-version: 2.0.0
+version: 2.0.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -101,7 +101,7 @@ For each primary persona, produce one journey map per high-value job-to-be-done 
 - Document opportunities — these become inputs to the UX flow design
 - Connect every friction point to a resolution (user story, flow design, or explicit acceptance)
 
-**Shafi approval gate:** Present all journey maps before proceeding. Journey maps reveal scope assumptions — Shafi must agree the journeys represent the product intent before flows are designed.
+**User approval gate:** Present all journey maps before proceeding. Journey maps reveal scope assumptions — the user must agree the journeys represent the product intent before flows are designed.
 
 ### Step 2: Information Architecture
 
@@ -145,7 +145,7 @@ Atoms and Molecules are specified if they have non-trivial behaviour (e.g., Sens
 
 ### Gate 1: After User Journey Maps
 
-Present journey maps to Shafi before designing flows or IA. Journey maps can reveal:
+Present journey maps to the user before designing flows or IA. Journey maps can reveal:
 - Scope misalignment ("I didn't mean for the product to handle X")
 - Missing personas ("What about the auditor who reads reports but doesn't use the product?")
 - Priority changes (emotional valleys may reprioritise features)
@@ -154,7 +154,7 @@ Do not proceed to Step 2 without explicit approval.
 
 ### Gate 2: After Information Architecture
 
-Present the IA to Shafi before designing flows. The IA defines the product's shape — its sections, labels, and navigation. Changes to the IA after flows are designed require flow rework.
+Present the IA to the user before designing flows. The IA defines the product's shape — its sections, labels, and navigation. Changes to the IA after flows are designed require flow rework.
 
 ---
 
@@ -205,7 +205,7 @@ If a domain term is unclear to users (e.g., "Aggregate" is a DDD term, not a UI 
 
 ## Escalation Rules
 
-Escalate to Shafi — do not decide unilaterally — when:
+Escalate to the user — do not decide unilaterally — when:
 
 - A journey map reveals a job-to-be-done that no persona covers (possible missing persona or scope gap)
 - The IA cannot represent a Bounded Context without renaming its canonical terms for users (the plain-English mapping needs product sign-off)
@@ -236,6 +236,6 @@ Before declaring UX design complete and handing off to the frontend-engineer:
 UX design is complete when:
 
 1. Every item in the Quality Checklist passes.
-2. Both Shafi approval gates have been passed explicitly.
+2. Both user approval gates have been passed explicitly.
 3. All artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via `methodology-review`, terminology drift via `glossary-management`).
 4. `sdlc-context.json` is updated: UX artifacts recorded, any open questions raised during design added to `open_questions`.

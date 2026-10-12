@@ -114,8 +114,8 @@ DAMA-DMBOK places Data Governance at the hub of its wheel: governance grants *au
 accountability*, it doesn't produce data itself. Classification decisions therefore need an owner.
 
 - **Data Steward** — the accountable authority for a data domain, with standing power to set or
-  override a classification. In this solo-operator context the steward is **Shafi**, or an agent he
-  has explicitly delegated review to, with escalation back to Shafi on dispute (mirroring the
+  override a classification. In this solo-operator context the steward is **the product owner**, or an agent they
+  have explicitly delegated review to, with escalation back to the product owner on dispute (mirroring the
   escalation-rule pattern in `agents/data-architect.md`).
 - **Authority order:** manual steward classification **wins over** automated detection and over
   propagation, and the win is **audited** (who, when, and a recorded reason).

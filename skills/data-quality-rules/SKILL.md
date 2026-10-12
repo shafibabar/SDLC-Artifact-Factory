@@ -9,7 +9,7 @@ description: >
   threshold alerting), and the remediation workflow — quarantine, auto-correct,
   reject-to-DLQ, alert — implemented in Go at the pipeline boundary. Distinguishes a
   Dead Letter Queue from a quarantine store. Used by the data-engineer.
-version: 2.1.0
+version: 2.1.1
 phase: data
 owner: data-engineer
 created: 2026-07-20

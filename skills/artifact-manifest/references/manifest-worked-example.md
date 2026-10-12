@@ -6,7 +6,7 @@ Four entries are shown, each illustrating a different state or artifact shape:
 
 1. An **approved ADR** — the common case: a single Markdown artifact, reviewed and current.
 2. A **superseded user story** — showing the `superseded_by` field and the Status Lifecycle rule that a superseded entry is never deleted.
-3. A **draft artifact awaiting review** — showing that `status: draft` entries are registered the moment they're written, not held back until Shafi approves them; the manifest tracks what exists, not only what's finished.
+3. A **draft artifact awaiting review** — showing that `status: draft` entries are registered the moment they're written, not held back until the user approves them; the manifest tracks what exists, not only what's finished.
 4. A **Go Service** — a directory-shaped artifact (source tree, not a single file), illustrating the Artifact ID Scheme's "one manifest entry per meaningful unit" rule from `SKILL.md`: the entry's `path` points at the service's root directory, and its `version` tracks the service's own design doc version rather than any individual source file's state.
 
 ## Worked Example

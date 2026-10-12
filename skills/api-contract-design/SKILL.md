@@ -14,7 +14,7 @@ description: >
   frontend-engineer. Includes scripts/scaffold-api-contract-design.sh and
   scripts/validate-api-contract-design.sh. Used by the enterprise-architect
   agent after the Command Catalog and Read Model designs are complete.
-version: 2.3.0
+version: 2.3.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25

@@ -6,7 +6,7 @@ description: >
   methodology-compliance-check hook and by any agent performing a self-review
   before submitting an artifact for phase gate validation. Defines what constitutes
   a pass, a warning, and a defect for each methodology in each phase.
-version: 1.2.0
+version: 1.2.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
@@ -24,7 +24,7 @@ Every artifact this plugin produces must be reviewed against the five non-negoti
 
 - The `methodology-compliance-check` hook (automated, runs on every artifact save)
 - Any agent performing a pre-submission self-review
-- Shafi when manually reviewing an artifact before approval
+- The user when manually reviewing an artifact before approval
 
 A **defect** is a methodology requirement that applies to an artifact but is absent. Defects must be resolved before the phase gate advances.
 

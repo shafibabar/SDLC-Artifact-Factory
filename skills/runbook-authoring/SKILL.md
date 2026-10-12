@@ -10,7 +10,7 @@ description: >
   boundaries), the style rules that keep runbooks imperative and free of
   tribal knowledge, and the freshness discipline that treats a stale runbook
   as a failed drill. Used by the platform-engineer during Deploy.
-version: 1.2.0
+version: 1.2.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -42,7 +42,7 @@ Every runbook, alert-triggered or procedural, has the same five sections, in thi
 | Section | Answers | Audience |
 |---|---|---|
 | **Trigger** | What fired, and where to see it live (alert name, dashboard link, or the manual condition that starts a procedure) | On-call, orienting |
-| **Impact statement** | What does this mean for the product, in terms a PM understands — not "consumer lag high," but "compliance findings are arriving late; customers may see a stale dashboard" | Anyone assessing severity, including Shafi if the incident surfaces |
+| **Impact statement** | What does this mean for the product, in terms a PM understands — not "consumer lag high," but "compliance findings are arriving late; customers may see a stale dashboard" | Anyone assessing severity, including the product owner if the incident surfaces |
 | **Verification steps** | Exact, copy-pasteable commands that confirm the diagnosis before acting | On-call, executing |
 | **Remediation decision tree** | Branches on what verification found, each branch ending in either a fix or an escalation | On-call, executing |
 | **Escalation line** | Who owns the fix if this runbook's authority ends — named by agent role per CLAUDE.md's ownership boundaries, never "ask around" | On-call, when blocked |
@@ -54,7 +54,7 @@ Every runbook, alert-triggered or procedural, has the same five sections, in thi
 - **Imperative, not descriptive.** "Run `kubectl get pods -n tenant-acme`" — not "you might want to check the pods." A runbook gives instructions, it does not muse.
 - **Copy-pasteable commands, with placeholders marked.** Every command block is runnable as written except for explicitly bracketed values (`[TENANT_ID]`), never prose describing a command in words.
 - **No tribal knowledge.** If a step assumes "you know the DB password is in Vault under `secret/data/[tenant]/postgres`" — say that, don't assume it. The test: could someone who joined yesterday follow this at 3 a.m. without pinging anyone?
-- **PM-comprehensible impact line.** The impact statement is the one section Shafi (or any PM) reads without translation — no metric names, no internal service jargon, just what a customer would notice and how bad it is.
+- **PM-comprehensible impact line.** The impact statement is the one section the product owner (or any PM) reads without translation — no metric names, no internal service jargon, just what a customer would notice and how bad it is.
 - **One page, one screen where possible.** A runbook that requires scrolling through six unrelated procedures to find the relevant branch slows down exactly the moment speed matters most. Long procedures split into linked, single-purpose runbooks.
 - **Dated and versioned like any artifact** (CLAUDE.md's frontmatter standard) — a runbook with no `created`/`version` cannot be checked for staleness.
 
@@ -119,7 +119,7 @@ Escalation names the **agent role that owns the fix**, per CLAUDE.md's agent bou
 | Infrastructure, pipeline, chart, or observability config issue | `platform-engineer` (self) | Within this agent's own domain — the runbook resolves it directly |
 | Security control failure (auth, ABAC, secrets) | `security-engineer` | Owns control internals; platform-engineer operates the sidecars, not the policy |
 | Data model, retention, or lineage inconsistency | `data-architect` | Owns the contracts platform purge jobs execute against |
-| Architecture-level capacity or SLO-unachievable finding | Shafi, via the platform-engineer's own escalation rule | A product/spend decision, not an operational fix |
+| Architecture-level capacity or SLO-unachievable finding | The product owner, via the platform-engineer's own escalation rule | A product/spend decision, not an operational fix |
 
 A runbook that ends every failing branch in "escalate: platform-engineer" for a problem that is actually an application bug just relocates the improvisation one level up. Naming the correct owner is part of the runbook's job, not an afterthought.
 

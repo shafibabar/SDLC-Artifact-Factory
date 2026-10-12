@@ -9,7 +9,7 @@ description: >
   only via Vault Agent), and the promotion invariance check that proves the
   artifact never changed between environments. Used by the platform-engineer
   during Deploy.
-version: 1.3.0
+version: 1.3.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -37,7 +37,7 @@ The second law is **Configuration as Code**: every value that shapes an environm
 | **kind-local** | Chart install tests in CI; engineer's laptop | Created and destroyed per run | CI (`helm-chart`'s kind gate), engineers |
 | **dev** | First real-cluster convergence after merge | Long-lived, disposable — rebuilt from Git at will | Auto-commit from CI on green main |
 | **staging** | Full-stack soak: nightly e2e/load suites, SLO soak, rollback and DR drills | Long-lived; mirrors production topology at reduced sizing | PR merged by platform-engineer |
-| **tenant-\<id\> prod stamps** | One physically isolated production environment per tenant — own namespace/cluster, own PostgreSQL, own Redpanda, per `multi-tenancy-design` | Long-lived; stamped from the same OpenTofu module and charts | PR per fleet wave; Shafi approves first production promotion |
+| **tenant-\<id\> prod stamps** | One physically isolated production environment per tenant — own namespace/cluster, own PostgreSQL, own Redpanda, per `multi-tenancy-design` | Long-lived; stamped from the same OpenTofu module and charts | PR per fleet wave; the product owner approves first production promotion |
 
 Two consequences of this set:
 

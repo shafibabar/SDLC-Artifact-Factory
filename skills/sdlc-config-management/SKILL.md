@@ -6,13 +6,13 @@ description: >
   deployment-model, and methodology-parameter choices that OVERRIDE
   CLAUDE.md's Tech Stack Defaults. Covers the override-only principle, the
   two-tier config-then-default precedence lookup an agent performs before
-  applying any default, who may change the file (only Shafi, via a recorded
+  applying any default, who may change the file (only the user, via a recorded
   decision), _meta.last_updated / updated_by tracking, and validation against
   schemas/sdlc-config.schema.json. Consulted by every agent resolving a
   tech-stack fact (api_framework, primary_database, graph_database,
   optional_database, deployment_model), by the /sdlc-start command that writes
   it, and by hooks checking an artifact matches the product's real config.
-version: 2.0.0
+version: 2.0.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -40,9 +40,9 @@ This is a two-tier lookup, always performed in this order:
 1. Check `sdlc-config.json` for the field in question. If present, use it — it is the product's deliberate choice.
 2. If absent, use the corresponding default from CLAUDE.md's Tech Stack Defaults table (or the relevant methodology/naming/artifact-standard section for non-tech-stack fields).
 
-There is no third tier. An agent never invents a configuration choice that exists in neither file — an unresolvable gap is an open question for Shafi, handled per the working agreements in CLAUDE.md and `sdlc-context.json`, not a default to be improvised.
+There is no third tier. An agent never invents a configuration choice that exists in neither file — an unresolvable gap is an open question for the user, handled per the working agreements in CLAUDE.md and `sdlc-context.json`, not a default to be improvised.
 
-No agent resolves an entire product configuration once and caches it informally — each fact is looked up field-by-field against the same two-tier order, so a partial config update (Shafi overrides one more field mid-project) is picked up correctly by every subsequent artifact without any agent needing to "know" the change happened through a channel other than the file itself.
+No agent resolves an entire product configuration once and caches it informally — each fact is looked up field-by-field against the same two-tier order, so a partial config update (the user overrides one more field mid-project) is picked up correctly by every subsequent artifact without any agent needing to "know" the change happened through a channel other than the file itself.
 
 ## The Override-Only Principle
 
@@ -71,7 +71,7 @@ One validator caveat: JSON Schema's `format: date` is annotation-only unless the
 
 Changing `sdlc-config.json` mid-project is a decision, not a file edit:
 
-1. **Only Shafi authorizes a config change.** No agent changes the file on its own initiative — a tech-stack or compliance-scope change is exactly the consequential, cross-cutting choice CLAUDE.md's Session Startup and Agent Behaviour Rules reserve for his approval.
+1. **Only the user authorizes a config change.** No agent changes the file on its own initiative — a tech-stack or compliance-scope change is exactly the consequential, cross-cutting choice CLAUDE.md's Session Startup and Agent Behaviour Rules reserve for the user's approval.
 2. **The rationale is recorded in `sdlc-context.json → decisions`.** Every config change gets a decision entry — what changed, why, and what alternative was rejected — following the shape of existing entries (e.g. D006, D009). The config file records *what* the current state is; the decisions array records *why* it changed.
 3. **The config file's own `_meta` increments.** `_meta.last_updated` and `_meta.updated_by` follow `sdlc-context.json`'s `_meta` convention — updated on every change, with `updated_by` pointing at the decision ID that authorized it.
 4. **Downstream artifacts are not silently invalidated.** If a config change affects artifacts already produced under the old configuration (e.g. switching `graph_database` after a data model assumed Apache AGE), the affected artifacts are flagged for revision via the artifact manifest's `status` field (`artifact-manifest`) — not left to quietly drift.
@@ -82,11 +82,11 @@ Every agent already reads `sdlc-context.json` first before producing an artifact
 
 **Before applying any CLAUDE.md default, an agent must check whether `sdlc-config.json` overrides it for this product.** Concretely: `backend-engineer` does not assume `net/http` + chi without checking `sdlc-config.json → tech_stack_overrides.api_framework`; `platform-engineer` does not assume a deployment model without checking `sdlc-config.json → deployment_model`. The check costs one file read and prevents an entire artifact from being built against the wrong configuration.
 
-An agent that applies a CLAUDE.md default without checking for an override is silently discarding a decision Shafi already made at `/sdlc-start` or in a later config change. This is a defect, not a stylistic gap.
+An agent that applies a CLAUDE.md default without checking for an override is silently discarding a decision the user already made at `/sdlc-start` or in a later config change. This is a defect, not a stylistic gap.
 
 ## Relationship to `/sdlc-start`
 
-`sdlc-config.json` is created once, at the start of a product's build, by the `/sdlc-start` command's interactive questionnaire (see `sdlc-context.json → tech_stack.sdlc_start_questionnaire`). The command asks Shafi a fixed set of questions — one per Tech Stack Defaults row, plus compliance scope and deployment model — and for each, a "keep the default" answer writes nothing to the file, while an "override" answer writes exactly the overriding field. This is what keeps the override-only principle mechanically enforced: the file starts empty and grows only by explicit divergence. The full question-to-field mapping is in `references/config-field-reference.md`.
+`sdlc-config.json` is created once, at the start of a product's build, by the `/sdlc-start` command's interactive questionnaire (see `sdlc-context.json → tech_stack.sdlc_start_questionnaire`). The command asks the user a fixed set of questions — one per Tech Stack Defaults row, plus compliance scope and deployment model — and for each, a "keep the default" answer writes nothing to the file, while an "override" answer writes exactly the overriding field. This is what keeps the override-only principle mechanically enforced: the file starts empty and grows only by explicit divergence. The full question-to-field mapping is in `references/config-field-reference.md`.
 
 `/sdlc-start` is a command (a workflow), not this skill — this skill defines the standard the command's output must conform to.
 
@@ -96,7 +96,7 @@ An agent that applies a CLAUDE.md default without checking for an override is si
 |---|---|---|
 | Override-only | Every field present differs from the CLAUDE.md default | A field restates the value CLAUDE.md already specifies |
 | Precedence respected | Every agent checks `sdlc-config.json` before applying a default | An agent applies a default without checking for an override |
-| Change authorized | Every value traces to a decision Shafi made | A config value with no corresponding decision or `/sdlc-start` record |
+| Change authorized | Every value traces to a decision the product owner made | A config value with no corresponding decision or `/sdlc-start` record |
 | Rationale recorded | Mid-project changes have a matching `sdlc-context.json → decisions` entry | Config edited with no decision entry |
 | Downstream impact tracked | Artifacts under a superseded config are flagged via the manifest | Artifacts left assuming the old config |
 | `_meta` maintained | `last_updated`/`updated_by` reflect the latest change | Stale `_meta` after a change |
@@ -105,7 +105,7 @@ An agent that applies a CLAUDE.md default without checking for an override is si
 
 - **Default restatement** — copying CLAUDE.md's defaults into the file "for clarity." Creates a second source of truth that goes stale when defaults evolve. This is the primary anti-pattern this skill exists to prevent.
 - **Silent override-ignoring** — an agent applies the CLAUDE.md default without having checked `sdlc-config.json` first; the artifact no longer matches the product's real configuration.
-- **Unauthorized config changes** — an agent edits `sdlc-config.json` on its own judgment mid-build, without Shafi's approval and without a decision entry.
+- **Unauthorized config changes** — an agent edits `sdlc-config.json` on its own judgment mid-build, without the user's approval and without a decision entry.
 - **Orphaned overrides** — a field is added for a decision later reversed but never removed, so the config keeps overriding a choice nobody holds. Reverting a decision means removing the field.
 - **Vague deployment/compliance fields** — `"deployment_model": "private"` without naming which documented option, or `"compliance_frameworks": ["SOC 2"]` without the specific control families. Values must be specific enough to act on without a follow-up question.
 - **Config drift from `sdlc-context.json`** — a config value contradicting something already confirmed in `sdlc-context.json → tech_stack.confirmed` or `→ first_product`, introduced without reconciling the two.

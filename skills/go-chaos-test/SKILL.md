@@ -20,7 +20,7 @@ description: >
   conditions wired to the same alerting stack, never a human watching a
   dashboard (references/safety-rails-standard.md). Used by the
   test-strategist during Quality.
-version: 2.0.0
+version: 2.0.1
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -144,7 +144,7 @@ Two mandatory, independent rails on every experiment above: **environment restri
 
 ## Output Format
 
-Every artifact below is reviewable by Shafi without IDE tooling and carries the four-part experiment header (`references/experiment-design-standard.md`) where applicable — this is a checkable engineering standard per file, not a folder listing:
+Every artifact below is reviewable by the user without IDE tooling and carries the four-part experiment header (`references/experiment-design-standard.md`) where applicable — this is a checkable engineering standard per file, not a folder listing:
 
 - **`tests/chaos/*_test.go`** — one hypothesis-driven experiment per pattern under test, each with the `EXPERIMENT`/`STEADY STATE`/`HYPOTHESIS`/`BLAST RADIUS`/`ROLLBACK` comment header immediately above its test function. Uses `requireSteadyState`/`requireEventualSteadyState` polling helpers, never a fixed `time.Sleep`. Every `t.Cleanup` guarantees toxic/fault removal on both pass and failure paths.
 - **`tests/chaos/toxiproxy.go`** — proxy setup and toxic helpers for in-process dependency faults; every `AddToxic` call site has a matching `t.Cleanup(RemoveToxic)` in the same function.

@@ -105,7 +105,7 @@ cause-and-effect. Translate its cards into the blueprint's operational lanes:
 | **External System** | Support Processes | Google Drive, S3 — with their rate/permission constraints noted |
 
 Translate DDD vocabulary into plain operational language *above* the line notation,
-keeping the precise domain term as a parenthetical for traceability, so Shafi can read
+keeping the precise domain term as a parenthetical for traceability, so the user can read
 the blueprint without domain-modelling literacy while the link back to the model stays
 intact.
 

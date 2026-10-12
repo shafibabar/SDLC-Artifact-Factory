@@ -9,7 +9,7 @@ description: >
   consistency guarantees each provides, the failure modes each defends against,
   and the Go + Redpanda implementation in this platform. Used during Design when
   defining how Bounded Contexts communicate asynchronously.
-version: 2.0.0
+version: 2.0.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25

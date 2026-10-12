@@ -12,7 +12,7 @@ description: >
   event-to-metric traceability, and how metrics feed `dashboard-specification` and
   `reporting-spec`. Used by the data-engineer and platform-engineer during Data and
   Deploy phases.
-version: 2.1.0
+version: 2.1.1
 phase: data
 owner: data-engineer
 created: 2026-07-20
@@ -40,7 +40,7 @@ Three distinct categories of metric exist for any service. Conflating them cause
 | **Examples** | HTTP rate, p99 latency, consumer lag | Trial-to-activation rate, gap-closure rate | Deployment Frequency, Lead Time, MTTR, Change Failure Rate |
 | **Instrument** | OTel counters/histograms, Prometheus | Domain Events + Read Model aggregations in PostgreSQL | GitHub Actions API, Alertmanager, cd-pipeline commit log |
 | **Owner** | backend-engineer / platform-engineer | data-engineer | platform-engineer |
-| **Consumed by** | On-call, SLO dashboards, alerting | Product stakeholders, compliance officers, Shafi | Engineering leads, delivery retrospectives |
+| **Consumed by** | On-call, SLO dashboards, alerting | Product stakeholders, compliance officers, the product owner | Engineering leads, delivery retrospectives |
 | **Source** | Application telemetry at runtime | Domain Events emitted by application | CI/CD pipeline events — not the application itself |
 | **Skill** | `opentelemetry-instrumentation` | This skill | This skill |
 

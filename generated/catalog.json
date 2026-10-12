@@ -1893,7 +1893,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-25",
@@ -1938,7 +1938,7 @@
           "Read",
           "Write"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-07-20",
@@ -1974,7 +1974,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-06-25",
@@ -2014,7 +2014,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "created": "2026-06-25",
@@ -2054,7 +2054,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.3.0"
+        "version": "1.3.1"
       },
       {
         "created": "2026-06-25",
@@ -2117,7 +2117,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-20",
@@ -2185,7 +2185,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-24",
@@ -2239,7 +2239,7 @@
           "Read",
           "Write"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-24",
@@ -2283,7 +2283,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.3.0"
+        "version": "1.3.1"
       },
       {
         "created": "2026-06-25",
@@ -2321,7 +2321,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "created": "2026-06-25",
@@ -2355,7 +2355,7 @@
           "Read",
           "Write"
         ],
-        "version": "1.1.0"
+        "version": "1.1.1"
       },
       {
         "created": "2026-06-25",
@@ -2398,7 +2398,7 @@
         "tools": [
           "Bash"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-06-25",
@@ -2428,7 +2428,7 @@
           "ux"
         ],
         "tools": [],
-        "version": "2.0.0"
+        "version": "2.0.1"
       }
     ],
     "commands": [
@@ -2758,7 +2758,7 @@
           "release-gate",
           "sign-off"
         ],
-        "version": "2.2.0"
+        "version": "2.2.1"
       },
       {
         "created": "2026-06-25",
@@ -2838,7 +2838,7 @@
           "principles",
           "trade-offs"
         ],
-        "version": "4.0.0"
+        "version": "4.0.1"
       },
       {
         "created": "2026-06-25",
@@ -2881,7 +2881,7 @@
           "invariants",
           "value-object"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-07-20",
@@ -2923,7 +2923,7 @@
           "slo",
           "toil"
         ],
-        "version": "2.3.0"
+        "version": "2.3.1"
       },
       {
         "created": "2026-07-20",
@@ -2996,7 +2996,7 @@
           "openapi",
           "rest"
         ],
-        "version": "2.3.0"
+        "version": "2.3.1"
       },
       {
         "created": "2026-07-31",
@@ -3066,7 +3066,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -3100,7 +3100,7 @@
           "implement",
           "quality"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-07-20",
@@ -3286,7 +3286,7 @@
           "rollback",
           "traffic-split"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-06-25",
@@ -3327,7 +3327,7 @@
           "mdm",
           "survivorship"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-07-20",
@@ -3363,7 +3363,7 @@
           "reconciliation",
           "rollback"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-07-20",
@@ -3636,7 +3636,7 @@
           "task-worker",
           "workflow"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-06-25",
@@ -3869,7 +3869,7 @@
           "sensitivity",
           "tagging"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -3952,7 +3952,7 @@
           "normalization",
           "postgresql"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -4076,7 +4076,7 @@
           "remediation",
           "validation"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -4155,7 +4155,7 @@
           "preattentive-attributes",
           "visualization"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-07-22",
@@ -4187,7 +4187,7 @@
           "governance",
           "handoff"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-07-20",
@@ -4222,7 +4222,7 @@
           "rpo",
           "rto"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-06-25",
@@ -4487,7 +4487,7 @@
           "tenants",
           "values"
         ],
-        "version": "1.3.0"
+        "version": "1.3.1"
       },
       {
         "created": "2026-06-24",
@@ -4570,7 +4570,7 @@
           "saga",
           "transactional-outbox"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-25",
@@ -4649,7 +4649,7 @@
           "event-storming",
           "facilitation"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-24",
@@ -4681,7 +4681,7 @@
           "ideate",
           "three-amigos"
         ],
-        "version": "1.3.0"
+        "version": "1.3.1"
       },
       {
         "created": "2026-07-20",
@@ -4720,7 +4720,7 @@
           "progressive-delivery",
           "trunk-based-development"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-07-20",
@@ -4953,7 +4953,7 @@
           "retry",
           "toxiproxy"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-25",
@@ -5491,7 +5491,7 @@
           "slo",
           "throughput"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-25",
@@ -6281,7 +6281,7 @@
           "reliability",
           "sre"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-06-25",
@@ -6582,7 +6582,7 @@
           "solid",
           "tdd"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-07-20",
@@ -6618,7 +6618,7 @@
           "throughput",
           "traceability"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-07-22",
@@ -6650,7 +6650,7 @@
           "module-federation",
           "vite"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-07-22",
@@ -6682,7 +6682,7 @@
           "notation",
           "visualization"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-06-24",
@@ -6718,7 +6718,7 @@
           "strategy",
           "vision"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -6920,7 +6920,7 @@
           "outcomes",
           "strategy"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -7312,7 +7312,7 @@
           "testcontainers",
           "toxiproxy"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-07-31",
@@ -7771,7 +7771,7 @@
           "slo",
           "throughput"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-07-31",
@@ -8963,7 +8963,7 @@
           "requirements",
           "traceability"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-07-20",
@@ -9001,7 +9001,7 @@
           "risk-driven",
           "risk-register"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-24",
@@ -9064,7 +9064,7 @@
           "on-call",
           "runbooks"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-07-20",
@@ -9100,7 +9100,7 @@
           "sdlc-config",
           "tech-stack"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-25",
@@ -9337,7 +9337,7 @@
           "stakeholders",
           "strategy"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-06-24",
@@ -9378,7 +9378,7 @@
           "story-map",
           "walking-skeleton"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -9484,7 +9484,7 @@
           "system-boundary",
           "system-context"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -9694,7 +9694,7 @@
           "sign-off",
           "uat"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-07-20",
@@ -9733,7 +9733,7 @@
           "uat",
           "validation"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -9845,7 +9845,7 @@
           "touchpoints",
           "ux"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-24",
@@ -9883,7 +9883,7 @@
           "strategy",
           "user-research"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-24",
@@ -9923,7 +9923,7 @@
           "story-splitting",
           "user-story"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -9962,7 +9962,7 @@
           "ux",
           "wireflow"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-07-20",
@@ -9999,7 +9999,7 @@
           "lean",
           "value-stream-map"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-06-24",

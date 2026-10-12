@@ -9,7 +9,7 @@ That mechanism has no honest analog here. This platform has exactly one operator
 The honest scope for "escalation" at headcount one is narrower than the word usually implies: not a second human to fail over to, but a documented answer to *what happens when a page goes unacknowledged*. Concretely, that means:
 
 - Treat "page fired, no acknowledgment within the repeat window" as its own tracked condition — an **unacknowledged-page leaf** — rather than letting the repeating page stand in silently for a real escalation policy.
-- State plainly, wherever this gap could otherwise be assumed away, that no secondary exists. A future reader (including a future Shafi staffing decision) should be able to tell from this skill's text alone that "escalation" here means "the same person gets paged again, more often" — not infer a rotation that was never built.
+- State plainly, wherever this gap could otherwise be assumed away, that no secondary exists. A future reader (including the product owner, making a future staffing decision) should be able to tell from this skill's text alone that "escalation" here means "the same person gets paged again, more often" — not infer a rotation that was never built.
 - If sustained unacknowledged pages become a real pattern, that is itself toil-adjacent signal — see the pager-load heuristic in `references/toil-and-review-discipline.md` — worth surfacing as a staffing or tooling question, not something this skill can fix by adding more repeat-interval tuning.
 
 ## What This Skill Does Not Own

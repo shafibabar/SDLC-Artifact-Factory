@@ -77,7 +77,7 @@ Rules for a blank/empty state:
 - **The CTA leads somewhere actionable** — into the flow that ends the emptiness.
   For an empty estate: "Connect a data source to start mapping your estate" →
   Connect-Source flow.
-- **Plain language, no jargon** — Shafi's reviewers and real Data Stewards read
+- **Plain language, no jargon** — the product owner's reviewers and real Data Stewards read
   this, not engineers.
 - **Distinguish first-use empty from filtered-empty.** "No assets yet" (connect a
   source) is a different state, with different copy and CTA, from "No assets match

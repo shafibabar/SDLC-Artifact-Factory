@@ -239,13 +239,13 @@ Consumer lag is non-zero (in-flight processing active)
 
 Rollback fails (kubectl rollout undo returns error)
   → escalate: platform-engineer (self) — Kubernetes rollout state may be corrupted
-  → If platform-engineer cannot resolve: escalate: Shafi (spend decision —
+  → If platform-engineer cannot resolve: escalate: The product owner (spend decision —
     may require emergency image pin or a hotfix deploy rather than a rollback)
 ```
 
 ## Escalation
 - Rollback fails at the kubectl level → **platform-engineer** (self)
-- Emergency outside kubectl rollout scope → **Shafi** (product decision)
+- Emergency outside kubectl rollout scope → **the user** (product decision)
 
 ## Execution Log
 | Date | On-call | Branch taken | Runbook correct? | Correction PR |
@@ -275,7 +275,7 @@ an open door. If the author genuinely does not know what to do in a case, that i
 to involve the owning agent before the runbook ships, not after the incident fires.
 
 **Impact statements in internal jargon** — "consumer lag exceeds SLO threshold on partition 3"
-tells Shafi nothing about whether customers are affected right now. Translate to product terms:
+tells the user nothing about whether customers are affected right now. Translate to product terms:
 "compliance scan results may be delayed by up to 4 hours for customers in the affected tenant."
 
 **Runbooks that never get drilled** — authored once, referenced in an alert, never followed

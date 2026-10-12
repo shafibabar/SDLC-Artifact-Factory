@@ -22,13 +22,13 @@ Power and Interest scored 1–3 (low/medium/high). Customer-side roles are arche
 | External SOC 2 auditor | Beneficiary | 2 | 1 | Monitor | Evidence exports must match what auditors accept; validate format with a practising auditor at Stage 1 |
 | Legal / Data Privacy Officer (customer) | Influencer / potential blocker | 2 | 2 | Keep Informed | DPA template, data-flow diagram showing no processor relationship is created |
 | Design partners (3–5 companies) | Primary users + co-creators | 2 | 3 | Manage Closely | Bi-weekly feedback sessions during closed beta; roadmap input; named contact |
-| Shafi — product owner | Internal | 3 | 3 | Manage Closely | Reviews every phase-gate artifact; approves each chunk before build |
+| Product owner | Internal | 3 | 3 | Manage Closely | Reviews every phase-gate artifact; approves each chunk before build |
 
 ## Power/Interest Grid
 
 ```
 High Power  │  Keep Satisfied         │  Manage Closely
-            │  · CTO / VP Eng (buyer) │  · Shafi (product owner)
+            │  · CTO / VP Eng (buyer) │  · Product owner
             │  · CISO (blocker)       │  · Design partners
             │─────────────────────────│──────────────────────────
 Low Power   │  Monitor                │  Keep Informed
@@ -43,10 +43,10 @@ Low Power   │  Monitor                │  Keep Informed
 
 | Quadrant | Approach | Frequency | Responsible |
 |---|---|---|---|
-| Manage Closely | Bi-weekly design-partner sessions; artifact review with Shafi at every chunk | Weekly / bi-weekly | Shafi |
-| Keep Satisfied | Buyer: ROI one-pager at trial start and pre-renewal. CISO: unprompted security brief before deployment request | Monthly, plus event-driven | Shafi |
-| Keep Informed | Release notes and compliance-language changelog to users, deployment notes to IT leads | Monthly | Shafi |
-| Monitor | Auditor-format validation at Stage 1; re-check when evidence templates change | At milestones | Shafi |
+| Manage Closely | Bi-weekly design-partner sessions; artifact review with the product owner at every chunk | Weekly / bi-weekly | The product owner |
+| Keep Satisfied | Buyer: ROI one-pager at trial start and pre-renewal. CISO: unprompted security brief before deployment request | Monthly, plus event-driven | The product owner |
+| Keep Informed | Release notes and compliance-language changelog to users, deployment notes to IT leads | Monthly | The product owner |
+| Monitor | Auditor-format validation at Stage 1; re-check when evidence templates change | At milestones | The product owner |
 
 ## Blocker Risk Register
 
@@ -61,8 +61,8 @@ Low Power   │  Monitor                │  Keep Informed
 
 | Decision | Responsible | Accountable | Consulted | Informed |
 |---|---|---|---|---|
-| Product direction changes | product-strategist agent | Shafi | Design partners | All customer-side stakeholders |
-| Major architecture decisions | enterprise-architect agent | Shafi | domain-modeler agent | Design partners' IT leads |
-| Release gates (phase advance) | Governance hooks | Shafi | test-strategist agent | Design partners |
-| Pricing and packaging | product-strategist agent | Shafi | Design-partner buyers | All prospects |
-| Compliance evidence format | requirements-analyst agent | Shafi | External SOC 2 auditor | Compliance-officer users |
+| Product direction changes | product-strategist agent | The product owner | Design partners | All customer-side stakeholders |
+| Major architecture decisions | enterprise-architect agent | The product owner | domain-modeler agent | Design partners' IT leads |
+| Release gates (phase advance) | Governance hooks | The product owner | test-strategist agent | Design partners |
+| Pricing and packaging | product-strategist agent | The product owner | Design-partner buyers | All prospects |
+| Compliance evidence format | requirements-analyst agent | The product owner | External SOC 2 auditor | Compliance-officer users |

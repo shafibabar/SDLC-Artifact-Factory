@@ -26,7 +26,7 @@ owner: requirements-analyst
 ## Participants
 - Executor: [name, persona, design-partner company OR internal proxy note]
 - Facilitator: requirements-analyst
-- Sign-off: [Shafi + customer representative]
+- Sign-off: [product owner + customer representative]
 
 ## Environment
 - Environment: [canary tenant id / staging]

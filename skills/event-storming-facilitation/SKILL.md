@@ -13,7 +13,7 @@ description: >
   before architecture decisions, when /sdlc-design or /sdlc-event-storm runs,
   or when the domain-modeler agent needs the workshop procedure, card taxonomy,
   hotspot handling, or a worked session. Event Storming is mandatory at Design.
-version: 2.1.0
+version: 2.1.1
 phase: design
 owner: domain-modeler
 created: 2026-06-25
@@ -123,7 +123,7 @@ Every red Hotspot is recorded during the session and resolved *after* it — nev
 settled mid-session by the loudest or most senior voice, which suppresses real
 domain knowledge. The resolution approaches per hotspot type (language dispute,
 process uncertainty, technical-feasibility concern, missing expert, scope
-dispute → escalate to Shafi) are tabulated in `references/facilitation-guide.md`.
+dispute → escalate to the product owner) are tabulated in `references/facilitation-guide.md`.
 
 ---
 

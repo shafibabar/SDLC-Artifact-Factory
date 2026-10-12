@@ -1,6 +1,6 @@
 # Methodology Review Report Template
 
-Standard output format for a methodology review, whether produced by the `methodology-compliance-check` hook, an agent self-review, or Shafi's manual review. Copy the template, replace the placeholders, delete the guidance comments.
+Standard output format for a methodology review, whether produced by the `methodology-compliance-check` hook, an agent self-review, or the user's manual review. Copy the template, replace the placeholders, delete the guidance comments.
 
 ---
 

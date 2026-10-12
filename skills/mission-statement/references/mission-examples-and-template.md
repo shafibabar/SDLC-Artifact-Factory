@@ -42,7 +42,7 @@ owner: product-strategist
 ## Translation Note
 
 [Per Lemay's connective-role framing: what ambiguous input this mission
-translates — Shafi's problem statement, the vision — into a scope-constraining
+translates — the user's problem statement, the vision — into a scope-constraining
 statement the downstream okr-authoring and gtm-strategy work can act on.]
 ```
 
@@ -243,7 +243,7 @@ sensitive data do we hold, and where?" in seconds — the vision's end state.
 
 ## Translation Note
 
-This mission translates Shafi's problem statement and the vision into a scope
+This mission translates the user's problem statement and the vision into a scope
 constraint the okr-authoring and gtm-strategy work consume: OKR Key Results must
 move coverage/accuracy of the inventory (the mission's outcome), and the GTM
 positioning statement inherits "catalog and classify, no data movement" as its

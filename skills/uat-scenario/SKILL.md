@@ -13,7 +13,7 @@ description: >
   rules and unanticipated risk. Use when a Data Steward or Compliance Officer
   must confirm a deployed release does what was agreed, during Customer
   Validation, before acceptance-sign-off.
-version: 2.1.0
+version: 2.1.1
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20

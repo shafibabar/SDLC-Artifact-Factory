@@ -103,7 +103,7 @@ CREATE TABLE dq_scorecard_snapshots (
 );
 ```
 
-Rendered for a human reviewer (Shafi, PM — no IDE), one window looks like:
+Rendered for a human reviewer (the product owner — a PM, no IDE), one window looks like:
 
 | Dimension | Weight | Window (24h) | Score | Alert threshold | Status |
 |---|---|---|---|---|---|
