@@ -61,6 +61,16 @@ check("agent handler with prompt", {
     }
 }, True)
 
+check("agent handler narrowed by an if rule", {
+    "hooks": {
+        "PostToolUse": [
+            {"matcher": "Write", "hooks": [
+                {"type": "agent", "if": "Write(**/artifacts/**)", "prompt": "review"}
+            ]}
+        ]
+    }
+}, True)
+
 check("prompt handler", {
     "hooks": {
         "Stop": [
@@ -111,6 +121,10 @@ check("entry hooks array empty", {
 
 check("unknown field on handler", {
     "hooks": {"PreToolUse": [{"matcher": "Write", "hooks": [{"type": "command", "command": "x.sh", "foo": 1}]}]}
+}, False)
+
+check("empty if rule", {
+    "hooks": {"PostToolUse": [{"matcher": "Write", "hooks": [{"type": "agent", "if": "", "prompt": "x"}]}]}
 }, False)
 
 check("event maps to object not array", {

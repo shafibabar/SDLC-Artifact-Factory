@@ -2593,7 +2593,7 @@
         "matcher": "Write",
         "order": 2,
         "script": null,
-        "timeout": 90,
+        "timeout": 120,
         "type": "agent"
       },
       {
@@ -2611,14 +2611,6 @@
         "script": "terminology-drift-detector.sh",
         "timeout": 10,
         "type": "command"
-      },
-      {
-        "event": "PostToolUse",
-        "matcher": "Write|Edit",
-        "order": 0,
-        "script": null,
-        "timeout": 300,
-        "type": "agent"
       },
       {
         "event": "PreToolUse",
@@ -10122,7 +10114,7 @@
     "edges_skill_produces": 188,
     "edges_skill_related": 816,
     "edges_skill_sources": 18,
-    "hooks": 11,
+    "hooks": 10,
     "orphan_skills": 0,
     "skills": 187,
     "unresolved_skill_related": 0

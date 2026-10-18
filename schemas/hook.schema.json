@@ -86,6 +86,11 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "description": "Optional per-handler timeout in seconds."
+        },
+        "if": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional single permission rule (e.g. 'Write(**/artifacts/**)') narrowing when the handler runs, beyond the entry's matcher. Only evaluated on tool events; on any other event a handler with 'if' never runs."
         }
       },
       "allOf": [
