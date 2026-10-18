@@ -20,4 +20,10 @@ smoke_test_script "tdd-gate" \
 # Non-Go/TS file -> not in scope, allow
 smoke_test_script "tdd-gate" '{"tool_input":{"file_path":"'"$SCRATCH_DIR"'/README.md"}}' "allow"
 
+# --- Edit (#1288): editing an implementation file is a change too
+smoke_test_script "tdd-gate" \
+  '{"tool_name":"Edit","tool_input":{"file_path":"'"$SCRATCH_DIR"'/z.go","old_string":"a","new_string":"b"}}' "deny" "No test file found"
+smoke_test_script "tdd-gate" \
+  '{"tool_name":"Edit","tool_input":{"file_path":"'"$SCRATCH_DIR"'/y.go","old_string":"a","new_string":"b"}}' "allow"
+
 smoke_test_summary

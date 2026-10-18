@@ -49,12 +49,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-artifact-structure.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/naming-convention-enforcer.sh",
             "timeout": 10
-          },
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/naming-convention-enforcer.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-artifact-structure.sh",
             "timeout": 10
           },
           {
@@ -67,7 +72,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
@@ -82,7 +87,13 @@
           {
             "type": "agent",
             "if": "Write(**/artifacts/**)",
-            "prompt": "A product artifact was just written; review it against the plugin's non-negotiable methodologies. The hook input JSON is below: the artifact's path is tool_input.file_path and its full text is tool_input.content — review that text, do not re-read the file. Step 1: load the review criteria by calling the Skill tool with skill 'sdlc-artifact-factory:methodology-review'. Do not try to Read plugin files by path — they are outside this project and the read will be denied. If the skill cannot be loaded, return ok false with reason 'Methodology review could not run: <the error>' — never pass an artifact you could not check. Step 2: from each methodology's 'Applies to' section, decide which of DDD, Event Storming, TDD, BDD and SOLID apply to this artifact's type and phase (the phase is the frontmatter 'phase' field or the path segment after artifacts/<product>/). Step 3: check the artifact against every Required check of each applicable methodology that can be judged from this artifact's own text. Only defects count; warnings and checks that need other files do not. If none apply or no defect is found, return ok true with a one-line reason naming the methodologies checked. Otherwise return ok false with reason starting 'Methodology defects in <path>:' then one line per defect: <methodology> — <violated check> — <remediation>. Do not modify any file. Do not invoke any other agent.\n\n$ARGUMENTS",
+            "prompt": "A product artifact was just written; review it against the plugin's non-negotiable methodologies. The hook input JSON is below; the artifact's path is tool_input.file_path. For a Write, its full text is tool_input.content — review that text. For an Edit, the input holds only the changed snippet — Read the file at tool_input.file_path (it is inside this project) and review the whole file as it now is. Step 1: load the review criteria by calling the Skill tool with skill 'sdlc-artifact-factory:methodology-review'. Do not try to Read plugin files by path — they are outside this project and the read will be denied. If the skill cannot be loaded, return ok false with reason 'Methodology review could not run: <the error>' — never pass an artifact you could not check. Step 2: from each methodology's 'Applies to' section, decide which of DDD, Event Storming, TDD, BDD and SOLID apply to this artifact's type and phase (the phase is the frontmatter 'phase' field or the path segment after artifacts/<product>/). Step 3: check the artifact against every Required check of each applicable methodology that can be judged from this artifact's own text. Only defects count; warnings and checks that need other files do not. If none apply or no defect is found, return ok true with a one-line reason naming the methodologies checked. Otherwise return ok false with reason starting 'Methodology defects in <path>:' then one line per defect: <methodology> — <violated check> — <remediation>. Do not modify any file. Do not invoke any other agent.\n\n$ARGUMENTS",
+            "timeout": 120
+          },
+          {
+            "type": "agent",
+            "if": "Edit(**/artifacts/**)",
+            "prompt": "A product artifact was just written; review it against the plugin's non-negotiable methodologies. The hook input JSON is below; the artifact's path is tool_input.file_path. For a Write, its full text is tool_input.content — review that text. For an Edit, the input holds only the changed snippet — Read the file at tool_input.file_path (it is inside this project) and review the whole file as it now is. Step 1: load the review criteria by calling the Skill tool with skill 'sdlc-artifact-factory:methodology-review'. Do not try to Read plugin files by path — they are outside this project and the read will be denied. If the skill cannot be loaded, return ok false with reason 'Methodology review could not run: <the error>' — never pass an artifact you could not check. Step 2: from each methodology's 'Applies to' section, decide which of DDD, Event Storming, TDD, BDD and SOLID apply to this artifact's type and phase (the phase is the frontmatter 'phase' field or the path segment after artifacts/<product>/). Step 3: check the artifact against every Required check of each applicable methodology that can be judged from this artifact's own text. Only defects count; warnings and checks that need other files do not. If none apply or no defect is found, return ok true with a one-line reason naming the methodologies checked. Otherwise return ok false with reason starting 'Methodology defects in <path>:' then one line per defect: <methodology> — <violated check> — <remediation>. Do not modify any file. Do not invoke any other agent.\n\n$ARGUMENTS",
             "timeout": 120
           }
         ]

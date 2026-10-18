@@ -1,6 +1,6 @@
 #!/bin/bash
-# terminology-drift-detector.sh — PostToolUse hook, matcher: Write
-# Purpose: warn (never block) when a written artifact uses a drifted form of
+# terminology-drift-detector.sh — PostToolUse hook, matcher: Write|Edit
+# Purpose: warn (never block) when a written or edited artifact uses a drifted form of
 #          a canonical glossary term, per the Drift Quick Reference table in
 #          skills/glossary-management/SKILL.md.
 # Contract: JSON on stdin (PostToolUse schema). Exit 0 = clean. Exit 1 =
@@ -27,6 +27,15 @@ content = tool_input.get("content", "")
 
 if "/artifacts/" not in file_path.replace("\\", "/"):
     sys.exit(0)
+
+if payload.get("tool_name") == "Edit" or not content:
+    # An Edit carries only the changed snippet; the hook runs after the edit,
+    # so check the whole file as it now is on disk (#1288).
+    try:
+        with open(file_path, encoding="utf-8", errors="replace") as fh:
+            content = fh.read()
+    except OSError:
+        sys.exit(0)
 
 DRIFT_PATTERNS = [
     # Whole-phrase drift: wrong regardless of case (the phrase itself is wrong).

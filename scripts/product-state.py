@@ -150,6 +150,16 @@ def phase_check(manifest: dict, phase: str, profile: str) -> dict:
     return {"missing": missing, "unapproved": unapproved, "approved": approved}
 
 
+def reopened(manifest: dict, upto_phase: str | None = None) -> list[dict]:
+    """Approved artifacts that were changed afterwards (the hook set reopened_on)
+    and await re-approval — in `upto_phase` or any earlier phase, or all."""
+    order = requirements()["_meta"]["phase_order"]
+    limit = order.index(upto_phase) if upto_phase in order else len(order) - 1
+    return [{"path": e["path"], "phase": e.get("phase"), "reopened_on": e["reopened_on"]}
+            for e in manifest.get("artifacts", [])
+            if e.get("reopened_on") and (e.get("phase") not in order or order.index(e["phase"]) <= limit)]
+
+
 def cmd_init(root: Path, args) -> None:
     if not SLUG.match(args.slug):
         fail(2, f"Product slug '{args.slug}' must be lowercase words joined by hyphens, e.g. lunch-tracker.")
@@ -193,6 +203,7 @@ def cmd_approve(root: Path, args) -> None:
             continue
         entry["status"] = "approved"
         entry["approved_on"] = today()
+        entry.pop("reopened_on", None)
         done.append(rel)
     if done:
         save(path, manifest)
@@ -209,7 +220,10 @@ def cmd_complete(root: Path, args) -> None:
     path = find_manifest(root, args.product)
     manifest = load(path)
     check = phase_check(manifest, args.phase, profile_of(root))
-    if (check["missing"] or check["unapproved"]) and not args.override:
+    # An artifact approved earlier and changed since (this phase or any earlier
+    # one) must be re-approved before this phase can be (#1288).
+    check["needs_reapproval"] = reopened(manifest, args.phase)
+    if (check["missing"] or check["unapproved"] or check["needs_reapproval"]) and not args.override:
         fail(1, f"The {args.phase} phase can't be approved yet.", **check)
     phases = manifest.setdefault("phases", {})
     record = {"status": "approved", "approved_on": today()}
@@ -252,6 +266,7 @@ def cmd_status(root: Path, args) -> None:
         "phases": manifest.get("phases", {}),
         "artifact_counts_by_phase": counts,
         "current_phase_check": phase_check(manifest, current, profile_of(root)),
+        "needs_reapproval": reopened(manifest),
     }, indent=2))
 
 

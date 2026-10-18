@@ -112,25 +112,53 @@ else
   FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
 
-# Case 5: an approval survives a later rewrite of the artifact; version follows the file.
+# Case 5 (#1288): changing an approved artifact sends it back to draft with
+# reopened_on and the version follows the file; a rewrite whose text is
+# unchanged (tool_response.originalFile == the file) keeps the approval.
 python3 -c "
 import json; p='$P4/_manifest.json'; m=json.load(open(p))
 for a in m['artifacts']:
-    if a['type'] == 'vision-statement': a['status'] = 'approved'
+    if a['type'] == 'vision-statement': a['status'] = 'approved'; a['approved_on'] = '2026-10-12'
 json.dump(m, open(p, 'w'), indent=2)"
-sed -i 's/^version: 1.2.0$/version: 1.3.0/' "$P4/strategy/vision-statement.md"
-echo '{"tool_input":{"file_path":"'"$P4/strategy/vision-statement.md"'"},"cwd":"/x"}' | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
+VS="$P4/strategy/vision-statement.md"
+before="$(cat "$VS")"
+sed -i 's/^version: 1.2.0$/version: 1.3.0/' "$VS"
+python3 -c "
+import json, sys
+print(json.dumps({'tool_name': 'Edit', 'tool_input': {'file_path': sys.argv[1]}, 'tool_response': {'originalFile': sys.argv[2]}, 'cwd': '/x'}))" "$VS" "$before" \
+  | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
 if python3 -c "
-import json
+import json, jsonschema
 m = json.load(open('$P4/_manifest.json'))
+jsonschema.Draft202012Validator(json.load(open('$REPO_ROOT/schemas/sdlc-manifest.schema.json'))).validate(m)
 v = [a for a in m['artifacts'] if a['type'] == 'vision-statement'][0]
-assert v['status'] == 'approved' and v['version'] == '1.3.0', v
+assert v['status'] == 'draft' and 'approved_on' not in v and v.get('reopened_on') and v['version'] == '1.3.0', v
 assert len(m['artifacts']) == 3
 "; then
-  echo "PASS: $NAME (case: rewrite-keeps-approval-and-refreshes-version)"
+  echo "PASS: $NAME (case: changing-an-approved-artifact-reopens-it)"
   PASS_COUNT=$((PASS_COUNT + 1))
 else
-  echo "FAIL: $NAME: rewrite reset the approval or kept a stale version"
+  echo "FAIL: $NAME: a changed approved artifact was not sent back to draft (or version is stale)"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+python3 -c "
+import json; p='$P4/_manifest.json'; m=json.load(open(p))
+for a in m['artifacts']:
+    if a['type'] == 'vision-statement': a['status'] = 'approved'; a.pop('reopened_on', None)
+json.dump(m, open(p, 'w'), indent=2)"
+python3 -c "
+import json, sys
+print(json.dumps({'tool_name': 'Write', 'tool_input': {'file_path': sys.argv[1]}, 'tool_response': {'originalFile': open(sys.argv[1]).read()}, 'cwd': '/x'}))" "$VS" \
+  | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
+if python3 -c "
+import json
+v = [a for a in json.load(open('$P4/_manifest.json'))['artifacts'] if a['type'] == 'vision-statement'][0]
+assert v['status'] == 'approved' and 'reopened_on' not in v, v
+"; then
+  echo "PASS: $NAME (case: unchanged-rewrite-keeps-approval)"
+  PASS_COUNT=$((PASS_COUNT + 1))
+else
+  echo "FAIL: $NAME: a rewrite with identical text reset the approval"
   FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
 

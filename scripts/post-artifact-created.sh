@@ -1,8 +1,9 @@
 #!/bin/bash
-# post-artifact-created.sh — PostToolUse hook, matcher: Write
-# Purpose: after a product artifact is written, record it in that product's
-#          artifacts/<product>/_manifest.json (creating the manifest if it
-#          doesn't exist yet), per skills/artifact-manifest.
+# post-artifact-created.sh — PostToolUse hook, matcher: Write|Edit
+# Purpose: after a product artifact is written or edited, record it in that
+#          product's artifacts/<product>/_manifest.json (creating the manifest
+#          if it doesn't exist yet), per skills/artifact-manifest. Changing an
+#          approved artifact sends it back to draft for re-approval (#1288).
 # Contract: JSON on stdin (PostToolUse schema). This hook only records — it
 #           never blocks (always exits 0).
 set -euo pipefail
@@ -20,6 +21,10 @@ except Exception:
     sys.exit(0)
 file_path = payload.get("tool_input", {}).get("file_path", "")
 cwd = payload.get("cwd", ".")
+# originalFile is the file's text before this Write/Edit (null when Write
+# created it). Absent from the payload = unknown, so treat it as changed.
+tool_response = payload.get("tool_response") if isinstance(payload.get("tool_response"), dict) else {}
+original = tool_response.get("originalFile") if "originalFile" in tool_response else False
 
 # Keep the SDLC memory engine's index in sync with every write under
 # artifacts/, research/, or skills/*/SKILL.md — ingest.py's own classifier
@@ -175,13 +180,25 @@ if entry is None:
     }
     manifest["artifacts"].append(entry)
 # Fields the artifact itself is the source of truth for are refreshed on every
-# write; status/superseded_by are left alone (an approval must not be reset).
+# write. An APPROVED artifact whose content changed goes back to draft and is
+# marked reopened_on: the user must re-approve it, and product-state.py refuses
+# to complete any later phase until they do (Shafi, #1288). A Write or Edit that
+# leaves the text identical is not a change. superseded_by is left alone.
+try:
+    current_text = pathlib.Path(file_path).read_text(errors="replace")
+except OSError:
+    current_text = None
+changed = original is False or original is None or original != current_text
+if entry.get("status") == "approved" and changed:
+    entry["status"] = "draft"
+    entry.pop("approved_on", None)
+    entry["reopened_on"] = now
 entry["version"] = version if SEMVER.match(version) else entry.get("version") or "1.0.0"
 entry["producing_agent"] = owner if SLUG.match(owner) else entry.get("producing_agent") or "unknown"
 if trace:
     entry["traces_to"] = trace
 entry["updated"] = now
-order = ["id", "type", "path", "version", "status", "approved_on", "superseded_by", "phase",
+order = ["id", "type", "path", "version", "status", "approved_on", "reopened_on", "superseded_by", "phase",
          "producing_agent", "traces_to", "created", "updated"]
 for i, a in enumerate(manifest["artifacts"]):
     a.setdefault("version", "1.0.0")
