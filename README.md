@@ -338,8 +338,8 @@ Canonical schema (all fields required, in this order — see CLAUDE.md, Componen
 | `created` | ISO date of first commit |
 | `inputs` | Expected input artifacts |
 | `outputs` | Produced artifacts |
-| `skills` | Skills consumed — always includes `glossary-management` and `methodology-review` |
-| `tools` | Approved tools; `[Bash]` for agents that run builds/tests/scans, else `[]` |
+| `skills` | Skills preloaded in full — always includes `glossary-management`, `methodology-review` and `memory-recall` |
+| `tools` | Always `[Read, Write, Edit, Glob, Grep, Bash]` — Claude Code treats `tools:` as an allow-list, so a shorter list removes tools (#1254) |
 | `tags` | Searchable keywords |
 
 #### Command Frontmatter

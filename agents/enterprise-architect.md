@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.4.0
+version: 1.5.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -47,9 +47,8 @@ skills:
   - ddd-agent-handoff
   - glossary-management
   - methodology-review
-tools:
-  - Read
-  - Write
+  - memory-recall
+tools: [Read, Write, Edit, Glob, Grep, Bash]
 tags: [design, architecture, c4, adr, api-contract, multi-tenancy, phase-owner]
 ---
 
@@ -132,6 +131,13 @@ If domain-modeler artifacts are incomplete, the enterprise-architect halts and r
 6. **Present at gates.** Two mandatory user approval gates: after the Container Diagram and after all Component Diagrams. API contracts are produced after the second gate.
 
 ---
+
+## Tools
+
+Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Grep and Bash. Some Claude Code builds have no separate Glob and Grep tools; there, search with Bash.
+
+- **Create files with Write and change them with Edit — never through the shell** (`cat >`, `echo >`, `tee`, `sed -i`, `cp` of generated content). The plugin's checks — frontmatter, the TDD gate, manifest registration, methodology review — run when a file is written with Write; a file written through the shell skips every one of them.
+- **Use Bash** to search project memory before reading files in full (`memory-recall`), to run the scripts and validators your skills name, and to build and test the code you generate.
 
 ## Execution Sequence
 

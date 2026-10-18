@@ -85,8 +85,11 @@
     },
     "tools": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "description": "Real Claude Code tools the agent may use (e.g. Bash). May be empty for agents that run no shell commands."
+      "items": { "enum": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"] },
+      "uniqueItems": true,
+      "minItems": 6,
+      "maxItems": 6,
+      "description": "Claude Code's tools field is an ALLOW-list, not extra tools: an agent gets only what is listed (tools: [Bash] gave Bash alone; tools: [] gave nothing). Every agent therefore declares the same standard set — Read, Write, Edit, Glob, Grep, Bash — in any order (#1254, D042)."
     },
     "tags": {
       "type": "array",

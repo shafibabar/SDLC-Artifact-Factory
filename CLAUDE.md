@@ -321,7 +321,7 @@ The plugin's own components carry these canonical schemas — no other shapes ar
 | Skill | `skills/<name>/SKILL.md` (flat, verified discoverable) | `name, description, version, phase, owner, created, tags` |
 | Agent | `agents/<name>.md` (flat, verified discoverable) | `name, description, role, version, phase, owner, created, inputs, outputs, skills, tools, tags` |
 
-Every agent's `skills:` list includes `glossary-management` and `methodology-review` in addition to its domain skills. Agents that run shell commands (build, test, scan) declare `tools: [Bash]`.
+Every agent's `skills:` list includes `glossary-management`, `methodology-review` and `memory-recall` in addition to its domain skills — `skills:` preloads each skill's full content, and it is the only way the memory rule reaches an installed user's agents (they never receive this file). Every agent declares the same `tools: [Read, Write, Edit, Glob, Grep, Bash]`: Claude Code's `tools:` is an **allow-list**, not a list of extras (`tools: [Bash]` gave Bash alone; `tools: []` gave nothing), and the agent schema enforces the exact set. Agents create files with Write and change them with Edit, never through the shell, so the Write hooks see every file (each agent's `## Tools` section; #1254).
 
 A skill may additionally declare two optional fields, not part of the required, ordered schema above and not required on every skill: `related:` (other skill names its prose references) and `sources:` (the `research/<cluster>/<file>.md` files its content draws on — every entry must exist; `lint-manifests` blocks otherwise). See `skill-authoring-standards`.
 

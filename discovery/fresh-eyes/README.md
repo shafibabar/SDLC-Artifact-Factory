@@ -82,7 +82,7 @@ Pass 01's defects, re-verified against `main` and filed as issues (label `discov
 | #1251 | Product vs plugin state confusion (`sdlc-context.json`, `/sdlc-status`) |
 | #1252 | `_manifest.json` from the hook fails the plugin's own schema |
 | #1253 | Approval state never persisted |
-| #1254 | Agents without Bash can't follow memory-recall or run validators |
+| #1254 | Agents without Bash can't follow memory-recall or run validators — **fixed 2026-10-18**: `tools:` is an allow-list; engineers had Bash only, ux-architect nothing; all 13 now get the standard set and preload `memory-recall` |
 | #1255 | `type: "agent"` PostToolUse hooks show no evidence of running — **fixed 2026-10-18**: they ran, but the methodology hook's Read of its skill was denied and it passed everything; now loads the skill via the Skill tool and fails closed; acceptance-test hook removed |
 | #1256 | product-strategist writes requirements-analyst's artifacts |
 | #1257 | Phase output not scaled to product size (enhancement) |
