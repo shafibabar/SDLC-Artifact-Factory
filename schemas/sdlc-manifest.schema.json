@@ -84,6 +84,11 @@
           "format": "date",
           "description": "When the user approved this artifact; set by scripts/product-state.py approve."
         },
+        "reopened_on": {
+          "type": "string",
+          "format": "date",
+          "description": "When an approved artifact was changed (Write or Edit): the post-artifact-created hook sets status back to draft and records this date; scripts/product-state.py approve clears it. While set, no later phase can be completed (#1288)."
+        },
         "superseded_by": {
           "type": "string",
           "description": "The ID of the artifact that replaced this one. Present only when status is superseded, but not schema-enforced as conditionally required — an agent may mark an entry superseded without a replacement yet existing (e.g. a deprecated artifact being retired outright)."

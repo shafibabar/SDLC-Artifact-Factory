@@ -165,11 +165,10 @@ smoke_test_script() {
 # live testing: bypassPermissions maps to --dangerously-skip-permissions,
 # which Claude Code refuses to honor when the process is running as
 # root/sudo (this sandbox runs as root); acceptEdits auto-accepts Write/Edit
-# but still blocks Bash approval, and several agents in this plugin declare
-# `tools: [Bash]` only (e.g. backend-engineer, frontend-engineer — no Write
-# tool at all, so they create files via Bash heredocs) — under acceptEdits
-# those agents hang or error indefinitely waiting for a Bash approval that
-# never comes in a headless -p session. auto grants both non-interactively.
+# but still blocks Bash approval, and every agent runs Bash (memory-recall,
+# validators, builds) — under acceptEdits an agent hangs or errors waiting for
+# a Bash approval that never comes in a headless -p session. auto grants both
+# non-interactively.
 # Fails fast if the anchor file at <expected-path> never lands; otherwise
 # hands $SCRATCH_DIR to <validator-fn>, which knows the rest of the
 # convention-derived paths and does structural (and, where a toolchain

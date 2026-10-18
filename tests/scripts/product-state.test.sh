@@ -75,12 +75,28 @@ else
   _fail "complete approves the phase and advances to ideate" "rc=$rc $out $(valid)"
 fi
 
-# 8. an approval survives the artifact being rewritten
-write strategy/okrs.md
-st="$(python3 -c "
+# 8. (#1288) a rewrite with identical text keeps the approval; a real change
+#    sends the artifact back to draft, blocks completing any later phase, and
+#    re-approving clears it
+OKRS="$P/artifacts/lunch/strategy/okrs.md"
+hook_change() {  # $1 = a snapshot of the file before the change (tool_response.originalFile)
+  python3 -c "
+import json, sys
+print(json.dumps({'tool_name': 'Write', 'tool_input': {'file_path': sys.argv[1]},
+                  'tool_response': {'originalFile': open(sys.argv[2]).read()}, 'cwd': sys.argv[3]}))" "$OKRS" "$1" "$P" \
+    | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
+}
+okrs_entry() { python3 -c "
 import json; m=json.load(open('$P/artifacts/lunch/_manifest.json'))
-print([a['status'] for a in m['artifacts'] if a['path'].endswith('okrs.md')][0])")"
-[[ "$st" == "approved" ]] && _pass "rewriting an approved artifact keeps its approval" || _fail "rewriting an approved artifact keeps its approval" "$st"
+e=[a for a in m['artifacts'] if a['path'].endswith('okrs.md')][0]
+print(e['status'], e.get('reopened_on', '-'))"; }
+cp "$OKRS" "$SCRATCH_DIR/okrs.before"; hook_change "$SCRATCH_DIR/okrs.before"
+[[ "$(okrs_entry)" == "approved -" ]] && _pass "an unchanged rewrite keeps the approval" || _fail "an unchanged rewrite keeps the approval" "$(okrs_entry)"
+echo "Revised key result." >> "$OKRS"; hook_change "$SCRATCH_DIR/okrs.before"
+read -r st reo <<<"$(okrs_entry)"
+[[ "$st" == "draft" && "$reo" != "-" && -z "$(valid)" ]] && _pass "changing an approved artifact sends it back to draft" || _fail "changing an approved artifact sends it back to draft" "$st $reo $(valid)"
+out="$(ps status)"
+[[ "$out" == *'"needs_reapproval"'*'okrs.md'* ]] && _pass "status lists the artifact as needing re-approval" || _fail "status lists the artifact as needing re-approval" "$out"
 
 # 9. override approves an incomplete phase and records why
 out="$(ps complete ideate --override "User chose to start design from the interview notes")"; rc=$?
@@ -102,6 +118,11 @@ p = sys.argv[1]; m = json.load(open(p))
 m["current_phase"] = "implement"; m["phases"]["design"] = {"status": "approved", "approved_on": "2026-10-12"}
 json.dump(m, open(p, "w"), indent=2)
 PY
+out="$(ps complete implement)"; rc=$?
+[[ $rc -eq 1 && "$out" == *'"needs_reapproval"'*'okrs.md'* ]] && _pass "a later phase can't complete while an earlier artifact awaits re-approval" || _fail "a later phase can't complete while an earlier artifact awaits re-approval" "rc=$rc $out"
+ps approve strategy/okrs.md >/dev/null
+read -r st reo <<<"$(okrs_entry)"
+[[ "$st" == "approved" && "$reo" == "-" ]] && _pass "re-approving clears reopened_on" || _fail "re-approving clears reopened_on" "$st $reo"
 out="$(ps complete implement)"; rc=$?
 [[ $rc -eq 0 && "$out" == *'"current_phase": "data"'* ]] && _pass "a code phase completes on the user's approval" || _fail "a code phase completes on the user's approval" "rc=$rc $out"
 

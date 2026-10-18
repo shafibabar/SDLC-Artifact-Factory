@@ -121,4 +121,31 @@ else
   FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
 
+# Case 4 (#1288): the checks also fire on Edit. On an APPROVED artifact, an
+# Edit that strips a required frontmatter field is blocked before it lands; an
+# Edit that changes the body lands, sends the artifact back to draft with
+# reopened_on (Shafi: re-approval required), and the methodology hook's Edit
+# handler reads the whole file from disk and flags the planted BDD defect.
+P5="$SCRATCH_DIR/product5"; mkdir -p "$P5/artifacts/demo/ideate"; git -C "$P5" init -q
+AC="$P5/artifacts/demo/ideate/acceptance-criteria.md"
+EDIT_LOG="$SCRATCH_DIR/edit-hooks.debug.txt"
+printf -- '---\nname: acceptance-criteria\nversion: 1.0.0\nphase: ideate\nowner: requirements-analyst\ncreated: 2026-10-18\nsummary: Acceptance criteria for placing a lunch order.\n---\n\n# Acceptance Criteria\n\nStory: US-001 As an employee I want to order lunch so I eat on time.\n\nScenario: Employee places an order\n  Given an employee is signed in and ordering is open\n  When the employee orders 3 lunches\n  Then the order is confirmed\n' > "$AC"
+echo '{"tool_name":"Write","tool_input":{"file_path":"'"$AC"'"},"cwd":"'"$P5"'"}' | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
+(cd "$P5" && SDLC_PRODUCT_ROOT="$P5" python3 "$REPO_ROOT/scripts/product-state.py" approve ideate/acceptance-criteria.md >/dev/null)
+(cd "$P5" && timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$P5" \
+  --permission-mode acceptEdits --debug-file "$EDIT_LOG" -p \
+  "Make exactly two Edit tool calls on $AC and nothing else. Edit 1: replace the line 'summary: Acceptance criteria for placing a lunch order.' plus its newline with nothing. Whatever happens, then do Edit 2: replace 'When the employee orders 3 lunches' with 'When I call POST /api/v1/orders with qty=3'. Then stop. Do not fix anything a hook reports." \
+  --output-format text >/dev/null 2>&1)
+entry="$(python3 -c "
+import json; e=json.load(open('$P5/artifacts/demo/_manifest.json'))['artifacts'][0]
+print(e['status'], 'reopened' if e.get('reopened_on') else 'not-reopened')" 2>/dev/null)"
+if grep -q '^summary: ' "$AC" && grep -q 'POST /api/v1/orders' "$AC" && [[ "$entry" == "draft reopened" ]] \
+  && grep -q 'Got structured output: {"ok":false,"reason":"Methodology defects in' "$EDIT_LOG"; then
+  echo "PASS: $NAME (case: edit-checked-blocked-reopened-and-reviewed)"
+  PASS_COUNT=$((PASS_COUNT + 1))
+else
+  echo "FAIL: $NAME: Edit checks — summary kept=$(grep -c '^summary: ' "$AC"), body edited=$(grep -c 'POST /api' "$AC"), manifest='$entry' (want 'draft reopened'), methodology flagged=$(grep -c '"ok":false,"reason":"Methodology defects in' "$EDIT_LOG" 2>/dev/null)"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
 smoke_test_summary

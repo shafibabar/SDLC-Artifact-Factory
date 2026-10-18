@@ -1,7 +1,8 @@
 #!/bin/bash
-# tdd-gate.sh — PreToolUse hook, matcher: Write
-# Purpose: block writing a Go or TypeScript implementation file that has no
-#          corresponding test file already on disk (TDD: tests first, always).
+# tdd-gate.sh — PreToolUse hook, matcher: Write|Edit
+# Purpose: block writing or editing a Go or TypeScript implementation file that
+#          has no corresponding test file already on disk (TDD: tests first,
+#          always — an Edit is a change too, #1288).
 # Contract: JSON on stdin (PreToolUse schema). Exit 0 to allow, JSON with
 #           hookSpecificOutput.permissionDecision:"deny" + reason to block.
 # Applies to code the plugin generates for a product — this repo itself has

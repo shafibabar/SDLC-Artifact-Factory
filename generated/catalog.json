@@ -2662,7 +2662,7 @@
     "hooks": [
       {
         "event": "PostToolUse",
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "order": 2,
         "script": null,
         "timeout": 120,
@@ -2670,7 +2670,15 @@
       },
       {
         "event": "PostToolUse",
-        "matcher": "Write",
+        "matcher": "Write|Edit",
+        "order": 3,
+        "script": null,
+        "timeout": 120,
+        "type": "agent"
+      },
+      {
+        "event": "PostToolUse",
+        "matcher": "Write|Edit",
         "order": 0,
         "script": "post-artifact-created.sh",
         "timeout": 10,
@@ -2678,7 +2686,7 @@
       },
       {
         "event": "PostToolUse",
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "order": 1,
         "script": "terminology-drift-detector.sh",
         "timeout": 10,
@@ -2703,22 +2711,22 @@
       {
         "event": "PreToolUse",
         "matcher": "Write",
-        "order": 1,
+        "order": 0,
         "script": "naming-convention-enforcer.sh",
         "timeout": 10,
         "type": "command"
       },
       {
         "event": "PreToolUse",
-        "matcher": "Write",
-        "order": 2,
+        "matcher": "Write|Edit",
+        "order": 1,
         "script": "tdd-gate.sh",
         "timeout": 10,
         "type": "command"
       },
       {
         "event": "PreToolUse",
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "order": 0,
         "script": "validate-artifact-structure.sh",
         "timeout": 10,
@@ -3118,7 +3126,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.4.0"
+        "version": "2.5.0"
       },
       {
         "created": "2026-06-25",
@@ -10186,7 +10194,7 @@
     "edges_skill_produces": 188,
     "edges_skill_related": 816,
     "edges_skill_sources": 18,
-    "hooks": 10,
+    "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
     "unresolved_skill_related": 0
