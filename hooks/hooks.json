@@ -1,7 +1,7 @@
 {
   "_meta": {
     "purpose": "Real Claude Code hook bindings for the SDLC Artifact Factory. See CLAUDE.md's Command and Hook Mechanics section for the schema. See sdlc-context.json decision D014 for how the originally-planned 9 hooks became 7 real ones once bound to real events, and sdlc://self/decisions for the memory-engine additions layered on top (SessionStart orientation, UserPromptSubmit recall, PreToolUse/Agent bootstrap, PostToolUse/Write auto-ingest -- see scripts/memory/).",
-    "last_updated": "2026-09-15"
+    "last_updated": "2026-10-18"
   },
   "hooks": {
     "SessionStart": [
@@ -81,18 +81,9 @@
           },
           {
             "type": "agent",
-            "prompt": "A product artifact was just written. Read the file at the path given in this hook's tool_input.file_path (from the JSON you were invoked with). If the path does not contain '/artifacts/', respond with exactly PASS and stop. Otherwise: read skills/methodology-review/SKILL.md for the review criteria, determine which of DDD, Event Storming, TDD, BDD, and SOLID apply to this artifact's type and phase (per each methodology's 'Applies to' section), and check the artifact against every applicable check. If every applicable check passes, respond with exactly PASS. If any check fails, respond with FAIL followed by a one-line reason per defect, citing the specific check violated. Do not modify the artifact. Do not invoke any other agent.",
-            "timeout": 90
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "agent",
-            "prompt": "A file was just written or edited. Read the path from this hook's tool_input.file_path (from the JSON you were invoked with). This check is scoped ONLY to this plugin's own skill and agent component files, not product artifacts: if the path (relative to the repo root) does not match either 'skills/<name>/SKILL.md' or 'agents/<name>.md', respond with exactly PASS and stop immediately — do not read or run anything else. Otherwise identify the touched component and every acceptance test file that could exist for it: if the path is 'agents/<name>.md', the component is agent <name> and its acceptance test would be at tests/agents/<name>.acceptance.sh. If the path is 'skills/<name>/SKILL.md', the component is skill <name>, its own acceptance test (if any) would be at tests/skills/<name>.acceptance.sh, and it may also be owned by one or more agents — grep every agents/*.md file's frontmatter 'skills:' list for an entry '- <name>' to find each owning agent, whose acceptance test (if any) would be at tests/agents/<owner>.acceptance.sh. If none of the acceptance test paths you identified actually exist on disk, respond with exactly PASS followed by a short note that no acceptance test exists yet for this component, and stop — do not invoke any agent. If at least one exists, run each one with the Bash tool as 'bash <path>' (each is self-contained: it dispatches the real agent, produces a real artifact or code, and validates it — this can take a few minutes per test, that is expected). If every acceptance test you ran exits 0, respond with exactly PASS. If any exits non-zero, respond with FAIL followed by that test's FAIL: line(s). Do not modify any files yourself.",
-            "timeout": 300
+            "if": "Write(**/artifacts/**)",
+            "prompt": "A product artifact was just written; review it against the plugin's non-negotiable methodologies. The hook input JSON is below: the artifact's path is tool_input.file_path and its full text is tool_input.content — review that text, do not re-read the file. Step 1: load the review criteria by calling the Skill tool with skill 'sdlc-artifact-factory:methodology-review'. Do not try to Read plugin files by path — they are outside this project and the read will be denied. If the skill cannot be loaded, return ok false with reason 'Methodology review could not run: <the error>' — never pass an artifact you could not check. Step 2: from each methodology's 'Applies to' section, decide which of DDD, Event Storming, TDD, BDD and SOLID apply to this artifact's type and phase (the phase is the frontmatter 'phase' field or the path segment after artifacts/<product>/). Step 3: check the artifact against every Required check of each applicable methodology that can be judged from this artifact's own text. Only defects count; warnings and checks that need other files do not. If none apply or no defect is found, return ok true with a one-line reason naming the methodologies checked. Otherwise return ok false with reason starting 'Methodology defects in <path>:' then one line per defect: <methodology> — <violated check> — <remediation>. Do not modify any file. Do not invoke any other agent.\n\n$ARGUMENTS",
+            "timeout": 120
           }
         ]
       }
