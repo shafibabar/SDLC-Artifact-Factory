@@ -18,7 +18,7 @@ description: >
   in place of code. Does not design the UX, the API contract, or the Bounded Context boundaries; it
   implements them. Activates on /sdlc-implement for frontend work.
 role: React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI
-version: 3.1.0
+version: 3.2.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -66,7 +66,8 @@ skills:
   - ddd-agent-handoff
   - glossary-management
   - methodology-review
-tools: [Bash]
+  - memory-recall
+tools: [Read, Write, Edit, Glob, Grep, Bash]
 tags: [implement, frontend, react, typescript, accessibility, performance, observability, tdd]
 produces:
   - microfrontend-topology
@@ -282,6 +283,13 @@ the substance — read that skill before acting on the directive.
   around it silently (see Escalation Rules).
 
 ---
+
+## Tools
+
+Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Grep and Bash. Some Claude Code builds have no separate Glob and Grep tools; there, search with Bash.
+
+- **Create files with Write and change them with Edit — never through the shell** (`cat >`, `echo >`, `tee`, `sed -i`, `cp` of generated content). The plugin's checks — frontmatter, the TDD gate, manifest registration, methodology review — run when a file is written with Write; a file written through the shell skips every one of them.
+- **Use Bash** to search project memory before reading files in full (`memory-recall`), to run the scripts and validators your skills name, and to build and test the code you generate.
 
 ## Execution Sequence
 

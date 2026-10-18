@@ -1865,6 +1865,7 @@
           "go-service-skeleton",
           "go-unit-test",
           "health-check-design",
+          "memory-recall",
           "methodology-review",
           "opentelemetry-instrumentation",
           "structured-logging-design"
@@ -1882,9 +1883,14 @@
           "tdd"
         ],
         "tools": [
-          "Bash"
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
+          "Read",
+          "Write"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -1913,6 +1919,7 @@
           "ddd-agent-handoff",
           "event-schema-design",
           "glossary-management",
+          "memory-recall",
           "methodology-review"
         ],
         "status": "stable",
@@ -1926,10 +1933,14 @@
           "retention"
         ],
         "tools": [
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
           "Read",
           "Write"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-07-20",
@@ -1948,6 +1959,7 @@
           "data-storytelling",
           "ddd-agent-handoff",
           "glossary-management",
+          "memory-recall",
           "methodology-review",
           "metrics-instrumentation-plan",
           "reporting-spec"
@@ -1963,9 +1975,14 @@
           "reporting"
         ],
         "tools": [
-          "Bash"
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
+          "Read",
+          "Write"
         ],
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "created": "2026-06-25",
@@ -1986,6 +2003,7 @@
           "domain-storytelling",
           "event-storming-facilitation",
           "glossary-management",
+          "memory-recall",
           "methodology-review",
           "read-model-design",
           "subdomain-distillation",
@@ -2002,10 +2020,14 @@
           "phase-owner"
         ],
         "tools": [
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
           "Read",
           "Write"
         ],
-        "version": "1.2.0"
+        "version": "1.3.0"
       },
       {
         "created": "2026-06-25",
@@ -2027,6 +2049,7 @@
           "event-driven-patterns",
           "glossary-management",
           "integration-design",
+          "memory-recall",
           "methodology-review",
           "multi-tenancy-design",
           "system-context-diagram"
@@ -2042,10 +2065,14 @@
           "phase-owner"
         ],
         "tools": [
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
           "Read",
           "Write"
         ],
-        "version": "1.4.0"
+        "version": "1.5.0"
       },
       {
         "created": "2026-06-25",
@@ -2077,6 +2104,7 @@
           "css-styling-strategy",
           "ddd-agent-handoff",
           "glossary-management",
+          "memory-recall",
           "methodology-review",
           "microfrontend-architecture",
           "react-accessibility",
@@ -2106,9 +2134,14 @@
           "typescript"
         ],
         "tools": [
-          "Bash"
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
+          "Read",
+          "Write"
         ],
-        "version": "3.1.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-07-20",
@@ -2153,6 +2186,7 @@
           "helm-chart",
           "kubernetes-manifest",
           "kubernetes-workload-patterns",
+          "memory-recall",
           "methodology-review",
           "opentofu-module",
           "platform-engineering-design",
@@ -2174,9 +2208,14 @@
           "slo"
         ],
         "tools": [
-          "Bash"
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
+          "Read",
+          "Write"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-24",
@@ -2203,6 +2242,7 @@
           "gtm-strategy",
           "impact-mapping",
           "jtbd-analysis",
+          "memory-recall",
           "methodology-review",
           "mission-statement",
           "okr-authoring",
@@ -2224,10 +2264,14 @@
           "vision"
         ],
         "tools": [
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
           "Read",
           "Write"
         ],
-        "version": "3.1.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-06-24",
@@ -2248,6 +2292,7 @@
           "glossary-management",
           "impact-mapping",
           "jtbd-analysis",
+          "memory-recall",
           "methodology-review",
           "moscow-prioritization",
           "nfr-specification",
@@ -2268,10 +2313,14 @@
           "user-stories"
         ],
         "tools": [
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
           "Read",
           "Write"
         ],
-        "version": "1.5.0"
+        "version": "1.6.0"
       },
       {
         "created": "2026-06-25",
@@ -2287,6 +2336,7 @@
           "compliance-design",
           "ddd-agent-handoff",
           "glossary-management",
+          "memory-recall",
           "methodology-review",
           "privacy-design",
           "secrets-management",
@@ -2306,10 +2356,14 @@
           "zero-trust"
         ],
         "tools": [
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
           "Read",
           "Write"
         ],
-        "version": "1.2.0"
+        "version": "1.3.0"
       },
       {
         "created": "2026-06-25",
@@ -2324,6 +2378,7 @@
           "compliance-verification",
           "ddd-agent-handoff",
           "glossary-management",
+          "memory-recall",
           "methodology-review",
           "secrets-management",
           "security-implementation"
@@ -2340,10 +2395,13 @@
         ],
         "tools": [
           "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
           "Read",
           "Write"
         ],
-        "version": "1.2.0"
+        "version": "1.3.0"
       },
       {
         "created": "2026-06-25",
@@ -2366,6 +2424,7 @@
           "go-mutation-test",
           "go-performance-test",
           "go-unit-test",
+          "memory-recall",
           "methodology-review",
           "mock-generation",
           "test-fixture-design",
@@ -2384,9 +2443,14 @@
           "testing"
         ],
         "tools": [
-          "Bash"
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
+          "Read",
+          "Write"
         ],
-        "version": "1.3.0"
+        "version": "1.4.0"
       },
       {
         "created": "2026-06-25",
@@ -2401,6 +2465,7 @@
           "ddd-agent-handoff",
           "glossary-management",
           "information-architecture",
+          "memory-recall",
           "methodology-review",
           "ui-component-spec",
           "user-journey-mapping",
@@ -2415,8 +2480,15 @@
           "user-journey",
           "ux"
         ],
-        "tools": [],
-        "version": "2.1.0"
+        "tools": [
+          "Bash",
+          "Edit",
+          "Glob",
+          "Grep",
+          "Read",
+          "Write"
+        ],
+        "version": "2.2.0"
       }
     ],
     "commands": [
@@ -10110,7 +10182,7 @@
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 71,
-    "edges_agent_skills": 179,
+    "edges_agent_skills": 192,
     "edges_skill_produces": 188,
     "edges_skill_related": 816,
     "edges_skill_sources": 18,
@@ -10518,6 +10590,10 @@
       },
       {
         "agent": "backend-engineer",
+        "skill": "memory-recall"
+      },
+      {
+        "agent": "backend-engineer",
         "skill": "methodology-review"
       },
       {
@@ -10566,6 +10642,10 @@
       },
       {
         "agent": "data-architect",
+        "skill": "memory-recall"
+      },
+      {
+        "agent": "data-architect",
         "skill": "methodology-review"
       },
       {
@@ -10595,6 +10675,10 @@
       {
         "agent": "data-engineer",
         "skill": "glossary-management"
+      },
+      {
+        "agent": "data-engineer",
+        "skill": "memory-recall"
       },
       {
         "agent": "data-engineer",
@@ -10643,6 +10727,10 @@
       {
         "agent": "domain-modeler",
         "skill": "glossary-management"
+      },
+      {
+        "agent": "domain-modeler",
+        "skill": "memory-recall"
       },
       {
         "agent": "domain-modeler",
@@ -10702,6 +10790,10 @@
       },
       {
         "agent": "enterprise-architect",
+        "skill": "memory-recall"
+      },
+      {
+        "agent": "enterprise-architect",
         "skill": "methodology-review"
       },
       {
@@ -10723,6 +10815,10 @@
       {
         "agent": "frontend-engineer",
         "skill": "glossary-management"
+      },
+      {
+        "agent": "frontend-engineer",
+        "skill": "memory-recall"
       },
       {
         "agent": "frontend-engineer",
@@ -10846,6 +10942,10 @@
       },
       {
         "agent": "platform-engineer",
+        "skill": "memory-recall"
+      },
+      {
+        "agent": "platform-engineer",
         "skill": "methodology-review"
       },
       {
@@ -10891,6 +10991,10 @@
       {
         "agent": "product-strategist",
         "skill": "jtbd-analysis"
+      },
+      {
+        "agent": "product-strategist",
+        "skill": "memory-recall"
       },
       {
         "agent": "product-strategist",
@@ -10958,6 +11062,10 @@
       },
       {
         "agent": "requirements-analyst",
+        "skill": "memory-recall"
+      },
+      {
+        "agent": "requirements-analyst",
         "skill": "methodology-review"
       },
       {
@@ -11010,6 +11118,10 @@
       },
       {
         "agent": "security-architect",
+        "skill": "memory-recall"
+      },
+      {
+        "agent": "security-architect",
         "skill": "methodology-review"
       },
       {
@@ -11043,6 +11155,10 @@
       {
         "agent": "security-engineer",
         "skill": "glossary-management"
+      },
+      {
+        "agent": "security-engineer",
+        "skill": "memory-recall"
       },
       {
         "agent": "security-engineer",
@@ -11102,6 +11218,10 @@
       },
       {
         "agent": "test-strategist",
+        "skill": "memory-recall"
+      },
+      {
+        "agent": "test-strategist",
         "skill": "methodology-review"
       },
       {
@@ -11127,6 +11247,10 @@
       {
         "agent": "ux-architect",
         "skill": "information-architecture"
+      },
+      {
+        "agent": "ux-architect",
+        "skill": "memory-recall"
       },
       {
         "agent": "ux-architect",

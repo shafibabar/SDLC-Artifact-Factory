@@ -11,7 +11,8 @@ filesystem facts) and validates the cross-component relationship graph:
       must name a real skill.                                 [HARD FAILURE]
   (b) BROKEN agent 'skills:' target — every entry in an agent's `skills:` list
       must name a real skill; AND every agent's `skills:` list must include the
-      two mandatory cross-cutting skills glossary-management + methodology-review
+      three mandatory cross-cutting skills glossary-management + methodology-review
+      + memory-recall
       (CLAUDE.md Component Frontmatter rule).                  [HARD FAILURE]
   (c) ORPHANS — a skill named by no agent's `skills:` list AND carrying no
       `domain:` field is reported as a WARNING only (it does not fail the lint;
@@ -47,7 +48,7 @@ sys.path.insert(0, str(_HERE / "arch"))
 
 import manifest  # noqa: E402  (path injected above)
 
-MANDATORY_AGENT_SKILLS = ("glossary-management", "methodology-review")
+MANDATORY_AGENT_SKILLS = ("glossary-management", "methodology-review", "memory-recall")
 
 
 # ---------------------------------------------------------------------------

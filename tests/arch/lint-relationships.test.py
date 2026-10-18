@@ -115,9 +115,10 @@ synth_skills_for_agents = [
     skill("real-skill-one", domain="d"),
     skill("glossary-management", domain="cross-cutting"),
     skill("methodology-review", domain="cross-cutting"),
+    skill("memory-recall", domain="cross-cutting"),
 ]
 synth_agents_bad = [
-    agent("bad-agent", ["real-skill-one", "not-a-skill"]),  # broken ref + missing both mandatory
+    agent("bad-agent", ["real-skill-one", "not-a-skill"]),  # broken ref + missing all three mandatory
 ]
 res_agent = L.run_checks(synth_skills_for_agents, synth_agents_bad)
 check(
@@ -125,14 +126,14 @@ check(
     res_agent["broken_agent_skills"] == [{"agent": "bad-agent", "target": "not-a-skill"}],
 )
 check(
-    "agent missing BOTH mandatory cross-cutting skills is flagged twice",
+    "agent missing ALL THREE mandatory cross-cutting skills is flagged three times",
     sorted(f["missing"] for f in res_agent["agent_missing_mandatory"])
-    == ["glossary-management", "methodology-review"],
+    == ["glossary-management", "memory-recall", "methodology-review"],
 )
 check("broken agent skill / missing mandatory is a hard failure", res_agent["hard_failure"] is True)
 
 synth_agents_good = [
-    agent("good-agent", ["real-skill-one", "glossary-management", "methodology-review"]),
+    agent("good-agent", ["real-skill-one", "glossary-management", "methodology-review", "memory-recall"]),
 ]
 res_agent_good = L.run_checks(synth_skills_for_agents, synth_agents_good)
 check(
@@ -147,11 +148,12 @@ synth_orphan = [
     skill("true-orphan", domain=None),         # unused + no domain -> orphan
     skill("glossary-management", domain="c"),  # present so the agent stays clean
     skill("methodology-review", domain="c"),
+    skill("memory-recall", domain="c"),
 ]
 # The agent is otherwise well-formed (real skills + both mandatory) so the ONLY
 # thing under test here is orphan classification, not agent-skills failures.
 synth_orphan_agents = [
-    agent("some-agent", ["used-skill", "glossary-management", "methodology-review"]),
+    agent("some-agent", ["used-skill", "glossary-management", "methodology-review", "memory-recall"]),
 ]
 res_orphan = L.run_checks(synth_orphan, synth_orphan_agents)
 check("orphan skill (no agent + no domain) is reported", res_orphan["orphans"] == ["true-orphan"])
@@ -165,8 +167,9 @@ clean = [
     skill("s-two", related=[], domain="d"),
     skill("glossary-management", domain="c"),
     skill("methodology-review", domain="c"),
+    skill("memory-recall", domain="c"),
 ]
-clean_agents = [agent("a-one", ["s-one", "glossary-management", "methodology-review"])]
+clean_agents = [agent("a-one", ["s-one", "glossary-management", "methodology-review", "memory-recall"])]
 res_clean = L.run_checks(clean, clean_agents)
 check("a fully clean synthetic set has no hard failure", res_clean["hard_failure"] is False)
 
@@ -187,7 +190,7 @@ check(
     real["broken_agent_skills"] == [],
 )
 check(
-    "REAL: every agent carries glossary-management + methodology-review (0 missing)",
+    "REAL: every agent carries glossary-management + methodology-review + memory-recall (0 missing)",
     real["agent_missing_mandatory"] == [],
 )
 
