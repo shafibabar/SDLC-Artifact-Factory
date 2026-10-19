@@ -76,10 +76,11 @@
         ],
         "agent": "product-strategist",
         "profiles": {
-          "lean": "skip",
+          "lean": "required",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: the Lean Canvas variant (strategy/lean-canvas.md), Maurya's one-page canvas for the smallest products."
       },
       {
         "artifact": "gtm-strategy",
@@ -95,20 +96,6 @@
         }
       },
       {
-        "artifact": "strategic-roadmap",
-        "paths": [
-          "strategy/roadmap.md",
-          "strategy/strategic-roadmap.md"
-        ],
-        "agent": "product-strategist",
-        "profiles": {
-          "lean": "required",
-          "standard": "required",
-          "enterprise": "required"
-        },
-        "note": "lean: one page."
-      },
-      {
         "artifact": "okr-set",
         "paths": [
           "strategy/okrs.md",
@@ -121,6 +108,20 @@
           "enterprise": "required"
         },
         "note": "lean: one objective."
+      },
+      {
+        "artifact": "strategic-roadmap",
+        "paths": [
+          "strategy/roadmap.md",
+          "strategy/strategic-roadmap.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "lean: one page."
       }
     ],
     "ideate": [
@@ -209,7 +210,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "lean: MoSCoW priority inline in the backlog; the backlog is also the functional requirements."
+        "note": "lean: stories carry a provisional priority, finalised by a closing Must / Won't-this-time block in the backlog (the MoSCoW artifact is skipped); the backlog is also the functional requirements."
       },
       {
         "artifact": "acceptance-criteria",

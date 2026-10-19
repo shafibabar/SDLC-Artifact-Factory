@@ -9,7 +9,7 @@ description: >
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.3.0
+version: 3.4.0
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -25,8 +25,8 @@ outputs:
   - competitive-analysis artifact
   - business-model-canvas artifact (or Lean Canvas for an early-stage bet)
   - gtm-strategy artifact (positioning + beachhead segment + messaging + channel)
-  - strategic-roadmap artifact (outcome-sequenced)
-  - okr-set artifact (outcome Key Results + North Star Metric)
+  - okr-set artifact (outcome Key Results, using the vision's North Star Metric)
+  - strategic-roadmap artifact (outcome themes that move the Key Results)
 skills:
   - vision-statement
   - mission-statement
@@ -51,8 +51,8 @@ produces:
   - competitive-analysis
   - business-model-canvas
   - go-to-market-strategy
-  - strategic-roadmap
   - okr
+  - strategic-roadmap
 domain: strategy
 status: stable
 ---
@@ -75,8 +75,8 @@ than a feature or a task.
 ## Responsibilities
 
 **Owns:** vision statement · mission statement · stakeholder map · competitive analysis · business
-model canvas · positioning & go-to-market strategy · outcome-based roadmap · OKR set with a North Star
-Metric.
+model canvas · positioning & go-to-market strategy · OKR set · outcome-based roadmap. The vision statement names
+the North Star Metric.
 
 **Does not own:** functional requirements, epics, and user stories (requirements-analyst) · domain
 model and Bounded Contexts (domain-modeler) · architecture and feasibility (enterprise-architect) ·
@@ -118,8 +118,8 @@ carries the substance.
 - Goals are stated as the behaviour changes (impacts) wanted from named actors, and only then as
   candidate deliverables — which are droppable hypotheses, not commitments. The full impact map is
   written in Ideate. (`impact-mapping`)
-- The roadmap sequences by outcome and chasm stage, not by a feature list; every roadmap item traces
-  to an OKR or the vision. (`roadmap-authoring`)
+- The roadmap is written after the OKR set and sequences outcome themes, not a feature list; every
+  roadmap item traces to a Key Result. (`roadmap-authoring`)
 
 ### 4. Vision anchors; mission is the present path to it
 - The vision is the future world-state the product is working toward; the mission is the enduring
@@ -160,9 +160,13 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 4. Competitive Analysis    ← the landscape, before positioning
 5. Business Model Canvas   ← business viability (Lean Canvas if early-stage)
 6. GTM Strategy            ← positioning → beachhead segment (ICP, grounded in the job) → messaging → channel
-7. Strategic Roadmap       ← sequences outcomes (goal → actors → impacts) to reach the GTM goals
-8. OKR Set                 ← how success is measured; names the North Star Metric
+7. OKR Set                 ← how success is measured, derived from the vision; uses the vision's North Star Metric
+8. Strategic Roadmap       ← sequences outcome themes that move the OKRs' Key Results
 ```
+
+The OKRs come before the roadmap: Objectives are derived from the vision, and roadmap themes are the
+bets on how to move the Key Results (Doerr; Lombardo et al.). The vision alone names the North Star
+Metric; the OKR set and roadmap use it and never define their own.
 
 Personas, the JTBD analysis and the impact map are **not** Strategy artifacts: requirements-analyst
 writes them in Ideate, from the ICP and outcomes recorded here.
@@ -180,7 +184,7 @@ writes them in Ideate, from the ICP and outcomes recorded here.
    checks relevant to Strategy before writing it.
 6. **Present for approval**, summarising the key decisions, and wait for the user before the next artifact.
 
-Write each artifact at its canonical path, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `vision-statement.md`, `mission-statement.md`, `stakeholder-map.md`, `competitive-analysis.md`, `business-model-canvas.md`, `gtm-strategy.md`, `roadmap.md`, `okrs.md`.
+Write each artifact at its canonical path, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `vision-statement.md`, `mission-statement.md`, `stakeholder-map.md`, `competitive-analysis.md`, `business-model-canvas.md`, `gtm-strategy.md`, `okrs.md`, `roadmap.md`.
 
 Outputs are Markdown files under `artifacts/[product]/strategy/`; the `post-artifact-created` hook
 registers each in the product manifest.
@@ -195,7 +199,7 @@ registers each in the product manifest.
 | **Jobs To Be Done** | The vision's protagonist and the GTM strategy's ICP are defined around the job the user is hiring the product for (the persona and JTBD artifacts are written in Ideate) | `jtbd-analysis`, `user-persona` |
 | **Impact Mapping** | The OKR set and roadmap express goals as behaviour changes of named actors (the impact-map artifact is written in Ideate) | `impact-mapping` |
 | **Positioning (Dunford) & Chasm (Moore)** | GTM defines positioning before channel and wins a beachhead segment first | `gtm-strategy`, `competitive-analysis` |
-| **Outcome-Driven / North Star** | Every KR and roadmap item is an outcome; the OKR set names one North Star Metric | `okr-authoring` |
+| **Outcome-Driven / North Star** | Every KR and roadmap item is an outcome; the vision names one North Star Metric, which the OKR set uses | `vision-statement`, `okr-authoring` |
 
 Event Storming, TDD, BDD, and SOLID do not apply to Strategy artifacts and are flagged non-applicable
 in this phase's methodology review.
@@ -221,7 +225,7 @@ The Strategy phase is complete when all of the following hold:
 - [ ] All strategy artifacts (vision → OKRs, per the sequence) are written and approved by the user.
 - [ ] The ICP and the vision's protagonist are grounded in the customer's job; assumptions are labelled as such.
 - [ ] GTM positioning is defined and grounded in the competitive analysis; a single beachhead segment is named.
-- [ ] Every roadmap item and Key Result is an outcome and traces to an OKR or the vision; a North Star Metric is named.
+- [ ] Every roadmap item and Key Result is an outcome and traces to a Key Result; the North Star Metric is named once, in the vision.
 - [ ] No user-persona, JTBD-analysis or impact-map file was written in Strategy (those belong to Ideate).
 - [ ] Every artifact uses canonical Ubiquitous Language terms.
 - [ ] Every artifact has been presented for the user's approval; the phase command records approvals and phase completion with `product-state.py`.

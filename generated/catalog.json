@@ -2279,7 +2279,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.3.0"
+        "version": "3.4.0"
       },
       {
         "created": "2026-06-24",
@@ -2329,7 +2329,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.7.0"
+        "version": "1.8.0"
       },
       {
         "created": "2026-06-25",
@@ -2654,7 +2654,7 @@
       {
         "allowed_tools": [],
         "argument_hint": null,
-        "description": "Run the Strategy phase — vision, mission, roadmap, GTM, OKRs",
+        "description": "Run the Strategy phase — vision, mission, GTM, OKRs, roadmap",
         "disable_model_invocation": true,
         "file": "commands/sdlc-strategy.md",
         "has_test": true,
@@ -3139,7 +3139,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.5.0"
+        "version": "2.6.0"
       },
       {
         "created": "2026-06-25",

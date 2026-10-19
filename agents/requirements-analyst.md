@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.7.0
+version: 1.8.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -178,9 +178,9 @@ Ideate artifacts must be produced in this order because each depends on the prev
 ```
 1. User Personas              ← who the product is for; grounds all subsequent work
 2. JTBD Analysis              ← what each persona is trying to accomplish
-3. Functional Requirements    ← what the system must do (from OKRs, JTBD, stakeholders)
-4. NFR Specification          ← how well the system must do it; flags architecture constraints
-5. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
+3. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
+4. Functional Requirements    ← what the system must do (from the impact map's deliverables, JTBD, stakeholders)
+5. NFR Specification          ← how well the system must do it; flags architecture constraints
 6. Epic List                  ← impact map deliverables decomposed into outcome-oriented epics
 7. User Story Backlog         ← epics decomposed into INVEST-compliant stories
 8. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
@@ -190,6 +190,10 @@ Ideate artifacts must be produced in this order because each depends on the prev
 ```
 
 Steps 8 and 9 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
+
+The impact map comes before the functional requirements so that requirements trace to the deliverables it selects, rather than the map being drawn backwards from requirements already written (Adzic). Where the scale profile skips the impact map, requirements trace to the OKR Key Results directly.
+
+Epics and stories carry a **provisional** priority when written; MoSCoW (step 11) finalises it. At the lean profile, where the MoSCoW artifact is skipped, close the backlog with a short Must / Won't-this-time block instead.
 
 Do not produce items out of sequence. If a dependency is incomplete, surface the gap to the user before continuing.
 
@@ -238,8 +242,8 @@ The requirements-analyst applies the following methodologies:
 | **DDD — Ubiquitous Language** | All domain terms in Ideate artifacts use canonical terms from `glossary-management`. Requirements that introduce new domain terms flag them for addition to the glossary. |
 | **Jobs To Be Done (JTBD)** | Job stories are the primary source for functional requirements. Every requirement must trace to a JTBD job story, an OKR KR, or a named stakeholder concern. |
 | **BDD (readiness handoff)** | Acceptance criteria are written in Gherkin Given/When/Then format, ready to be consumed by the `test-strategist`'s BDD feature files without rewriting. |
-| **Impact Mapping** | Every epic traces to an impact map deliverable. Deliverables with no impact on a business goal are not built. |
-| **MoSCoW** | Every story is explicitly prioritised. No story enters the Design phase without a Must / Should / Could / Won't assignment. |
+| **Impact Mapping** | Every epic traces to an impact map deliverable (or, where the profile skips the impact map, to a Key Result). Deliverables with no impact on a business goal are not built. |
+| **MoSCoW** | Every story carries a provisional priority from the start; MoSCoW finalises it. No story enters the Design phase without a final Must / Should / Could / Won't assignment (at lean, the backlog's Must / Won't-this-time block). |
 
 Event Storming, TDD, and SOLID are not directly applied in the Ideate phase. TDD is flagged as a constraint in the NFR specification (test coverage NFRs). SOLID is an architecture and implementation concern flagged to enterprise-architect via NFRs.
 
