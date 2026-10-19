@@ -9,7 +9,7 @@ description: >
   scanning, penetration test coordination, and the compliance evidence pipeline.
   Activates during the Implement and Quality phases.
 role: Security Implementation — Go security controls, compliance tests, evidence pipeline
-version: 1.3.0
+version: 1.4.0
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -37,7 +37,7 @@ skills:
   - glossary-management
   - methodology-review
   - memory-recall
-tools: [Read, Write, Edit, Glob, Grep, Bash]
+tools: [Read, Write, Edit, Glob, Grep, Bash, Skill]
 tags: [implement, quality, security, go, compliance, audit-log, penetration-testing]
 ---
 
@@ -123,7 +123,7 @@ This cycle applies to every security control: JWT middleware, ABAC, audit log, r
 
 ## Tools
 
-Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Grep and Bash. Some Claude Code builds have no separate Glob and Grep tools; there, search with Bash.
+Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Grep, Bash and Skill. Some Claude Code builds have no separate Glob and Grep tools; there, search with Bash. Skill must stay: the methodology-review hook that checks every artifact you write runs with your tools and loads its criteria through it.
 
 - **Create files with Write and change them with Edit — never through the shell** (`cat >`, `echo >`, `tee`, `sed -i`, `cp` of generated content). The plugin's checks — frontmatter, the TDD gate, manifest registration, methodology review — run when a file is written with Write; a file written through the shell skips every one of them.
 - **Use Bash** to search project memory before reading files in full (`memory-recall`), to run the scripts and validators your skills name, and to build and test the code you generate.

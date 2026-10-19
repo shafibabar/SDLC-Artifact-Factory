@@ -44,7 +44,7 @@ def good():
         "inputs": ["Acceptance criteria in Gherkin", "Implementations to test"],
         "outputs": ["Test strategy with pyramid targets", "Executable Gherkin feature files"],
         "skills": ["test-pyramid", "bdd-feature-file", "glossary-management", "methodology-review"],
-        "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"],
+        "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Skill"],
         "tags": ["implement", "quality", "sdet", "testing"],
     }
 
@@ -60,15 +60,16 @@ check("forward-compat optional fields accepted", fc, True)
 # tools is a Claude Code ALLOW-list, so every agent declares the full standard
 # set (#1254): [Bash] alone gave an agent Bash and nothing else; [] gave nothing.
 reordered = good()
-reordered["tools"] = ["Bash", "Grep", "Glob", "Edit", "Write", "Read"]
+reordered["tools"] = ["Skill", "Bash", "Grep", "Glob", "Edit", "Write", "Read"]
 check("standard tool set in any order accepted", reordered, True)
 
 for label, tools in [
     ("empty tools array rejected (agent would get no tools)", []),
     ("Bash-only tools rejected (agent would get Bash alone)", ["Bash"]),
     ("Read+Write-only tools rejected (no Bash for memory-recall)", ["Read", "Write"]),
-    ("extra tool beyond the standard set rejected", ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "WebFetch"]),
-    ("duplicate tool rejected", ["Read", "Write", "Edit", "Glob", "Bash", "Bash"]),
+    ("the #1254 set without Skill rejected (methodology hook could not load its criteria)", ["Read", "Write", "Edit", "Glob", "Grep", "Bash"]),
+    ("extra tool beyond the standard set rejected", ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Skill", "WebFetch"]),
+    ("duplicate tool rejected", ["Read", "Write", "Edit", "Glob", "Bash", "Bash", "Skill"]),
 ]:
     bad = good()
     bad["tools"] = tools

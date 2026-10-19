@@ -200,7 +200,7 @@ check("resolve('backend-engineer') returns an agent", be is not None and be["kin
 be_rec = be["record"] if be else {}
 check("backend-engineer role present", bool(be_rec.get("role")))
 check("backend-engineer has skills list", isinstance(be_rec.get("skills"), list) and len(be_rec["skills"]) > 5)
-check("backend-engineer tools == standard set", be_rec.get("tools") == ["Read", "Write", "Edit", "Glob", "Grep", "Bash"])
+check("backend-engineer tools == standard set", be_rec.get("tools") == ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Skill"])
 check(
     "backend-engineer skills include mandatory glossary-management + methodology-review",
     "glossary-management" in be_rec.get("skills", []) and "methodology-review" in be_rec.get("skills", []),

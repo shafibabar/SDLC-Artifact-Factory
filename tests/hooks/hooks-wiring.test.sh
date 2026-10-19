@@ -148,4 +148,41 @@ else
   FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
 
+# Case 5 (#1290): the methodology hook also works when an AGENT writes the
+# artifact. An agent-type hook fired by a subagent's tool call runs with that
+# subagent's tools, so without Skill in the agents' tool set the hook could not
+# load methodology-review and every agent-written artifact came back "could
+# not run" (dogfood v3). Cases 3-4 write from the main session, which always
+# has Skill, so they could not catch this. (Match the verdict, not the phrase:
+# the hook's own prompt, which the debug log records, contains it too.)
+P6="$SCRATCH_DIR/product6"; mkdir -p "$P6/.sdlc-memory" "$P6/artifacts/demo/strategy"; git -C "$P6" init -q
+touch "$P6/.sdlc-memory/.skip-install"
+AGENT_LOG="$SCRATCH_DIR/agent-write.debug.txt"
+VS6="$P6/artifacts/demo/strategy/vision-statement.md"
+(cd "$P6" && timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$P6" \
+  --permission-mode auto --debug-file "$AGENT_LOG" -p \
+  "Use the Agent tool exactly once with subagent_type 'sdlc-artifact-factory:product-strategist' and this prompt: 'Do no other work and read nothing. Use the Write tool to create $VS6 with exactly this content, then stop:
+---
+name: vision-statement
+version: 1.0.0
+phase: strategy
+owner: product-strategist
+created: 2026-10-18
+summary: Hook test vision for a lunch-order tracker.
+---
+
+# Vision
+
+Everyone in the office gets the lunch they picked, on time, and nobody chases money.
+'" --output-format text >/dev/null 2>&1)
+if [[ -f "$VS6" ]] && grep -q 'tool=Skill .*outcome=ok' "$AGENT_LOG" \
+  && grep -q 'Got structured output: {"ok":' "$AGENT_LOG" \
+  && ! grep -q '"reason":"Methodology review could not run' "$AGENT_LOG"; then
+  echo "PASS: $NAME (case: methodology-hook-reviews-agent-written-artifact)"
+  PASS_COUNT=$((PASS_COUNT + 1))
+else
+  echo "FAIL: $NAME: agent-written artifact — written=$([[ -f "$VS6" ]] && echo yes || echo no), skill loaded=$(grep -c 'tool=Skill .*outcome=ok' "$AGENT_LOG" 2>/dev/null), could-not-run=$(grep -c '"reason":"Methodology review could not run' "$AGENT_LOG" 2>/dev/null)"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
 smoke_test_summary

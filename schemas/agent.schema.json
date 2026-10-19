@@ -85,11 +85,11 @@
     },
     "tools": {
       "type": "array",
-      "items": { "enum": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"] },
+      "items": { "enum": ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Skill"] },
       "uniqueItems": true,
-      "minItems": 6,
-      "maxItems": 6,
-      "description": "Claude Code's tools field is an ALLOW-list, not extra tools: an agent gets only what is listed (tools: [Bash] gave Bash alone; tools: [] gave nothing). Every agent therefore declares the same standard set — Read, Write, Edit, Glob, Grep, Bash — in any order (#1254, D042)."
+      "minItems": 7,
+      "maxItems": 7,
+      "description": "Claude Code's tools field is an ALLOW-list, not extra tools: an agent gets only what is listed (tools: [Bash] gave Bash alone; tools: [] gave nothing). Every agent therefore declares the same standard set — Read, Write, Edit, Glob, Grep, Bash, Skill — in any order (#1254, D042). Skill is required because an agent-type hook fired by an agent's tool call runs with that agent's tools, and the methodology-review hook loads its criteria through Skill (#1290)."
     },
     "tags": {
       "type": "array",
