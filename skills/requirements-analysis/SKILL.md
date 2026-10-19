@@ -7,7 +7,7 @@ description: >
   logging, and gap analysis. Produces a Functional Requirements Document (FRD)
   that is the authoritative input to the Design phase. Used by the
   requirements-analyst agent during the Ideate phase.
-version: 1.2.1
+version: 1.2.2
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -21,7 +21,7 @@ status: stable
 
 ## Purpose
 
-Requirements analysis transforms the vision, mission, OKRs, and stakeholder context from the Strategy phase into a structured, traceable set of functional requirements — what the system must do. These requirements constrain and direct the Design and Implement phases.
+Requirements analysis transforms the vision, strategy kernel, OKRs, and stakeholder context from the Strategy phase into a structured, traceable set of functional requirements — what the system must do. These requirements constrain and direct the Design and Implement phases.
 
 A requirement that cannot be traced to a business goal, OKR, or user need has no justified place in the product. A requirement that cannot be tested has no place in the backlog.
 
@@ -114,7 +114,7 @@ Gaps found during gap analysis become open questions. Log them and resolve with 
 
 ## Step-by-Step Production
 
-1. Read strategy phase artifacts: vision, mission, OKRs, GTM strategy, stakeholder map, competitive analysis.
+1. Read strategy phase artifacts: vision, strategy kernel, OKRs, GTM strategy, stakeholder map, competitive analysis.
 2. Read user personas and JTBD analysis (produced earlier in this phase).
 3. Apply each elicitation technique in order. Capture every raw requirement, no matter how rough.
 4. Format each requirement using the standard format above.

@@ -33,18 +33,6 @@
         }
       },
       {
-        "artifact": "mission-statement",
-        "paths": [
-          "strategy/mission-statement.md"
-        ],
-        "agent": "product-strategist",
-        "profiles": {
-          "lean": "skip",
-          "standard": "required",
-          "enterprise": "required"
-        }
-      },
-      {
         "artifact": "stakeholder-map",
         "paths": [
           "strategy/stakeholder-map.md"
@@ -67,6 +55,19 @@
           "standard": "required",
           "enterprise": "required"
         }
+      },
+      {
+        "artifact": "strategy-kernel",
+        "paths": [
+          "strategy/strategy-kernel.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "Rumelt's kernel: diagnosis, guiding policy, coherent actions; replaces the mission statement (D045). lean: about 150 words, one short paragraph per part."
       },
       {
         "artifact": "business-model-canvas",

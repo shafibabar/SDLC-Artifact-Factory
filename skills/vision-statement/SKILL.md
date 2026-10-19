@@ -9,7 +9,7 @@ description: >
   deciding whether a product area or team needs its own vision, or setting a
   north star metric. Used by the product-strategist agent at the start
   of every Strategy phase (/sdlc-strategy) to anchor every later artifact.
-version: 2.0.0
+version: 2.1.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -17,12 +17,13 @@ tags: [strategy, vision, product-discovery, north-star]
 produces: vision-statement
 domain: strategy
 status: stable
-related: [mission-statement, gtm-strategy, okr-authoring, competitive-analysis, glossary-management]
+related: [strategy-kernel, gtm-strategy, okr-authoring, competitive-analysis, glossary-management]
 sources:
   - research/product-strategy-and-gtm/inspired-cagan.md
   - research/product-strategy-and-gtm/obviously-awesome-dunford.md
   - research/product-strategy-and-gtm/crossing-the-chasm-moore.md
   - research/product-strategy-and-gtm/loved-lauchengco.md
+  - research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md
   - research/storytelling-and-narrative/the-best-story-wins.md
   - research/storytelling-and-narrative/business-storytelling-for-dummies.md
 ---
@@ -31,20 +32,20 @@ sources:
 
 ## Purpose
 
-A vision answers one question: **what future are we building toward, and why does it matter?** In Cagan's framing (*Inspired*), the product vision is the multi-year picture of what the product is trying to become and why it matters. It is durable and rarely revised. Strategy is a separate thing: the focused, sequenced bets that move toward the vision, which means saying no to most other things. The vision comes first, and every later artifact (mission, roadmap, OKRs, GTM, architecture) must trace back to it.
+A vision answers one question: **what future are we building toward, and why does it matter?** In Cagan's framing (*Inspired*), the product vision is the multi-year picture of what the product is trying to become and why it matters. It is durable and rarely revised. Strategy is a separate thing: the focused, sequenced bets that move toward the vision, which means saying no to most other things. That strategy lives in its own artifact, the strategy kernel (`strategy-kernel`), written after the vision. The vision comes first, and every later artifact (strategy kernel, OKRs, roadmap, GTM, architecture) must trace back to it.
 
-A vision is not a feature list, a mission, or a sales pitch. It describes the world as it will be when the product has succeeded, so a team member can use it to settle a real decision.
+A vision is not a feature list, a strategy, or a sales pitch. It describes the world as it will be when the product has succeeded, so a team member can use it to settle a real decision.
 
 ---
 
-## Vision, Mission and Positioning Are Three Different Artifacts
+## Vision, Strategy Kernel and Positioning Are Three Different Artifacts
 
-| | Vision (this skill) | Mission (`mission-statement`) | Positioning statement (`gtm-strategy`) |
+| | Vision (this skill) | Strategy kernel (`strategy-kernel`) | Positioning statement (`gtm-strategy`) |
 |---|---|---|---|
-| Question | Where are we going, and why does it matter? | What do we do today to get there? | Why should *this buyer* pick us over *that alternative*? |
-| Horizon | 3–5+ years; rarely changes | Current stage; evolves with strategy | Re-tested at every launch stage and after real win/loss evidence (Lauchengco, *Loved*) |
+| Question | Where are we going, and why does it matter? | What stands in the way, and how do we get past it? | Why should *this buyer* pick us over *that alternative*? |
+| Horizon | 3–5+ years; rarely changes | Until the evidence disproves its diagnosis | Re-tested at every launch stage and after real win/loss evidence (Lauchengco, *Loved*) |
 | Audience | The team and its backers | The team | The market |
-| Shape | A future-state logline | "We [verb] for [user] so that [outcome]" | "For [ICP] who [pain], [product] is a [category] that [benefit]. Unlike [alternative], …" |
+| Shape | A future-state logline, plus one present-tense purpose line | Diagnosis → guiding policy → coherent actions (Rumelt) | "For [ICP] who [pain], [product] is a [category] that [benefit]. Unlike [alternative], …" |
 
 **Do not write the vision in the positioning template.** "For… who… is a… Unlike…" is Moore's positioning statement (*Crossing the Chasm*), and Dunford (*Obviously Awesome*) flags it as a compression of positioning work. It names a market category and a competitor, which tie it to today's market rather than to the future the product creates. The positioning statement belongs in `gtm-strategy`.
 
@@ -60,7 +61,9 @@ A vision is not a feature list, a mission, or a sales pitch. It describes the wo
 | **Why it matters** | What is at stake? | The consequence for the protagonist, or the world, if this future arrives or doesn't. |
 | **Durable bet** | What belief makes this future reachable? | The lasting conviction the product rests on (e.g. "their data never has to leave their boundary"). It must be technology-agnostic. It is *not* a competitor comparison. |
 
-The artifact also carries two consequences of the vision:
+The artifact also carries a **purpose line**: one present-tense sentence, *"We [verb] for [protagonist] so that [outcome]"*, saying what the product does today on the way to that future. It replaced the separate mission statement, which this plugin no longer produces (Rumelt finds no support for one). Use one specific verb (not *help*, *enable* or *provide*), the vision's protagonist, and an outcome they experience. It never names a competitor or a differentiator, and it does not set scope: what the product will not do comes from the vision's rules-out list and the strategy kernel's guiding policy.
+
+It also carries two consequences of the vision:
 - **What this vision rules out:** 2–3 plausible directions it makes a "no". A vision that rules nothing out cannot settle a decision (Cagan: strategy is saying no).
 - **North star implication:** the single metric that would show the vision is being achieved.
 
@@ -68,7 +71,7 @@ The artifact also carries two consequences of the vision:
 
 ## One Product, Many Teams
 
-A shared vision is what lets many teams decide independently and still build one product. That does **not** mean each team writes its own vision. The chain is Cagan's: **one product vision → product strategy (which problems first) → team objectives** (`okr-authoring`). A team stays connected by knowing which part of the shared future it is moving, not by holding a picture of its own.
+A shared vision is what lets many teams decide independently and still build one product. That does **not** mean each team writes its own vision. The chain is Cagan's: **one product vision → product strategy (which problems first; in this plugin the strategy kernel) → team objectives** (`okr-authoring`). A team stays connected by knowing which part of the shared future it is moving, not by holding a picture of its own.
 
 **Default: one vision per product; teams get objectives, not visions.** A vision should last 3–5+ years, but team boundaries change with every reorganisation. Team-level visions also tend to diverge (one team optimises for "every source connected in minutes", another for "no data leaves the tenant boundary"), and the conflict surfaces only where their work meets.
 
@@ -89,9 +92,10 @@ An MVP or a single-line product needs one vision. Read `./examples/03-enterprise
 2. **Picture the future state concretely.** Ask what the protagonist can do, know or stop worrying about in 3–5 years, and write it as their changed world.
 3. **Compress to a logline**, at most 60 words, with the protagonist as the subject: *[Protagonist] [can / no longer has to] [future state], [because / so that] [why it matters], [durable bet].* Compress beats rather than dropping them (Luhn): all five components should still be present in miniature.
 4. **Write what it rules out.** For each of 2–3 tempting directions, check whether the vision clearly says no. If it can't, sharpen it.
-5. **Derive the north star.** If you can't name one metric that tracks the future state, the future state is too vague.
-6. **Optionally, tell it.** For onboarding, investors or a sceptical stakeholder, expand the logline into a 120–180-word story. Read `./references/telling-the-vision.md` for the technique. The told version never replaces the ≤ 60-word artifact.
-7. **Validate** against the quality criteria below, then produce the artifact from `./templates/vision-statement-template.md`.
+5. **Write the purpose line**: one present-tense "We [verb] for [protagonist] so that [outcome]" sentence.
+6. **Derive the north star.** If you can't name one metric that tracks the future state, the future state is too vague.
+7. **Optionally, tell it.** For onboarding, investors or a sceptical stakeholder, expand the logline into a 120–180-word story. Read `./references/telling-the-vision.md` for the technique. The told version never replaces the ≤ 60-word artifact.
+8. **Validate** against the quality criteria below, then produce the artifact from `./templates/vision-statement-template.md`.
 
 **Examples, simple to complex:**
 - An internal tool, the simplest case: read `./examples/01-internal-tool.md`.
@@ -105,7 +109,7 @@ An MVP or a single-line product needs one vision. Read `./examples/03-enterprise
 | Criterion | Pass | Fail |
 |---|---|---|
 | Length | ≤ 60 words | > 60 words |
-| Horizon | Describes a future 3–5+ years out | Describes what the product does today (that's a mission) |
+| Horizon | Describes a future 3–5+ years out | Describes what the product does today (that's the purpose line) |
 | Protagonist | A real, specific user group is the subject and hero | "Everyone", "businesses", or the product/company as hero |
 | Need, not want | The stated pain is the underlying need | A feature request restated as a pain |
 | Not a positioning statement | No market category and no named competitor | Uses the "For… who… is a… Unlike…" template |
@@ -125,7 +129,7 @@ An MVP or a single-line product needs one vision. Read `./examples/03-enterprise
 | **Company as hero** | "To become the leading data governance company" | The protagonist is the vendor; nobody's world changes |
 | **Too tactical** | "To provide a dashboard that scans Google Drive" | A feature, not a future state |
 | **Unfalsifiable** | "To help every company manage data better" | Rules nothing out, so no decision is settled |
-| **Disguised mission** | "We scan storage and classify sensitive data" | Present-tense work belongs in `mission-statement` |
+| **Present tense as vision** | "We scan storage and classify sensitive data" | Present-tense work belongs in the purpose line, not the logline |
 | **Technology-locked** | "The best Kubernetes-native governance tool" | Technology changes; the vision must outlast it |
 | **A vision per team** | "Ingestion team vision: every source connected in minutes" | Teams reorganise faster than visions should change, and team visions pull apart; the team needs an objective drawn from the strategy |
 

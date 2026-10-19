@@ -9,7 +9,7 @@ description: >
   positioning, positioning statement, target segment, beachhead, ICP, messaging
   framework, channel strategy, pricing model, and launch plan/sequencing.
   Used by the product-strategist agent after competitive analysis is complete.
-version: 2.0.0
+version: 2.0.1
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -24,7 +24,7 @@ status: stable
 
 ## Purpose
 
-A GTM strategy defines how the product reaches its target user and converts them into customers. It answers: which segment do we win first, how do we reach them, what do we say, what do we charge, and how do we sequence the launch. It is not a marketing plan — it is a product-level document that constrains how marketing, sales, and product must work together, derived from the vision, mission, competitive analysis, and stakeholder map.
+A GTM strategy defines how the product reaches its target user and converts them into customers. It answers: which segment do we win first, how do we reach them, what do we say, what do we charge, and how do we sequence the launch. It is not a marketing plan — it is a product-level document that constrains how marketing, sales, and product must work together, derived from the vision, the strategy kernel, the competitive analysis, and the stakeholder map.
 
 ---
 

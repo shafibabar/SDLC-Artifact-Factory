@@ -239,7 +239,7 @@ Strategy → Ideate → Design → Implement → Data → Quality → Deploy →
 
 | Phase | Primary Artifacts | Methodologies Applied |
 |---|---|---|
-| **Strategy** | Vision, Mission, Roadmap, GTM | Impact Mapping, OKRs, JTBD, North Star Metric |
+| **Strategy** | Vision, Strategy Kernel, OKRs, Roadmap, GTM | Strategy Kernel (Rumelt), Impact Mapping, OKRs, JTBD, North Star Metric |
 | **Ideate** | Functional Requirements, NFRs, Backlog, Sequencing | User Story Mapping, Example Mapping, Domain Storytelling |
 | **Design** | Enterprise Architecture, UX, Data Architecture, Distributed System Design, Security, Compliance | DDD, Bounded Contexts, CQRS, Event Storming, Event Modeling, API-First, Contract-First |
 | **Implement** | Coding Standards, Repo Structure, Unit/Contract/Integration/E2E/Performance/Load/Security/Compliance Tests, Application Code | TDD, BDD, SOLID, SRP, DRY, Event-Driven Architecture |
