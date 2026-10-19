@@ -6,14 +6,14 @@
 # no tools at all. The agent schema enforces the declaration; this test proves
 # the platform honours it. One agent per old failure shape keeps it cheap.
 # Glob and Grep are declared too, but some Claude Code builds have no separate
-# Glob/Grep tools (search runs through Bash), so only these four are required.
+# Glob/Grep tools (search runs through Bash), so only the other five are required.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
 smoke_test_scratch_init
 
 NAME="agent-tools"
-STANDARD=(Read Write Edit Bash)
+STANDARD=(Read Write Edit Bash Skill)
 
 mkdir -p "$SCRATCH_DIR/.sdlc-memory"
 touch "$SCRATCH_DIR/.sdlc-memory/.skip-install"
@@ -29,7 +29,7 @@ for agent in backend-engineer product-strategist ux-architect; do
     grep -qw "$tool" <<<"$reply" || missing+=("$tool")
   done
   if [[ ${#missing[@]} -eq 0 ]]; then
-    _pass "$NAME ($agent has Read, Write, Edit, Bash)"
+    _pass "$NAME ($agent has Read, Write, Edit, Bash, Skill)"
   else
     _fail "$NAME ($agent)" "missing ${missing[*]} — agent replied: $(head -c 300 <<<"$reply")"
   fi

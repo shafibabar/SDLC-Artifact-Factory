@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.6.0
+version: 1.7.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -64,7 +64,7 @@ skills:
   - glossary-management
   - methodology-review
   - memory-recall
-tools: [Read, Write, Edit, Glob, Grep, Bash]
+tools: [Read, Write, Edit, Glob, Grep, Bash, Skill]
 tags: [ideate, requirements, discovery, user-stories, backlog, phase-owner]
 ---
 
@@ -164,7 +164,7 @@ When activated, the requirements-analyst follows this decision sequence:
 
 ## Tools
 
-Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Grep and Bash. Some Claude Code builds have no separate Glob and Grep tools; there, search with Bash.
+Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Grep, Bash and Skill. Some Claude Code builds have no separate Glob and Grep tools; there, search with Bash. Skill must stay: the methodology-review hook that checks every artifact you write runs with your tools and loads its criteria through it.
 
 - **Create files with Write and change them with Edit — never through the shell** (`cat >`, `echo >`, `tee`, `sed -i`, `cp` of generated content). The plugin's checks — frontmatter, the TDD gate, manifest registration, methodology review — run when a file is written with Write; a file written through the shell skips every one of them.
 - **Use Bash** to search project memory before reading files in full (`memory-recall`), to run the scripts and validators your skills name, and to build and test the code you generate.

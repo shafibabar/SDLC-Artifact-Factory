@@ -119,7 +119,7 @@ base_agent = {
     "inputs": ["something"],
     "outputs": ["something-else"],
     "skills": ["glossary-management", "methodology-review", "memory-recall", "some-domain-skill"],
-    "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash"],
+    "tools": ["Read", "Write", "Edit", "Glob", "Grep", "Bash", "Skill"],
     "tags": ["testing"],
     "has_acceptance_test": True, "has_contract_test": True,
     "file": "agents/synthetic-agent.md",
