@@ -13,13 +13,13 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.8.0
+version: 1.9.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
 inputs:
   - vision-statement (from Strategy phase artifacts)
-  - mission-statement (from Strategy phase artifacts)
+  - strategy-kernel (from Strategy phase artifacts)
   - okr-set (from Strategy phase artifacts)
   - stakeholder-map (from Strategy phase artifacts)
   - gtm-strategy (ICP and positioning)
@@ -116,7 +116,7 @@ In Ideate, the requirements-analyst acts as the voice of the user during discove
 | Input | Source | Required? |
 |---|---|---|
 | Vision statement | `artifacts/[product]/strategy/vision-statement.md` | Required |
-| Mission statement | `artifacts/[product]/strategy/mission-statement.md` | Required |
+| Strategy kernel | `artifacts/[product]/strategy/strategy-kernel.md` | Required |
 | OKR set | `artifacts/[product]/strategy/okrs.md` | Required |
 | Stakeholder map | `artifacts/[product]/strategy/stakeholder-map.md` | Required |
 | GTM strategy | `artifacts/[product]/strategy/gtm-strategy.md` | Required |

@@ -1,6 +1,6 @@
 # Canonical Ubiquitous Language
 
-**Last updated:** 2026-07-26
+**Last updated:** 2026-10-19
 **Maintained by:** glossary-management skill
 **Rule:** Use every term exactly as defined here. Synonyms are not acceptable substitutes.
 
@@ -248,13 +248,17 @@
 
 | Term | Definition |
 |---|---|
+| **Coherent Actions** | The third part of a Strategy Kernel (Rumelt, *Good Strategy / Bad Strategy*): a few concrete moves that carry out the Guiding Policy and reinforce each other. A pile of separately sensible initiatives with no common policy is not coherent (Rumelt's "dog's dinner"). The roadmap sequences them. |
 | **Cohort Analysis** | A technique that segments users by when they started (or another shared starting event) and compares each cohort's behaviour — typically retention or engagement — at the same elapsed time since that start, revealing trends a cumulative aggregate would hide (a rising total-users count can coexist with declining per-cohort retention). Used by `analytics-requirements` as a vanity-metric check for retention/stickiness-flavoured metrics specifically. |
+| **Crux** | The one challenge, among all those a product faces, that is both important (solving it unlocks much of the rest) and addressable (the team can act on it) (Rumelt, *The Crux*). The Diagnosis of a Strategy Kernel ends on it. |
 | **Customer Development** | Steve Blank's four-stage methodology (Customer Discovery, Customer Validation, Customer Creation, Company Building) for testing a startup's hypotheses about customers, problems, and go-to-market process against real-world behaviour before scaling. This plugin's `phase: customer-validation` is named for this methodology's second stage, not a generic term — see Customer Validation. |
 | **Customer Validation** | Steve Blank's second Customer Development stage: proving a repeatable, scalable sales/onboarding roadmap by actually selling to early customers with it — the test is whether the *process* repeats for a new prospect, not merely whether the product works for the customers already engaged. Distinct from Product Validation (below): Product Validation tests whether user needs and market fit exist at all; Customer Validation assumes that is already established and tests whether the resulting sales/onboarding process is repeatable. This repo's Customer Validation phase (`beta-program-design`, `uat-plan`, `feedback-template`, `acceptance-sign-off`) is named for this stage specifically. |
+| **Diagnosis** | The first part of a Strategy Kernel (Rumelt): a judgement that explains what is going on and names the critical obstacle, reducing the situation to what matters most and ending on the Crux. Written so evidence could show it wrong. |
 | **Domain Storytelling** | A collaborative technique where domain experts narrate their work as stories using a pictographic language, helping teams understand workflows and discover domain concepts. |
 | **Earlyvangelist** | Steve Blank's four-condition definition of a qualified early customer: already recognises the problem, has already spent real effort trying to solve it themselves, has or can get budget, and is credible enough to serve as a reference. Distinct from a generic "early adopter" (a psychographic type) — procedural and checkable against a named candidate. Used by `beta-program-design`'s Participant Selection criteria. |
 | **Example Mapping** | A structured workshop technique for breaking down user stories into concrete examples, identifying rules, and surfacing questions before development begins. |
 | **Get Out of the Building** | Steve Blank's discipline that no fact about a customer is established until tested against that customer's real behaviour, not internal-team consensus or a leading question. Underlies `beta-program-design`'s outside-the-building graduation check. |
+| **Guiding Policy** | The second part of a Strategy Kernel (Rumelt): the overall approach chosen to overcome the Diagnosis's obstacle. It relies on an advantage or other source of power and rules whole families of action out, each with a reason, without listing the actions themselves. |
 | **Impact Mapping** | A strategic planning technique that maps goals to actors, impacts, and deliverables, ensuring all work traces back to a measurable business goal. |
 | **Jobs To Be Done (JTBD)** | A framework for understanding what outcome a customer is trying to achieve (the "job") when they use a product, independent of the solution. |
 | **North Star Metric** | A single metric that best captures the core value a product delivers to customers. Used to align all product decisions toward a common outcome. |
@@ -264,6 +268,8 @@
 | **Product Discovery** | The set of activities used to identify and validate what to build before committing to building it. Reduces the risk of building the wrong thing. |
 | **Product Metrics** | Quantitative measurements of product performance against defined outcomes (e.g. activation rate, retention, NPS). |
 | **Product Validation** | The process of testing assumptions about user needs, market fit, and solution viability before full investment in development. Distinct from Customer Validation (above) — Product Validation asks whether the need and market fit exist at all; Customer Validation assumes that and tests whether a repeatable sales/onboarding process exists. |
+| **Proximate Objective** | A target close enough to be feasible this cycle, which removes enough ambiguity that the team knows what to do next (Rumelt). Every Objective in an OKR set is a Proximate Objective implied by the Guiding Policy; an end state with no feasible next step ("become the leader") is a blue-sky objective, not a proximate one. |
+| **Strategy Kernel** | The product strategy artifact (`strategy-kernel`): Diagnosis, Guiding Policy and Coherent Actions (Rumelt, *Good Strategy / Bad Strategy*). It sits between the vision and the OKR set at every scale profile and replaced the mission statement. A list of goals, however ambitious, is not a Strategy Kernel. |
 | **User Story Mapping** | A product planning technique that organises user stories as a two-dimensional map: a horizontal narrative of the user journey and vertical slices of increasing detail. Used to sequence delivery and identify MVP scope. |
 | **Value Stream Mapping** | A lean technique for visualising the complete flow of steps required to deliver value to a customer, from concept to production. Used to identify and eliminate waste. |
 

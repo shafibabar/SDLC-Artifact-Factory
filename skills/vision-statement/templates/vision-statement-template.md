@@ -20,6 +20,8 @@ traces_to: [the problem statement / decision this vision answers]
 
 [The vision — a logline of ≤ 60 words with the protagonist as subject: who, the future state, why it matters, the durable bet]
 
+**Today:** We [one specific verb] for [the protagonist] so that [the outcome they experience now].
+
 ## Components
 
 | Component | Value |

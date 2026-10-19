@@ -675,14 +675,6 @@
         "miro-board-notation"
       ]
     },
-    "mission-statement": {
-      "agents": [
-        "product-strategist"
-      ],
-      "skills": [
-        "mission-statement"
-      ]
-    },
     "moscow-prioritized-backlog": {
       "agents": [],
       "skills": [
@@ -1106,6 +1098,14 @@
       ],
       "skills": [
         "roadmap-authoring"
+      ]
+    },
+    "strategy-kernel": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "strategy-kernel"
       ]
     },
     "subdomain-classification": {
@@ -1684,10 +1684,10 @@
         "business-model-canvas",
         "competitive-analysis",
         "go-to-market-strategy",
-        "mission-statement",
         "okr",
         "stakeholder-map",
         "strategic-roadmap",
+        "strategy-kernel",
         "vision-statement"
       ],
       "owners": [
@@ -1698,10 +1698,10 @@
         "business-model-canvas",
         "competitive-analysis",
         "gtm-strategy",
-        "mission-statement",
         "okr-authoring",
         "roadmap-authoring",
         "stakeholder-mapping",
+        "strategy-kernel",
         "vision-statement"
       ]
     },
@@ -2235,10 +2235,10 @@
           "business-model-canvas",
           "competitive-analysis",
           "go-to-market-strategy",
-          "mission-statement",
           "okr",
           "stakeholder-map",
           "strategic-roadmap",
+          "strategy-kernel",
           "vision-statement"
         ],
         "role": "Product Strategy — full Strategy phase ownership",
@@ -2251,10 +2251,10 @@
           "jtbd-analysis",
           "memory-recall",
           "methodology-review",
-          "mission-statement",
           "okr-authoring",
           "roadmap-authoring",
           "stakeholder-mapping",
+          "strategy-kernel",
           "user-persona",
           "vision-statement"
         ],
@@ -2279,7 +2279,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.4.0"
+        "version": "3.5.0"
       },
       {
         "created": "2026-06-24",
@@ -2329,7 +2329,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.8.0"
+        "version": "1.9.0"
       },
       {
         "created": "2026-06-25",
@@ -2654,7 +2654,7 @@
       {
         "allowed_tools": [],
         "argument_hint": null,
-        "description": "Run the Strategy phase — vision, mission, GTM, OKRs, roadmap",
+        "description": "Run the Strategy phase — vision, strategy kernel, GTM, OKRs, roadmap",
         "disable_model_invocation": true,
         "file": "commands/sdlc-strategy.md",
         "has_test": true,
@@ -4890,7 +4890,9 @@
           "ubiquitous-language-glossary"
         ],
         "related": [],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+        ],
         "status": "stable",
         "tags": [
           "cross-cutting",
@@ -4899,7 +4901,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.1.1"
+        "version": "1.2.0"
       },
       {
         "created": "2026-07-31",
@@ -6208,7 +6210,7 @@
           "product-discovery",
           "strategy"
         ],
-        "version": "2.0.0"
+        "version": "2.0.1"
       },
       {
         "created": "2026-06-25",
@@ -6756,42 +6758,6 @@
           "visualization"
         ],
         "version": "1.0.1"
-      },
-      {
-        "created": "2026-06-24",
-        "dir": "skills/mission-statement",
-        "domain": "strategy",
-        "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
-        "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
-        "has_steps": false,
-        "has_templates": false,
-        "name": "mission-statement",
-        "owner": "product-strategist",
-        "phase": "strategy",
-        "produces": [
-          "mission-statement"
-        ],
-        "related": [
-          "business-model-canvas",
-          "gtm-strategy",
-          "okr-authoring",
-          "vision-statement"
-        ],
-        "sources": [],
-        "status": "stable",
-        "tags": [
-          "mission",
-          "north-star",
-          "product-strategy",
-          "strategy",
-          "vision"
-        ],
-        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -9036,7 +9002,7 @@
           "requirements",
           "traceability"
         ],
-        "version": "1.2.1"
+        "version": "1.2.2"
       },
       {
         "created": "2026-07-20",
@@ -9452,6 +9418,52 @@
           "walking-skeleton"
         ],
         "version": "2.1.1"
+      },
+      {
+        "created": "2026-10-19",
+        "dir": "skills/strategy-kernel",
+        "domain": "strategy",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": false,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "strategy-kernel",
+        "owner": "product-strategist",
+        "phase": "strategy",
+        "produces": [
+          "strategy-kernel"
+        ],
+        "related": [
+          "business-model-canvas",
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "okr-authoring",
+          "roadmap-authoring",
+          "stakeholder-mapping",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "coherent-actions",
+          "diagnosis",
+          "guiding-policy",
+          "rumelt",
+          "strategy",
+          "strategy-kernel"
+        ],
+        "version": "1.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10097,11 +10109,12 @@
           "competitive-analysis",
           "glossary-management",
           "gtm-strategy",
-          "mission-statement",
-          "okr-authoring"
+          "okr-authoring",
+          "strategy-kernel"
         ],
         "sources": [
           "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
           "research/product-strategy-and-gtm/inspired-cagan.md",
           "research/product-strategy-and-gtm/loved-lauchengco.md",
           "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
@@ -10115,7 +10128,7 @@
           "strategy",
           "vision"
         ],
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "created": "2026-07-31",
@@ -10205,8 +10218,8 @@
     "edges_agent_produces": 71,
     "edges_agent_skills": 192,
     "edges_skill_produces": 188,
-    "edges_skill_related": 816,
-    "edges_skill_sources": 18,
+    "edges_skill_related": 820,
+    "edges_skill_sources": 24,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10218,20 +10231,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 18,
+    "research_files_cited": 20,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 182,
+    "skills_with_contract_test": 181,
     "skills_with_domain": 187,
-    "skills_with_evals": 4,
-    "skills_with_examples": 4,
+    "skills_with_evals": 5,
+    "skills_with_examples": 5,
     "skills_with_produces": 187,
     "skills_with_references": 182,
-    "skills_with_resources": 3,
+    "skills_with_resources": 4,
     "skills_with_scripts": 10,
-    "skills_with_sources": 4,
+    "skills_with_sources": 6,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 3
+    "skills_with_templates": 4
   },
   "edges": {
     "agent_produces": [
@@ -10501,10 +10514,6 @@
       },
       {
         "agent": "product-strategist",
-        "artifact": "mission-statement"
-      },
-      {
-        "agent": "product-strategist",
         "artifact": "okr"
       },
       {
@@ -10514,6 +10523,10 @@
       {
         "agent": "product-strategist",
         "artifact": "strategic-roadmap"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "strategy-kernel"
       },
       {
         "agent": "product-strategist",
@@ -11023,10 +11036,6 @@
       },
       {
         "agent": "product-strategist",
-        "skill": "mission-statement"
-      },
-      {
-        "agent": "product-strategist",
         "skill": "okr-authoring"
       },
       {
@@ -11036,6 +11045,10 @@
       {
         "agent": "product-strategist",
         "skill": "stakeholder-mapping"
+      },
+      {
+        "agent": "product-strategist",
+        "skill": "strategy-kernel"
       },
       {
         "agent": "product-strategist",
@@ -11696,10 +11709,6 @@
         "skill": "miro-board-notation"
       },
       {
-        "artifact": "mission-statement",
-        "skill": "mission-statement"
-      },
-      {
         "artifact": "go-test-doubles",
         "skill": "mock-generation"
       },
@@ -11966,6 +11975,10 @@
       {
         "artifact": "user-story-map",
         "skill": "story-mapping"
+      },
+      {
+        "artifact": "strategy-kernel",
+        "skill": "strategy-kernel"
       },
       {
         "artifact": "go-logging-instrumentation",
@@ -13910,22 +13923,6 @@
         "skill": "message-broker-selection"
       },
       {
-        "related": "business-model-canvas",
-        "skill": "mission-statement"
-      },
-      {
-        "related": "gtm-strategy",
-        "skill": "mission-statement"
-      },
-      {
-        "related": "okr-authoring",
-        "skill": "mission-statement"
-      },
-      {
-        "related": "vision-statement",
-        "skill": "mission-statement"
-      },
-      {
         "related": "go-integration-test",
         "skill": "mock-generation"
       },
@@ -14958,6 +14955,38 @@
         "skill": "story-mapping"
       },
       {
+        "related": "business-model-canvas",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "strategy-kernel"
+      },
+      {
         "related": "component-diagram",
         "skill": "system-context-diagram"
       },
@@ -15266,11 +15295,11 @@
         "skill": "vision-statement"
       },
       {
-        "related": "mission-statement",
+        "related": "okr-authoring",
         "skill": "vision-statement"
       },
       {
-        "related": "okr-authoring",
+        "related": "strategy-kernel",
         "skill": "vision-statement"
       },
       {
@@ -15328,6 +15357,10 @@
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
       },
       {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
         "skill": "go-repository-pattern",
         "source": "research/domain-driven-design/learning-ddd-khononov.md"
       },
@@ -15360,8 +15393,28 @@
         "source": "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md"
       },
       {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
+      },
+      {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
         "skill": "vision-statement",
         "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
       },
       {
         "skill": "vision-statement",
