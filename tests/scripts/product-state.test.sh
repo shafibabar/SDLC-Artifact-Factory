@@ -126,7 +126,7 @@ read -r st reo <<<"$(okrs_entry)"
 out="$(ps complete implement)"; rc=$?
 [[ $rc -eq 0 && "$out" == *'"current_phase": "data"'* ]] && _pass "a code phase completes on the user's approval" || _fail "a code phase completes on the user's approval" "rc=$rc $out"
 
-# 12. (proposal 14) a lean product's Strategy needs only its 3 required artifacts
+# 12. (proposal 14; D045) a lean product's Strategy needs only its 4 required artifacts, OKRs before the roadmap
 L="$SCRATCH_DIR/lean"; mkdir -p "$L"; git -C "$L" init -q
 printf '{"_meta":{"purpose":"x","how_to_use":"x","last_updated":"2026-10-12","updated_by":"x"},"product":"Lunch","product_slug":"lunch","scale_profile":"lean"}\n' > "$L/sdlc-config.json"
 lps() { (cd "$L" && SDLC_PRODUCT_ROOT="$L" python3 "$PS" "$@"); }
@@ -135,21 +135,21 @@ out="$(lps plan strategy)"
 if python3 -c "
 import json, sys
 d = json.loads(sys.argv[1])
-assert [r['artifact'] for r in d['required']] == ['vision-statement', 'strategic-roadmap', 'okr-set'], d['required']
+assert [r['artifact'] for r in d['required']] == ['vision-statement', 'business-model-canvas', 'okr-set', 'strategic-roadmap'], d['required']
 assert 'mission-statement' in d['skipped'] and d['approval_mode'] == 'batch', d
 " "$out" 2>/dev/null; then
-  _pass "lean plan: 3 required strategy artifacts, mission skipped, batch approval"
+  _pass "lean plan: 4 required strategy artifacts (Lean Canvas, OKRs before roadmap), mission skipped, batch approval"
 else
-  _fail "lean plan: 3 required strategy artifacts, mission skipped, batch approval" "$out"
+  _fail "lean plan: 4 required strategy artifacts (Lean Canvas, OKRs before roadmap), mission skipped, batch approval" "$out"
 fi
-for f in vision-statement roadmap okrs; do
+for f in vision-statement lean-canvas okrs roadmap; do
   mkdir -p "$L/artifacts/lunch/strategy"
   printf '%s\n' '---' "name: $f" 'version: 1.0.0' 'phase: strategy' 'owner: product-strategist' 'created: 2026-10-12' 'summary: x.' '---' > "$L/artifacts/lunch/strategy/$f.md"
   echo '{"tool_input":{"file_path":"'"$L/artifacts/lunch/strategy/$f.md"'"},"cwd":"'"$L"'"}' | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
 done
-lps approve strategy/vision-statement.md strategy/roadmap.md strategy/okrs.md >/dev/null
+lps approve strategy/vision-statement.md strategy/lean-canvas.md strategy/okrs.md strategy/roadmap.md >/dev/null
 out="$(lps complete strategy)"; rc=$?
-[[ $rc -eq 0 && "$out" == *'"current_phase": "ideate"'* ]] && _pass "lean strategy completes with its 3 artifacts" || _fail "lean strategy completes with its 3 artifacts" "rc=$rc $out"
+[[ $rc -eq 0 && "$out" == *'"current_phase": "ideate"'* ]] && _pass "lean strategy completes with its 4 artifacts" || _fail "lean strategy completes with its 4 artifacts" "rc=$rc $out"
 
 # 13. the same 3 artifacts are not enough for an enterprise product
 out="$(ps plan strategy)"
