@@ -81,19 +81,40 @@ def create_issue(title, body, parent_issue_id=None, labels=None):
 
 
 def add_item_to_project(content_id):
+    """Add an issue to the tracked Project and return its item id. If the
+    Project's auto-add workflow already added it ("Content already exists"),
+    return the existing item instead of failing: failing here left a created
+    issue untracked, so a plan-exit retry created it again."""
+    try:
+        data = gh.graphql(
+            f"""
+            mutation {{
+              addProjectV2ItemById(input: {{
+                projectId: "{config.PROJECT_ID}"
+                contentId: "{content_id}"
+              }}) {{
+                item {{ id }}
+              }}
+            }}
+            """
+        )
+        return data["addProjectV2ItemById"]["item"]["id"]
+    except gh.GhError as e:
+        if "Content already exists" not in str(e):
+            raise
     data = gh.graphql(
         f"""
-        mutation {{
-          addProjectV2ItemById(input: {{
-            projectId: "{config.PROJECT_ID}"
-            contentId: "{content_id}"
-          }}) {{
-            item {{ id }}
+        query {{
+          node(id: "{content_id}") {{
+            ... on Issue {{ projectItems(first: 20) {{ nodes {{ id project {{ id }} }} }} }}
           }}
         }}
         """
     )
-    return data["addProjectV2ItemById"]["item"]["id"]
+    for node in data["node"]["projectItems"]["nodes"]:
+        if node["project"]["id"] == config.PROJECT_ID:
+            return node["id"]
+    raise gh.GhError(f"{content_id} is reported as already on the Project but no item was found")
 
 
 def set_status(item_id, status_key):
