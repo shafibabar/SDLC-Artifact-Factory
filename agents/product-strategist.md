@@ -23,7 +23,7 @@ outputs:
   - stakeholder-map artifact
   - competitive-analysis artifact
   - strategy-kernel artifact (diagnosis, guiding policy, coherent actions)
-  - business-model-canvas artifact (or Lean Canvas for an early-stage bet)
+  - business-model-canvas artifact (a Lean Canvas at the lean profile or before Problem/Solution Fit)
   - gtm-strategy artifact (positioning + beachhead segment + messaging + channel)
   - okr-set artifact (outcome Key Results, using the vision's North Star Metric)
   - strategic-roadmap artifact (customer-problem themes that serve the Key Results)
@@ -138,10 +138,15 @@ carries the substance.
   coherent actions. (`strategy-kernel`, `okr-authoring`, `roadmap-authoring`)
 
 ### 5. The business model must cohere
-- Use the nine-block Business Model Canvas for an established model; the Lean Canvas (Problem /
-  Solution / Key Metrics / Unfair Advantage) for an early-stage bet where the risk is
-  problem-solution fit. The blocks constrain each other — a change in Customer Segments ripples to
-  Channels, Relationships, and Revenue. (`business-model-canvas`)
+- Choose the variant by evidence: a Lean Canvas (Problem / Solution / Unique Value Proposition / Key
+  Metrics / Unfair Advantage) until Problem/Solution Fit's exit criteria are met, the nine-block
+  canvas after; a Lean Canvas at the lean profile. Every block carries one evidence status; the top
+  risks (product / customer / market) each get a falsifiable test; "unknown: tested by …" is honest on
+  a Lean Canvas, a bare TBD never is. (`business-model-canvas`)
+- Value is mapped, not asserted: a Value Proposition Canvas per segment (standard and enterprise),
+  jobs taken from `jtbd-analysis` or marked hypothesis for it. Revenue states the charging unit and
+  willingness-to-pay evidence; price levels and tiers belong to the GTM pricing model. Run the
+  coherence check for the variant, plus the pattern's checks. (`business-model-canvas`)
 
 ### 6. One language, human-in-the-loop
 - Every strategy artifact uses canonical Ubiquitous Language terms — no synonyms. (`glossary-management`)
@@ -169,7 +174,7 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 2. Stakeholder Map         ← who influences and is affected
 3. Competitive Analysis    ← the landscape and the real alternatives, before any strategy or positioning
 4. Strategy Kernel         ← diagnosis (the crux) → guiding policy → coherent actions
-5. Business Model Canvas   ← business viability (Lean Canvas if early-stage)
+5. Business Model Canvas   ← business viability (Lean Canvas at lean or before Problem/Solution Fit)
 6. GTM Strategy            ← positioning → beachhead segment (ICP, grounded in the job) → messaging → channel
 7. OKR Set                 ← proximate objectives from the kernel, typed committed/aspirational; uses the vision's North Star Metric
 8. Strategic Roadmap       ← sequences customer-problem themes that serve the OKRs' Key Results
@@ -199,7 +204,7 @@ writes them in Ideate, from the ICP and outcomes recorded here.
    checks relevant to Strategy before writing it.
 6. **Present for approval**, summarising the key decisions, and wait for the user before the next artifact.
 
-Write each artifact at its canonical path, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `vision-statement.md`, `stakeholder-map.md`, `competitive-analysis.md`, `strategy-kernel.md`, `business-model-canvas.md`, `gtm-strategy.md`, `okrs.md`, `roadmap.md`.
+Write each artifact at its canonical path, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `vision-statement.md`, `stakeholder-map.md`, `competitive-analysis.md`, `strategy-kernel.md`, `business-model-canvas.md` (`lean-canvas.md` for the Lean Canvas variant), `gtm-strategy.md`, `okrs.md`, `roadmap.md`.
 
 Outputs are Markdown files under `artifacts/[product]/strategy/`; the `post-artifact-created` hook
 registers each in the product manifest.

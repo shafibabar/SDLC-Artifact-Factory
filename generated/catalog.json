@@ -3289,14 +3289,14 @@
         "dir": "skills/business-model-canvas",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "business-model-canvas",
         "owner": "product-strategist",
         "phase": "strategy",
@@ -3304,13 +3304,27 @@
           "business-model-canvas"
         ],
         "related": [
+          "beta-program-design",
           "competitive-analysis",
+          "glossary-management",
           "gtm-strategy",
           "impact-mapping",
           "jtbd-analysis",
+          "okr-authoring",
+          "strategy-kernel",
+          "user-persona",
           "vision-statement"
         ],
-        "sources": [],
+        "sources": [
+          "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md",
+          "research/product-strategy-and-gtm/business-model-generation-osterwalder.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
+          "research/product-strategy-and-gtm/running-lean-maurya.md"
+        ],
         "status": "stable",
         "tags": [
           "business-model",
@@ -3318,9 +3332,10 @@
           "discovery",
           "lean-canvas",
           "strategy",
-          "value-proposition"
+          "value-proposition",
+          "value-proposition-canvas"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -4891,9 +4906,12 @@
         ],
         "related": [],
         "sources": [
+          "research/product-strategy-and-gtm/business-model-generation-osterwalder.md",
           "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
           "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
-          "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md"
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md",
+          "research/product-strategy-and-gtm/running-lean-maurya.md"
         ],
         "status": "stable",
         "tags": [
@@ -4903,7 +4921,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.4.0"
+        "version": "1.5.0"
       },
       {
         "created": "2026-07-31",
@@ -10247,8 +10265,8 @@
     "edges_agent_produces": 71,
     "edges_agent_skills": 192,
     "edges_skill_produces": 188,
-    "edges_skill_related": 830,
-    "edges_skill_sources": 39,
+    "edges_skill_related": 835,
+    "edges_skill_sources": 50,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10260,20 +10278,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 24,
+    "research_files_cited": 30,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 179,
+    "skills_with_contract_test": 178,
     "skills_with_domain": 187,
-    "skills_with_evals": 7,
-    "skills_with_examples": 7,
+    "skills_with_evals": 8,
+    "skills_with_examples": 8,
     "skills_with_produces": 187,
     "skills_with_references": 182,
-    "skills_with_resources": 6,
+    "skills_with_resources": 7,
     "skills_with_scripts": 10,
-    "skills_with_sources": 8,
+    "skills_with_sources": 9,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 6
+    "skills_with_templates": 7
   },
   "edges": {
     "agent_produces": [
@@ -12264,7 +12282,15 @@
         "skill": "bounded-context-mapping"
       },
       {
+        "related": "beta-program-design",
+        "skill": "business-model-canvas"
+      },
+      {
         "related": "competitive-analysis",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "glossary-management",
         "skill": "business-model-canvas"
       },
       {
@@ -12277,6 +12303,18 @@
       },
       {
         "related": "jtbd-analysis",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "user-persona",
         "skill": "business-model-canvas"
       },
       {
@@ -15426,6 +15464,42 @@
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
       },
       {
+        "skill": "business-model-canvas",
+        "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/business-model-generation-osterwalder.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/business-model-generation-osterwalder.md"
+      },
+      {
         "skill": "glossary-management",
         "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
       },
@@ -15435,7 +15509,15 @@
       },
       {
         "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "glossary-management",
         "source": "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
       },
       {
         "skill": "go-repository-pattern",
