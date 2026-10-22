@@ -9,7 +9,7 @@ description: >
   walking skeleton, MVP slice, release slicing, cutting a horizontal slice,
   sequencing epics/stories into releases, seeing the whole product journey at a
   glance, or turning a flat backlog into a two-dimensional view during Ideate.
-version: 2.1.1
+version: 2.1.2
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -121,7 +121,7 @@ treated as shippable, or demand production rigor from a learning experiment.
 | `user-persona` | The backbone is walked from the primary persona's viewpoint |
 | `moscow-prioritization` | MoSCoW informs vertical placement, but a slice ≠ a Must cut |
 | `impact-mapping` | Impact-map WHAT deliverables seed backbone activities |
-| `roadmap-authoring` | Release slices seed Now/Next/Later horizons directly |
+| `roadmap-authoring` | The roadmap is written first, in Strategy; the first release slice tests its Now horizon, and the map's arrival is a named roadmap revision trigger |
 
 ## Anti-Patterns
 
