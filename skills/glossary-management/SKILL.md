@@ -5,7 +5,7 @@ description: >
   Defines every domain term used across all agents, skills, commands, hooks, and artifacts.
   Provides the reference all agents consult to prevent terminology drift. When any agent
   is unsure whether a term is canonical, they check this skill first.
-version: 1.3.0
+version: 1.4.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
@@ -16,6 +16,7 @@ status: stable
 sources:
   - research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md
   - research/product-strategy-and-gtm/measure-what-matters-doerr.md
+  - research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md
 ---
 
 # Glossary Management

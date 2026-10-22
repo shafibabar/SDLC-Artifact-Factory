@@ -18,8 +18,10 @@
 #   tests/run-skill-evals.sh <skill> [--runs N] [--max-cost-usd X] [--threshold T]
 #   tests/run-skill-evals.sh --verdict-only <aggregate-result.json>   # no model calls
 #
-# Defaults: --runs 3, --max-cost-usd 2, --threshold 0.67 (2 of 3 runs must pass;
+# Defaults: --runs 3, --max-cost-usd 2, --threshold 0.66 (2 of 3 runs must pass;
 # LLM-judged graders are noisy, and 1.0 would fail a case on one bad roll).
+# Not 0.67: the runner compares passRate >= threshold, and 2/3 = 0.6667 < 0.67,
+# so 0.67 silently demanded 3 of 3 (found on roadmap-authoring, #1330).
 # Exit codes: 0 pass · 1 verdict failed · 2 usage error / no suite / runner error.
 set -uo pipefail
 
@@ -66,7 +68,7 @@ if [[ -z "$SKILL" || "$SKILL" == -* ]]; then
   exit 2
 fi
 shift
-RUNS=3; COST=2; THRESHOLD=0.67
+RUNS=3; COST=2; THRESHOLD=0.66
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --runs) RUNS="$2"; shift 2 ;;

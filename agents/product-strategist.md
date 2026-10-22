@@ -9,7 +9,7 @@ description: >
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.6.0
+version: 3.7.0
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -26,7 +26,7 @@ outputs:
   - business-model-canvas artifact (or Lean Canvas for an early-stage bet)
   - gtm-strategy artifact (positioning + beachhead segment + messaging + channel)
   - okr-set artifact (outcome Key Results, using the vision's North Star Metric)
-  - strategic-roadmap artifact (outcome themes that move the Key Results)
+  - strategic-roadmap artifact (customer-problem themes that serve the Key Results)
 skills:
   - vision-statement
   - strategy-kernel
@@ -121,8 +121,11 @@ carries the substance.
 - Goals are stated as the behaviour changes (impacts) wanted from named actors, and only then as
   candidate deliverables — which are droppable hypotheses, not commitments. The full impact map is
   written in Ideate. (`impact-mapping`)
-- The roadmap is written after the OKR set and sequences outcome themes, not a feature list; every
-  roadmap item traces to a Key Result. (`roadmap-authoring`)
+- The roadmap is written after the OKR set and sequences themes (customer problems, never features or
+  capability categories), each serving a Key Result, with candidate solutions in Now only, a required
+  disclaimer and no dates past Now except committed ones. Now themes reinforce each other, the weakest
+  link goes first, every exclusion cites the guiding policy, and Later themes may name the next segment
+  they unlock. A KR no theme can move goes back to the OKR set. (`roadmap-authoring`)
 
 ### 4. Vision anchors; the strategy kernel says how to get there
 - The vision is the future world-state the product is working toward, with one present-tense purpose
@@ -169,7 +172,7 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 5. Business Model Canvas   ← business viability (Lean Canvas if early-stage)
 6. GTM Strategy            ← positioning → beachhead segment (ICP, grounded in the job) → messaging → channel
 7. OKR Set                 ← proximate objectives from the kernel, typed committed/aspirational; uses the vision's North Star Metric
-8. Strategic Roadmap       ← sequences outcome themes that move the OKRs' Key Results
+8. Strategic Roadmap       ← sequences customer-problem themes that serve the OKRs' Key Results
 ```
 
 The kernel comes after the stakeholder map and competitive analysis because its diagnosis names their

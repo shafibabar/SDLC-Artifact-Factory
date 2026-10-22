@@ -1,122 +1,185 @@
 ---
 name: roadmap-authoring
 description: >
-  Teaches how to build an outcome-based product roadmap — one that communicates
-  direction and sequencing without committing to feature specifications. Covers
-  theme-based and Now/Next/Later formats, how to connect roadmap items to OKRs,
-  confidence levels, dependency notation, and how to communicate uncertainty
-  honestly. Used by the product-strategist agent after OKRs and GTM strategy
-  are defined.
-version: 1.2.0
+  Teaches how to write a product roadmap during Strategy as a statement of
+  intent and direction (Lombardo et al.), not a release plan: rows are themes
+  (customer problems, not capability categories or features), each naming the
+  Key Result it serves, with candidate solutions in Now only, stage, confidence
+  and dependencies, across broad Now / Next / Later timeframes, under a vision
+  line and a required disclaimer. Covers testing the Now themes for coherence and
+  sequencing the weakest link first (Rumelt), citing the guiding policy for every
+  exclusion, a named prioritisation framework by scale, pre-wiring the review,
+  roadmap vs release plan vs backlog, revision history and its triggers, and
+  sizing by scale profile. Use when writing or reviewing a roadmap, rejecting a
+  feature-and-date list, or checking what the roadmap reads. Used by the
+  product-strategist agent after the OKR set; it reads the OKRs and the strategy
+  kernel and never feeds them.
+version: 2.0.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
-tags: [strategy, roadmap, product-discovery, okr, sequencing]
+tags: [strategy, roadmap, themes, sequencing, okr, prioritisation]
 produces: strategic-roadmap
 domain: strategy
 status: stable
+related: [okr-authoring, strategy-kernel, vision-statement, gtm-strategy, stakeholder-mapping, story-mapping, moscow-prioritization, nfr-specification, glossary-management]
+sources:
+  - research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md
+  - research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md
+  - research/product-strategy-and-gtm/measure-what-matters-doerr.md
+  - research/product-strategy-and-gtm/inspired-cagan.md
+  - research/product-strategy-and-gtm/crossing-the-chasm-moore.md
+  - research/product-strategy-and-gtm/product-management-in-practice-lemay.md
+  - research/requirements-and-user-stories/user-story-mapping-patton-economy.md
+  - research/storytelling-and-narrative/the-best-story-wins.md
 ---
 
 # Roadmap Authoring
 
 ## Purpose
 
-A roadmap communicates **where the product is going and in what order**, without locking the team into a delivery schedule for features that have not yet been fully understood.
+A roadmap is **a statement of intent and direction**: which customer problems the product will work on, in what order, toward which objectives, and how sure we are. The framing is Lombardo, McCarthy, Ryan and Connors' (*Product Roadmaps Relaunched*). It is a promise about direction and value, not about features on days. Cagan (*Inspired*) names the feature-and-date roadmap as the structural cause of feature teams: it decides the solution before discovery. A roadmap that lists features with dates is a release plan in the wrong place.
 
-The single most common roadmap failure is treating it as a release schedule — a list of features with dates. This creates false certainty, creates commitments that cannot be honoured, and prevents the team from responding to what they learn.
-
-An outcome-based roadmap communicates: the outcomes we intend to achieve, the order in which we intend to achieve them, and our current confidence in that sequence.
-
----
-
-## What a Roadmap Is Not
-
-| Anti-pattern | Why it fails |
-|---|---|
-| Feature list with dates | Locks delivery before discovery; creates promises that undermine trust when broken |
-| Sprint plan disguised as a roadmap | Too granular; changes every two weeks; not useful for stakeholders |
-| Wishlist with no sequencing rationale | Every item looks equally important; does not communicate strategy |
-| Competitor copy | Builds what competitors built, not what your ICP needs |
-
----
-
-## Roadmap Formats
-
-### Format 1 — Now / Next / Later (recommended for early-stage products)
-
-Three time horizons with decreasing specificity:
-
-| Horizon | Meaning | Specificity |
-|---|---|---|
-| **Now** | Currently in active development or next quarter | Outcome-level, with defined success criteria, confidence > 80% (High) |
-| **Next** | Planned for the following 2–3 quarters | Outcome-level, confidence 50–80% (Medium) |
-| **Later** | Directionally committed but timing uncertain | Theme-level, confidence below 50% (Low) |
-
-### Format 2 — Quarterly Theme Roadmap (recommended for post-launch products)
-
-Organises the roadmap into quarterly periods, each anchored by 1–2 themes. A theme is a strategic outcome, not a feature category.
+It is the last Strategy artifact, and it **reads; it never feeds**:
 
 ```
-Q3 2026 — Theme: "Frictionless Onboarding"
-  Outcome: Any SMB can connect their first storage source and see their first compliance gap within 30 minutes
-  OKR link: KR2 — 80% of trials reach first value within 30 minutes
-  Confidence: High
-
-Q4 2026 — Theme: "Compliance Coverage Depth"
-  Outcome: SOC 2 CC6 and CC7 controls are automatically mapped and evidence is generated
-  OKR link: KR3 — 5 paying customers with SOC 2 audit support delivered
-  Confidence: Medium
-
-H1 2027 — Theme: "Multi-Framework Intelligence"
-  Outcome: GDPR and ISO 27001 mapping available alongside SOC 2
-  OKR link: Strategic — expands TAM
-  Confidence: Low
+Vision ──► Strategy kernel ──► OKR set ──► Roadmap
+(North Star) (crux, guiding    (Objectives,   (themes that serve the KRs,
+              policy, actions)  KRs, Initiatives) sequenced and tested for coherence)
 ```
 
----
+**Inputs: the vision, the strategy kernel and the OKR set** (plus the GTM strategy where it exists). If no OKR set exists, stop and write it first (`okr-authoring`); a roadmap that invents its own goals is goals-as-strategy one level down. Roadmap items are the OKR set's **Initiatives**: bets on how to move a Key Result, free to change while the KR stays fixed (Doerr, *Measure What Matters*). In Rumelt's terms (*Good Strategy / Bad Strategy*) the roadmap sequences the kernel's **coherent actions**.
 
-## Step-by-Step Production
+**The one feedback loop.** If no plausible theme or Initiative could move a KR, do not invent a goal or quietly drop the KR: flag it back to `okr-authoring` for recalibration. That is a check, not an input.
 
-1. **Gather inputs.** Read the OKR set, GTM strategy, and vision statement. The roadmap is the delivery sequence that makes the OKRs achievable.
-
-2. **Choose the format.** Use Now/Next/Later for the first roadmap. Use quarterly themes once there is enough validated learning to plan further ahead.
-
-3. **Define roadmap items as outcomes, not features.** Each item answers: "What will users be able to do, or what will be measurably true, that is not true today?" Not: "What will we build?"
-
-4. **Sequence by value and dependency.** The first item in "Now" or Q1 must deliver the most validated, highest-value outcome with the lowest uncertainty. Items that are prerequisites for later items must appear before them.
-
-5. **Assign confidence levels.** Every item gets a confidence level: High (> 80%), Medium (50–80%), Low (< 50%). Confidence reflects how well the outcome is understood, not whether the team can build it.
-
-6. **Link each item to an OKR or the vision.** If an item cannot be linked to an OKR or directly to the vision, it should not be on the roadmap.
-
-7. **Note dependencies.** If a roadmap item depends on an architectural decision, a third-party integration, a regulatory approval, or another roadmap item, note it explicitly.
-
-8. **Add explicit unknowns.** A good roadmap names what is NOT on it and why. Stakeholders trust a roadmap more when it acknowledges uncertainty honestly.
+The vision owns the North Star; the roadmap names it in the vision line and never defines its own.
 
 ---
 
-## Outcome vs Feature — Examples
+## Roadmap, release plan, backlog
 
-| Feature (wrong) | Outcome (right) |
+| | **Roadmap** (this skill) | **Release plan** | **Backlog** |
+|---|---|---|---|
+| Answers | *Why*, and *which problems in what order* | *Which solutions ship when* | *What work items carry out the near term* |
+| Timeframe | Broad: Now / Next / Later | Dated | The next few iterations |
+| Audience | Everyone, from the product owner to customers | The delivery team | The delivery team |
+| Changes | At named triggers (below) | Often | Continuously |
+| In this plugin | `strategy/roadmap.md` | Later, from the Now horizon and the story map's release slices (`story-mapping`, `moscow-prioritization`) | Ideate's epics and stories |
+
+The roadmap feeds the release plan; it is never generated from one. **No date appears past Now**, except a date a **committed** OKR already carries (a contract or regulation), marked as such.
+
+---
+
+## The five primary components (every roadmap, every scale)
+
+Lombardo et al.'s primary components. A roadmap missing any one fails.
+
+1. **Vision line**: one line pointing at the vision and its North Star. Not a second vision.
+2. **Objectives**: the OKR set's Objectives and KRs the themes serve. Every theme names its KR.
+3. **Broad timeframes**: Now / Next / Later (the layout the book credits to Janna Bastow of ProdPad), or quarters near in and halves beyond. The further out, the broader.
+4. **Themes**: the rows (next section).
+5. **Disclaimer**: a required section, on every audience version, stating the roadmap reflects current understanding and will change, and that confidence describes sequence and scope, not importance.
+
+**Secondary components**, added when they apply: **stage of development** (on every row from standard up; date-free progress: research → discovery → development → beta → released), **confidence** (on every row at every scale in this plugin), **candidate solutions** (Now only), **target customer** (when the GTM strategy names more than one segment), **product areas** (swimlanes, enterprise).
+
+---
+
+## Themes: the row type in every horizon
+
+A **theme** is a customer problem or job, phrased in the customer's words so that **more than one solution could satisfy it**. It is not a capability category ("Compliance Coverage Depth"), not a feature ("Recurring scans and alerts") and not a quality target (a page-load time is an NFR for `nfr-specification`). Test: would a customer recognise this as their problem, and could discovery find a different solution and still satisfy it?
+
+The theme stays the same row as it moves from Later to Now; it gains detail, it is not rewritten. Each row carries:
+
+| Column | Rule |
 |---|---|
-| "Build Google Drive connector" | "Users can see all files stored in Google Drive classified by sensitivity within 5 minutes of connecting" |
-| "Add GDPR module" | "Compliance team can generate a GDPR Article 30 data processing register automatically from discovered entities" |
-| "Improve dashboard performance" | "Dashboard loads to an interactive state in under 2 seconds for estates with up to 1 million files" |
-| "Fix onboarding" | "80% of new users complete setup without contacting support" |
+| **Theme** | The customer problem |
+| **Serves** | The KR it moves (`KR1.2`). Next/Later may cite an Objective or an annual Objective. Never "Strategic — …": if no KR fits, write **Guiding policy:** [the clause it carries out], or the row is cut |
+| **Candidate solutions** | **Now only**: the OKR set's Initiatives, written as bets ("we believe X will move KR1.2"; LeMay), not commitments. `—` in Next and Later |
+| **Stage** | Where the theme stands, instead of a date |
+| **Confidence** | High / Medium / Low, decaying with horizon |
+| **Dependencies** | Other themes, decisions, third parties, other teams |
+
+A theme and an outcome are both needed: the theme names the problem; the KR says how success is measured. Keep the theme sharp; a vague label is not a theme.
+
+**Confidence bands are this plugin's convention, not the book's.** Lombardo et al. require confidence that falls with distance but give no numbers. The plugin calibrates: **High** (> 80%: problem and solution well understood), **Medium** (50–80%: direction set, solution open), **Low** (< 50%: intent only). Typically Now is High, Next Medium, Later Low; uniform confidence across horizons is a defect.
 
 ---
 
-## Communicating Uncertainty
+## Sequencing: coherence, weakest link, then the framework
 
-A roadmap that communicates false certainty destroys trust when reality diverges. Use these conventions:
+1. **Weakest link first** (Rumelt). If one capability caps the value of everything else (trust in the output, a data boundary, an import that must work), its theme goes first in Now, ahead of "highest value". Improving other links first wastes effort.
+2. **Coherence, not just traceability** (Rumelt). For each Now theme ask: does it make another Now theme easier or more valuable, or pull effort from one? Record what each reinforces. A theme that links to a KR but reinforces nothing is a cut candidate (entropy at work).
+3. **A named prioritisation framework** for everything else, stated in the artifact's "How this was prioritised" line, so stakeholders argue about inputs, not outcomes. Default: **critical path** at lean; a **value / effort / confidence scorecard** at standard and enterprise, scores shown; **Kano** when the question is "which needs are table stakes?". Read `./references/prioritisation-frameworks.md` when choosing or scoring. This is strategic-theme ordering; MoSCoW is release scope in Ideate (`moscow-prioritization`).
+4. **Later themes may name the next segment they unlock** (Moore's bowling alley, *Crossing the Chasm*): a theme justified because it completes the whole product for the segment adjacent to the beachhead, using the target-customer column.
 
-| Confidence | Visual treatment | Meaning |
+---
+
+## Saying no: "Not On This Roadmap"
+
+Every declined request and tempting direction goes here, and **every entry cites the guiding-policy clause (or the diagnosis) that excludes it**, not a free-floating reason. This is Lombardo's "saying no" practice with Rumelt's rule that exclusions derive from the policy. It keeps Later from becoming landfill. An exclusion with no policy reason is a decision nobody can review.
+
+---
+
+## Review, views and revision
+
+**Pre-wire before review** (the book's nemawashi and shuttle diplomacy; alignment, not consensus). **Lean:** before asking for approval, list the decisions the product owner is most likely to push back on, with the reason for each. **Standard / enterprise:** read the `stakeholder-mapping` engagement plan and record who was consulted, one at a time, and in what order, before the group review. Read `./references/alignment-and-views.md` for the technique and the audience views.
+
+**Revision history** is a required table (date, what moved, what was dropped, the learning). Revise at these **named triggers**: each OKR cycle; when discovery results arrive; when the strategy kernel is revised; when the Ideate story map exists (its release slices are the first concrete test of the Now horizon, per Patton); and when a KR proves unmovable (flag it to `okr-authoring`).
+
+**Not a story.** *The Best Story Wins* is explicit that story-arc framing does not fit a roadmap: a resolved narrative manufactures certainty about Later. Keep the roadmap a table.
+
+---
+
+## Scale
+
+Required at every profile (`phase-requirements.json`: "lean: one page"). The primary components never change; the secondary ones grow.
+
+| Profile | Shape |
+|---|---|
+| **lean** (solo, one service) | **One page.** Now / Next / Later; **two to five themes in total**, each tied to the single lean Objective's KRs; vision line, disclaimer, critical-path prioritisation; confidence on every row; no audience views, no product areas, target customer implicit; objections pre-listed; revised each OKR cycle |
+| **standard** | Now / Next / Later, or near-term quarters with halves beyond; themes tied to specific KRs; **stage and confidence on every row**; target customer when GTM names more than one segment; a value / effort / confidence scorecard; **internal and external views**; review pre-wired with the stakeholder map; monthly near-term review |
+| **enterprise** | **Product-area swimlanes** (several teams or lines on one roadmap, or a portfolio view above per-line roadmaps); cross-team dependencies explicit; themes tied to aligned OKRs at more than one level; stakeholder alignment recorded (who, in what order); views for executives, sales, engineering and customers; contractual or regulatory dates allowed **only as committed items**, matching committed OKRs |
+
+---
+
+## How to Write One
+
+1. **Read the inputs**: the vision (North Star), the strategy kernel (crux, guiding policy, rules-out list, coherent actions) and the OKR set (Objectives, KRs, candidate Initiatives); the GTM strategy if it exists. No OKR set: stop.
+2. **Write the vision line and the objectives block** from those artifacts, verbatim; invent nothing.
+3. **Draft themes as customer problems** before any solution, one or more per KR. Rewrite every feature or capability category into the problem it answers; the feature becomes a Now candidate solution or is dropped.
+4. **Check every KR is served.** A KR no theme can move goes back to `okr-authoring`, recorded in the revision history.
+5. **Sequence**: weakest link, coherence test, then the named framework; place themes in broad timeframes; set stage, confidence and dependencies.
+6. **Add candidate solutions to Now only**, from the OKR set's Initiatives, as bets.
+7. **Write "Not On This Roadmap"** from the kernel's rules-out list and every declined request, each citing the guiding-policy clause.
+8. **Add the secondary components** the profile calls for (target customer, product areas, views), then **pre-wire the review**.
+9. **Validate** with `./resources/roadmap-health-check.md`; every row is a hard stop.
+10. **Produce the artifact** from `./templates/strategic-roadmap-template.md` at `strategy/roadmap.md`, with the revision history started.
+
+**Examples, simple to complex:**
+- A lean internal tool on one page, three themes under one Objective: read `./examples/01-lean-one-page.md`.
+- A standard B2B SaaS roadmap rewritten from a feature-and-date list, with a scorecard, a committed date and two views: read `./examples/02-standard-feature-list-rewrite.md`.
+- An enterprise multi-tenant platform with product-area swimlanes, a weakest-link Now, a bowling-alley Later and policy-cited exclusions: read `./examples/03-enterprise-swimlanes.md`.
+
+---
+
+## Anti-Patterns
+
+| Anti-pattern | Example | Fix |
 |---|---|---|
-| High | Solid border, specific outcome | Well-understood; low change risk |
-| Medium | Dashed border, outcome-level | Direction set; details may change |
-| Low | Dotted border, theme-level only | Strategic intent; timing and scope uncertain |
-
-Always include a roadmap preamble that states: "This roadmap reflects our current understanding and will be updated as we learn. Confidence levels indicate how certain we are about the sequence and scope, not whether the items are important."
+| **Release plan in disguise** (Cagan; Lombardo) | "Q3: Drive connector — Aug 15" | Theme + KR; dates go to the release plan |
+| **Roadmap before OKRs** | Themes with their own invented goals | Write the OKR set first; themes serve its KRs |
+| **Capability-category theme** | "Multi-Framework Intelligence" | The customer problem it answers |
+| **Solution-first theme** (Lombardo) | A theme only one feature can satisfy | Name the problem; the feature is a candidate solution |
+| **"Strategic —" link** (Rumelt) | "OKR link: Strategic — expands TAM" | A KR, or "Guiding policy: [clause]", or cut it |
+| **Unreasoned exclusion** | "Not on roadmap: DLP" | Cite the guiding-policy clause that rules it out |
+| **Peanut-butter spread** (Rumelt) | Effort spread evenly across every theme | Concentrate Now on the weakest link and themes that reinforce it |
+| **Entropy** (Rumelt) | Themes added over time that serve no current policy | Prune to the policy at each revision |
+| **Uniform confidence** | Every row High, including Later | Confidence decays with horizon |
+| **Later as landfill** | Every request parked in Later | Decide; move the no to "Not On This Roadmap" |
+| **Sales-deck roadmap** (Lombardo) | Themes turned into dated promises to close a deal | External view: themes and stages, no dates, disclaimer |
+| **Consensus hunt** (Lombardo) | Re-litigating every item with every stakeholder | Seek alignment on direction, pre-wired |
+| **Silent re-planning** | The roadmap changed with no record | Revision history at named triggers |
+| **Second North Star** | A roadmap "north star" section | The vision's, in the vision line |
 
 ---
 
@@ -124,62 +187,16 @@ Always include a roadmap preamble that states: "This roadmap reflects our curren
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Outcome framing | Every item describes what will be true, not what will be built | Any item is a feature or a task |
-| OKR traceability | Every item links to an OKR or the vision statement | Items with no traceable strategic purpose |
-| Confidence levels | All items have explicit confidence levels | No indication of certainty or uncertainty |
-| Sequencing rationale | The order of items reflects value and dependency logic | Items ordered by gut feeling or political pressure |
-| Honest unknowns | "Later" items are less specific than "Now" items | All items at same level of specificity regardless of horizon |
+| Inputs | Reads the vision, kernel and OKR set; feeds none of them | Written before the OKRs; invents goals |
+| Primary components | Vision line, objectives, broad timeframes, themes, disclaimer all present | Any missing; disclaimer as a footnote |
+| Theme is a problem | More than one solution could satisfy each theme | Features or capability categories as rows |
+| Traceable | Each theme names a KR (or a guiding-policy clause) | "Strategic —" or no link |
+| Coherent | Now themes reinforce each other; weakest link first | A traceable but unrelated pile |
+| Prioritisation stated | The framework named (and scored at standard+) | "Sequenced by value" with no method |
+| Confidence | On every row, decaying with horizon | Missing or uniform |
+| No dates past Now | Only committed-OKR dates, marked | Dated features in Next or Later |
+| Exclusions | Each cites the guiding policy | No reasons, or reasons tied to nothing |
+| Revision recorded | History table and named triggers | None |
+| Size fits the profile | Matches the Scale table | Lean on three pages; enterprise with no swimlanes |
 
----
-
-## Anti-Patterns
-
-- **Release plan in disguise** — a roadmap whose items are features with dates. Dates belong to release planning; a roadmap sequences outcomes by confidence and dependency.
-- **Everything is Now** — an overloaded Now column signals no prioritisation happened. Now holds only what the team is actively pursuing this quarter.
-- **Later as landfill** — parking every stakeholder request in Later to avoid saying no. If it will never be pursued, it belongs in "Explicitly Not On This Roadmap" with a reason.
-- **Uniform confidence** — every item marked High confidence, including Later themes. Confidence must decay with horizon; if it doesn't, the levels are decoration.
-- **Silent re-planning** — updating the roadmap without recording what changed and why. Each revision notes what moved, what was dropped, and the learning that caused it.
-- **Orphan items** — entries that trace to no OKR and no vision element. If nothing strategic explains an item's presence, it is someone's pet feature.
-
----
-
-## Output Format
-
-```markdown
----
-name: strategic-roadmap
-product: [product name]
-version: 1.0.0
-phase: strategy
-created: [date]
-summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
-owner: product-strategist
-format: [now-next-later | quarterly-themes]
----
-
-# Strategic Roadmap
-
-> This roadmap reflects current understanding and will be updated as we learn.
-> Confidence levels indicate certainty of sequence and scope, not importance.
-
-## Now (Current quarter)
-
-| Outcome | OKR Link | Confidence | Dependencies |
-|---|---|---|---|
-
-## Next (Following 2–3 quarters)
-
-| Outcome | OKR Link | Confidence | Dependencies |
-|---|---|---|---|
-
-## Later (Directional — timing uncertain)
-
-| Theme | Strategic rationale | Confidence |
-|---|---|---|
-
-## Explicitly Not On This Roadmap
-
-[List of capabilities or directions deliberately excluded and why]
-```
-
-See `references/roadmap-template.md` for a worked example with the first product.
+Use the canonical terms from `glossary-management`: **Product Roadmap**, **Theme**, **Roadmap Disclaimer**, **Stage of Development**, **Release Plan**, **Initiative**, **Key Result**, **Guiding Policy**, **Coherent Actions**, **North Star Metric**.
