@@ -2279,7 +2279,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.5.0"
+        "version": "3.6.0"
       },
       {
         "created": "2026-06-24",
@@ -4891,7 +4891,8 @@
         ],
         "related": [],
         "sources": [
-          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
         ],
         "status": "stable",
         "tags": [
@@ -4901,7 +4902,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.2.0"
+        "version": "1.3.0"
       },
       {
         "created": "2026-07-31",
@@ -6927,14 +6928,14 @@
         "dir": "skills/okr-authoring",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "okr-authoring",
         "owner": "product-strategist",
         "phase": "strategy",
@@ -6947,9 +6948,16 @@
           "methodology-review",
           "roadmap-authoring",
           "story-mapping",
+          "strategy-kernel",
           "vision-statement"
         ],
-        "sources": [],
+        "sources": [
+          "research/data-and-analytics/lean-analytics-croll-yoskovitz.md",
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
+          "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+        ],
         "status": "stable",
         "tags": [
           "goal-setting",
@@ -6959,7 +6967,7 @@
           "outcomes",
           "strategy"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10218,8 +10226,8 @@
     "edges_agent_produces": 71,
     "edges_agent_skills": 192,
     "edges_skill_produces": 188,
-    "edges_skill_related": 820,
-    "edges_skill_sources": 24,
+    "edges_skill_related": 821,
+    "edges_skill_sources": 30,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10231,20 +10239,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 20,
+    "research_files_cited": 22,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 181,
+    "skills_with_contract_test": 180,
     "skills_with_domain": 187,
-    "skills_with_evals": 5,
-    "skills_with_examples": 5,
+    "skills_with_evals": 6,
+    "skills_with_examples": 6,
     "skills_with_produces": 187,
     "skills_with_references": 182,
-    "skills_with_resources": 4,
+    "skills_with_resources": 5,
     "skills_with_scripts": 10,
-    "skills_with_sources": 6,
+    "skills_with_sources": 7,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 4
+    "skills_with_templates": 5
   },
   "edges": {
     "agent_produces": [
@@ -14019,6 +14027,10 @@
         "skill": "okr-authoring"
       },
       {
+        "related": "strategy-kernel",
+        "skill": "okr-authoring"
+      },
+      {
         "related": "vision-statement",
         "skill": "okr-authoring"
       },
@@ -15361,6 +15373,10 @@
         "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
       },
       {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
+      },
+      {
         "skill": "go-repository-pattern",
         "source": "research/domain-driven-design/learning-ddd-khononov.md"
       },
@@ -15383,6 +15399,26 @@
       {
         "skill": "go-repository-pattern",
         "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/data-and-analytics/lean-analytics-croll-yoskovitz.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
       },
       {
         "skill": "skill-authoring-standards",

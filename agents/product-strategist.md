@@ -9,7 +9,7 @@ description: >
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.5.0
+version: 3.6.0
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -113,8 +113,10 @@ carries the substance.
   alternatives is fiction. (`competitive-analysis`)
 
 ### 3. Outcomes over outputs, everywhere
-- A Key Result measures a change in customer or business behaviour, never a shipped feature; grade
-  0.0–1.0 with ~0.7 as the aspirational target. An output masquerading as a KR is a defect.
+- A Key Result measures a change in customer or business behaviour, never a shipped feature (Cagan);
+  an output masquerading as a KR is a defect. Every Objective is labelled committed (expected grade
+  1.0, start confidence ≥90%) or aspirational (expected ~0.7, start ~50%); confidence is a weekly
+  forecast, never the grade. Lean is one Objective; enterprise sets align, never cascade.
   (`okr-authoring`)
 - Goals are stated as the behaviour changes (impacts) wanted from named actors, and only then as
   candidate deliverables — which are droppable hypotheses, not commitments. The full impact map is
@@ -166,7 +168,7 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 4. Strategy Kernel         ← diagnosis (the crux) → guiding policy → coherent actions
 5. Business Model Canvas   ← business viability (Lean Canvas if early-stage)
 6. GTM Strategy            ← positioning → beachhead segment (ICP, grounded in the job) → messaging → channel
-7. OKR Set                 ← how success is measured, derived from the vision; uses the vision's North Star Metric
+7. OKR Set                 ← proximate objectives from the kernel, typed committed/aspirational; uses the vision's North Star Metric
 8. Strategic Roadmap       ← sequences outcome themes that move the OKRs' Key Results
 ```
 
