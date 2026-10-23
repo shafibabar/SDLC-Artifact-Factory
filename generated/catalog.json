@@ -3536,31 +3536,47 @@
         "dir": "skills/competitive-analysis",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "competitive-analysis",
         "owner": "product-strategist",
         "phase": "strategy",
         "produces": [
           "competitive-analysis"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "business-model-canvas",
+          "glossary-management",
+          "gtm-strategy",
+          "jtbd-analysis",
+          "requirements-analysis",
+          "stakeholder-mapping",
+          "strategy-kernel",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+        ],
         "status": "stable",
         "tags": [
+          "competitive-alternatives",
           "competitive-analysis",
           "differentiation",
-          "gtm",
           "positioning",
-          "strategy"
+          "strategy",
+          "win-loss"
         ],
-        "version": "1.2.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10265,8 +10281,8 @@
     "edges_agent_produces": 71,
     "edges_agent_skills": 192,
     "edges_skill_produces": 188,
-    "edges_skill_related": 835,
-    "edges_skill_sources": 50,
+    "edges_skill_related": 843,
+    "edges_skill_sources": 55,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10278,20 +10294,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 30,
+    "research_files_cited": 32,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 178,
+    "skills_with_contract_test": 177,
     "skills_with_domain": 187,
-    "skills_with_evals": 8,
-    "skills_with_examples": 8,
+    "skills_with_evals": 9,
+    "skills_with_examples": 9,
     "skills_with_produces": 187,
     "skills_with_references": 182,
-    "skills_with_resources": 7,
+    "skills_with_resources": 8,
     "skills_with_scripts": 10,
-    "skills_with_sources": 9,
+    "skills_with_sources": 10,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 7
+    "skills_with_templates": 8
   },
   "edges": {
     "agent_produces": [
@@ -12396,6 +12412,38 @@
       {
         "related": "domain-event-catalog",
         "skill": "command-catalog"
+      },
+      {
+        "related": "business-model-canvas",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "competitive-analysis"
       },
       {
         "related": "access-control-model",
@@ -15494,6 +15542,26 @@
       {
         "skill": "business-model-canvas",
         "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
       },
       {
         "skill": "glossary-management",

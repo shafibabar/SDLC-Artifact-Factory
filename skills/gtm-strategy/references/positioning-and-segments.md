@@ -127,6 +127,8 @@ next:
    not exist. Broader than "competitors": a spreadsheet, a manual process, an
    internal hack, hiring a consultant, or simply tolerating the pain. **Doing
    nothing is always a competitive alternative.** This is the mandatory first step.
+   The list itself is owned by the `competitive-analysis` artifact (section 1);
+   positioning cites it rather than building a second list.
 2. **Unique attributes** — capabilities the true alternatives lack.
 3. **Value and themes** — the customer-facing benefit each unique attribute
    produces, grouped into 2–4 themes (not a flat feature list).
@@ -195,7 +197,8 @@ Re-examine the Positioning Statement and Messaging Framework:
 **Win/loss analysis** captures the actual outcome and stated reason of a real
 competitive encounter (a trial or deal, won or lost against a named alternative)
 and feeds it back into positioning — distinct from a forward-looking competitive-
-risk register, which only anticipates. "We lost this evaluation to a spreadsheet-
+risk register, which only anticipates. The win/loss log is kept in the
+`competitive-analysis` artifact; this trigger reads it. "We lost this evaluation to a spreadsheet-
 and-consultant substitute because the differentiator didn't land" is win/loss
 evidence that should force a refresh.
 

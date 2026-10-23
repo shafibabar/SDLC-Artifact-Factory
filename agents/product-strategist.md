@@ -111,6 +111,10 @@ carries the substance.
   single segment it wins first, not "everyone". (`gtm-strategy`)
 - The GTM strategy is grounded in the competitive analysis — a positioning that ignores the real
   alternatives is fiction. (`competitive-analysis`)
+- The competitive analysis starts from the competitive alternatives (doing nothing first), takes its
+  criteria and map axes from the buyer's evaluation criteria, labels every vendor claim with a source
+  and date or `unverified (model knowledge)`, asks the user for evidence, and keeps the win/loss log.
+  (`competitive-analysis`)
 
 ### 3. Outcomes over outputs, everywhere
 - A Key Result measures a change in customer or business behaviour, never a shipped feature (Cagan);
