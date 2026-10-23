@@ -15,7 +15,7 @@ description: >
   crossed the chasm. Used by the product-strategist agent in the Strategy phase
   (/sdlc-strategy), after the business model canvas and before the OKR set;
   required at standard and enterprise, skipped at lean.
-version: 3.0.0
+version: 3.1.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -23,7 +23,7 @@ tags: [strategy, gtm, positioning, beachhead, messaging, pricing, channels, laun
 produces: go-to-market-strategy
 domain: strategy
 status: stable
-related: [strategy-kernel, competitive-analysis, business-model-canvas, vision-statement, stakeholder-mapping, user-persona, beta-program-design, okr-authoring, roadmap-authoring, glossary-management, methodology-review]
+related: [strategy-kernel, competitive-analysis, business-model-canvas, pricing-and-packaging, vision-statement, stakeholder-mapping, user-persona, beta-program-design, okr-authoring, roadmap-authoring, glossary-management, methodology-review]
 sources:
   - research/product-strategy-and-gtm/crossing-the-chasm-moore.md
   - research/product-strategy-and-gtm/obviously-awesome-dunford.md
@@ -73,7 +73,7 @@ Vision ─► Stakeholder map ─► Competitive analysis ─► Strategy kernel
 |---|---|
 | **lean** (skipped) | No GTM artifact. Monetisation lives in the Lean Canvas's Revenue block: "not monetised" with the reason, or the model, charging unit and one price point with its WTP basis. If the user asks for a GTM anyway, it collapses to **rollout and adoption**: who first, one channel, one message line, a two-stage trial with exit criteria, one adoption metric. No ICP firmographics, positioning statement, sales model, tiers or buying group: `./examples/01-lean-lunch-tracker.md` |
 | **standard** | The full artifact for **one** beachhead: scorecard, ICP with disqualifiers, buying group (from the first paid commitment, even self-serve), positioning statement, reframe + message house, one primary channel, sales motion, pricing (model, charging unit, packaging, WTP evidence, value anchor, price strategy, a price **range** per tier), three launch stages with exit criteria, metrics |
-| **enterprise** | Everything in standard, plus: a buying group **per segment** with Mobilizer and Blocker hypotheses and a consensus kit; a whole-product map with gaps (certifications, integrations, references); the bowling-alley next segment; leaders / fillers / killers per segment, good-better-best tiers with fences, and a discount policy. A full tier matrix and bottom-up pricing business case belong to the planned `pricing-and-packaging` skill; until it exists, record them here |
+| **enterprise** | Everything in standard, plus: a buying group **per segment** with Mobilizer and Blocker hypotheses and a consensus kit; a whole-product map with gaps (certifications, integrations, references); the bowling-alley next segment; leaders / fillers / killers per segment, good-better-best tiers with fences, and a discount policy. The full tier matrix, list prices, bottom-up pricing business case, approval ladder and price-change rules go in the separate pricing-and-packaging artifact (`pricing-and-packaging`), which works inside this artifact's ranges |
 
 ## The Components, in Order
 
@@ -100,7 +100,7 @@ Pricing is written seventh but **decided from evidence gathered at step 1**: the
 
 **5. One primary channel.** It must reach the whole beachhead and carry 70%+ of early acquisition; at most two supporting channels; everything else deferred with a revisit point.
 
-**6. Pricing is three decisions, from evidence.** (a) **Monetisation model** (subscription, usage, freemium…), (b) **charging unit**, the "per what" (tracks the customer's value, predictable bill, grows as the customer succeeds), (c) **packaging** (one offer or good-better-best, each tier carrying its segment's **leaders** and none of its **killers**, features that make the segment less likely to buy; the full leaders / fillers / killers table per segment at enterprise). The **value anchor** (quantified value to the customer) is the ceiling; **WTP evidence** (a range, labelled *stated* or *committed*) is where the price sits; name the **price strategy** (maximisation by default; penetration only with a named network effect, scale economy or lock-in; skimming only with a premium early segment and a planned step-down). State a **price range per tier**; list prices are refined in Stage 2. Never defer prices to an undefined "commercial plan". Detail and the failure-mode check: `./references/pricing.md`.
+**6. Pricing is three decisions, from evidence.** (a) **Monetisation model** (subscription, usage, freemium…), (b) **charging unit**, the "per what" (tracks the customer's value, predictable bill, grows as the customer succeeds), (c) **packaging** (one offer or good-better-best, each tier carrying its segment's **leaders** and none of its **killers**, features that make the segment less likely to buy; the full leaders / fillers / killers table per segment at enterprise). The **value anchor** (quantified value to the customer) is the ceiling; **WTP evidence** (a range, labelled *stated* or *committed*) is where the price sits; name the **price strategy** (maximisation by default; penetration only with a named network effect, scale economy or lock-in; skimming only with a premium early segment and a planned step-down). State a **price range per tier**; list prices are refined in Stage 2. Never defer prices to an undefined "commercial plan". Detail and the failure-mode check: `./references/pricing.md`. The tier matrix with fences, list prices, the pricing business case and the discount policy belong to `pricing-and-packaging` (enterprise; standard when tiers serve different segments).
 
 **7. Exit criteria rest on evidence, not goodwill.** Every launch stage has measurable exit criteria. Stage 1's "ICP confirmed" and "core value delivered" count only if the design-partner conversations meet the Mom Test (Fitzpatrick): about their life, not the pitch; past specifics, not hypotheticals; commitments, not compliments. Stage 1 also records the WTP range per segment and whether the Mobilizer hypothesis held. Stage 2 exits on price accepted within the stated range without structural discounting. Detail: `./references/messaging-and-launch.md`.
 

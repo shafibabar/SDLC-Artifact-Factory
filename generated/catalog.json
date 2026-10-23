@@ -757,6 +757,14 @@
         "slo-definition"
       ]
     },
+    "pricing-and-packaging-plan": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "pricing-and-packaging"
+      ]
+    },
     "privacy-design": {
       "agents": [],
       "skills": [
@@ -1685,6 +1693,7 @@
         "competitive-analysis",
         "go-to-market-strategy",
         "okr",
+        "pricing-and-packaging-plan",
         "stakeholder-map",
         "strategic-roadmap",
         "strategy-kernel",
@@ -1693,12 +1702,13 @@
       "owners": [
         "product-strategist"
       ],
-      "skill_count": 8,
+      "skill_count": 9,
       "skills": [
         "business-model-canvas",
         "competitive-analysis",
         "gtm-strategy",
         "okr-authoring",
+        "pricing-and-packaging",
         "roadmap-authoring",
         "stakeholder-mapping",
         "strategy-kernel",
@@ -2236,6 +2246,7 @@
           "competitive-analysis",
           "go-to-market-strategy",
           "okr",
+          "pricing-and-packaging-plan",
           "stakeholder-map",
           "strategic-roadmap",
           "strategy-kernel",
@@ -2252,6 +2263,7 @@
           "memory-recall",
           "methodology-review",
           "okr-authoring",
+          "pricing-and-packaging",
           "roadmap-authoring",
           "stakeholder-mapping",
           "strategy-kernel",
@@ -2279,7 +2291,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.8.0"
+        "version": "3.9.0"
       },
       {
         "created": "2026-06-24",
@@ -4940,7 +4952,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.6.0"
+        "version": "1.7.0"
       },
       {
         "created": "2026-07-31",
@@ -6237,6 +6249,7 @@
           "glossary-management",
           "methodology-review",
           "okr-authoring",
+          "pricing-and-packaging",
           "roadmap-authoring",
           "stakeholder-mapping",
           "strategy-kernel",
@@ -6265,7 +6278,7 @@
           "pricing",
           "strategy"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -7128,6 +7141,57 @@
           "service-catalog",
           "toil",
           "tvp"
+        ],
+        "version": "1.0.0"
+      },
+      {
+        "created": "2026-10-23",
+        "dir": "skills/pricing-and-packaging",
+        "domain": "strategy",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": true,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "pricing-and-packaging",
+        "owner": "product-strategist",
+        "phase": "strategy",
+        "produces": [
+          "pricing-and-packaging-plan"
+        ],
+        "related": [
+          "beta-program-design",
+          "business-model-canvas",
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "methodology-review",
+          "okr-authoring",
+          "roadmap-authoring",
+          "stakeholder-mapping",
+          "strategy-kernel"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/business-model-generation-osterwalder.md",
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/running-lean-maurya.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "business-case",
+          "discount-policy",
+          "monetisation",
+          "packaging",
+          "pricing",
+          "strategy",
+          "tiers",
+          "willingness-to-pay"
         ],
         "version": "1.0.0"
       },
@@ -10294,17 +10358,17 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 181,
+    "artifacts": 182,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 71,
-    "edges_agent_skills": 192,
-    "edges_skill_produces": 188,
-    "edges_skill_related": 848,
-    "edges_skill_sources": 67,
+    "edges_agent_produces": 72,
+    "edges_agent_skills": 193,
+    "edges_skill_produces": 189,
+    "edges_skill_related": 859,
+    "edges_skill_sources": 72,
     "hooks": 11,
     "orphan_skills": 0,
-    "skills": 187,
+    "skills": 188,
     "unresolved_skill_related": 0
   },
   "coverage": {
@@ -10316,17 +10380,17 @@
     "research_files_cited": 33,
     "skills_with_assets": 14,
     "skills_with_contract_test": 176,
-    "skills_with_domain": 187,
-    "skills_with_evals": 10,
-    "skills_with_examples": 10,
-    "skills_with_produces": 187,
-    "skills_with_references": 182,
-    "skills_with_resources": 9,
-    "skills_with_scripts": 10,
-    "skills_with_sources": 11,
-    "skills_with_status": 187,
+    "skills_with_domain": 188,
+    "skills_with_evals": 11,
+    "skills_with_examples": 11,
+    "skills_with_produces": 188,
+    "skills_with_references": 183,
+    "skills_with_resources": 10,
+    "skills_with_scripts": 11,
+    "skills_with_sources": 12,
+    "skills_with_status": 188,
     "skills_with_steps": 0,
-    "skills_with_templates": 9
+    "skills_with_templates": 10
   },
   "edges": {
     "agent_produces": [
@@ -10597,6 +10661,10 @@
       {
         "agent": "product-strategist",
         "artifact": "okr"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "pricing-and-packaging-plan"
       },
       {
         "agent": "product-strategist",
@@ -11119,6 +11187,10 @@
       {
         "agent": "product-strategist",
         "skill": "okr-authoring"
+      },
+      {
+        "agent": "product-strategist",
+        "skill": "pricing-and-packaging"
       },
       {
         "agent": "product-strategist",
@@ -11821,6 +11893,10 @@
       {
         "artifact": "platform-design",
         "skill": "platform-engineering-design"
+      },
+      {
+        "artifact": "pricing-and-packaging-plan",
+        "skill": "pricing-and-packaging"
       },
       {
         "artifact": "privacy-design",
@@ -13929,6 +14005,10 @@
         "skill": "gtm-strategy"
       },
       {
+        "related": "pricing-and-packaging",
+        "skill": "gtm-strategy"
+      },
+      {
         "related": "roadmap-authoring",
         "skill": "gtm-strategy"
       },
@@ -14179,6 +14259,46 @@
       {
         "related": "vision-statement",
         "skill": "okr-authoring"
+      },
+      {
+        "related": "beta-program-design",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "business-model-canvas",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "pricing-and-packaging"
       },
       {
         "related": "access-control-model",
@@ -15717,6 +15837,26 @@
       {
         "skill": "okr-authoring",
         "source": "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/business-model-generation-osterwalder.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
       },
       {
         "skill": "roadmap-authoring",

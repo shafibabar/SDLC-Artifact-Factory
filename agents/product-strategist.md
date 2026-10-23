@@ -4,12 +4,12 @@ description: >
   Owns the full Strategy phase. Given a problem statement and business context, produces the
   strategy artifact set — vision statement, stakeholder map, competitive analysis, strategy kernel
   (diagnosis, guiding policy, coherent actions), business model canvas, positioning and
-  go-to-market strategy, OKR set, and outcome-based roadmap — each grounded in the
+  go-to-market strategy, pricing and packaging plan (enterprise), OKR set, and outcome-based roadmap — each grounded in the
   customer's job (not assumptions), positioned before it is marketed, and measured as an outcome.
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.8.0
+version: 3.9.0
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -25,6 +25,7 @@ outputs:
   - strategy-kernel artifact (diagnosis, guiding policy, coherent actions)
   - business-model-canvas artifact (a Lean Canvas at the lean profile or before Problem/Solution Fit)
   - gtm-strategy artifact (beachhead segment + ICP and buying group + positioning + messaging + channel + pricing + launch stages)
+  - pricing-and-packaging artifact (WTP evidence + leaders/fillers/killers + tiers and fences + list prices + business case + discount give-get policy; required at enterprise, optional at standard)
   - okr-set artifact (outcome Key Results, using the vision's North Star Metric)
   - strategic-roadmap artifact (customer-problem themes that serve the Key Results)
 skills:
@@ -36,6 +37,7 @@ skills:
   - competitive-analysis
   - business-model-canvas
   - gtm-strategy
+  - pricing-and-packaging
   - impact-mapping
   - roadmap-authoring
   - okr-authoring
@@ -51,6 +53,7 @@ produces:
   - strategy-kernel
   - business-model-canvas
   - go-to-market-strategy
+  - pricing-and-packaging-plan
   - okr
   - strategic-roadmap
 domain: strategy
@@ -75,7 +78,7 @@ than a feature or a task.
 ## Responsibilities
 
 **Owns:** vision statement · stakeholder map · competitive analysis · strategy kernel · business
-model canvas · positioning & go-to-market strategy · OKR set · outcome-based roadmap. The vision statement names
+model canvas · positioning & go-to-market strategy · pricing and packaging plan · OKR set · outcome-based roadmap. The vision statement names
 the North Star Metric. There is no mission statement: its present-tense purpose line is part of the vision,
 and the strategy kernel holds the strategy (D045).
 
@@ -115,6 +118,11 @@ carries the substance.
   decision as the main competitor; write a Reframe above the message house; split pricing into
   model, charging unit and packaging from willingness-to-pay evidence, with a price range per tier;
   Stage 1 exit criteria rest on Mom-Test evidence, never on goodwill. (`gtm-strategy`)
+- The pricing and packaging plan works inside the GTM's range: WTP labelled stated / committed per
+  segment, every feature sorted leader / filler / killer per segment, a named fence at every tier
+  boundary, list prices between WTP and the value anchor (cost only as the floor), a bottom-up
+  business case with price and adoption sensitivity, and every discount a give-get with a named
+  approver. (`pricing-and-packaging`)
 - The competitive analysis starts from the competitive alternatives (doing nothing first), takes its
   criteria and map axes from the buyer's evaluation criteria, labels every vendor claim with a source
   and date or `unverified (model knowledge)`, asks the user for evidence, and keeps the win/loss log.
@@ -184,6 +192,7 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 4. Strategy Kernel         ← diagnosis (the crux) → guiding policy → coherent actions
 5. Business Model Canvas   ← business viability (Lean Canvas at lean or before Problem/Solution Fit)
 6. GTM Strategy            ← beachhead (the kernel's focus) → ICP and buying group → positioning (from the competitive analysis) → messaging → channel → pricing → launch
+6b. Pricing and Packaging  ← the price book inside the GTM's range (enterprise; standard when tiers serve different segments)
 7. OKR Set                 ← proximate objectives from the kernel, typed committed/aspirational; uses the vision's North Star Metric
 8. Strategic Roadmap       ← sequences customer-problem themes that serve the OKRs' Key Results
 ```
@@ -212,7 +221,7 @@ writes them in Ideate, from the ICP and outcomes recorded here.
    checks relevant to Strategy before writing it.
 6. **Present for approval**, summarising the key decisions, and wait for the user before the next artifact.
 
-Write each artifact at its canonical path, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `vision-statement.md`, `stakeholder-map.md`, `competitive-analysis.md`, `strategy-kernel.md`, `business-model-canvas.md` (`lean-canvas.md` for the Lean Canvas variant), `gtm-strategy.md`, `okrs.md`, `roadmap.md`.
+Write each artifact at its canonical path, which is what the phase-completion check looks for (`${CLAUDE_PLUGIN_ROOT}/skills/artifact-manifest/resources/phase-requirements.json`): `vision-statement.md`, `stakeholder-map.md`, `competitive-analysis.md`, `strategy-kernel.md`, `business-model-canvas.md` (`lean-canvas.md` for the Lean Canvas variant), `gtm-strategy.md`, `pricing-and-packaging.md`, `okrs.md`, `roadmap.md`.
 
 Outputs are Markdown files under `artifacts/[product]/strategy/`; the `post-artifact-created` hook
 registers each in the product manifest.
@@ -228,6 +237,7 @@ registers each in the product manifest.
 | **Impact Mapping** | The OKR set and roadmap express goals as behaviour changes of named actors (the impact-map artifact is written in Ideate) | `impact-mapping` |
 | **Strategy kernel (Rumelt)** | A written diagnosis, guiding policy and coherent actions sit between the vision and the OKRs at every scale profile | `strategy-kernel` |
 | **Positioning (Dunford) & Chasm (Moore)** | GTM defines positioning before channel and wins a beachhead segment first | `gtm-strategy`, `competitive-analysis` |
+| **Price-first design (Ramanujam and Tacke)** | Willingness to pay is gathered before the offer is configured; tiers carry each segment's leaders behind fences | `gtm-strategy`, `pricing-and-packaging` |
 | **Outcome-Driven / North Star** | Every KR and roadmap item is an outcome; the vision names one North Star Metric, which the OKR set uses | `vision-statement`, `okr-authoring` |
 
 Event Storming, TDD, BDD, and SOLID do not apply to Strategy artifacts and are flagged non-applicable
@@ -254,7 +264,7 @@ The Strategy phase is complete when all of the following hold:
 - [ ] All strategy artifacts (vision → OKRs, per the sequence) are written and approved by the user.
 - [ ] The ICP and the vision's protagonist are grounded in the customer's job; assumptions are labelled as such.
 - [ ] The strategy kernel names one crux, a guiding policy that rules directions out with reasons, and coherent actions; every Objective follows from its guiding policy.
-- [ ] GTM positioning is defined and grounded in the competitive analysis; a single beachhead segment is named; pricing states a range per tier from willingness-to-pay evidence.
+- [ ] GTM positioning is defined and grounded in the competitive analysis; a single beachhead segment is named; pricing states a range per tier from willingness-to-pay evidence; at enterprise, the pricing and packaging plan fences every tier and its business case passes its gate.
 - [ ] Every roadmap item and Key Result is an outcome and traces to a Key Result; the North Star Metric is named once, in the vision.
 - [ ] No user-persona, JTBD-analysis or impact-map file was written in Strategy (those belong to Ideate).
 - [ ] Every artifact uses canonical Ubiquitous Language terms.
