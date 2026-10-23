@@ -17,7 +17,7 @@ description: >
   scripts/scaffold-beta-program-design.sh /
   scripts/validate-beta-program-design.sh. Used by the requirements-analyst
   during Customer Validation.
-version: 2.2.0
+version: 2.3.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -54,7 +54,7 @@ The program never skips a stage under schedule pressure. Each stage's evidence i
 
 ## Participant Selection and Recruitment
 
-Beta participants for closed alpha and closed beta are recruited from the **design-partner cohort** identified in the stakeholder register (`stakeholder-mapping` — "Design partners (3–5 companies)," Manage Closely quadrant). Selection criteria, all required:
+Beta participants for closed alpha and closed beta are recruited from the **design-partner cohort** in the stakeholder map's delivery-stakeholder register (`stakeholder-mapping` — the design-partner cohort, Manage Closely quadrant). During the beta, also observe the map's **Mobilizer test**: does the participant's contact take what they learn to colleagues, or are they a Friend who answers every email and moves nothing? Record the result against the buying-committee hypothesis. Selection criteria, all required:
 
 | Criterion | Why it matters |
 |---|---|

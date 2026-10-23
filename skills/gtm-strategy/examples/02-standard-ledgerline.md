@@ -12,7 +12,7 @@ Self-contained. A growing SaaS product at the **standard** profile, written afte
 >
 > Business model canvas (approved): subscription; charging unit per firm per month, tiered by active clients chased; WTP stated range from 5 solution interviews, committed by 3 paid pilots at the quoted $89; price levels are the GTM's.
 >
-> Stakeholder map: the managing partner buys; the office manager uses it daily.
+> Stakeholder map (approved): §2 holds the buying committee for 5–50-staff hourly-billing firms (managing partner, office manager, other partners), with belief, objection and proof per role.
 
 ## The draft the team brought (excerpt)
 
@@ -37,7 +37,7 @@ created: 2026-10-23
 summary: Win 5–50-staff hourly-billing firms in the quarter before year-end, unlike their spreadsheet, with a same-day import trial priced $79–179 per firm per month.
 owner: product-strategist
 profile: standard
-traces_to: strategy/strategy-kernel.md; strategy/competitive-analysis.md; strategy/business-model-canvas.md
+traces_to: strategy/strategy-kernel.md; strategy/competitive-analysis.md; strategy/business-model-canvas.md; strategy/stakeholder-map.md
 ---
 
 # Go-to-Market Strategy
@@ -74,12 +74,7 @@ Carries out the kernel's guiding policy: "concentrate on firms of 5–50 staff t
 
 ### Buying group
 
-| Role | Must believe | Likely objection | Proof | Likely profile | Loses by staying put |
-|---|---|---|---|---|---|
-| Managing partner (economic buyer) | It pays for itself and the switch costs an afternoon | "Not mid-year" | Import on their own data in the trial | Skeptic (likely) | Another year of write-offs |
-| Office manager (user) | Nothing goes to a client without approval | "I won't let a robot email clients" | D2 approve-before-send | Go-Getter (likely) — **Mobilizer hypothesis** | Evenings writing reminders |
-| Other partners (20–50-staff firms) | Their clients won't be annoyed | "Our clients are sensitive" | Reminder templates they approve | Blocker (likely) | Little; they rarely chase |
-
+**Committee:** `strategy/stakeholder-map.md` §2, segment "accounting firms, 5–50 staff, billing hourly": managing partner (economic buyer, Skeptic likely), office manager (user, Go-Getter likely), other partners at larger firms (Blocker likely). Belief, objection and proof per role are in the map.
 **Mobilizer hypothesis:** the office manager, who runs the trial and shows the partner the first-afternoon overdue list. Stage 1 result: held in 3 of 5 partners. In design partner 5 the office manager was a **Friend** — answered every email, never brought the partner in — and that account went quiet.
 **Where consensus is built:** a 20-minute product-assisted call where the office manager walks the partners through their own overdue list.
 

@@ -49,11 +49,8 @@ A CISO can be any of these. Name profiles as "likely" hypotheses per segment, to
 
 **The test:** offer an insight (the Reframe). A Talker asks what it means for them; a Mobilizer asks what it means for the company and acts on it, or, as a Skeptic, pressure-tests it.
 
-**What the GTM records** (one row per role; the stakeholder map's buying-committee roles are the starting point where it has them):
+**One home: the stakeholder map.** The per-role table (role, must believe to say yes, likely objection, proof, likely profile, loses by staying put, confirmed by) is the buying-committee half of the stakeholder map (`stakeholder-mapping`), one per segment. The GTM cites it for the beachhead and never keeps a second table. If the beachhead is a segment the map does not cover, add its committee to the map first. Only when no stakeholder map exists (lean, where both artifacts are skipped) does the GTM write the hypotheses itself.
 
-| Role | Must believe to say yes | Likely objection | Proof that answers it | Likely profile | Loses by staying put |
-|---|---|---|---|---|---|
-
-Then: the **Mobilizer hypothesis** (who will carry the change), the **Blocker** (who defends the status quo), and **where consensus is built**: get the group to agree on the problem before anyone compares solutions (collective learning); if members first meet over competing proposals, each defends their own priorities and the group stalls.
+**What the GTM records:** the **Mobilizer hypothesis** (who will carry the change), the **Blocker** (who defends the status quo), and **where consensus is built**: get the group to agree on the problem before anyone compares solutions (collective learning); if members first meet over competing proposals, each defends their own priorities and the group stalls.
 
 **Self-serve does not remove the group.** It appears at procurement, when security and finance review a trial a user started. At standard scale a group of two to four roles is typical; at enterprise, one per segment, with a consensus kit per role (see `./messaging-and-launch.md`).

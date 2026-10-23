@@ -9,7 +9,7 @@ description: >
   goals, behaviors, pains, JTBD link), the honesty rule for labeling assumptions, what to leave out
   (demographics that do not drive design), and how a persona becomes the "As a <persona>" role in a
   user story.
-version: 2.1.1
+version: 2.1.2
 phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
@@ -113,8 +113,9 @@ full "leave out" list and the reasoning: `references/persona-fields-and-groundin
   A user story whose role is a generic "user" rather than a named persona has lost its human anchor.
 - **← `gtm-strategy`**: the persona lives inside the ICP company profile from GTM strategy — the ICP
   is the *company* type, the persona is the *person* type within it.
-- **← `stakeholder-mapping`**: "Manage Closely" stakeholders often correspond to the primary user,
-  the economic buyer, or the champion — model each distinct role as its own persona.
+- **← `stakeholder-mapping`**: the map's **buying-committee** roles (economic buyer, user team,
+  reviewers) become the primary and secondary personas — model each distinct role as its own
+  persona. Delivery stakeholders (the product owner, design partners, internal teams) do not.
 
 ---
 
