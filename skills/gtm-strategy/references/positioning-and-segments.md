@@ -1,17 +1,12 @@
 # Positioning and Segment Selection — Reference
 
-Deep reference for the decision-shaping guidance in `SKILL.md`. Covers three
-practitioner sources that sit underneath the GTM components: beachhead-segment
-selection (Moore), positioning as a sequenced exercise (Dunford), and keeping
-the message house alive after launch (Lauchengco). Self-contained — read this
-when the body points here.
+Self-contained. Read this when scoring beachhead candidates, writing the positioning statement, choosing the market category, planning expansion after the beachhead, or judging whether a product that has finished its launch stages has crossed the chasm. Sources: Geoffrey Moore, *Crossing the Chasm* (adoption lifecycle, beachhead, whole product, bowling alley) and April Dunford, *Obviously Awesome* (positioning as a sequenced exercise, category as a lever).
 
 ---
 
 ## 1. The Technology Adoption Lifecycle and the Chasm (Moore)
 
-"The market" is not one curve — it is five buyer psychographics, each buying for
-a *different reason* and needing a different value proposition, channel, and price:
+"The market" is not one curve. It is five buyer psychographics, each buying for a *different reason* and needing a different value proposition, channel and price:
 
 | Segment | Buys because | Tolerates |
 |---|---|---|
@@ -21,207 +16,101 @@ a *different reason* and needing a different value proposition, channel, and pri
 | Late majority (conservatives) | It is now a cheap de-facto standard | Little change |
 | Laggards (skeptics) | It is embedded invisibly in something else | Almost nothing |
 
-**The chasm** sits between early adopters and the early majority — the single
-hardest gap. Visionaries and pragmatists are nearly opposite psychologies: a
-visionary wants an unproven capability and self-references; a pragmatist distrusts
-visionary enthusiasm ("if the visionaries love it, it's probably immature") and
-wants named references in their own vertical. A GTM motion built to win visionaries
-— leading with novelty, selling on vision not track record — actively repels
-pragmatists. The chasm-death pattern: strong early references that never convert
-to a second wave, deals stuck in indefinite proof-of-concept, revenue plateauing
-just above the early-adopter ceiling.
+**The chasm** sits between early adopters and the early majority. Visionaries and pragmatists are nearly opposite: a visionary wants an unproven capability and references themself; a pragmatist distrusts visionary enthusiasm and wants named references from people like them, in their own vertical. A motion built to win visionaries (novelty, vision, no track record) actively repels pragmatists. The chasm-death pattern: strong early references that never convert to a second wave, deals stuck in indefinite proof of concept, revenue flat just above the early-adopter ceiling.
 
-**Launch stage and the chasm are different axes** and must not be conflated. The
-three-stage Launch Sequencing (closed beta → soft launch → GA) is audience size
-and exposure over time within one segment; the chasm is buyer psychology across
-the adoption curve. A product can complete all three launch stages while still
-selling only to visionaries and never crossing the chasm. Keep them as separate
-checks.
+**Launch stage and the chasm are different axes.** The three launch stages (closed beta → soft launch → GA) measure audience size and exposure over time within one segment. The chasm is buyer psychology across the adoption curve. A product can finish all three stages while still selling only to visionaries. Keep them as separate checks: passing GA's entry criteria does not answer "are we ready to scale to the mainstream?".
+
+### Chasm-risk diagnostic
+
+Run it before scaling, and periodically once early traction exists:
+
+1. **Cycle time:** are deals closing on a repeatable cycle, or extending indefinitely in proof of concept?
+2. **Mutual referenceability:** are new customers referenceable *to each other* (same vertical, same trigger), or is each win a one-off?
+3. **Vision or proof:** are late-stage deals won on vision, or on proof (references, certifications, a complete whole product)?
+4. **Who bought:** would each customer describe themselves as wanting an advantage before competitors (visionary), or as wanting a safe, proven improvement (pragmatist)?
+
+Indefinite POCs, one-off references and wins on vision mean the product is still on the early-adopter side. The fix is not more launch activity; it is a pragmatist beachhead with a complete whole product and references from inside it.
 
 ---
 
-## 2. Beachhead Selection (Moore's D-Day Strategy)
+## 2. Beachhead Selection (Moore's D-Day strategy)
 
-Pick one narrow segment and win 100% of it before expanding — the Normandy
-metaphor: commit overwhelming force to a single beach, secure it, then expand.
-Total domination of a small, well-chosen segment produces word-of-mouth,
-referenceability, and a repeatable motion that a diluted five-segment effort
-never produces. Going wide too early makes you a distant also-ran in five markets
-instead of the clear leader in one.
+Commit everything to one narrow segment and win most of it before expanding. Domination of a small, well-chosen segment produces word-of-mouth, references that the next buyers recognise, and a repeatable motion; a diluted five-segment effort makes you a distant also-ran in all five.
 
-Score every candidate segment against all six criteria — the segment that wins is
-often the smaller, narrower one, not the one with the largest addressable market:
+**The beachhead carries out the strategy kernel.** The kernel's guiding policy usually names a focus ("concentrate on firms of 5–50 staff…"); the beachhead is that focus made concrete. A segment the kernel rules out is not a candidate. If the scorecard below points somewhere the kernel rules out, that is evidence for the kernel's review trigger, not licence for GTM to overrule it.
 
-1. Compelling reason to buy *now* (a trigger event, not a nice-to-have)
-2. Reachable by a single, coherent sales and marketing channel
-3. Identifiable, accessible economic buyer
-4. No entrenched competitor already owns the segment
-5. Winnable with the resources actually available
-6. Serves as a credible reference base for expansion into adjacent segments
+### The scorecard
 
-A segment that scores well on market size alone but fails on referenceability or
-channel coherence is a trap.
+Score every candidate on all six criteria (✓ passes · ~ partly · ✗ fails), with the evidence for each:
 
-**Beachhead vs. ICP:** an ICP describes the *profile* of a good customer; a
-beachhead is the strategic *choice of which narrow segment to attack first and
-completely*, made against the six criteria above. Select the beachhead, then
-write the ICP for it.
+| Criterion | Passes when |
+|---|---|
+| Compelling reason to buy now | A trigger event makes it urgent (an audit, a year-end, a regulation), not a nice-to-have |
+| One coherent channel | A single channel reaches the whole segment |
+| Accessible economic buyer | The budget owner is identifiable and reachable |
+| No entrenched competitor | No incumbent already owns the segment |
+| Winnable now | Achievable with the resources actually available |
+| Reference base for expansion | Winning it credibly opens an adjacent segment |
 
-### The Whole Product (Levitt, via Moore)
+Add two rows that are not pass/fail but shape the choice: **WTP evidence** (what the segment has said or committed to pay, labelled stated / committed; Ramanujam and Tacke treat WTP as a segmentation input) and **kernel fit** (does the kernel's focus include it).
 
-Pragmatists buy the *whole product*, not the generic product. Four rings:
+The segment with the largest addressable market is often the trap: big, but contested by an incumbent and reachable only through several channels. A segment that wins on size but fails on referenceability or channel coherence is the wrong beachhead.
+
+**Beachhead vs ICP:** the beachhead is the strategic *choice* of which segment to attack first; the ICP is the *profile* of a good customer inside it. Choose the beachhead, then write the ICP for it.
+
+### The whole product (Levitt, via Moore)
+
+Pragmatists buy the whole product, not the generic one:
 
 | Ring | What it is |
 |---|---|
-| Generic product | What ships in the box — the core software |
-| Expected product | The minimum the buyer assumes must also be there to realize the reason to buy |
+| Generic product | What ships: the core software |
+| Expected product | The minimum the buyer assumes comes with it |
 | Augmented product | Integrations, services, documentation, training, certifications, partners |
-| Potential product | Everything the ecosystem could add over time |
+| Potential product | What the ecosystem could add over time |
 
-Visionaries assemble the whole product themselves out of enthusiasm; pragmatists
-will not. If the whole product is not already assembled and packaged, a pragmatist
-will not buy no matter how good the generic product is. Build a whole-product map
-for the beachhead: list every integration, service, document, certification, and
-partner the target economic buyer needs, and treat gaps as GTM/roadmap work.
+Visionaries assemble the whole product themselves; pragmatists will not buy until it is assembled. At enterprise scale, list every integration, service, document, certification and reference the beachhead's economic buyer needs, mark what exists, and hand the gaps to the roadmap as themes.
 
-### The Bowling Alley
+### The bowling alley
 
-After the beachhead is won, expand into adjacent segments in a deliberate
-sequence — like bowling pins, each adjacent segment is knocked over using the
-momentum and reference credibility of the segment just won, not by attacking all
-adjacent segments simultaneously. A segment is a good "next pin" when much of the
-whole product already assembled for the beachhead transfers unchanged; prioritize
-the segments where that transfer fraction is highest, because expansion cost is
-lowest there. This "bowling alley" sequencing is the logic behind Stage 3 (GA)
-expansion — a flat, unordered list of "other segments we could also serve" is not
-a bowling-alley plan.
-
-### Chasm-Risk Diagnostic
-
-Run periodically once early traction exists:
-
-- Are deals closing on a repeatable cycle time, or extending indefinitely in POC?
-- Are new customers referenceable to each other (same vertical, same trigger), or
-  is each win a one-off?
-- Are late-stage deals won on vision, or on proof?
-
-Indefinite POCs plus non-mutual referenceability are the classic symptoms of a
-company stuck between early adopters and the early majority.
+After the beachhead, expand into adjacent segments one at a time, each knocked over with the references and whole product of the one just won. A good next pin is a segment where most of the beachhead's whole product transfers unchanged and the new buyers recognise the beachhead's references. "Other segments we could also serve" as a flat list is not a bowling-alley plan; name the next pin and why it falls.
 
 ---
 
 ## 3. Positioning as a Sequenced Exercise (Dunford)
 
-Positioning is invisible when done right and painfully obvious when done wrong —
-correct positioning makes a product feel obviously suited to its customer, while
-vague positioning makes everything downstream (sales, copy, pricing objections,
-roadmap debates) harder. The retail-shelf analogy: a product on the wrong aisle
-confuses shoppers no matter how good it is, because the aisle (the market category)
-sets the buyer's evaluation criteria before they read the label.
+Positioning is invisible when done right and obvious when wrong: vague positioning makes sales, copy, pricing objections and roadmap debates harder. The retail-shelf analogy: a product on the wrong aisle confuses shoppers however good it is, because the aisle (the market category) sets the buyer's evaluation criteria before they read the label.
 
-The single-sentence positioning statement in the body is a *compression* of a
-six-component exercise, worked in a fixed sequence — each component constrains the
-next:
+**Positioning is built from evidence, not from the vision.** The vision describes a future world; a mission line, if anyone still has one, describes scope. Neither has a differentiator to compress. Positioning compresses the competitive analysis's evidence.
 
-1. **Competitive alternatives** — what the customer would do if the product did
-   not exist. Broader than "competitors": a spreadsheet, a manual process, an
-   internal hack, hiring a consultant, or simply tolerating the pain. **Doing
-   nothing is always a competitive alternative.** This is the mandatory first step.
-   The list itself is owned by the `competitive-analysis` artifact (section 1);
-   positioning cites it rather than building a second list.
-2. **Unique attributes** — capabilities the true alternatives lack.
-3. **Value and themes** — the customer-facing benefit each unique attribute
-   produces, grouped into 2–4 themes (not a flat feature list).
-4. **Target market characteristics** — the best-fit customers who care most about
-   that value.
-5. **Market category** — the frame of reference customers use to make sense of the
-   offering.
-6. **Relevant trends** — market shifts that add urgency, used sparingly.
+The positioning statement is the compression of a six-step exercise, each step constraining the next:
 
-**Two filters for a unique attribute:** it earns a place only if (a) the true
-alternatives genuinely lack it, and (b) the target customer actually cares about
-it. Attributes that are real but unvalued, or valued but not differentiating, are cut.
+1. **Competitive alternatives**: what the customer would do if the product did not exist. **Doing nothing is always one**, and for a B2B buying group **no decision** is usually the strongest. This list is owned by the `competitive-analysis` artifact (section 1): cite it by its IDs. GTM never builds a second list; if an alternative is missing, it goes back into the competitive analysis.
+2. **Unique attributes**: capabilities the true alternatives lack. Take them from the competitive analysis's differentiation points, keeping their evidence status. Two filters: the alternatives genuinely lack it (**real**) and the target customer cares (**valued**). A point that also passed "defensible" can carry the kernel; a point that is real and valued but copyable can still lead the messaging.
+3. **Value and themes**: the customer-facing benefit each attribute produces, grouped into 2–4 themes, not a feature list.
+4. **Best-fit customer**: who cares most about that value. Build it from the most enthusiastic, win-favourable real customers (design partners, pilot accounts) and reverse-engineer what they share, rather than from an aspirational top-down persona. Anchor at least one ICP attribute in an observed customer.
+5. **Market category**: the frame the buyer uses to judge the product (below).
+6. **Relevant trends**: used sparingly, as urgency, never as the foundation. Positioning built on a trend ("the AI-powered X") ages into category noise; cap trend language at one supporting proof point.
 
-### Market Category Is a Lever, Not a Blank
-
-The most distinctive Dunford idea: the `[category]` slot in the positioning
-statement is a deliberate strategic choice among three named options, not a label
-filled in after the fact:
+### Market category is a lever, not a blank
 
 | Option | Upside | Cost |
 |---|---|---|
-| Fit an existing category | Fastest — borrows the buyer's existing mental model and evaluation criteria | You inherit that category's rules even where they don't favor you |
-| Create a new category | Highest reward — become the reference point ("category king/queen") | Heavy, sustained market-education investment before anyone evaluates you |
-| Create a subcategory | Hybrid — "the only X built for Y", set new criteria within a trusted frame | Cheaper than inventing a category, still some education cost |
+| Fit an existing category | Fastest: borrows the buyer's mental model and evaluation criteria | You inherit that category's criteria, even where they favour incumbents |
+| Create a subcategory ("the only X built for Y") | New criteria inside a trusted frame | Some education cost |
+| Create a new category | Highest reward: become the reference point the rest are compared against (Dunford's "category king or queen") | Heavy, sustained market education before anyone evaluates you |
 
-When more than one plausible category exists, compare them explicitly (category
-option | evaluation criteria it imports | fit with current differentiation | market-
-education cost) before locking the category used downstream.
+When more than one category is plausible, compare them in a small table (option | criteria it imports | fit with the differentiation points | education cost). The competitive analysis's **category lens** (enterprise) supplies the evidence; GTM makes the choice.
 
-### Best-Fit Customer
+### The statement
 
-Build the target market from the segment of *existing* customers who are most
-enthusiastic and win-favorable, then reverse-engineer what they have in common —
-rather than starting from a top-down aspirational persona. Anchor at least one
-ICP attribute in an observed best-fit customer (e.g., a Stage 1 design partner),
-not assumption alone.
+```
+For [ICP / beachhead],
+who [acute pain or buying trigger],
+[product] is the [category]
+that [primary value, in measurable terms].
+Unlike [the alternative the beachhead actually uses — cited from the competitive analysis],
+[product] [the differentiation point that alternative cannot match].
+```
 
-### Trends Are a Garnish
-
-Trends add urgency but must not be the foundation. Positioning built primarily on
-a trend ("the AI-powered X for the era of Y") ages quickly and collapses into
-generic category noise once the trend is no longer novel. Cap trend language at
-one supporting proof point — never the headline.
-
----
-
-## 4. Keeping the Message House Alive (Lauchengco)
-
-The three-layer Messaging Framework in the body (Headline → Value proposition →
-Proof points) is a **message house**: one headline claim, supporting pillars, and
-proof points per pillar. It is the structural unit for keeping messaging consistent
-across every surface.
-
-**Positioning is a living hypothesis, not a write-once artifact.** The GTM strategy
-is authored during the Strategy phase, but positioning and messaging must be
-re-examined against real market contact — otherwise the message house is an
-internal document a real prospect never actually reads.
-
-### Positioning Refresh Trigger
-
-Re-examine the Positioning Statement and Messaging Framework:
-
-- At every Launch Sequencing stage transition (Stage 1 → 2, Stage 2 → 3), and
-- Whenever a real **win/loss** outcome contradicts a stated differentiator.
-
-**Win/loss analysis** captures the actual outcome and stated reason of a real
-competitive encounter (a trial or deal, won or lost against a named alternative)
-and feeds it back into positioning — distinct from a forward-looking competitive-
-risk register, which only anticipates. The win/loss log is kept in the
-`competitive-analysis` artifact; this trigger reads it. "We lost this evaluation to a spreadsheet-
-and-consultant substitute because the differentiator didn't land" is win/loss
-evidence that should force a refresh.
-
-### Launch Is a Three-Audience Process
-
-Distinct from the three *market-validation* stages (closed beta → soft launch →
-GA), a launch also spans three *audiences*, each with its own readiness gate:
-
-1. **Internal** — the company/operator must believe and tell the story consistently
-   first. Gate: can the differentiator be explained, unprompted, in one paragraph,
-   consistent with the written Messaging Framework?
-2. **Sales / partner / trial** — the revenue-facing surfaces must be *equipped*
-   with the message. Gate: the approved proof points and value proposition appear
-   verbatim in the trial-onboarding copy, README, and FAQ.
-3. **External / customer** — the market-facing announcement.
-
-A company can execute the three market-validation stages correctly and still fail
-if the internal narrative is inconsistent or the trial flow was never equipped
-with the message. Produce a minimal enablement artifact — a one-page message house
-plus 3–5 objection-handling responses keyed to named competitive alternatives
-("why not just use a spreadsheet", "why not BigID/Varonis") — so every conversation
-reuses the same committed claims instead of improvising.
-
-When personas differ (buyer vs. user vs. champion), tailor which proof points lead
-for each audience using each persona's information sources and decision-making
-style — do not serve all three one undifferentiated framework.
+It is internal: it informs messaging but is not customer copy. If the named alternative can in fact match the differentiator, the positioning collapses on the first sales call; check the point's evidence status in the competitive analysis before using it.

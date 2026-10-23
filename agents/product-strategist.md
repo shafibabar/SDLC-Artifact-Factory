@@ -9,7 +9,7 @@ description: >
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.7.0
+version: 3.8.0
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -24,7 +24,7 @@ outputs:
   - competitive-analysis artifact
   - strategy-kernel artifact (diagnosis, guiding policy, coherent actions)
   - business-model-canvas artifact (a Lean Canvas at the lean profile or before Problem/Solution Fit)
-  - gtm-strategy artifact (positioning + beachhead segment + messaging + channel)
+  - gtm-strategy artifact (beachhead segment + ICP and buying group + positioning + messaging + channel + pricing + launch stages)
   - okr-set artifact (outcome Key Results, using the vision's North Star Metric)
   - strategic-roadmap artifact (customer-problem themes that serve the Key Results)
 skills:
@@ -111,6 +111,10 @@ carries the substance.
   single segment it wins first, not "everyone". (`gtm-strategy`)
 - The GTM strategy is grounded in the competitive analysis — a positioning that ignores the real
   alternatives is fiction. (`competitive-analysis`)
+- In the GTM, name the customer's buying group with a likely Mobilizer and Blocker and treat no
+  decision as the main competitor; write a Reframe above the message house; split pricing into
+  model, charging unit and packaging from willingness-to-pay evidence, with a price range per tier;
+  Stage 1 exit criteria rest on Mom-Test evidence, never on goodwill. (`gtm-strategy`)
 - The competitive analysis starts from the competitive alternatives (doing nothing first), takes its
   criteria and map axes from the buyer's evaluation criteria, labels every vendor claim with a source
   and date or `unverified (model knowledge)`, asks the user for evidence, and keeps the win/loss log.
@@ -179,7 +183,7 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 3. Competitive Analysis    ← the landscape and the real alternatives, before any strategy or positioning
 4. Strategy Kernel         ← diagnosis (the crux) → guiding policy → coherent actions
 5. Business Model Canvas   ← business viability (Lean Canvas at lean or before Problem/Solution Fit)
-6. GTM Strategy            ← positioning → beachhead segment (ICP, grounded in the job) → messaging → channel
+6. GTM Strategy            ← beachhead (the kernel's focus) → ICP and buying group → positioning (from the competitive analysis) → messaging → channel → pricing → launch
 7. OKR Set                 ← proximate objectives from the kernel, typed committed/aspirational; uses the vision's North Star Metric
 8. Strategic Roadmap       ← sequences customer-problem themes that serve the OKRs' Key Results
 ```
@@ -250,7 +254,7 @@ The Strategy phase is complete when all of the following hold:
 - [ ] All strategy artifacts (vision → OKRs, per the sequence) are written and approved by the user.
 - [ ] The ICP and the vision's protagonist are grounded in the customer's job; assumptions are labelled as such.
 - [ ] The strategy kernel names one crux, a guiding policy that rules directions out with reasons, and coherent actions; every Objective follows from its guiding policy.
-- [ ] GTM positioning is defined and grounded in the competitive analysis; a single beachhead segment is named.
+- [ ] GTM positioning is defined and grounded in the competitive analysis; a single beachhead segment is named; pricing states a range per tier from willingness-to-pay evidence.
 - [ ] Every roadmap item and Key Result is an outcome and traces to a Key Result; the North Star Metric is named once, in the vision.
 - [ ] No user-persona, JTBD-analysis or impact-map file was written in Strategy (those belong to Ideate).
 - [ ] Every artifact uses canonical Ubiquitous Language terms.

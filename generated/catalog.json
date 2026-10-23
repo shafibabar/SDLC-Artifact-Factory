@@ -2279,7 +2279,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.7.0"
+        "version": "3.8.0"
       },
       {
         "created": "2026-06-24",
@@ -4923,7 +4923,10 @@
         "related": [],
         "sources": [
           "research/product-strategy-and-gtm/business-model-generation-osterwalder.md",
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
           "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
           "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
           "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
           "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md",
@@ -4937,7 +4940,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.5.0"
+        "version": "1.6.0"
       },
       {
         "created": "2026-07-31",
@@ -6213,14 +6216,14 @@
         "dir": "skills/gtm-strategy",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "gtm-strategy",
         "owner": "product-strategist",
         "phase": "strategy",
@@ -6228,25 +6231,41 @@
           "go-to-market-strategy"
         ],
         "related": [
+          "beta-program-design",
           "business-model-canvas",
           "competitive-analysis",
           "glossary-management",
           "methodology-review",
+          "okr-authoring",
+          "roadmap-authoring",
+          "stakeholder-mapping",
+          "strategy-kernel",
           "user-persona",
           "vision-statement"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md",
+          "research/storytelling-and-narrative/business-storytelling-for-dummies.md",
+          "research/storytelling-and-narrative/the-best-story-wins.md"
+        ],
         "status": "stable",
         "tags": [
+          "beachhead",
           "channels",
           "gtm",
           "launch",
+          "messaging",
           "positioning",
           "pricing",
-          "product-discovery",
           "strategy"
         ],
-        "version": "2.0.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10281,8 +10300,8 @@
     "edges_agent_produces": 71,
     "edges_agent_skills": 192,
     "edges_skill_produces": 188,
-    "edges_skill_related": 843,
-    "edges_skill_sources": 55,
+    "edges_skill_related": 848,
+    "edges_skill_sources": 67,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 187,
@@ -10294,20 +10313,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 32,
+    "research_files_cited": 33,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 177,
+    "skills_with_contract_test": 176,
     "skills_with_domain": 187,
-    "skills_with_evals": 9,
-    "skills_with_examples": 9,
+    "skills_with_evals": 10,
+    "skills_with_examples": 10,
     "skills_with_produces": 187,
     "skills_with_references": 182,
-    "skills_with_resources": 8,
+    "skills_with_resources": 9,
     "skills_with_scripts": 10,
-    "skills_with_sources": 10,
+    "skills_with_sources": 11,
     "skills_with_status": 187,
     "skills_with_steps": 0,
-    "skills_with_templates": 8
+    "skills_with_templates": 9
   },
   "edges": {
     "agent_produces": [
@@ -13886,6 +13905,10 @@
         "skill": "grpc-contract-design"
       },
       {
+        "related": "beta-program-design",
+        "skill": "gtm-strategy"
+      },
+      {
         "related": "business-model-canvas",
         "skill": "gtm-strategy"
       },
@@ -13899,6 +13922,22 @@
       },
       {
         "related": "methodology-review",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "strategy-kernel",
         "skill": "gtm-strategy"
       },
       {
@@ -15569,7 +15608,19 @@
       },
       {
         "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "glossary-management",
         "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
       },
       {
         "skill": "glossary-management",
@@ -15610,6 +15661,42 @@
       {
         "skill": "go-repository-pattern",
         "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/storytelling-and-narrative/the-best-story-wins.md"
       },
       {
         "skill": "okr-authoring",

@@ -1,185 +1,131 @@
 ---
 name: gtm-strategy
 description: >
-  GTM strategy, positioning, and target-segment/beachhead selection — the
-  go-to-market document. Covers Ideal Customer Profile definition, beachhead
-  segment selection, the positioning statement, messaging (the message house),
-  channel strategy, sales/distribution model, value-anchored pricing, launch
-  sequencing, and GTM success metrics. Trigger on go-to-market, GTM strategy,
-  positioning, positioning statement, target segment, beachhead, ICP, messaging
-  framework, channel strategy, pricing model, and launch plan/sequencing.
-  Used by the product-strategist agent after competitive analysis is complete.
-version: 2.0.1
+  Teaches how to write the go-to-market (GTM) strategy that carries the strategy
+  kernel's guiding policy into the market: choosing the beachhead segment against
+  explicit criteria, the Ideal Customer Profile (ICP) and the customer's buying
+  group, positioning built from the competitive analysis's alternatives (doing
+  nothing and "no decision" included), the market category choice, a reframe
+  above the message house, channel strategy, the sales motion, pricing split into
+  monetisation model, charging unit and packaging with willingness-to-pay
+  evidence, and launch stages with evidence-backed exit criteria and GTM metrics.
+  Use when writing or reviewing a GTM strategy, positioning statement, beachhead
+  or ICP, messaging framework, channel plan, sales motion, pricing model or launch
+  plan, or when deciding whether a product that finished its launch stages has
+  crossed the chasm. Used by the product-strategist agent in the Strategy phase
+  (/sdlc-strategy), after the business model canvas and before the OKR set;
+  required at standard and enterprise, skipped at lean.
+version: 3.0.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
-related: [competitive-analysis, vision-statement, business-model-canvas, user-persona, glossary-management, methodology-review]
-tags: [strategy, gtm, positioning, pricing, channels, launch, product-discovery]
+tags: [strategy, gtm, positioning, beachhead, messaging, pricing, channels, launch]
 produces: go-to-market-strategy
 domain: strategy
 status: stable
+related: [strategy-kernel, competitive-analysis, business-model-canvas, vision-statement, stakeholder-mapping, user-persona, beta-program-design, okr-authoring, roadmap-authoring, glossary-management, methodology-review]
+sources:
+  - research/product-strategy-and-gtm/crossing-the-chasm-moore.md
+  - research/product-strategy-and-gtm/obviously-awesome-dunford.md
+  - research/product-strategy-and-gtm/loved-lauchengco.md
+  - research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md
+  - research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md
+  - research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md
+  - research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md
+  - research/storytelling-and-narrative/the-best-story-wins.md
+  - research/storytelling-and-narrative/business-storytelling-for-dummies.md
 ---
 
 # Go-to-Market Strategy
 
 ## Purpose
 
-A GTM strategy defines how the product reaches its target user and converts them into customers. It answers: which segment do we win first, how do we reach them, what do we say, what do we charge, and how do we sequence the launch. It is not a marketing plan — it is a product-level document that constrains how marketing, sales, and product must work together, derived from the vision, the strategy kernel, the competitive analysis, and the stakeholder map.
+A GTM strategy answers: **which segment do we win first, what do we tell them, how do we reach them, how do they buy, what do we charge, and how do we know each launch stage is done?** It is the strategy kernel's guiding policy carried into the market: where the kernel says *concentrate on X, relying on Y*, the beachhead is X and the positioning leads with Y. It is not a marketing plan; it constrains how product, marketing and sales work together.
 
----
+Positioning is **derived from evidence, not from a slogan.** It starts from the competitive analysis's alternatives and the differentiation points that survived its filters (Dunford, *Obviously Awesome*), never from the vision or a mission line. A vision says where the product is going; positioning says what it is unlike, today, for whom.
 
-## Components
-
-A complete GTM strategy contains seven components, produced in order — each constrains the next:
-
-1. Ideal Customer Profile (ICP) — preceded by an explicit beachhead-segment choice
-2. Positioning Statement
-3. Messaging Framework
-4. Channel Strategy
-5. Sales and Distribution Model
-6. Pricing Model
-7. Launch Sequencing and Success Metrics
-
-Component 1 is preceded by a beachhead choice — positioning, channel, and pricing are all chosen *for that one segment*, not the whole addressable market.
-
----
-
-## Selecting the Beachhead Segment
-
-Pick one narrow segment and win 100% of it before expanding — total domination of a small, well-chosen segment produces the references, word-of-mouth, and repeatable motion that a diluted multi-segment effort never does. Score candidate segments against these criteria; the winner is often the smaller one, not the largest addressable market:
-
-| Criterion | Passes when |
-|---|---|
-| Compelling reason to buy now | A trigger event makes it urgent, not a nice-to-have |
-| Coherent single channel | One channel reaches the whole segment |
-| Accessible economic buyer | The budget owner is identifiable and reachable |
-| No entrenched competitor | No incumbent already owns the segment |
-| Winnable now | Achievable with the resources actually available |
-| Reference base for expansion | Winning it credibly opens an adjacent segment next |
-
-Then choose which market category frames the offering — fit an existing category, create a new one, or carve a subcategory ("the only X built for Y"); that choice sets the buyer's evaluation criteria before they read a word of the pitch. Full Dunford/Moore treatment — the chasm, whole product, category-as-lever, and bowling-alley expansion — is in `references/positioning-and-segments.md`.
-
----
-
-## 1. Ideal Customer Profile (ICP)
-
-The ICP is not a persona. It is a description of the organisation (for B2B) or individual (for B2C) most likely to buy, succeed with, and advocate for the product. Anchor at least one attribute in an observed best-fit customer, not assumption alone. A B2B ICP must include:
-
-| Attribute | Description |
-|---|---|
-| Company size | Revenue range or headcount band |
-| Industry | Primary verticals where the pain is acute |
-| Geography | Regions — relevant if data sovereignty or compliance differs |
-| Technical maturity | Sophistication level required to adopt the product |
-| Regulatory exposure | Compliance frameworks they must satisfy |
-| Buying triggers | Events that make them ready to buy now (failed audit, rapid growth, new regulation) |
-| Disqualifiers | Attributes that make a prospect a bad fit |
-
-## 2. Positioning Statement
-
-Derived from competitive analysis, using this format:
+## Where It Sits
 
 ```
-For [ICP],
-who [acute pain or buying trigger],
-[product name] is the [category]
-that [primary value delivered in measurable terms].
-Unlike [named alternative],
-[product name] [key differentiator that the alternative cannot match].
+Vision ─► Stakeholder map ─► Competitive analysis ─► Strategy kernel ─► Canvas ─► GTM STRATEGY ─► OKRs ─► Roadmap
 ```
 
-The positioning statement is internal. It informs messaging but is not customer-facing verbatim. Every claim must be defensible from the competitive analysis capability matrix — if the named alternative can in fact match the differentiator, the positioning collapses on the first competitive sales call.
-
-The single sentence is the *compression* of a positioning exercise, not a substitute for one. Dunford's derivation (competitive alternatives → unique attributes → value themes → best-fit customer → market category → trends) and a fully worked example are in `references/positioning-and-segments.md` and `references/gtm-template.md`.
-
----
-
-## 3. Messaging Framework
-
-Three layers of message (a "message house"), derived from positioning:
-
-| Layer | Purpose | Audience |
-|---|---|---|
-| **Headline** | The single sentence that captures why to care (5–10 words) | All audiences |
-| **Value proposition** | 2–3 sentences expanding the headline into benefit + differentiation | Buyers and evaluators |
-| **Proof points** | 3–5 specific, credible claims that support the value proposition | Technical, security/compliance evaluators |
-
-Proof points must be factual and verifiable. "Complete data estate visibility in under 30 minutes" is a proof point; "the best data governance solution" is not. The same claims must appear on every customer-facing surface (trial copy, README, FAQ), and the message house is refreshed against win/loss evidence — see `references/positioning-and-segments.md`.
-
----
-
-## 4. Channel Strategy
-
-Define how the ICP is reached. For B2B products, channels typically include:
-
-| Channel | Fit for SMB B2B | Notes |
-|---|---|---|
-| Direct sales (outbound) | Medium | High CAC; use for large accounts only |
-| Product-led growth (PLG) | High | Free trial or freemium; ICP self-discovers and converts |
-| Partner/reseller | Medium | Leverages existing relationships; trust transfer |
-| Content/SEO | High | Reaches buyers at research stage; long lead time |
-| Community (developer, ops, compliance) | High if technical buyer | Builds credibility and word-of-mouth |
-| Events/conferences | Low initially | High cost; use after early traction to scale |
-
-Select the primary channel (where 70%+ of early acquisition will come from) and 1–2 supporting channels. The primary channel must be the single coherent channel that reaches the chosen beachhead.
-
----
-
-## 5. Sales and Distribution Model
-
-Define the mechanics of how a prospect becomes a customer:
-
-| Decision | Options |
+| Reads | What it takes |
 |---|---|
-| Sales motion | Self-serve (no sales team) / Product-assisted (sales supports trial) / Sales-led (AE-driven) |
-| Contract model | Monthly SaaS / Annual SaaS / Perpetual licence / Consumption-based |
-| Procurement path | Credit card / PO / Master Service Agreement |
-| Trial model | Free trial (time-limited) / Freemium (feature-limited) / Proof of Concept (POC) / Demo-only |
-| Expansion motion | Seat-based expansion / Usage-based expansion / Additional modules |
+| `strategy-kernel` | The guiding policy (the focus the beachhead carries out), the advantage it relies on, and what it rules out (segments and channels GTM may not choose) |
+| `competitive-analysis` | The **one** competitive alternatives list (doing nothing and no decision included), the surviving differentiation points with their evidence status, the category lens, and the **win/loss log**. Cite them; never build a second list |
+| `business-model-canvas` | Segments, value propositions, the charging unit and willingness-to-pay (WTP) evidence. GTM sets the price; the canvas points here |
+| `stakeholder-mapping` | Who buys, who uses, who can block: the starting point for the buying group |
+| `vision-statement` | The protagonist and the job, so the ICP and the message are about the same customer |
 
-For an SMB-focused product with a private deployment model, self-serve with a guided POC is typically the right starting motion. Distinguish the economic buyer (owns budget and organizational risk) from the user/champion — a pragmatist economic buyer evaluates total cost of ownership and whole-product completeness, not technical elegance.
+| Feeds | What it gives |
+|---|---|
+| `okr-authoring` | GTM metrics that become Key Results (time to first value, ICP hit rate) |
+| `roadmap-authoring` | The beachhead and the next segment (bowling alley) as the roadmap's target customer; whole-product gaps as themes |
+| `beta-program-design` | Stage 1 is the **plan** for the closed beta; the beta program is its **execution** in Customer Validation (Blank, *The Four Steps to the Epiphany*) |
+| `user-persona` | The ICP and buying-group roles that requirements-analyst turns into personas in Ideate |
 
----
+## Scale
 
-## 6. Pricing Model
+`phase-requirements.json` **skips** this artifact at **lean** and **requires** it at standard and enterprise.
 
-Pricing must be aligned to the value delivered, not to cost. For B2B data products, common models:
+| Profile | Shape |
+|---|---|
+| **lean** (skipped) | No GTM artifact. Monetisation lives in the Lean Canvas's Revenue block: "not monetised" with the reason, or the model, charging unit and one price point with its WTP basis. If the user asks for a GTM anyway, it collapses to **rollout and adoption**: who first, one channel, one message line, a two-stage trial with exit criteria, one adoption metric. No ICP firmographics, positioning statement, sales model, tiers or buying group: `./examples/01-lean-lunch-tracker.md` |
+| **standard** | The full artifact for **one** beachhead: scorecard, ICP with disqualifiers, buying group (from the first paid commitment, even self-serve), positioning statement, reframe + message house, one primary channel, sales motion, pricing (model, charging unit, packaging, WTP evidence, value anchor, price strategy, a price **range** per tier), three launch stages with exit criteria, metrics |
+| **enterprise** | Everything in standard, plus: a buying group **per segment** with Mobilizer and Blocker hypotheses and a consensus kit; a whole-product map with gaps (certifications, integrations, references); the bowling-alley next segment; leaders / fillers / killers per segment, good-better-best tiers with fences, and a discount policy. A full tier matrix and bottom-up pricing business case belong to the planned `pricing-and-packaging` skill; until it exists, record them here |
 
-| Model | How it works | Best when |
-|---|---|---|
-| Per seat | Price per user/month | Value scales with number of users |
-| Per data volume | Price per GB scanned or stored | Value scales with data size |
-| Per connector | Price per storage integration enabled | Value scales with coverage |
-| Flat monthly/annual | Fixed price per tenant | Simplicity is a selling point; SMB buyers resist metered pricing |
-| Tiered (starter/pro/enterprise) | Feature-differentiated tiers | Wide ICP range; need to fence by buyer segment |
+## The Components, in Order
 
-**Anchor the price to value, not cost.** If the product saves an SMB 40 hours of compliance audit prep per quarter, pricing should be set relative to that value (a compliance officer's loaded hourly cost × hours saved), not relative to infrastructure cost. State the pricing model chosen and the rationale. Exact price points are set in the commercial plan, not the GTM strategy.
+1. **Beachhead segment**: one narrow segment, scored against six criteria (Moore, *Crossing the Chasm*), that carries out the kernel's focus. Record the WTP evidence per candidate: it is a segmentation input too.
+2. **ICP and buying group**: the organisation (or individual, B2C) most likely to buy and succeed, with at least two disqualifiers; then who in it takes part in the purchase.
+3. **Positioning**: competitive alternatives (cited) → unique attributes → value themes → best-fit customer → **market category** (fit, create, or subcategory) → trends; compressed into the positioning statement.
+4. **Messaging**: a **Reframe** line, then the message house: headline, value proposition, proof points.
+5. **Channel strategy**: one primary channel that reaches the whole beachhead, at most two supporting.
+6. **Sales and distribution model**: motion, contract, procurement path, trial model, expansion motion, buying group.
+7. **Pricing**: model, charging unit, packaging; value anchor, WTP evidence, price strategy, price range per tier.
+8. **Launch sequencing and GTM metrics**: closed beta → soft launch → GA, each with exit criteria; metrics with targets or where the target will be set.
 
----
+Pricing is written seventh but **decided from evidence gathered at step 1**: the WTP conversation happens with the beachhead, before configuration (Ramanujam and Tacke, *Monetizing Innovation*: design the product around the price).
 
-## 7. Launch Sequencing
+## The Rules
 
-A three-stage launch sequence reduces risk and generates validated learning:
+**1. One beachhead, chosen against criteria, carrying the kernel's policy.** Score candidate segments on: compelling reason to buy now, one coherent channel, an accessible economic buyer, no entrenched competitor, winnable with the resources you have, and a reference base for the next segment. The winner is often the smaller segment. A segment the kernel rules out is not a candidate. Detail: `./references/positioning-and-segments.md`.
 
-| Stage | Name | Goal | Audience | Duration |
-|---|---|---|---|---|
-| Stage 1 | Closed beta / design partners | Validate ICP, core value prop, onboarding | 3–5 pre-selected customers who helped shape requirements | 4–8 weeks |
-| Stage 2 | Soft launch / limited availability | Validate GTM motion, pricing, and messaging | ICP outreach, limited inbound, no broad marketing | 6–12 weeks |
-| Stage 3 | General Availability (GA) | Scale acquisition | Full channel activation, public announcement | Ongoing |
+**2. The ICP is an organisation; the buying group is the people.** Persona attributes in the ICP hide the buyer/user split. For any B2B purchase, name the buying group: who takes part, the likely **Mobilizer** (who can move the organisation), the likely **Blocker**, and what each loses by staying put. In B2B the commonest loss is **no decision**, not a rival (Adamson and Dixon, *The Challenger Customer*). Profiles are attitudes, not job titles: label them "likely" until Stage 1 confirms them. Detail: `./references/channels-and-sales-motion.md`.
 
-Define exit criteria for each stage. Stage 1 → 2 requires: ICP confirmed, core value delivered, onboarding completable without support. Stage 2 → 3 requires: repeatable acquisition motion, acceptable CAC, measurable retention. Launch stage (audience size over time) and crossing the chasm (visionary → pragmatist buyer psychology) are different axes — a product can finish all three stages while still selling only to visionaries; see `references/positioning-and-segments.md`.
+**3. Positioning starts from the competitive analysis.** Cite its alternatives list (doing nothing first) and use only differentiation points that passed "real" and "valued". A point marked *hypothesis* there is a hypothesis here. The `Unlike [alternative]` slot names the alternative the beachhead actually uses, often a spreadsheet or doing nothing, not the best-known vendor. The `[category]` slot is a deliberate choice among fit, create or subcategory, with the evaluation criteria each imports. Detail: `./references/positioning-and-segments.md`.
 
----
+**4. Reframe first, then the message house; the customer is the hero.** Above the headline, write one **Reframe**: an insight that changes how the ICP sees its own problem and leads to a strength only this product has (Dixon and Adamson's commercial teaching). If any alternative could deliver it, it is education, not a reframe. In the value proposition the customer is the protagonist and the product the enabler (Luhn, *The Best Story Wins*). Proof points are verifiable today; a **customer story** proof point (named customer, real before/after, confirmed outcome) is allowed only once a real design partner exists (Dietz and Silverman, *Business Storytelling For Dummies*). Detail: `./references/messaging-and-launch.md`.
 
-## GTM Success Metrics
+**5. One primary channel.** It must reach the whole beachhead and carry 70%+ of early acquisition; at most two supporting channels; everything else deferred with a revisit point.
 
-| Metric | What it measures | Target (set at GTM planning) |
-|---|---|---|
-| Time to first value (TTFV) | Minutes from deployment to first meaningful insight | [TBD at product planning] |
-| Trial-to-paid conversion rate | % of trials that convert to paid | [TBD; benchmark: 15–25% for PLG B2B] |
-| Customer Acquisition Cost (CAC) | Total GTM spend / new customers acquired | [TBD based on pricing model] |
-| Net Revenue Retention (NRR) | Revenue retained and expanded from existing customers | > 100% indicates expansion |
-| ICP hit rate | % of new customers that match the ICP definition | > 80% to validate ICP accuracy |
+**6. Pricing is three decisions, from evidence.** (a) **Monetisation model** (subscription, usage, freemium…), (b) **charging unit**, the "per what" (tracks the customer's value, predictable bill, grows as the customer succeeds), (c) **packaging** (one offer or good-better-best, each tier carrying its segment's **leaders** and none of its **killers**, features that make the segment less likely to buy; the full leaders / fillers / killers table per segment at enterprise). The **value anchor** (quantified value to the customer) is the ceiling; **WTP evidence** (a range, labelled *stated* or *committed*) is where the price sits; name the **price strategy** (maximisation by default; penetration only with a named network effect, scale economy or lock-in; skimming only with a premium early segment and a planned step-down). State a **price range per tier**; list prices are refined in Stage 2. Never defer prices to an undefined "commercial plan". Detail and the failure-mode check: `./references/pricing.md`.
+
+**7. Exit criteria rest on evidence, not goodwill.** Every launch stage has measurable exit criteria. Stage 1's "ICP confirmed" and "core value delivered" count only if the design-partner conversations meet the Mom Test (Fitzpatrick): about their life, not the pitch; past specifics, not hypotheticals; commitments, not compliments. Stage 1 also records the WTP range per segment and whether the Mobilizer hypothesis held. Stage 2 exits on price accepted within the stated range without structural discounting. Detail: `./references/messaging-and-launch.md`.
+
+**8. Launch stage and the chasm are different axes.** Finishing beta → soft launch → GA says nothing about whether the product sells to pragmatists. Run the chasm diagnostic (deal cycle time, mutual referenceability, won on vision or on proof) before scaling. Detail: `./references/positioning-and-segments.md`.
+
+**9. Metrics carry targets the team sets, never borrowed benchmarks.** A target is set at planning from the product's own economics or evidence, or the artifact says where it will be set. Do not quote an industry conversion benchmark without a source. Include **trials or deals lost to no decision**.
+
+**10. Positioning is a living hypothesis.** Re-examine positioning and messaging at each stage transition and whenever an outcome in the competitive analysis's win/loss log contradicts a differentiation point (Lauchengco, *Loved*).
+
+## How to Build One
+
+1. **Read the inputs** (Where It Sits). No approved kernel or competitive analysis at standard+: stop and say which is missing.
+2. **Score the beachhead** candidates, including what WTP evidence exists for each (rule 1).
+3. **Write the ICP**, disqualifiers, and the buying group (rule 2).
+4. **Work the positioning sequence** from the cited alternatives; choose the category; write the statement (rule 3).
+5. **Write the Reframe and the message house**; tailor which proof points lead per buying-group role (rule 4).
+6. **Choose the channel and the sales motion** (rule 5; options in `./references/channels-and-sales-motion.md`).
+7. **Write the pricing** and run the failure-mode check in `./references/pricing.md` (rule 6).
+8. **Sequence the launch** with exit criteria and set metric targets (rules 7–9).
+9. **Validate** against `./resources/gtm-checklist.md`, then produce the artifact from `./templates/gtm-strategy.md` at `strategy/gtm-strategy.md`.
+
+**Examples, simple to complex:**
+- Lean internal tool where the GTM is skipped, and the rollout note written when the user asked for one anyway: `./examples/01-lean-lunch-tracker.md`.
+- Standard B2B SaaS, product-assisted self-serve, pricing from three paid pilots, a no-decision loss in the buying group: `./examples/02-standard-ledgerline.md`.
+- Enterprise multi-tenant platform, two segments, sales-led into a regulated vertical: buying committee, whole-product gaps, tier fences, a positioning refresh fired by a lost deal, and the next bowling-alley pin: `./examples/03-enterprise-platform.md`.
 
 ---
 
@@ -187,34 +133,29 @@ Define exit criteria for each stage. Stage 1 → 2 requires: ICP confirmed, core
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Component completeness | All seven components present | Any component missing or marked "TBD" without a stated resolution path |
-| Beachhead chosen | Segment selected against explicit criteria before the ICP is written | ICP written for "the whole market" with no narrow first segment named |
-| ICP disqualifiers | At least two disqualifiers named | ICP defined only by who fits, never by who does not |
-| Positioning honesty | Named alternative + a differentiator that alternative genuinely cannot match | "Unlike other tools…" with no named alternative, or a differentiator the alternative can copy |
-| Proof points | Every proof point verifiable today or by launch | Aspirational or unmeasurable claims presented as proof points |
-| Channel focus | One primary channel (70%+ of early acquisition) plus at most 2 supporting | Four or more channels pursued "in parallel" |
-| Pricing anchor | Pricing model anchored to quantified customer value | Pricing derived from cost or from a competitor's list price alone |
-| Stage exit criteria | Every launch stage has explicit, measurable exit criteria | Stages with dates or durations but no exit conditions |
-| Metric targets | Every GTM metric has a target, or an explicit note of where the target will be set | Metrics listed with no targets and no plan to set them |
-
----
+| Kernel carried out | Beachhead is the kernel's focus; nothing the kernel rules out is chosen | A segment or channel the kernel rules out |
+| Beachhead | Scored against the six criteria before the ICP | ICP for "the whole market" |
+| ICP and buying group | ≥2 disqualifiers; B2B buying group with likely Mobilizer and Blocker | Persona traits in the ICP; one "buyer" assumed |
+| Positioning from evidence | Cites the competitive analysis's alternatives (doing nothing / no decision included) and only filtered points | Its own alternatives list; "Unlike other tools…"; derived from the vision |
+| Messaging | Reframe above the headline; customer as hero; verifiable proof points | Adjectives as proof; an invented customer story |
+| Pricing | Model, charging unit, packaging separate; value anchor; WTP labelled stated / committed; strategy named; range per tier | "Set in the commercial plan"; cost-plus; tiers with no evidence |
+| Exit criteria | Measurable; Stage 1 evidence passes the Mom Test | Durations only; "partners loved it" as evidence |
+| Metrics | Every target set or its setting point stated; no unsourced benchmark; no-decision losses counted | "Industry benchmark 15–25%" with no source |
+| Shape and scale | Frontmatter `name`, `version`, `phase`, `owner`, `created`, `summary`; matches the Scale table | Missing `summary`; lean padded with tiers and an ICP |
 
 ## Anti-Patterns
 
-**The everything-channel GTM:** launching on five channels simultaneously because "we don't know which will work." Each channel needs enough sustained investment to produce a signal; spreading a solo operator across five produces noise on all of them. Pick one primary, measure, then expand.
+| Anti-pattern | Why it fails |
+|---|---|
+| **Everything-channel GTM** | Five channels "to see what works" gives no signal on any of them |
+| **Positioning by adjective** | "The best, easiest, next-generation": no named alternative, nothing to test |
+| **Second alternatives list** | GTM re-derives competitors; it drifts from the competitive analysis and the win/loss log |
+| **Selling to the Friend** | The design partner who answers every email is mistaken for the champion; they cannot move their organisation, and the deal ends in no decision |
+| **Pricing last** | Price picked after the product is built and the channel chosen; WTP never asked |
+| **Feature shock** | Tiers built from everything the team can add; no one asked which features a segment pays for |
+| **Minivation** | A penetration price with no network effect or lock-in leaves most of the value uncaptured |
+| **Discount drift** | Ad-hoc discounts with nothing given in return train buyers to wait |
+| **Big-bang launch** | Straight to GA scales an unvalidated ICP, message and price at once |
+| **Write-once positioning** | A lost deal that contradicts the differentiator changes nothing |
 
-**ICP/persona conflation:** describing an individual ("a compliance officer who…") in the ICP. The ICP is the company profile; the people inside it are personas. Conflating them hides the buyer/user split that B2B deals hinge on.
-
-**Cost-plus pricing:** setting price from infrastructure cost plus margin. For a product that saves 40 hours of audit prep per quarter, the value anchor supports a price an order of magnitude above cost — cost-plus pricing donates that margin to the customer permanently.
-
-**Big-bang launch:** skipping Stages 1 and 2 and going straight to GA. Without design-partner validation, GA scales an unvalidated ICP, unvalidated messaging, and unvalidated pricing simultaneously — and public launch attention is not refundable.
-
-**Positioning by adjective:** "the best", "the easiest", "next-generation" — claims with no named alternative and no measurable dimension. If the positioning statement cannot name what it is unlike, it is not a position.
-
-**Write-once positioning:** archiving the positioning statement after Strategy-phase authoring and never revisiting it. Positioning is a living hypothesis — re-examine it at each launch-stage transition and whenever a win/loss outcome contradicts a stated differentiator (`references/positioning-and-segments.md`).
-
----
-
-## Output Format
-
-Produce the seven components as a single Markdown artifact with a frontmatter block (`name`, `product`, `version`, `phase`, `created`, `owner`) followed by one section per component: Ideal Customer Profile, Positioning Statement, Messaging Framework, Channel Strategy, Sales and Distribution Model, Pricing Model, Launch Sequencing, and GTM Success Metrics — each with exit criteria or targets where the component calls for them. A fully worked example filling every section is in `references/gtm-template.md`.
+Use canonical terms from `glossary-management`: **Beachhead Segment**, **Ideal Customer Profile**, **Competitive Alternative**, **Message House**, **Reframe**, **Mobilizer**, **No Decision**, **Charging Unit**, **Value Anchor**, **Willingness to Pay**, **Whole Product**, **Win/Loss Log**.
