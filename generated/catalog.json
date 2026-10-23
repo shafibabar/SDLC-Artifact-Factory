@@ -2291,7 +2291,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.9.0"
+        "version": "3.10.0"
       },
       {
         "created": "2026-06-24",
@@ -3217,7 +3217,7 @@
           "feature-flags",
           "rollout"
         ],
-        "version": "2.2.0"
+        "version": "2.3.0"
       },
       {
         "created": "2026-07-20",
@@ -4952,7 +4952,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.7.0"
+        "version": "1.8.0"
       },
       {
         "created": "2026-07-31",
@@ -6278,7 +6278,7 @@
           "pricing",
           "strategy"
         ],
-        "version": "3.1.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-06-25",
@@ -9499,30 +9499,52 @@
         "dir": "skills/stakeholder-mapping",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "stakeholder-mapping",
         "owner": "product-strategist",
         "phase": "strategy",
         "produces": [
           "stakeholder-map"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "beta-program-design",
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "methodology-review",
+          "pricing-and-packaging",
+          "roadmap-authoring",
+          "strategy-kernel",
+          "uat-plan",
+          "user-persona",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md",
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md",
+          "research/service-design/this-is-service-design-doing-stickdorn.md",
+          "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+        ],
         "status": "stable",
         "tags": [
+          "buying-committee",
           "communication",
+          "power-interest-grid",
           "product-discovery",
+          "raci",
           "stakeholders",
           "strategy"
         ],
-        "version": "1.2.1"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-24",
@@ -10114,7 +10136,7 @@
           "strategy",
           "user-research"
         ],
-        "version": "2.1.1"
+        "version": "2.1.2"
       },
       {
         "created": "2026-06-24",
@@ -10364,8 +10386,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 193,
     "edges_skill_produces": 189,
-    "edges_skill_related": 859,
-    "edges_skill_sources": 72,
+    "edges_skill_related": 870,
+    "edges_skill_sources": 78,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 188,
@@ -10377,20 +10399,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 33,
+    "research_files_cited": 35,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 176,
+    "skills_with_contract_test": 175,
     "skills_with_domain": 188,
-    "skills_with_evals": 11,
-    "skills_with_examples": 11,
+    "skills_with_evals": 12,
+    "skills_with_examples": 12,
     "skills_with_produces": 188,
     "skills_with_references": 183,
-    "skills_with_resources": 10,
-    "skills_with_scripts": 11,
-    "skills_with_sources": 12,
+    "skills_with_resources": 11,
+    "skills_with_scripts": 12,
+    "skills_with_sources": 13,
     "skills_with_status": 188,
     "skills_with_steps": 0,
-    "skills_with_templates": 10
+    "skills_with_templates": 11
   },
   "edges": {
     "agent_produces": [
@@ -15241,6 +15263,50 @@
         "skill": "slo-definition"
       },
       {
+        "related": "beta-program-design",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "pricing-and-packaging",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "uat-plan",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "user-persona",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "stakeholder-mapping"
+      },
+      {
         "related": "acceptance-criteria",
         "skill": "story-mapping"
       },
@@ -15897,6 +15963,30 @@
       {
         "skill": "skill-authoring-standards",
         "source": "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/service-design/this-is-service-design-doing-stickdorn.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
       },
       {
         "skill": "strategy-kernel",

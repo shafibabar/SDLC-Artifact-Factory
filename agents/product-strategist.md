@@ -9,7 +9,7 @@ description: >
   Applies the strategy skill library, validates against methodology-review, and presents every
   artifact to the user for approval before proceeding. Activates on /sdlc-strategy.
 role: Product Strategy — full Strategy phase ownership
-version: 3.9.0
+version: 3.10.0
 phase: strategy
 owner: shafi
 created: 2026-06-24
@@ -114,7 +114,12 @@ carries the substance.
   single segment it wins first, not "everyone". (`gtm-strategy`)
 - The GTM strategy is grounded in the competitive analysis — a positioning that ignores the real
   alternatives is fiction. (`competitive-analysis`)
-- In the GTM, name the customer's buying group with a likely Mobilizer and Blocker and treat no
+- Map the customer's buying committee separately from delivery stakeholders: committee roles are
+  hypotheses with belief, objection, proof and a likely Mobilizer / Talker / Blocker profile, and get
+  no cadence; delivery stakeholders get a stated-scale grid, an engagement plan and decision rights
+  with exactly one Accountable person (an agent is never Accountable). Treat no decision as the main
+  competitor. (`stakeholder-mapping`)
+- In the GTM, name the customer's buying group (citing the stakeholder map's committee) with a likely Mobilizer and Blocker and treat no
   decision as the main competitor; write a Reframe above the message house; split pricing into
   model, charging unit and packaging from willingness-to-pay evidence, with a price range per tier;
   Stage 1 exit criteria rest on Mom-Test evidence, never on goodwill. (`gtm-strategy`)
@@ -187,7 +192,7 @@ artifact's inputs are missing because an earlier one is incomplete, surface the 
 
 ```
 1. Vision Statement        ← anchors everything; its protagonist is framed by the customer's job
-2. Stakeholder Map         ← who influences and is affected
+2. Stakeholder Map         ← who we deliver with (grid, RACI) and, separately, who decides to buy (buying committee)
 3. Competitive Analysis    ← the landscape and the real alternatives, before any strategy or positioning
 4. Strategy Kernel         ← diagnosis (the crux) → guiding policy → coherent actions
 5. Business Model Canvas   ← business viability (Lean Canvas at lean or before Problem/Solution Fit)

@@ -189,7 +189,7 @@ Devi is Indifferent to Maya, two personas make that visible and one hides it.
 ## 5. Extending to secondary personas
 
 A multi-stakeholder B2B deal usually needs the buyer and the champion modeled too, even when they are
-not the design anchor. Draw the roles from `stakeholder-mapping`'s "Manage Closely" quadrant:
+not the design anchor. Draw the roles from `stakeholder-mapping`'s buying-committee section (not its delivery stakeholders):
 
 | Role | Persona type | Why model it |
 |---|---|---|

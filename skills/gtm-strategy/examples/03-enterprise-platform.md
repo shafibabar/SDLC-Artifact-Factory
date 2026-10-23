@@ -11,6 +11,8 @@ Self-contained. The hardest common case, at the **enterprise** profile: a multi-
 > Competitive analysis (approved): alternatives A1 wait for the audit window, A2 no decision (CISO's team blocks new data processors), A3 consultancy annual audit, A4 in-house scripts, A5 enterprise discovery suites, A6 hyperscaler DLP, A7 a rumoured hyperscaler bundle (future entrant). D1 in-region processing (verified vs one suite), D2 every finding carries its reason and evidence (verified for us). Category lens: "data discovery" (suites lead) vs subcategory "in-region data accountability for multi-region regulated organisations". Win/loss: two beta wins (EU bank on D1, US insurer on D2); one loss to A7 from a single-cloud EU retailer, which fired the Positioning Refresh Trigger; one no decision at a US health system (CISO's review unfinished).
 >
 > Business model canvas (approved): [SMB] freemium Discover free up to 3 connected sources, subscription above; [ENT] annual subscription, all lines; charging unit per tenant per year tiered by connected sources; WTP committed in both segments (upgrade rate; signed contracts); Prove expansion stated only.
+>
+> Stakeholder map (approved): §2 holds a buying committee for EU banks (head of compliance, CISO's team, data owners, procurement) and one for SMB self-serve tenants, with belief, objection, proof, collective-learning plan and consensus kit.
 
 ## Working it
 
@@ -30,7 +32,7 @@ created: 2026-10-23
 summary: Win multi-region EU banks sales-led on explainable in-region findings their auditors accept; SMB self-serves via free Discover; EU insurers are the next pin.
 owner: product-strategist
 profile: enterprise
-traces_to: strategy/strategy-kernel.md; strategy/competitive-analysis.md; strategy/business-model-canvas.md
+traces_to: strategy/strategy-kernel.md; strategy/competitive-analysis.md; strategy/business-model-canvas.md; strategy/stakeholder-map.md
 ---
 
 # Go-to-Market Strategy
@@ -64,18 +66,11 @@ Carries out the kernel's guiding policy: explainable, in-region findings before 
 
 ### Buying committee
 
-| Role | Must believe | Likely objection | Proof | Likely profile | Loses by staying put |
-|---|---|---|---|---|---|
-| Head of compliance (economic buyer) | Evidence the auditor accepts | "Another tool to defend" | Audit-firm pilot results | Teacher — **Mobilizer hypothesis** | The next sampled audit |
-| CISO's team | No new place data goes | "A new data processor" | In-region architecture pack | Skeptic or Blocker | Nothing (the status quo is safe for them) — the no-decision risk |
-| Data owners (users) | Findings they needn't re-check | "More false positives" | D2 explanations; beta confirm rates | Go-Getter (likely) | Manual re-checking |
-| Procurement | 99.95% is contractual | SLA terms | Contractual commitment and region runbooks | Guide | — |
-| External auditor | Evidence chain is testable | Proprietary scores | Control-mapped reports | influencer, outside the group | — |
-
+**Committee:** `strategy/stakeholder-map.md` §2, segment "EU banks": head of compliance (economic buyer, Teacher likely), CISO's team (Skeptic or Blocker likely; the no-decision risk), data owners (Go-Getter likely), procurement (Guide likely); the bank's external auditor as an outside party. Belief, objection and proof per role, and the consensus kit, are in the map.
 **Mobilizer hypothesis:** head of compliance; confirmed in beta tenant 1, not yet in tenant 4.
 **Blocker plan:** the Mobilizer brings the CISO's team the architecture pack before any proposal (the health-system no decision started with a proposal).
 **Where consensus is built:** a collective-learning session on the cost of the sampled audit, before any POC.
-**Consensus kit:** one page per role, above.
+**Consensus kit:** the map's one page per role, delivered by the Mobilizer through the proof points in §4.
 
 ### Whole product (beachhead)
 

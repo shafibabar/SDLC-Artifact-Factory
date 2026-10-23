@@ -15,7 +15,7 @@ description: >
   crossed the chasm. Used by the product-strategist agent in the Strategy phase
   (/sdlc-strategy), after the business model canvas and before the OKR set;
   required at standard and enterprise, skipped at lean.
-version: 3.1.0
+version: 3.2.0
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -55,7 +55,7 @@ Vision ─► Stakeholder map ─► Competitive analysis ─► Strategy kernel
 | `strategy-kernel` | The guiding policy (the focus the beachhead carries out), the advantage it relies on, and what it rules out (segments and channels GTM may not choose) |
 | `competitive-analysis` | The **one** competitive alternatives list (doing nothing and no decision included), the surviving differentiation points with their evidence status, the category lens, and the **win/loss log**. Cite them; never build a second list |
 | `business-model-canvas` | Segments, value propositions, the charging unit and willingness-to-pay (WTP) evidence. GTM sets the price; the canvas points here |
-| `stakeholder-mapping` | Who buys, who uses, who can block: the starting point for the buying group |
+| `stakeholder-mapping` | The **buying committee** per segment (roles, belief, objection, proof, likely profile, cost of no decision). Its one home: cite it for the beachhead, never copy the table |
 | `vision-statement` | The protagonist and the job, so the ICP and the message are about the same customer |
 
 | Feeds | What it gives |
@@ -92,7 +92,7 @@ Pricing is written seventh but **decided from evidence gathered at step 1**: the
 
 **1. One beachhead, chosen against criteria, carrying the kernel's policy.** Score candidate segments on: compelling reason to buy now, one coherent channel, an accessible economic buyer, no entrenched competitor, winnable with the resources you have, and a reference base for the next segment. The winner is often the smaller segment. A segment the kernel rules out is not a candidate. Detail: `./references/positioning-and-segments.md`.
 
-**2. The ICP is an organisation; the buying group is the people.** Persona attributes in the ICP hide the buyer/user split. For any B2B purchase, name the buying group: who takes part, the likely **Mobilizer** (who can move the organisation), the likely **Blocker**, and what each loses by staying put. In B2B the commonest loss is **no decision**, not a rival (Adamson and Dixon, *The Challenger Customer*). Profiles are attitudes, not job titles: label them "likely" until Stage 1 confirms them. Detail: `./references/channels-and-sales-motion.md`.
+**2. The ICP is an organisation; the buying group is the people.** Persona attributes in the ICP hide the buyer/user split. For any B2B purchase, name the buying group: who takes part, the likely **Mobilizer** (who can move the organisation), the likely **Blocker**, and what each loses by staying put. In B2B the commonest loss is **no decision**, not a rival (Adamson and Dixon, *The Challenger Customer*). Profiles are attitudes, not job titles: label them "likely" until Stage 1 confirms them. The committee table lives in the stakeholder map (`stakeholder-mapping`); the GTM cites it for the beachhead and adds only the motion decisions: the Mobilizer target, the Blocker plan, where consensus is built and how Stage 1 confirms it. If the map has no committee for the chosen beachhead, add one there first; only when no stakeholder map exists (lean) does the GTM record the hypotheses itself. Detail: `./references/channels-and-sales-motion.md`.
 
 **3. Positioning starts from the competitive analysis.** Cite its alternatives list (doing nothing first) and use only differentiation points that passed "real" and "valued". A point marked *hypothesis* there is a hypothesis here. The `Unlike [alternative]` slot names the alternative the beachhead actually uses, often a spreadsheet or doing nothing, not the best-known vendor. The `[category]` slot is a deliberate choice among fit, create or subcategory, with the evaluation criteria each imports. Detail: `./references/positioning-and-segments.md`.
 
@@ -114,7 +114,7 @@ Pricing is written seventh but **decided from evidence gathered at step 1**: the
 
 1. **Read the inputs** (Where It Sits). No approved kernel or competitive analysis at standard+: stop and say which is missing.
 2. **Score the beachhead** candidates, including what WTP evidence exists for each (rule 1).
-3. **Write the ICP**, disqualifiers, and the buying group (rule 2).
+3. **Write the ICP**, disqualifiers, and the buying group, citing the stakeholder map's committee (rule 2).
 4. **Work the positioning sequence** from the cited alternatives; choose the category; write the statement (rule 3).
 5. **Write the Reframe and the message house**; tailor which proof points lead per buying-group role (rule 4).
 6. **Choose the channel and the sales motion** (rule 5; options in `./references/channels-and-sales-motion.md`).

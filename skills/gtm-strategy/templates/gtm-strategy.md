@@ -14,7 +14,7 @@ created: [YYYY-MM-DD]
 summary: [one sentence, ≤ 200 chars — the beachhead, the alternative it beats and how it is reached, e.g. "Win 5–50-staff firms at year-end, unlike spreadsheets, with a same-day import trial at $70–110 per firm per month."]
 owner: product-strategist
 profile: [standard | enterprise]
-traces_to: [strategy/strategy-kernel.md; strategy/competitive-analysis.md; strategy/business-model-canvas.md]
+traces_to: [strategy/strategy-kernel.md; strategy/competitive-analysis.md; strategy/business-model-canvas.md; strategy/stakeholder-map.md]
 ---
 
 # Go-to-Market Strategy
@@ -51,12 +51,7 @@ Carries out the kernel's guiding policy: "[quote the focus from the guiding poli
 
 ### Buying group
 
-| Role | Must believe to say yes | Likely objection | Proof that answers it | Likely profile | Loses by staying put |
-|---|---|---|---|---|---|
-| [economic buyer] | | | | [Mobilizer / Talker / Blocker — likely] | |
-| [user] | | | | | |
-| [reviewer: security / finance / legal] | | | | | |
-
+**Committee:** `strategy/stakeholder-map.md` §2, segment [beachhead] — [roles, one line]. (The per-role table lives there; do not copy it.)
 **Mobilizer hypothesis:** [role] — confirmed in Stage 1 by [how].
 **Blocker:** [role] — handled by [the Mobilizer, with which proof].
 **Where consensus is built:** [in the trial / product-assisted call / collective-learning session].
