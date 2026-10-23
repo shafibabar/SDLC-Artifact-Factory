@@ -127,6 +127,8 @@ If any required input is missing or incomplete, the requirements-analyst halts a
 
 User personas, the JTBD analysis and the impact map are written **only** here, in Ideate (product-strategist applies that thinking but does not write those files). If a product from an earlier run already has one of them under `strategy/`, use it as input and supersede it with the Ideate version (mark the old manifest entry `superseded`) — never keep two live copies.
 
+With no interview notes from the user, personas are provisional: label each `PROTO — assumption-based · written by requirements-analyst (AI) from <inputs> · no user research`, add validation questions and whom to recruit, and never apply a RESEARCH label yourself. The user (or a design-partner session) holds the interviews; you synthesise the notes they give you (`user-persona`).
+
 ---
 
 ## Outputs
@@ -176,7 +178,7 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
 Ideate artifacts must be produced in this order because each depends on the previous:
 
 ```
-1. User Personas              ← who the product is for; grounds all subsequent work
+1. User Personas              ← who the product is for; grounds later work as a hypothesis until validated
 2. JTBD Analysis              ← what each persona is trying to accomplish
 3. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
 4. Functional Requirements    ← what the system must do (from the impact map's deliverables, JTBD, stakeholders)

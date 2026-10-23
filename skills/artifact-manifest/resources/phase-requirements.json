@@ -175,7 +175,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "lean: 1–2 proto-personas with the job each hires the product for (JTBD folded in)."
+        "note": "lean: 1–2 PROTO personas, one primary per interface, each with its job statement, 1–2 job stories and a forces line (JTBD folded in)."
       },
       {
         "artifact": "jtbd-analysis",

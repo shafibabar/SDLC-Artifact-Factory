@@ -223,7 +223,7 @@ If a domain term is unclear to users (e.g., "Aggregate" is a DDD term, not a UI 
 
 Escalate to the user — do not decide unilaterally — when:
 
-- A journey map reveals a job-to-be-done that no persona covers (possible missing persona or scope gap)
+- A journey map reveals a job-to-be-done that no persona covers, or a missing persona surfaces at Gate 1 (possible missing persona or scope gap) — this is the persona set's reopen trigger: send a change request to `requirements-analyst` to reopen the personas (`user-persona`)
 - The IA cannot represent a Bounded Context without renaming its canonical terms for users (the plain-English mapping needs product sign-off)
 - Two Job Stories demand contradictory navigation or flow structures
 - A flow requires a Command or Read Model that does not exist in the domain model (upstream gap — domain-modeler rework, which affects timeline)
