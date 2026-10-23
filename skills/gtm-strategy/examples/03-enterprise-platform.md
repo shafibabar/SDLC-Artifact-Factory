@@ -132,7 +132,7 @@ Carries out the kernel's guiding policy: explainable, in-region findings before 
 
 **Fences:** connected sources; regions; Prove only in Enterprise.
 **Discount policy:** account owner up to 10% for a multi-year term; more needs the product owner and a named reference in return; no discount without a give-get.
-**Note:** the full tier matrix and pricing business case move to `pricing-and-packaging` when that skill exists.
+**Note:** the full tier matrix, list prices, pricing business case and approval ladder are in `strategy/pricing-and-packaging.md` (the `pricing-and-packaging` skill), which works inside these ranges.
 
 ## 8. Launch Sequencing (Enterprise line)
 

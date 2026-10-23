@@ -97,6 +97,19 @@
         }
       },
       {
+        "artifact": "pricing-and-packaging",
+        "paths": [
+          "strategy/pricing-and-packaging.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "lean": "skip",
+          "standard": "optional",
+          "enterprise": "required"
+        },
+        "note": "The price book under the GTM's pricing decision: tier matrix with fences, list prices, bottom-up business case, discount give-get policy (Ramanujam and Tacke). standard: write it when the GTM has two or more tiers aimed at different segments, when anyone besides the product owner can discount, or when the user asks; otherwise the GTM's pricing section is enough."
+      },
+      {
         "artifact": "okr-set",
         "paths": [
           "strategy/okrs.md",

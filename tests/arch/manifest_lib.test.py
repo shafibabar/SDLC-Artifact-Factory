@@ -7,8 +7,9 @@ Runs against the REAL repo (no fixtures): the manifest library is the shared
 foundation the P1 linters and the P3 catalog import, so its contract is pinned
 to the live component tree. Asserts:
 
-  * exact component counts (187 skills, 13 agents, 15 commands) — a drift here
-    means a component was added/removed without the manifest noticing;
+  * the skill count equals the number of skills/*/SKILL.md on disk (not a
+    pinned number: the Fresh-Eyes waves add skills), and exact agent and
+    command counts (13, 15) — a drift means the manifest missed a component;
   * filesystem-DERIVED booleans are computed correctly for a known skill
     (derived flags are checked against filesystem truth for every skill);
   * authored frontmatter is parsed correctly (fields, inline lists, block
@@ -74,7 +75,8 @@ commands = m.load_commands()
 hooks = m.load_hooks()
 
 # --- counts against the real repo -------------------------------------------
-check(f"skill count is 187 (got {len(skills)})", len(skills) == 187)
+FS_SKILLS = len(list((Path(__file__).resolve().parents[2] / "skills").glob("*/SKILL.md")))
+check(f"skill count matches skills/*/SKILL.md on disk ({FS_SKILLS}; got {len(skills)})", len(skills) == FS_SKILLS)
 check(f"agent count is 13 (got {len(agents)})", len(agents) == 13)
 check(f"command count is 15 (got {len(commands)})", len(commands) == 15)
 
@@ -112,7 +114,7 @@ check(
 # assets/, has a contract test). The Fresh-Eyes waves change every skill's
 # layout, so pinning a real skill made this test break whenever that skill was
 # refactored. Instead: for every skill, each derived flag must equal what the
-# filesystem says — stronger (187 skills, not one) and refactor-proof.
+# filesystem says — stronger (every skill, not one) and refactor-proof.
 def _nonempty(p):
     return p.is_dir() and any(p.iterdir())
 _mismatch = []

@@ -62,11 +62,11 @@ cur="$(python3 -c "import json;print(json.load(open('$P/artifacts/lunch/_manifes
 [[ "$cur" == "strategy" && -z "$(valid)" ]] && _pass "hook rewrite keeps current_phase and stays valid" || _fail "hook rewrite keeps current_phase and stays valid" "$cur $(valid)"
 
 # 7. write and approve the full Strategy set (alternate filenames accepted), then complete
-for f in strategy-kernel stakeholder-map competitive-analysis lean-canvas positioning-gtm-strategy roadmap okrs; do
+for f in strategy-kernel stakeholder-map competitive-analysis lean-canvas positioning-gtm-strategy pricing-and-packaging roadmap okrs; do
   write "strategy/$f.md"
 done
 out="$(ps approve strategy/vision-statement.md strategy/strategy-kernel.md strategy/stakeholder-map.md \
-  strategy/competitive-analysis.md strategy/lean-canvas.md strategy/positioning-gtm-strategy.md strategy/roadmap.md strategy/okrs.md)"; rc=$?
+  strategy/competitive-analysis.md strategy/lean-canvas.md strategy/positioning-gtm-strategy.md strategy/pricing-and-packaging.md strategy/roadmap.md strategy/okrs.md)"; rc=$?
 [[ $rc -eq 0 ]] && _pass "approve records several artifacts" || _fail "approve records several artifacts" "$out"
 out="$(ps complete strategy)"; rc=$?
 if [[ $rc -eq 0 && "$out" == *'"current_phase": "ideate"'* ]] && [[ -z "$(valid)" ]]; then
@@ -154,9 +154,9 @@ out="$(lps complete strategy)"; rc=$?
 
 # 13. the lean set is not enough for an enterprise product
 out="$(ps plan strategy)"
-python3 -c "import json,sys; assert len(json.loads(sys.argv[1])['required']) == 8" "$out" 2>/dev/null \
-  && _pass "enterprise (no profile set) still requires all 8 strategy artifacts" \
-  || _fail "enterprise (no profile set) still requires all 8 strategy artifacts" "$out"
+python3 -c "import json,sys; assert len(json.loads(sys.argv[1])['required']) == 9" "$out" 2>/dev/null \
+  && _pass "enterprise (no profile set) still requires all 9 strategy artifacts" \
+  || _fail "enterprise (no profile set) still requires all 9 strategy artifacts" "$out"
 
 # 14. an unknown profile is a usage error, not a silent default
 printf '{"scale_profile":"tiny"}\n' > "$L/sdlc-config.json"
