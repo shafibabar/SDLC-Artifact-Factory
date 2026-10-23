@@ -4952,7 +4952,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.8.0"
+        "version": "1.9.0"
       },
       {
         "created": "2026-07-31",
@@ -10105,38 +10105,52 @@
         "dir": "skills/user-persona",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "user-persona",
         "owner": "requirements-analyst",
-        "phase": "strategy",
+        "phase": "ideate",
         "produces": [
           "user-persona"
         ],
         "related": [
+          "glossary-management",
           "gtm-strategy",
+          "impact-mapping",
           "jtbd-analysis",
+          "methodology-review",
+          "moscow-prioritization",
           "stakeholder-mapping",
+          "user-journey-mapping",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md",
+          "research/product-strategy-and-gtm/about-face-personas-cooper.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+        ],
         "status": "stable",
         "tags": [
+          "behavioural-variables",
           "discovery",
+          "ideate",
           "persona",
+          "persona-types",
           "proto-persona",
           "requirements",
-          "research-persona",
-          "strategy",
           "user-research"
         ],
-        "version": "2.1.2"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -10386,8 +10400,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 193,
     "edges_skill_produces": 189,
-    "edges_skill_related": 870,
-    "edges_skill_sources": 78,
+    "edges_skill_related": 875,
+    "edges_skill_sources": 85,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 188,
@@ -10399,20 +10413,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 35,
+    "research_files_cited": 37,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 175,
+    "skills_with_contract_test": 174,
     "skills_with_domain": 188,
-    "skills_with_evals": 12,
-    "skills_with_examples": 12,
+    "skills_with_evals": 13,
+    "skills_with_examples": 13,
     "skills_with_produces": 188,
     "skills_with_references": 183,
-    "skills_with_resources": 11,
-    "skills_with_scripts": 12,
-    "skills_with_sources": 13,
+    "skills_with_resources": 12,
+    "skills_with_scripts": 13,
+    "skills_with_sources": 14,
     "skills_with_status": 188,
     "skills_with_steps": 0,
-    "skills_with_templates": 11
+    "skills_with_templates": 12
   },
   "edges": {
     "agent_produces": [
@@ -15595,7 +15609,15 @@
         "skill": "user-journey-mapping"
       },
       {
+        "related": "glossary-management",
+        "skill": "user-persona"
+      },
+      {
         "related": "gtm-strategy",
+        "skill": "user-persona"
+      },
+      {
+        "related": "impact-mapping",
         "skill": "user-persona"
       },
       {
@@ -15603,7 +15625,19 @@
         "skill": "user-persona"
       },
       {
+        "related": "methodology-review",
+        "skill": "user-persona"
+      },
+      {
+        "related": "moscow-prioritization",
+        "skill": "user-persona"
+      },
+      {
         "related": "stakeholder-mapping",
+        "skill": "user-persona"
+      },
+      {
+        "related": "user-journey-mapping",
         "skill": "user-persona"
       },
       {
@@ -16003,6 +16037,34 @@
       {
         "skill": "strategy-kernel",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/about-face-personas-cooper.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
       },
       {
         "skill": "vision-statement",
