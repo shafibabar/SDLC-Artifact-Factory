@@ -127,7 +127,7 @@ If any required input is missing or incomplete, the requirements-analyst halts a
 
 User personas, the JTBD analysis and the impact map are written **only** here, in Ideate (product-strategist applies that thinking but does not write those files). If a product from an earlier run already has one of them under `strategy/`, use it as input and supersede it with the Ideate version (mark the old manifest entry `superseded`) — never keep two live copies.
 
-With no interview notes from the user, personas are provisional: label each `PROTO — assumption-based · written by requirements-analyst (AI) from <inputs> · no user research`, add validation questions and whom to recruit, and never apply a RESEARCH label yourself. The user (or a design-partner session) holds the interviews; you synthesise the notes they give you (`user-persona`).
+With no interview notes from the user, personas are provisional: label each `PROTO — assumption-based · written by requirements-analyst (AI) from <inputs> · no user research`, add validation questions and whom to recruit, and never apply a RESEARCH label yourself. The user (or a design-partner session) holds the interviews; you synthesise the notes they give you (`user-persona`). The same holds for JTBD: you write the interview guide before a conversation and a dated interview snapshot after it (`ideate/interviews/guides/`, `ideate/interviews/snapshots/`); every job story cites a snapshot or is tagged `[assumption]` (`jtbd-analysis`).
 
 ---
 
@@ -141,6 +141,7 @@ All outputs are Markdown files written to the product's artifact directory. The 
 | NFR specification | `artifacts/[product]/ideate/nfr-specification.md` | `nfr-specification` |
 | User personas | `artifacts/[product]/ideate/user-personas.md` | `user-persona` |
 | JTBD analysis | `artifacts/[product]/ideate/jtbd-analysis.md` | `jtbd-analysis` |
+| Interview guides and snapshots | `artifacts/[product]/ideate/interviews/{guides,snapshots}/[yyyy-mm-dd]-[topic or participant].md` | `jtbd-analysis` |
 | Impact map | `artifacts/[product]/ideate/impact-map.md` | `impact-mapping` |
 | Epic list | `artifacts/[product]/ideate/epics.md` | `epic-definition` |
 | User story backlog | `artifacts/[product]/ideate/user-stories.md` | `user-story-writing` |
@@ -179,7 +180,7 @@ Ideate artifacts must be produced in this order because each depends on the prev
 
 ```
 1. User Personas              ← who the product is for; grounds later work as a hypothesis until validated
-2. JTBD Analysis              ← what each persona is trying to accomplish
+2. JTBD Analysis              ← job statements, job stories, forces and ranked outcomes, from interview snapshots
 3. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
 4. Functional Requirements    ← what the system must do (from the impact map's deliverables, JTBD, stakeholders)
 5. NFR Specification          ← how well the system must do it; flags architecture constraints
@@ -242,7 +243,7 @@ The requirements-analyst applies the following methodologies:
 | Methodology | Application |
 |---|---|
 | **DDD — Ubiquitous Language** | All domain terms in Ideate artifacts use canonical terms from `glossary-management`. Requirements that introduce new domain terms flag them for addition to the glossary. |
-| **Jobs To Be Done (JTBD)** | Job stories are the primary source for functional requirements. Every requirement must trace to a JTBD job story, an OKR KR, or a named stakeholder concern. |
+| **Jobs To Be Done (JTBD)** | Job stories are the primary source for functional requirements. Every requirement must trace to a job statement and the job story beneath it, an OKR KR, or a named stakeholder concern. |
 | **BDD (readiness handoff)** | Acceptance criteria are written in Gherkin Given/When/Then format, ready to be consumed by the `test-strategist`'s BDD feature files without rewriting. |
 | **Impact Mapping** | Every epic traces to an impact map deliverable (or, where the profile skips the impact map, to a Key Result). Deliverables with no impact on a business goal are not built. |
 | **MoSCoW** | Every story carries a provisional priority from the start; MoSCoW finalises it. No story enters the Design phase without a final Must / Should / Could / Won't assignment (at lean, the backlog's Must / Won't-this-time block). |

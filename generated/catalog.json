@@ -619,6 +619,18 @@
         "integration-design"
       ]
     },
+    "interview-guide": {
+      "agents": [],
+      "skills": [
+        "jtbd-analysis"
+      ]
+    },
+    "interview-snapshot": {
+      "agents": [],
+      "skills": [
+        "jtbd-analysis"
+      ]
+    },
     "jtbd-analysis": {
       "agents": [],
       "skills": [
@@ -1431,6 +1443,8 @@
         "epic-list",
         "functional-requirements-document",
         "impact-map",
+        "interview-guide",
+        "interview-snapshot",
         "jtbd-analysis",
         "moscow-prioritized-backlog",
         "nfr-specification",
@@ -3347,7 +3361,7 @@
           "value-proposition",
           "value-proposition-canvas"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-20",
@@ -4952,7 +4966,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.9.0"
+        "version": "1.10.0"
       },
       {
         "created": "2026-07-31",
@@ -6514,38 +6528,60 @@
         "dir": "skills/jtbd-analysis",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "jtbd-analysis",
         "owner": "requirements-analyst",
-        "phase": "strategy",
+        "phase": "ideate",
         "produces": [
+          "interview-guide",
+          "interview-snapshot",
           "jtbd-analysis"
         ],
         "related": [
           "business-model-canvas",
+          "competitive-analysis",
+          "feedback-template",
+          "glossary-management",
+          "gtm-strategy",
           "impact-mapping",
+          "methodology-review",
           "moscow-prioritization",
+          "nfr-specification",
+          "requirements-analysis",
+          "strategy-kernel",
           "user-persona",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+        ],
         "status": "stable",
         "tags": [
-          "customer-motivation",
           "discovery",
+          "forces-of-progress",
+          "ideate",
+          "interview-snapshot",
           "job-statement",
+          "job-story",
           "jobs-to-be-done",
+          "opportunity-score",
           "requirements",
-          "strategy"
+          "switch-interview"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -10394,14 +10430,14 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 182,
+    "artifacts": 184,
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 72,
     "edges_agent_skills": 193,
-    "edges_skill_produces": 189,
-    "edges_skill_related": 875,
-    "edges_skill_sources": 85,
+    "edges_skill_produces": 191,
+    "edges_skill_related": 883,
+    "edges_skill_sources": 92,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 188,
@@ -10413,20 +10449,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 37,
+    "research_files_cited": 38,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 174,
+    "skills_with_contract_test": 173,
     "skills_with_domain": 188,
-    "skills_with_evals": 13,
-    "skills_with_examples": 13,
+    "skills_with_evals": 14,
+    "skills_with_examples": 14,
     "skills_with_produces": 188,
     "skills_with_references": 183,
-    "skills_with_resources": 12,
-    "skills_with_scripts": 13,
-    "skills_with_sources": 14,
+    "skills_with_resources": 13,
+    "skills_with_scripts": 14,
+    "skills_with_sources": 15,
     "skills_with_status": 188,
     "skills_with_steps": 0,
-    "skills_with_templates": 12
+    "skills_with_templates": 13
   },
   "edges": {
     "agent_produces": [
@@ -11861,6 +11897,14 @@
       {
         "artifact": "integration-design",
         "skill": "integration-design"
+      },
+      {
+        "artifact": "interview-guide",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "artifact": "interview-snapshot",
+        "skill": "jtbd-analysis"
       },
       {
         "artifact": "jtbd-analysis",
@@ -14153,11 +14197,43 @@
         "skill": "jtbd-analysis"
       },
       {
+        "related": "competitive-analysis",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "feedback-template",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "jtbd-analysis"
+      },
+      {
         "related": "impact-mapping",
         "skill": "jtbd-analysis"
       },
       {
+        "related": "methodology-review",
+        "skill": "jtbd-analysis"
+      },
+      {
         "related": "moscow-prioritization",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "strategy-kernel",
         "skill": "jtbd-analysis"
       },
       {
@@ -15917,6 +15993,34 @@
       {
         "skill": "gtm-strategy",
         "source": "research/storytelling-and-narrative/the-best-story-wins.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
       },
       {
         "skill": "okr-authoring",

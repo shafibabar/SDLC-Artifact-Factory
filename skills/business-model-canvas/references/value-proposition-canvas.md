@@ -20,7 +20,7 @@ Write it from the customer's view, before the value map, and never from what the
 
 ### Where the jobs come from
 
-- **A `jtbd-analysis` artifact exists** (a revision, or Strategy re-entered after Ideate): cite its job statements and Opportunity Scores by ID. Do not rephrase, re-rank or add jobs here. If the canvas exposes a job the JTBD artifact lacks, record it as a hypothesis for `jtbd-analysis` to test, not as a new canvas job.
+- **A `jtbd-analysis` artifact exists** (a revision, or Strategy re-entered after Ideate): cite its job statements and ranked desired outcomes by ID (opportunity is ranked on outcomes within a job, never on whole jobs). Do not rephrase, re-rank or add jobs here. If the canvas exposes a job the JTBD artifact lacks, record it as a hypothesis for `jtbd-analysis` to test, not as a new canvas job.
 - **First Strategy pass** (`jtbd-analysis` is written later, in Ideate): take the main job from the vision's protagonist and the pains from the problem statement and competitive alternatives. Mark every job, pain and gain `hypothesis`. List them in the artifact's hand-off section so `jtbd-analysis` verifies and scores them; when it does, revise the profile to cite the result.
 - The canvas never invents interview evidence. If no conversation has happened, the profile says so.
 
