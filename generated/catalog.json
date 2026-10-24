@@ -50,6 +50,12 @@
         "adr-authoring"
       ]
     },
+    "assumption-test": {
+      "agents": [],
+      "skills": [
+        "opportunity-solution-tree"
+      ]
+    },
     "beta-program": {
       "agents": [],
       "skills": [
@@ -732,6 +738,12 @@
       ],
       "skills": [
         "opentofu-module"
+      ]
+    },
+    "opportunity-solution-tree": {
+      "agents": [],
+      "skills": [
+        "opportunity-solution-tree"
       ]
     },
     "pattern-selection-rationale": {
@@ -1440,6 +1452,7 @@
       "agent_count": 0,
       "agents": [],
       "artifacts": [
+        "assumption-test",
         "epic-list",
         "functional-requirements-document",
         "impact-map",
@@ -1448,6 +1461,7 @@
         "jtbd-analysis",
         "moscow-prioritized-backlog",
         "nfr-specification",
+        "opportunity-solution-tree",
         "user-persona",
         "user-story-backlog",
         "user-story-map"
@@ -1455,13 +1469,14 @@
       "owners": [
         "requirements-analyst"
       ],
-      "skill_count": 9,
+      "skill_count": 10,
       "skills": [
         "epic-definition",
         "impact-mapping",
         "jtbd-analysis",
         "moscow-prioritization",
         "nfr-specification",
+        "opportunity-solution-tree",
         "requirements-analysis",
         "story-mapping",
         "user-persona",
@@ -2330,6 +2345,7 @@
           "methodology-review",
           "moscow-prioritization",
           "nfr-specification",
+          "opportunity-solution-tree",
           "requirements-analysis",
           "story-mapping",
           "uat-plan",
@@ -2355,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.9.0"
+        "version": "1.10.0"
       },
       {
         "created": "2026-06-25",
@@ -4966,7 +4982,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.10.0"
+        "version": "1.11.0"
       },
       {
         "created": "2026-07-31",
@@ -6391,6 +6407,7 @@
           "jtbd-analysis",
           "moscow-prioritization",
           "okr-authoring",
+          "opportunity-solution-tree",
           "story-mapping",
           "user-persona"
         ],
@@ -6405,7 +6422,7 @@
           "requirements",
           "strategy"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-07-31",
@@ -6554,6 +6571,7 @@
           "methodology-review",
           "moscow-prioritization",
           "nfr-specification",
+          "opportunity-solution-tree",
           "requirements-analysis",
           "strategy-kernel",
           "user-persona",
@@ -6581,7 +6599,7 @@
           "requirements",
           "switch-interview"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-07-20",
@@ -7144,6 +7162,57 @@
           "tenant-stamp"
         ],
         "version": "1.3.0"
+      },
+      {
+        "created": "2026-10-24",
+        "dir": "skills/opportunity-solution-tree",
+        "domain": "discovery",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": true,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "opportunity-solution-tree",
+        "owner": "requirements-analyst",
+        "phase": "ideate",
+        "produces": [
+          "assumption-test",
+          "opportunity-solution-tree"
+        ],
+        "related": [
+          "beta-program-design",
+          "feedback-template",
+          "glossary-management",
+          "impact-mapping",
+          "jtbd-analysis",
+          "methodology-review",
+          "okr-authoring",
+          "user-persona",
+          "user-story-writing"
+        ],
+        "sources": [
+          "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/requirements-and-user-stories/impact-mapping-adzic.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "assumption-testing",
+          "continuous-discovery",
+          "desired-outcome",
+          "discovery",
+          "ideate",
+          "opportunity-mapping",
+          "opportunity-solution-tree",
+          "target-opportunity"
+        ],
+        "version": "1.0.0"
       },
       {
         "created": "2026-07-31",
@@ -10430,17 +10499,17 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 184,
+    "artifacts": 186,
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 72,
-    "edges_agent_skills": 193,
-    "edges_skill_produces": 191,
-    "edges_skill_related": 883,
-    "edges_skill_sources": 92,
+    "edges_agent_skills": 194,
+    "edges_skill_produces": 193,
+    "edges_skill_related": 894,
+    "edges_skill_sources": 97,
     "hooks": 11,
     "orphan_skills": 0,
-    "skills": 188,
+    "skills": 189,
     "unresolved_skill_related": 0
   },
   "coverage": {
@@ -10449,20 +10518,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 38,
+    "research_files_cited": 39,
     "skills_with_assets": 14,
     "skills_with_contract_test": 173,
-    "skills_with_domain": 188,
-    "skills_with_evals": 14,
-    "skills_with_examples": 14,
-    "skills_with_produces": 188,
-    "skills_with_references": 183,
-    "skills_with_resources": 13,
-    "skills_with_scripts": 14,
-    "skills_with_sources": 15,
-    "skills_with_status": 188,
+    "skills_with_domain": 189,
+    "skills_with_evals": 15,
+    "skills_with_examples": 15,
+    "skills_with_produces": 189,
+    "skills_with_references": 184,
+    "skills_with_resources": 14,
+    "skills_with_scripts": 15,
+    "skills_with_sources": 16,
+    "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 13
+    "skills_with_templates": 14
   },
   "edges": {
     "agent_produces": [
@@ -11338,6 +11407,10 @@
       },
       {
         "agent": "requirements-analyst",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "agent": "requirements-analyst",
         "skill": "requirements-analysis"
       },
       {
@@ -11969,6 +12042,14 @@
       {
         "artifact": "opentofu-module",
         "skill": "opentofu-module"
+      },
+      {
+        "artifact": "assumption-test",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "artifact": "opportunity-solution-tree",
+        "skill": "opportunity-solution-tree"
       },
       {
         "artifact": "platform-design",
@@ -14141,6 +14222,10 @@
         "skill": "impact-mapping"
       },
       {
+        "related": "opportunity-solution-tree",
+        "skill": "impact-mapping"
+      },
+      {
         "related": "story-mapping",
         "skill": "impact-mapping"
       },
@@ -14226,6 +14311,10 @@
       },
       {
         "related": "nfr-specification",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "opportunity-solution-tree",
         "skill": "jtbd-analysis"
       },
       {
@@ -14371,6 +14460,42 @@
       {
         "related": "vision-statement",
         "skill": "okr-authoring"
+      },
+      {
+        "related": "beta-program-design",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "feedback-template",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "impact-mapping",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "user-persona",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "user-story-writing",
+        "skill": "opportunity-solution-tree"
       },
       {
         "related": "beta-program-design",
@@ -16041,6 +16166,26 @@
       {
         "skill": "okr-authoring",
         "source": "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/requirements-and-user-stories/impact-mapping-adzic.md"
       },
       {
         "skill": "pricing-and-packaging",

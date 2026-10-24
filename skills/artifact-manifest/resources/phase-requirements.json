@@ -217,6 +217,33 @@
         "note": "one new dated file per conversation, from the interviewer's notes; evidence, so a new snapshot never reopens an approved artifact (jtbd-analysis)."
       },
       {
+        "artifact": "opportunity-solution-tree",
+        "paths": [
+          "ideate/opportunity-solution-tree.md",
+          "ideate/opportunity-solution-trees/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "One product outcome at the root (never a business outcome or traction metric); opportunities in the customer's voice, citing snapshots or feedback items; a target opportunity chosen by comparing siblings. lean (when the user has heard from customers): a short ranked opportunity list, not a tree. standard: the full tree with about three solutions and assumption tests. enterprise: one tree per product outcome under opportunity-solution-trees/, opportunities tagged by segment or tenant role, tests tracked. Versioned per discovery cycle (opportunity-solution-tree)."
+      },
+      {
+        "artifact": "assumption-test",
+        "paths": [
+          "ideate/assumption-tests/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "one dated file per assumption test, its success criterion set before the run; evidence, so recording a result never reopens the approved tree (opportunity-solution-tree)."
+      },
+      {
         "artifact": "impact-map",
         "paths": [
           "ideate/impact-map.md"

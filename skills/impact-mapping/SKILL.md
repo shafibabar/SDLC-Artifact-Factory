@@ -7,7 +7,7 @@ description: >
   to a measurable goal and prevents building features nobody needs. Used during
   Strategy/Ideate to connect an OKR goal to the specific actor behavior changes
   and only then to candidate deliverables.
-version: 2.1.0
+version: 2.2.0
 phase: strategy
 owner: requirements-analyst
 created: 2026-06-24
@@ -15,7 +15,7 @@ tags: [strategy, requirements, impact-map, outcomes, actors, goal, deliverables]
 produces: impact-map
 domain: discovery
 status: stable
-related: [okr-authoring, user-persona, jtbd-analysis, epic-definition, moscow-prioritization, story-mapping]
+related: [okr-authoring, user-persona, jtbd-analysis, opportunity-solution-tree, epic-definition, moscow-prioritization, story-mapping]
 ---
 
 # Impact Mapping
@@ -85,6 +85,7 @@ and hands deliverables downstream:
 | `okr-authoring` | Each OKR Key Result becomes a WHY goal (one map per KR) |
 | `user-persona` | Personas populate the WHO actors, including blockers |
 | `jtbd-analysis` | Validated job stories identify the HOW behavior changes for primary actors |
+| `opportunity-solution-tree` | Its product outcome is the WHY (with the KR's metric fields); its target opportunity explains why an actor does not already behave the HOW way; its compared solutions, assumptions and tests are WHAT candidates |
 | `epic-definition` | Selected WHAT deliverables become epics |
 | `moscow-prioritization` | Must/Should/Could binning of WHAT deliverables uses the map as the forcing function |
 | `story-mapping` | WHAT deliverables map onto story-map activities and release slices |
