@@ -44,7 +44,7 @@ traces_to: strategy/vision-statement.md; strategy/strategy-kernel.md; strategy/c
 Pattern: freemium (SMB side).
 
 ## Value Proposition Canvas — [ENT] compliance officer (economic buyer)
-Jobs from `jtbd-analysis` J1 (Opportunity Score 16.2), J3 (14.8).
+Jobs from `jtbd-analysis` J1 (top outcome Opportunity Score 16.2), J3 (top outcome 14.8).
 | Kind | Item | Rank |
 |---|---|---|
 | Pain | P1 Audit evidence rebuilt by hand every year | extreme |

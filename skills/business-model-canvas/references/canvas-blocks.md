@@ -124,7 +124,7 @@ The pairing is positional. Maurya argues the change as removals and additions, n
 
 ### Problem + Existing Alternatives
 
-The top one to three problems for the Early Adopters, **ranked**, and for each how it is solved today without you: workarounds, spreadsheets, a competitor, doing nothing. The alternatives are the true competitive baseline (Dunford's competitive alternatives). On a later pass, rank from `jtbd-analysis`'s scored jobs; do not copy an interview script here.
+The top one to three problems for the Early Adopters, **ranked**, and for each how it is solved today without you: workarounds, spreadsheets, a competitor, doing nothing. The alternatives are the true competitive baseline (Dunford's competitive alternatives). On a later pass, rank from `jtbd-analysis`'s ranked outcomes; do not copy an interview script here.
 
 ### Solution
 

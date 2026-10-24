@@ -13,7 +13,7 @@ description: >
   should state. Used by the product-strategist agent in the Strategy phase
   (/sdlc-strategy), after the strategy kernel and before the GTM strategy;
   required at every profile (a Lean Canvas at lean).
-version: 3.0.0
+version: 3.0.1
 phase: strategy
 owner: product-strategist
 created: 2026-06-24
@@ -89,7 +89,7 @@ One canvas per business model. A product line gets its own canvas only when it h
 
 **1. Value is mapped, not asserted (the Value Proposition Canvas).** For each segment, the **Customer Profile** lists jobs, **pains ranked by severity** and **gains ranked by relevance**; the **Value Map** lists the products and services, then the **pain relievers** and **gain creators**, each drawn to the specific pain or gain it addresses (Osterwalder et al., *Value Proposition Design*). A reliever that points at no ranked pain is cut. Only the top pains and gains the map actually addresses go into the canvas's value block. A value proposition that names a feature ("real-time scanning") instead of a pain relieved or gain created is not one. Olsen (*The Lean Product Playbook*) gives the same dependency: segment → underserved need → value proposition, and a fault lower down invalidates everything above it.
 
-**Jobs come from `jtbd-analysis`, not from the canvas.** If a JTBD artifact exists, cite its ranked jobs and Opportunity Scores; do not re-gather or rephrase them. On a first Strategy pass it does not exist yet: take the job from the vision's protagonist, mark every job and pain `hypothesis`, and list them as the hand-off `jtbd-analysis` verifies in Ideate. When its ranking arrives, revise the profile to cite it. The canvas never runs interviews; interview discipline lives in `jtbd-analysis`. Profile detail, the three fits and the B2B roles: `./references/value-proposition-canvas.md`.
+**Jobs come from `jtbd-analysis`, not from the canvas.** If a JTBD artifact exists, cite its job statements and ranked desired outcomes by ID; do not re-gather or rephrase them. On a first Strategy pass it does not exist yet: take the job from the vision's protagonist, mark every job and pain `hypothesis`, and list them as the hand-off `jtbd-analysis` verifies in Ideate. When its ranking arrives, revise the profile to cite it. The canvas never runs interviews; interview discipline lives in `jtbd-analysis`. Profile detail, the three fits and the B2B roles: `./references/value-proposition-canvas.md`.
 
 **2. Every block carries one evidence status.** `hypothesis` (a guess) · `tested` (an experiment ran; result recorded) · `validated` (behavioural evidence: payment, signed pilot, retained usage). Stated interest is weaker than action; a block is `validated` only on what customers *did*. The status belongs to the block, with the entry that is least proven deciding it.
 

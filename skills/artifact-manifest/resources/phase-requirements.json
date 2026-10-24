@@ -187,7 +187,34 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Job statements with job stories under them, each story citing an interview snapshot or tagged as an assumption; outcomes ranked by compare-and-contrast at a handful of design partners, by per-segment opportunity score only with a survey sample."
+      },
+      {
+        "artifact": "interview-guide",
+        "paths": [
+          "ideate/interviews/guides/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "when the user (or a design partner) is about to hold a customer conversation; the agent writes the guide, never the interview (jtbd-analysis)."
+      },
+      {
+        "artifact": "interview-snapshot",
+        "paths": [
+          "ideate/interviews/snapshots/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "one new dated file per conversation, from the interviewer's notes; evidence, so a new snapshot never reopens an approved artifact (jtbd-analysis)."
       },
       {
         "artifact": "impact-map",
