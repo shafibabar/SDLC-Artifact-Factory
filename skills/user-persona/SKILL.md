@@ -15,7 +15,7 @@ description: >
   by the requirements-analyst agent as the first artifact of the Ideate phase
   (/sdlc-ideate), from the GTM's ICP and the stakeholder map's buying committee,
   before JTBD analysis; required at every profile.
-version: 3.0.0
+version: 3.0.1
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -48,7 +48,7 @@ Every attribute must be **load-bearing**: it shapes a requirement, a job, an onb
 
 ```
 Strategy: vision ─► stakeholder map ─► … ─► GTM (ICP, beachhead)
-Ideate:   USER PERSONAS ─► JTBD analysis ─► impact map ─► functional requirements ─► …
+Ideate:   USER PERSONAS ─► JTBD analysis ─► opportunity solution tree ─► impact map ─► functional requirements ─► …
 ```
 
 | Reads | What it takes |

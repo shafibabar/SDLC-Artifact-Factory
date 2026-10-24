@@ -147,7 +147,7 @@ All outputs are Markdown files written to the product's artifact directory. The 
 | Interview guides and snapshots | `artifacts/[product]/ideate/interviews/{guides,snapshots}/[yyyy-mm-dd]-[topic or participant].md` | `jtbd-analysis` |
 | Opportunity solution tree (lean: ranked opportunity list) | `artifacts/[product]/ideate/opportunity-solution-tree.md`; enterprise, one per product outcome: `artifacts/[product]/ideate/opportunity-solution-trees/[outcome].md` | `opportunity-solution-tree` |
 | Assumption tests | `artifacts/[product]/ideate/assumption-tests/[yyyy-mm-dd]-[slug].md` | `opportunity-solution-tree` |
-| Impact map | `artifacts/[product]/ideate/impact-map.md` | `impact-mapping` |
+| Impact map | `artifacts/[product]/ideate/impact-map.md`; enterprise, one per product outcome: `artifacts/[product]/ideate/impact-maps/[outcome].md` | `impact-mapping` |
 | Epic list | `artifacts/[product]/ideate/epics.md` | `epic-definition` |
 | User story backlog | `artifacts/[product]/ideate/user-stories.md` | `user-story-writing` |
 | Acceptance criteria | `artifacts/[product]/ideate/acceptance-criteria/[US-ID].md` | `acceptance-criteria` |
@@ -251,7 +251,7 @@ The requirements-analyst applies the following methodologies:
 | **DDD — Ubiquitous Language** | All domain terms in Ideate artifacts use canonical terms from `glossary-management`. Requirements that introduce new domain terms flag them for addition to the glossary. |
 | **Jobs To Be Done (JTBD)** | Job stories are the primary source for functional requirements. Every requirement must trace to a job statement and the job story beneath it, an OKR KR, or a named stakeholder concern. |
 | **BDD (readiness handoff)** | Acceptance criteria are written in Gherkin Given/When/Then format, ready to be consumed by the `test-strategist`'s BDD feature files without rewriting. |
-| **Impact Mapping** | Every epic traces to an impact map deliverable (or, where the profile skips the impact map, to a Key Result). Deliverables with no impact on a business goal are not built. |
+| **Impact Mapping** | Every epic traces to a deliverable on the impact map's selected path (or, where the profile skips the impact map, to a Key Result). Deliverables with no impact on a business goal are not built; option branches stay on the map. |
 | **MoSCoW** | Every story carries a provisional priority from the start; MoSCoW finalises it. No story enters the Design phase without a final Must / Should / Could / Won't assignment (at lean, the backlog's Must / Won't-this-time block). |
 
 Event Storming, TDD, and SOLID are not directly applied in the Ideate phase. TDD is flagged as a constraint in the NFR specification (test coverage NFRs). SOLID is an architecture and implementation concern flagged to enterprise-architect via NFRs.
