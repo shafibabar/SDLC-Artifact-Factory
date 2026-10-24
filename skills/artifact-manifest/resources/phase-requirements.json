@@ -246,14 +246,16 @@
       {
         "artifact": "impact-map",
         "paths": [
-          "ideate/impact-map.md"
+          "ideate/impact-map.md",
+          "ideate/impact-maps/*.md"
         ],
         "agent": "requirements-analyst",
         "profiles": {
           "lean": "skip",
           "standard": "optional",
           "enterprise": "required"
-        }
+        },
+        "note": "Written after the opportunity solution tree and before the functional requirements; its goal is the tree's product outcome, in fields. lean: no map, epics trace to the Key Result. standard (when produced): one map for the outcome the first release serves. enterprise: one map per product outcome in scope under impact-maps/, with shared actor names. Ends in a selected path with typed assumptions, signals and a re-plan trigger, never a MoSCoW column (impact-mapping)."
       },
       {
         "artifact": "epic-list",
