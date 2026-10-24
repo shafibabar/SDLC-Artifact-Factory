@@ -5,7 +5,7 @@ description: >
   (the final phase, after Deploy). In Ideate, given the complete Strategy
   phase artifact set, produces the full discovery and requirements artifact
   set: functional requirements document, NFR specification, user personas,
-  JTBD analysis, impact map, epic list, user story backlog, acceptance
+  JTBD analysis, opportunity solution tree, impact map, epic list, user story backlog, acceptance
   criteria, example maps, story map, and MoSCoW prioritisation. In Customer
   Validation, runs UAT against a deployed environment, designs and operates
   beta programs, and produces the formal acceptance sign-off that gates
@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.9.0
+version: 1.10.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -32,6 +32,7 @@ outputs:
   - nfr-specification artifact
   - user-personas artifact
   - jtbd-analysis artifact
+  - opportunity-solution-tree artifact
   - impact-map artifact
   - epic-list artifact
   - user-story-backlog artifact
@@ -49,6 +50,7 @@ skills:
   - nfr-specification
   - user-persona
   - jtbd-analysis
+  - opportunity-solution-tree
   - impact-mapping
   - epic-definition
   - user-story-writing
@@ -85,6 +87,7 @@ In Ideate, the requirements-analyst acts as the voice of the user during discove
 - Non-functional requirements specification
 - User personas
 - Jobs To Be Done analysis
+- Opportunity solution tree (the living opportunity space: Ideate builds it, Customer Validation feeds it, the next cycle starts from it)
 - Impact map
 - Epic list
 - User story backlog
@@ -142,6 +145,8 @@ All outputs are Markdown files written to the product's artifact directory. The 
 | User personas | `artifacts/[product]/ideate/user-personas.md` | `user-persona` |
 | JTBD analysis | `artifacts/[product]/ideate/jtbd-analysis.md` | `jtbd-analysis` |
 | Interview guides and snapshots | `artifacts/[product]/ideate/interviews/{guides,snapshots}/[yyyy-mm-dd]-[topic or participant].md` | `jtbd-analysis` |
+| Opportunity solution tree (lean: ranked opportunity list) | `artifacts/[product]/ideate/opportunity-solution-tree.md`; enterprise, one per product outcome: `artifacts/[product]/ideate/opportunity-solution-trees/[outcome].md` | `opportunity-solution-tree` |
+| Assumption tests | `artifacts/[product]/ideate/assumption-tests/[yyyy-mm-dd]-[slug].md` | `opportunity-solution-tree` |
 | Impact map | `artifacts/[product]/ideate/impact-map.md` | `impact-mapping` |
 | Epic list | `artifacts/[product]/ideate/epics.md` | `epic-definition` |
 | User story backlog | `artifacts/[product]/ideate/user-stories.md` | `user-story-writing` |
@@ -181,22 +186,23 @@ Ideate artifacts must be produced in this order because each depends on the prev
 ```
 1. User Personas              ← who the product is for; grounds later work as a hypothesis until validated
 2. JTBD Analysis              ← job statements, job stories, forces and ranked outcomes, from interview snapshots
-3. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
-4. Functional Requirements    ← what the system must do (from the impact map's deliverables, JTBD, stakeholders)
-5. NFR Specification          ← how well the system must do it; flags architecture constraints
-6. Epic List                  ← impact map deliverables decomposed into outcome-oriented epics
-7. User Story Backlog         ← epics decomposed into INVEST-compliant stories
-8. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
-9. Acceptance Criteria        ← verifiable conditions per story, drafted from the example map's rule/example cards (produced story-by-story)
-10. Story Map                 ← full user journey with MVP slice and release slices
-11. MoSCoW Prioritisation     ← Must / Should / Could / Won't for the defined delivery window
+3. Opportunity Solution Tree  ← one product outcome, customer opportunities from snapshots and feedback, a target opportunity, solutions and assumption tests
+4. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
+5. Functional Requirements    ← what the system must do (from the impact map's deliverables, JTBD, stakeholders)
+6. NFR Specification          ← how well the system must do it; flags architecture constraints
+7. Epic List                  ← impact map deliverables decomposed into outcome-oriented epics
+8. User Story Backlog         ← epics decomposed into INVEST-compliant stories
+9. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
+10. Acceptance Criteria       ← verifiable conditions per story, drafted from the example map's rule/example cards (produced story-by-story)
+11. Story Map                 ← full user journey with MVP slice and release slices
+12. MoSCoW Prioritisation     ← Must / Should / Could / Won't for the defined delivery window
 ```
 
-Steps 8 and 9 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
+Steps 9 and 10 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
 
-The impact map comes before the functional requirements so that requirements trace to the deliverables it selects, rather than the map being drawn backwards from requirements already written (Adzic). Where the scale profile skips the impact map, requirements trace to the OKR Key Results directly.
+The opportunity solution tree comes before the impact map so that the map's impacts are explained by a chosen customer opportunity and its deliverables start from solutions already compared, with their riskiest assumptions named (`opportunity-solution-tree`). The impact map comes before the functional requirements so that requirements trace to the deliverables it selects, rather than the map being drawn backwards from requirements already written (Adzic). Where the scale profile skips the impact map, requirements trace to the OKR Key Results directly.
 
-Epics and stories carry a **provisional** priority when written; MoSCoW (step 11) finalises it. At the lean profile, where the MoSCoW artifact is skipped, close the backlog with a short Must / Won't-this-time block instead.
+Epics and stories carry a **provisional** priority when written; MoSCoW (step 12) finalises it. At the lean profile, where the MoSCoW artifact is skipped, close the backlog with a short Must / Won't-this-time block instead.
 
 Do not produce items out of sequence. If a dependency is incomplete, surface the gap to the user before continuing.
 
@@ -224,7 +230,7 @@ For each artifact in execution sequence:
     Wait for approval
     Write approved artifact to artifacts/[product]/ideate/
         ↓
-All 11 artifact types produced and approved
+All required artifact types produced and approved
         ↓
 Verify NFR architecture handoff items are flagged for enterprise-architect
 Verify acceptance criteria are ready for test-strategist BDD handoff
@@ -305,7 +311,7 @@ UAT scenarios are not automated tests — `test-strategist`'s `bdd-feature-file`
 - **To platform-engineer** — the acceptance sign-off's rollout decision (widen the canary to 100%, widen the feature flag cohort, or hold) is handed to platform-engineer to execute. This agent decides; platform-engineer operates the mechanism (`canary-deployment`, `feature-flag-design`).
 - **To the owning engineer** — every bug surfaced by UAT or beta feedback is routed to the agent that owns the defective component (backend-engineer, frontend-engineer, data-engineer). This agent triages and routes; it never patches.
 - **To ux-architect** — UX friction reported in feedback is routed for spec revision, not silently reinterpreted.
-- **To product-strategist** — missing-capability feedback is routed as roadmap input, not built ad hoc.
+- **Into the opportunity solution tree** — missing-capability feedback is evidence of a customer opportunity: its underlying need is placed on the tree for the next discovery cycle and compared, not built ad hoc (`opportunity-solution-tree`). Only a gap that challenges positioning or the ICP goes to product-strategist.
 
 ---
 
@@ -332,7 +338,7 @@ The requirements-analyst escalates to the user (does not proceed autonomously) w
 
 ### Ideate phase complete when:
 
-- [ ] All 11 artifact types are written and approved by the user
+- [ ] Every artifact the scale profile requires is written and approved by the user
 - [ ] Every functional requirement traces to an OKR KR, JTBD job story, or stakeholder concern
 - [ ] Every Must Have user story has acceptance criteria (Gherkin format) and an example map
 - [ ] NFR architecture handoff section is complete and reviewed

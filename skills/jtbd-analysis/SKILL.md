@@ -17,7 +17,7 @@ description: >
   notes, finding competing alternatives, or scoring underserved needs. Used by the
   requirements-analyst agent in Ideate (/sdlc-ideate) after user personas and
   before the impact map; skipped at lean, where JTBD folds into the persona.
-version: 3.0.0
+version: 3.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
@@ -25,7 +25,7 @@ tags: [ideate, requirements, jobs-to-be-done, job-statement, job-story, forces-o
 produces: [jtbd-analysis, interview-guide, interview-snapshot]
 domain: discovery
 status: stable
-related: [user-persona, user-story-writing, moscow-prioritization, business-model-canvas, impact-mapping, competitive-analysis, gtm-strategy, requirements-analysis, feedback-template, strategy-kernel, nfr-specification, glossary-management, methodology-review]
+related: [user-persona, user-story-writing, moscow-prioritization, business-model-canvas, impact-mapping, opportunity-solution-tree, competitive-analysis, gtm-strategy, requirements-analysis, feedback-template, strategy-kernel, nfr-specification, glossary-management, methodology-review]
 sources:
   - research/product-strategy-and-gtm/competing-against-luck-christensen.md
   - research/product-strategy-and-gtm/continuous-discovery-habits-torres.md
@@ -47,7 +47,7 @@ The job is stable while solutions churn. Design for the job, not for today's wor
 ## Where It Sits
 
 ```
-Ideate: user personas ─► JTBD ANALYSIS ─► impact map ─► functional requirements ─► epics ─► stories …
+Ideate: user personas ─► JTBD ANALYSIS ─► opportunity solution tree ─► impact map ─► functional requirements ─► epics ─► stories …
                 ▲  interview guides (before) and dated interview snapshots (after) feed it, weekly
 ```
 
@@ -64,7 +64,7 @@ Ideate: user personas ─► JTBD ANALYSIS ─► impact map ─► functional r
 | `requirements-analysis`, `user-story-writing` | Each job story's implied capability; every requirement traces to a job statement and a story beneath it |
 | `competitive-analysis`, `gtm-strategy` | What gets fired, including non-consumption: the real competitive set |
 | Onboarding and NFRs | Obstacles, purchase and use experiences, consumption jobs and the Little Hire, as onboarding requirements |
-| An opportunity space | Each snapshot's "opportunities heard", in the customer's voice, ready for a later opportunity-mapping step to place |
+| `opportunity-solution-tree` | Each snapshot's "opportunities heard", in the customer's voice and tagged by experience step, placed on the tree with no rewording; the target desired-outcome statement as a sizing input, never as the tree's root |
 
 ## Who Does What: the User Interviews, the Agent Synthesises
 
