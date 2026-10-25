@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.0
+version: 1.10.1
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -188,7 +188,7 @@ Ideate artifacts must be produced in this order because each depends on the prev
 2. JTBD Analysis              ← job statements, job stories, forces and ranked outcomes, from interview snapshots
 3. Opportunity Solution Tree  ← one product outcome, customer opportunities from snapshots and feedback, a target opportunity, solutions and assumption tests
 4. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
-5. Functional Requirements    ← what the system must do (from the impact map's deliverables, JTBD, stakeholders)
+5. Functional Requirements    ← what the system must do (from the impact map's selected-path deliverables and the job stories; lean: none, the backlog is the requirements)
 6. NFR Specification          ← how well the system must do it; flags architecture constraints
 7. Epic List                  ← impact map deliverables decomposed into outcome-oriented epics
 8. User Story Backlog         ← epics decomposed into INVEST-compliant stories
@@ -339,7 +339,7 @@ The requirements-analyst escalates to the user (does not proceed autonomously) w
 ### Ideate phase complete when:
 
 - [ ] Every artifact the scale profile requires is written and approved by the user
-- [ ] Every functional requirement traces to an OKR KR, JTBD job story, or stakeholder concern
+- [ ] Every functional requirement traces to a selected-path deliverable on the impact map (or, where the profile has no map, an OKR KR) and to a job statement and the job story beneath it
 - [ ] Every Must Have user story has acceptance criteria (Gherkin format) and an example map
 - [ ] NFR architecture handoff section is complete and reviewed
 - [ ] Every epic identifies its bounded context candidate
