@@ -2371,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.2"
+        "version": "1.10.3"
       },
       {
         "created": "2026-06-25",
@@ -4640,14 +4640,14 @@
         "dir": "skills/epic-definition",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "epic-definition",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -4656,24 +4656,39 @@
         ],
         "related": [
           "acceptance-criteria",
+          "example-mapping",
           "glossary-management",
           "impact-mapping",
+          "jtbd-analysis",
           "methodology-review",
           "moscow-prioritization",
+          "nfr-specification",
+          "okr-authoring",
+          "opportunity-solution-tree",
+          "requirements-analysis",
+          "roadmap-authoring",
           "story-mapping",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md",
+          "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+        ],
         "status": "stable",
         "tags": [
-          "acceptance-criteria",
-          "agile",
           "epic",
+          "epic-list",
+          "four-risks",
+          "hypothesis",
           "ideate",
           "requirements",
-          "story-decomposition"
+          "story-decomposition",
+          "traceability"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -4982,7 +4997,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.14.0"
+        "version": "1.15.0"
       },
       {
         "created": "2026-07-31",
@@ -6433,7 +6448,7 @@
           "outcomes",
           "selected-path"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-31",
@@ -10556,8 +10571,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 921,
-    "edges_skill_sources": 114,
+    "edges_skill_related": 928,
+    "edges_skill_sources": 119,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10569,20 +10584,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 44,
+    "research_files_cited": 46,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 170,
+    "skills_with_contract_test": 169,
     "skills_with_domain": 189,
-    "skills_with_evals": 18,
-    "skills_with_examples": 18,
+    "skills_with_evals": 19,
+    "skills_with_examples": 19,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 17,
-    "skills_with_scripts": 18,
-    "skills_with_sources": 19,
+    "skills_with_resources": 18,
+    "skills_with_scripts": 19,
+    "skills_with_sources": 20,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 17
+    "skills_with_templates": 18
   },
   "edges": {
     "agent_produces": [
@@ -13241,6 +13256,10 @@
         "skill": "epic-definition"
       },
       {
+        "related": "example-mapping",
+        "skill": "epic-definition"
+      },
+      {
         "related": "glossary-management",
         "skill": "epic-definition"
       },
@@ -13249,11 +13268,35 @@
         "skill": "epic-definition"
       },
       {
+        "related": "jtbd-analysis",
+        "skill": "epic-definition"
+      },
+      {
         "related": "methodology-review",
         "skill": "epic-definition"
       },
       {
         "related": "moscow-prioritization",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "opportunity-solution-tree",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "roadmap-authoring",
         "skill": "epic-definition"
       },
       {
@@ -16181,6 +16224,26 @@
       {
         "skill": "competitive-analysis",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
       },
       {
         "skill": "glossary-management",

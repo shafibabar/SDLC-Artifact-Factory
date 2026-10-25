@@ -268,7 +268,8 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Outcome-named epics, each a falsifiable hypothesis traced to a selected-path deliverable (or the Key Result with no map), a job story and the user requirements it carries, with a four-risk line, 3-5 high-level criteria with examples, a Bounded Context candidate, size by story count and a provisional priority MoSCoW finalises. lean: no epics.md; epic headings with a KR trace line in ideate/user-stories.md. enterprise: grouped by impact map, transition epics per tenant, cross-context flags for the domain-modeler (epic-definition)."
       },
       {
         "artifact": "user-story-backlog",

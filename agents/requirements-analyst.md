@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.2
+version: 1.10.3
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -190,7 +190,7 @@ Ideate artifacts must be produced in this order because each depends on the prev
 4. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
 5. Functional Requirements    ← what the system must do (from the impact map's selected-path deliverables and the job stories; lean: none, the backlog is the requirements)
 6. NFR Specification          ← how well it must do it: the FRD's quality-attribute hand-off as rated scenarios; flags architecture constraints
-7. Epic List                  ← impact map deliverables decomposed into outcome-oriented epics
+7. Epic List                  ← selected-path deliverables and user requirements as outcome epics with hypotheses, four-risk lines and provisional priority (lean: epic headings in the backlog, traced to the KR)
 8. User Story Backlog         ← epics decomposed into INVEST-compliant stories
 9. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
 10. Acceptance Criteria       ← verifiable conditions per story, drafted from the example map's rule/example cards (produced story-by-story)
