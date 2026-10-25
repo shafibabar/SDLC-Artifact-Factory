@@ -15,7 +15,7 @@ description: >
   assumptions behind a plan. Used by the requirements-analyst agent in Ideate
   (/sdlc-ideate) after the opportunity solution tree and before the functional
   requirements; required at enterprise, optional at standard, skipped at lean.
-version: 3.0.0
+version: 3.0.1
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24

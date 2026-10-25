@@ -17,7 +17,7 @@ Self-contained. **Swapline** is an internal on-call swap tool a practice manager
 - **One actor matters, one blocks.** The vets produce the effect (primary). The practice manager is the current bottleneck: as long as she approves every swap by hand, nothing changes (blocker). Two actors, one impact each.
 - **Cheapest option first.** Before any epic, a non-software option: a pinned "who's free" sheet in the vets' group chat. The user decides whether the tool is still needed; here it is, because the sheet goes stale within a week (the user's own observation).
 
-## Output — the reply, and the trace lines for `ideate/epics.md`
+## Output — the reply, and the trace lines for the epic headings in `ideate/user-stories.md`
 
 > At lean the impact map is skipped, so I won't write one, and I won't draw one from FR-1…FR-6: a map built from requirements just justifies them. Instead each epic carries one trace line from KR-1.1, and I've checked your requirements against those lines.
 
