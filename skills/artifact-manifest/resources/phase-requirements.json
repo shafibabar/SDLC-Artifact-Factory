@@ -163,7 +163,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "lean: short — only the NFRs that change a design decision."
+        "note": "Consumes the FRD's quality-attribute hand-off (QA-n) and cites its business rules (BR-n), never restating them; each NFR is a quality-attribute scenario over the ISO/IEC 25010 characteristics plus deployability, with conflicts recorded as candidate trade-off points. Targets scale: lean is short — only the NFRs that change a design decision (3-8 scenarios, Must only, no process targets unless asked); standard rates value and impact, Must and Plan; enterprise adds a utility tree and Stretch per service tier. DORA rates are optional process targets set from dora-metrics, not NFRs (nfr-specification)."
       },
       {
         "artifact": "user-personas",

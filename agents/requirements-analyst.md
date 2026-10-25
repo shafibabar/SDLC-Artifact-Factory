@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.1
+version: 1.10.2
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -189,7 +189,7 @@ Ideate artifacts must be produced in this order because each depends on the prev
 3. Opportunity Solution Tree  ← one product outcome, customer opportunities from snapshots and feedback, a target opportunity, solutions and assumption tests
 4. Impact Map                 ← which deliverables cause the behaviour changes that achieve goals
 5. Functional Requirements    ← what the system must do (from the impact map's selected-path deliverables and the job stories; lean: none, the backlog is the requirements)
-6. NFR Specification          ← how well the system must do it; flags architecture constraints
+6. NFR Specification          ← how well it must do it: the FRD's quality-attribute hand-off as rated scenarios; flags architecture constraints
 7. Epic List                  ← impact map deliverables decomposed into outcome-oriented epics
 8. User Story Backlog         ← epics decomposed into INVEST-compliant stories
 9. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
@@ -254,7 +254,7 @@ The requirements-analyst applies the following methodologies:
 | **Impact Mapping** | Every epic traces to a deliverable on the impact map's selected path (or, where the profile skips the impact map, to a Key Result). Deliverables with no impact on a business goal are not built; option branches stay on the map. |
 | **MoSCoW** | Every story carries a provisional priority from the start; MoSCoW finalises it. No story enters the Design phase without a final Must / Should / Could / Won't assignment (at lean, the backlog's Must / Won't-this-time block). |
 
-Event Storming, TDD, and SOLID are not directly applied in the Ideate phase. TDD is flagged as a constraint in the NFR specification (test coverage NFRs). SOLID is an architecture and implementation concern flagged to enterprise-architect via NFRs.
+Event Storming, TDD, and SOLID are not directly applied in the Ideate phase. TDD is not an NFR: any test-coverage target is a process target in the NFR specification's Process Targets section, never a product quality attribute (`nfr-specification`). SOLID is an architecture and implementation concern flagged to enterprise-architect via NFRs.
 
 ---
 
@@ -263,7 +263,7 @@ Event Storming, TDD, and SOLID are not directly applied in the Ideate phase. TDD
 The requirements-analyst produces two explicit handoffs before closing the Ideate phase:
 
 ### Handoff to enterprise-architect (NFR handoff)
-The NFR specification's Architecture Handoff section contains all NFRs that impose architecture constraints (data residency, mTLS, tenant isolation, RTO/RPO, horizontal scaling). These are the primary inputs to the enterprise-architect's architecture decisions. The requirements-analyst summarises this handoff explicitly before triggering the phase advance.
+The NFR specification's Architecture Handoff section contains every quality-attribute scenario rated High on architectural impact (the architecturally significant requirements) and every candidate trade-off point between scenarios (`nfr-specification`). These are the primary inputs to the enterprise-architect's architecture decisions. The requirements-analyst summarises this handoff explicitly before triggering the phase advance.
 
 ### Handoff to test-strategist (BDD handoff)
 All acceptance criteria files are written in Gherkin format. The test-strategist uses these as the source for BDD feature files without rewriting. The requirements-analyst confirms that every Must Have story has acceptance criteria and example maps before the phase closes.
