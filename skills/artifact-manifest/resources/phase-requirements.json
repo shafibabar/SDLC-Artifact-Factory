@@ -149,7 +149,8 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Written after the impact map; each user requirement traces to a selected-path deliverable (or, with no map at standard, the Key Result) and to a job statement and the job story beneath it; every functional requirement has a fit criterion and a provisional priority, finalised by MoSCoW. lean: no FRD, the user story backlog is the functional requirements (a short header for scope, business rules and transition lines). enterprise: typed business-rules catalogue, transition plan, conflicts, forward traceability and a change log (requirements-analysis)."
       },
       {
         "artifact": "nfr-specification",

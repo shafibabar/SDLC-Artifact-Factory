@@ -2371,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.0"
+        "version": "1.10.1"
       },
       {
         "created": "2026-06-25",
@@ -4982,7 +4982,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.12.0"
+        "version": "1.13.0"
       },
       {
         "created": "2026-07-31",
@@ -9219,32 +9219,58 @@
         "dir": "skills/requirements-analysis",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "requirements-analysis",
         "owner": "requirements-analyst",
         "phase": "ideate",
         "produces": [
           "functional-requirements-document"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "acceptance-criteria",
+          "competitive-analysis",
+          "epic-definition",
+          "glossary-management",
+          "impact-mapping",
+          "jtbd-analysis",
+          "methodology-review",
+          "moscow-prioritization",
+          "nfr-specification",
+          "okr-authoring",
+          "opportunity-solution-tree",
+          "stakeholder-mapping",
+          "strategy-kernel",
+          "user-persona",
+          "user-story-writing",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/product-management-in-practice-lemay.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md",
+          "research/requirements-and-user-stories/impact-mapping-adzic.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+        ],
         "status": "stable",
         "tags": [
+          "business-rules",
+          "fit-criteria",
           "frd",
           "functional-requirements",
           "ideate",
-          "product-discovery",
           "requirements",
-          "traceability"
+          "traceability",
+          "transition-requirements"
         ],
-        "version": "1.2.2"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-20",
@@ -10516,8 +10542,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 897,
-    "edges_skill_sources": 102,
+    "edges_skill_related": 913,
+    "edges_skill_sources": 108,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10529,20 +10555,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 39,
+    "research_files_cited": 41,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 172,
+    "skills_with_contract_test": 171,
     "skills_with_domain": 189,
-    "skills_with_evals": 16,
-    "skills_with_examples": 16,
+    "skills_with_evals": 17,
+    "skills_with_examples": 17,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 15,
-    "skills_with_scripts": 16,
-    "skills_with_sources": 17,
+    "skills_with_resources": 16,
+    "skills_with_scripts": 17,
+    "skills_with_sources": 18,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 15
+    "skills_with_templates": 16
   },
   "edges": {
     "agent_produces": [
@@ -15333,6 +15359,70 @@
         "skill": "reporting-spec"
       },
       {
+        "related": "acceptance-criteria",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "epic-definition",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "impact-mapping",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "moscow-prioritization",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "opportunity-solution-tree",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "user-persona",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "user-story-writing",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "requirements-analysis"
+      },
+      {
         "related": "adr-authoring",
         "skill": "risk-register"
       },
@@ -16249,6 +16339,30 @@
       {
         "skill": "pricing-and-packaging",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/impact-mapping-adzic.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
       },
       {
         "skill": "roadmap-authoring",
