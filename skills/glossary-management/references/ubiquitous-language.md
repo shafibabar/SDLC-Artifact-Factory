@@ -1,6 +1,6 @@
 # Canonical Ubiquitous Language
 
-**Last updated:** 2026-10-19
+**Last updated:** 2026-10-25
 **Maintained by:** glossary-management skill
 **Rule:** Use every term exactly as defined here. Synonyms are not acceptable substitutes.
 
@@ -50,10 +50,14 @@
 
 | Term | Definition |
 |---|---|
+| **Architecturally Significant Requirement (ASR)** | A requirement, usually a Quality-Attribute Scenario, without which the architecture would be noticeably different (Bass, Clements and Kazman). In the NFR specification, every scenario rated High on architectural impact in the Utility Tree ranking is an ASR and goes into the Architecture Handoff to `enterprise-architect`. |
 | **Architecture Characteristic** | An "-ility" (availability, scalability, consistency, etc.) that has structural design impact and is critical or important to a system's success — distinct from a merely domain-specific or cosmetic quality. Architecture Characteristics compete with each other; every Architecture Decision trades some off against others. |
 | **Architecture Decision** | A specific, concrete, point-in-time choice made for a particular system in a particular context, recorded as an ADR. Superseded when circumstances change — never edited in place. Distinct from an Architecture Principle, which is durable and general. |
 | **Architecture Decision Record (ADR)** | A short document (Michael Nygard) capturing one significant Architecture Decision: the Context that made it necessary, the Options Considered, the Decision, and the Consequences (positive and negative). Immutable once Accepted except for status-line changes; changes require a superseding ADR. |
 | **Architecture Principle** | Durable, general guidance that many future Architecture Decisions cite (e.g., "prefer asynchronous communication across Bounded Contexts") — as distinct from a single Architecture Decision, which is specific and point-in-time. Revised directly as understanding improves, not superseded. |
+| **Quality-Attribute Scenario** | The required form of one non-functional requirement (Bass, Clements and Kazman): source of stimulus, stimulus, environment, artifact (the part of the system affected, not a document), response and response measure. The environment makes the target falsifiable. Always written in full; a bare "Scenario" is a Gherkin Scenario. Targets inside the response measure use Planguage. |
+| **Trade-off Point** | A property that helps one quality attribute and hurts another (Bass's ATAM term), e.g. encryption on every call improves security and costs latency. The NFR specification records *candidate* trade-off points between its scenarios without resolving them; `enterprise-architect` resolves each in an ADR, or the user decides when cost or scope changes. |
+| **Utility Tree** | Bass's ranking of quality-attribute requirements: utility → quality characteristic → refinement → concrete Quality-Attribute Scenarios as leaves, each rated High / Medium / Low on business value and architectural impact. Required in the NFR specification at the enterprise profile; lean uses an ordered list and standard a rated table. |
 
 ---
 
@@ -229,6 +233,7 @@
 | **Continuous Delivery** | A practice where every change that passes automated tests is in a deployable state. Deployment to production remains a manual decision. |
 | **Continuous Deployment** | A practice where every change that passes automated tests is automatically deployed to production without manual intervention. |
 | **Continuous Integration (CI)** | A practice where developers integrate code changes into a shared branch frequently, with each integration verified by an automated build and test run. |
+| **Deployability** | A product quality attribute (Bass, 4th ed.; not an ISO/IEC 25010 characteristic): how predictably, quickly and safely a change can be put into production and rolled back, e.g. one service deploys alone with no manual step. Written as a Quality-Attribute Scenario. Distinct from the DORA delivery-performance rates, which are Process Targets. |
 | **Developer Experience (DX)** | The overall experience a developer has when using tools, APIs, and platforms. Includes setup time, documentation quality, feedback speed, and reliability. |
 | **Environment Parity** | The principle that development, staging, and production environments are as similar as possible to prevent environment-specific bugs. |
 | **Feature Flags** | Runtime toggles that enable or disable functionality without redeployment. Enable progressive delivery, A/B testing, and instant rollback. |
@@ -240,6 +245,7 @@
 | **OpenTofu Module** | A reusable, versioned Infrastructure as Code unit written in OpenTofu (open-source Terraform fork) that encapsulates a set of infrastructure resources. |
 | **Pipeline of Pipelines** | A deployment orchestration pattern where a top-level pipeline triggers and coordinates child pipelines for individual services or components. |
 | **Platform Engineering** | The practice of designing and building toolchains and workflows that enable self-service capabilities for software engineering organisations. |
+| **Process Target** | A target on how the team delivers rather than how the product behaves: deployment frequency, lead time for changes, change failure rate, test coverage, CI duration. Recorded in a separate, optional section of the NFR specification with a value the user chooses, calibrated against `dora-metrics`; never a product non-functional requirement and never defaulted to a performer cluster. |
 | **Progressive Delivery** | A deployment strategy that gradually exposes new features or versions to users in controlled increments, using feature flags, canary deployments, or ring-based rollouts. |
 
 ---
@@ -311,6 +317,7 @@
 | **Persona** | A named, composite archetype of one behaviour pattern among real or hypothesised users, with end, experience and life goals (Cooper). Distinct from a user role (a job title and relationship to the system), a market segment and the Ideal Customer Profile. Written in Ideate by `user-persona`, from Buying Committee roles, never from Delivery Stakeholders. |
 | **Persona Type** | The design role every Persona is given (Cooper et al., *About Face*): primary (the design target; exactly one per interface), secondary, supplemental, customer (the buyer), served (affected but never uses the product) or negative (explicitly not designed for). |
 | **Pivot** | A structured, evidence-driven change to one specific hypothesis (segment, problem, solution, or process) after a Customer Development test fails, while retaining what testing has already confirmed — distinct from both "the program failed" and "just extend the timeline." A named outcome in `beta-program-design`'s Graduation Criteria. |
+| **Planguage** | Tom Gilb's notation for quality targets, taught by Wiegers and Beatty: Scale (the unit), Meter (how measured), **Must** (minimum acceptable), **Plan** (the target), **Stretch** (the ambition), Wish (stated, not funded). The NFR specification sets Must at lean, Must and Plan at standard, Must, Plan and Stretch at enterprise. Planguage Must is not MoSCoW Must. |
 | **Power/Interest Grid** | Mendelow's two-by-two for Delivery Stakeholders: high or low power over the outcome against high or low interest in it, giving Manage Closely, Keep Satisfied, Keep Informed and Monitor (Eden and Ackermann's Players, Context setters, Subjects, Crowd). A numeric score uses 1–5 with 3 and above as high. |
 | **Price Integrity** | Keeping the realised price close to list through value-based selling and Give-Get discount discipline; tracked as realised price vs list and discount depth (`pricing-and-packaging`). |
 | **Price Strategy** | The price-level choice a GTM names: maximisation (the default), penetration (only with a named network effect, scale economy or lock-in, and an exit condition) or skimming (a premium early segment and a planned step-down) (Ramanujam and Tacke, *Monetizing Innovation*). |

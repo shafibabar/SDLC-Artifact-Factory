@@ -2371,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.1"
+        "version": "1.10.2"
       },
       {
         "created": "2026-06-25",
@@ -4982,7 +4982,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.13.0"
+        "version": "1.14.0"
       },
       {
         "created": "2026-07-31",
@@ -7020,14 +7020,14 @@
         "dir": "skills/nfr-specification",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "nfr-specification",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -7035,25 +7035,39 @@
           "nfr-specification"
         ],
         "related": [
+          "adr-authoring",
+          "competitive-analysis",
           "dora-metrics",
+          "glossary-management",
+          "go-load-test",
+          "gtm-strategy",
+          "methodology-review",
+          "okr-authoring",
           "platform-engineering-design",
+          "requirements-analysis",
           "slo-definition"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/accelerate-forsgren-humble-kim.md",
+          "research/devops-and-delivery/platform-engineering-fournier-nowland.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/software-architecture-in-practice-bass.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture-input",
-          "compliance",
-          "delivery",
-          "dora",
+          "deployability",
           "ideate",
+          "iso-25010",
           "nfr",
-          "performance",
-          "platform-dx",
-          "scalability",
-          "security"
+          "quality-attribute-scenario",
+          "quality-attributes",
+          "trade-off",
+          "utility-tree"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -9634,7 +9648,7 @@
           "sli",
           "slo"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-06-24",
@@ -10542,8 +10556,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 913,
-    "edges_skill_sources": 108,
+    "edges_skill_related": 921,
+    "edges_skill_sources": 114,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10555,20 +10569,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 41,
+    "research_files_cited": 44,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 171,
+    "skills_with_contract_test": 170,
     "skills_with_domain": 189,
-    "skills_with_evals": 17,
-    "skills_with_examples": 17,
+    "skills_with_evals": 18,
+    "skills_with_examples": 18,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 16,
-    "skills_with_scripts": 17,
-    "skills_with_sources": 18,
+    "skills_with_resources": 17,
+    "skills_with_scripts": 18,
+    "skills_with_sources": 19,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 16
+    "skills_with_templates": 17
   },
   "edges": {
     "agent_produces": [
@@ -14471,11 +14485,43 @@
         "skill": "multi-tenancy-design"
       },
       {
+        "related": "adr-authoring",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "nfr-specification"
+      },
+      {
         "related": "dora-metrics",
         "skill": "nfr-specification"
       },
       {
+        "related": "glossary-management",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "go-load-test",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "nfr-specification"
+      },
+      {
         "related": "platform-engineering-design",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "requirements-analysis",
         "skill": "nfr-specification"
       },
       {
@@ -16279,6 +16325,30 @@
       {
         "skill": "jtbd-analysis",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/devops-and-delivery/accelerate-forsgren-humble-kim.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/devops-and-delivery/platform-engineering-fournier-nowland.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/software-architecture/software-architecture-in-practice-bass.md"
       },
       {
         "skill": "okr-authoring",

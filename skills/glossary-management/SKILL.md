@@ -5,7 +5,7 @@ description: >
   Defines every domain term used across all agents, skills, commands, hooks, and artifacts.
   Provides the reference all agents consult to prevent terminology drift. When any agent
   is unsure whether a term is canonical, they check this skill first.
-version: 1.13.0
+version: 1.14.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
