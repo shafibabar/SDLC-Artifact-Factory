@@ -333,7 +333,8 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Finalises the provisional priorities: a prioritisation agreement (the product owner decides), Musts = the walking skeleton checked both ways (DSDM's Minimum Usable SubseT and workaround clause, story by story; legal, safety or regulatory Musts added to the skeleton), Should / Could as a contingency in cut order, Won't this time with a reason and a look-again point; no person-week capacity percentage. lean: no moscow.md, the Must / Won't-this-time block closes ideate/user-stories.md. enterprise: provisional value / penalty beside the release bins, the optional report-only Must share, a priority change log and any scope escalation (moscow-prioritization)."
       }
     ],
     "design": [

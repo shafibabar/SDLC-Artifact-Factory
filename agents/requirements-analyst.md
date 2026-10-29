@@ -195,7 +195,7 @@ Ideate artifacts must be produced in this order because each depends on the prev
 9. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
 10. Acceptance Criteria       ← verifiable conditions per story, drafted from the example map's rule/example cards (produced story-by-story)
 11. Story Map                 ← the persona's journey narrated with the user; the walking skeleton (= the Must set) and release slices by outcome
-12. MoSCoW Prioritisation     ← Must / Should / Could / Won't for the defined delivery window
+12. MoSCoW Prioritisation     ← finalises provisional priority: Musts = the walking skeleton (workaround clause, story by story), contingency in cut order, Won't this time
 ```
 
 Steps 9 and 10 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
@@ -324,7 +324,7 @@ The requirements-analyst escalates to the user (does not proceed autonomously) w
 - A JTBD analysis reveals a job the product cannot address with its current scope — requiring a scope decision
 - An NFR architecture handoff implies a constraint that contradicts a previously stated technology decision in project memory
 - An example mapping session surfaces a question that changes the scope of a Must Have story
-- The 60% capacity rule is violated even after aggressive Must → Should demotion — requiring a scope cut decision
+- MoSCoW's structural checks fail and re-testing does not fix them — the Musts no longer equal the walking skeleton (a Must off it that is not legal, safety or regulatory, or a skeleton step with no Must or named manual cell), or no droppable Should / Could tier is left — requiring a scope decision from the product owner (keep the Musts at the skeleton, narrow the release, move the date, or accept no contingency as a risk); never decide a contested priority yourself
 
 **Customer Validation:**
 - A Must Have UAT scenario fails — this always halts for a go/no-go decision, never a unilateral pass
