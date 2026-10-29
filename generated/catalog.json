@@ -4997,7 +4997,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.17.0"
+        "version": "1.18.0"
       },
       {
         "created": "2026-07-31",
@@ -6956,14 +6956,14 @@
         "dir": "skills/moscow-prioritization",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "moscow-prioritization",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -6971,22 +6971,38 @@
           "moscow-prioritized-backlog"
         ],
         "related": [
+          "epic-definition",
+          "glossary-management",
           "jtbd-analysis",
+          "methodology-review",
+          "nfr-specification",
           "requirements-analysis",
+          "roadmap-authoring",
           "story-mapping",
+          "uat-plan",
+          "user-persona",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md",
+          "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+        ],
         "status": "stable",
         "tags": [
+          "dsdm",
           "ideate",
+          "kano",
+          "minimum-usable-subset",
           "moscow",
-          "must-should-could",
           "prioritization",
           "release-planning",
-          "requirements"
+          "requirements",
+          "walking-skeleton"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10594,8 +10610,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 940,
-    "edges_skill_sources": 126,
+    "edges_skill_related": 947,
+    "edges_skill_sources": 131,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10609,18 +10625,18 @@
     "commands_with_test": 15,
     "research_files_cited": 46,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 167,
+    "skills_with_contract_test": 166,
     "skills_with_domain": 189,
-    "skills_with_evals": 21,
-    "skills_with_examples": 21,
+    "skills_with_evals": 22,
+    "skills_with_examples": 22,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 20,
-    "skills_with_scripts": 21,
-    "skills_with_sources": 22,
+    "skills_with_resources": 21,
+    "skills_with_scripts": 22,
+    "skills_with_sources": 23,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 20
+    "skills_with_templates": 21
   },
   "edges": {
     "agent_produces": [
@@ -14507,7 +14523,23 @@
         "skill": "mock-generation"
       },
       {
+        "related": "epic-definition",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "moscow-prioritization"
+      },
+      {
         "related": "jtbd-analysis",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "nfr-specification",
         "skill": "moscow-prioritization"
       },
       {
@@ -14515,7 +14547,19 @@
         "skill": "moscow-prioritization"
       },
       {
+        "related": "roadmap-authoring",
+        "skill": "moscow-prioritization"
+      },
+      {
         "related": "story-mapping",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "uat-plan",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "user-persona",
         "skill": "moscow-prioritization"
       },
       {
@@ -16459,6 +16503,26 @@
       {
         "skill": "jtbd-analysis",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
       },
       {
         "skill": "nfr-specification",
