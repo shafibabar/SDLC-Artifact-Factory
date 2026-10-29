@@ -4997,7 +4997,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.16.0"
+        "version": "1.17.0"
       },
       {
         "created": "2026-07-31",
@@ -10337,14 +10337,14 @@
         "dir": "skills/user-story-writing",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "user-story-writing",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -10353,24 +10353,38 @@
         ],
         "related": [
           "acceptance-criteria",
+          "bdd-feature-file",
           "epic-definition",
           "example-mapping",
           "glossary-management",
+          "impact-mapping",
+          "jtbd-analysis",
+          "methodology-review",
           "moscow-prioritization",
+          "nfr-specification",
+          "okr-authoring",
+          "requirements-analysis",
+          "story-mapping",
           "user-persona"
         ],
-        "sources": [],
+        "sources": [
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+        ],
         "status": "stable",
         "tags": [
-          "acceptance-criteria",
-          "connextra",
+          "backlog",
           "ideate",
           "invest",
           "requirements",
           "story-splitting",
+          "three-cs",
+          "traceability",
           "user-story"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10580,8 +10594,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 932,
-    "edges_skill_sources": 122,
+    "edges_skill_related": 940,
+    "edges_skill_sources": 126,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10595,18 +10609,18 @@
     "commands_with_test": 15,
     "research_files_cited": 46,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 168,
+    "skills_with_contract_test": 167,
     "skills_with_domain": 189,
-    "skills_with_evals": 20,
-    "skills_with_examples": 20,
+    "skills_with_evals": 21,
+    "skills_with_examples": 21,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 19,
-    "skills_with_scripts": 20,
-    "skills_with_sources": 21,
+    "skills_with_resources": 20,
+    "skills_with_scripts": 21,
+    "skills_with_sources": 22,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 19
+    "skills_with_templates": 20
   },
   "edges": {
     "agent_produces": [
@@ -16077,6 +16091,10 @@
         "skill": "user-story-writing"
       },
       {
+        "related": "bdd-feature-file",
+        "skill": "user-story-writing"
+      },
+      {
         "related": "epic-definition",
         "skill": "user-story-writing"
       },
@@ -16089,7 +16107,35 @@
         "skill": "user-story-writing"
       },
       {
+        "related": "impact-mapping",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "user-story-writing"
+      },
+      {
         "related": "moscow-prioritization",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "story-mapping",
         "skill": "user-story-writing"
       },
       {
@@ -16640,6 +16686,22 @@
       },
       {
         "skill": "user-persona",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "user-story-writing",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "user-story-writing",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "user-story-writing",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "user-story-writing",
         "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
       },
       {
