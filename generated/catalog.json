@@ -4997,7 +4997,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.15.0"
+        "version": "1.16.0"
       },
       {
         "created": "2026-07-31",
@@ -9722,14 +9722,14 @@
         "dir": "skills/story-mapping",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "story-mapping",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -9739,24 +9739,33 @@
         "related": [
           "acceptance-criteria",
           "epic-definition",
+          "glossary-management",
           "impact-mapping",
+          "methodology-review",
           "moscow-prioritization",
+          "okr-authoring",
+          "opportunity-solution-tree",
           "roadmap-authoring",
           "user-persona",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+        ],
         "status": "stable",
         "tags": [
           "backbone",
           "ideate",
+          "minimum-usable-subset",
           "patton",
           "release-slicing",
           "requirements",
           "story-map",
           "walking-skeleton"
         ],
-        "version": "2.1.3"
+        "version": "3.0.0"
       },
       {
         "created": "2026-10-19",
@@ -10571,8 +10580,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 928,
-    "edges_skill_sources": 119,
+    "edges_skill_related": 932,
+    "edges_skill_sources": 122,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10586,18 +10595,18 @@
     "commands_with_test": 15,
     "research_files_cited": 46,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 169,
+    "skills_with_contract_test": 168,
     "skills_with_domain": 189,
-    "skills_with_evals": 19,
-    "skills_with_examples": 19,
+    "skills_with_evals": 20,
+    "skills_with_examples": 20,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 18,
-    "skills_with_scripts": 19,
-    "skills_with_sources": 20,
+    "skills_with_resources": 19,
+    "skills_with_scripts": 20,
+    "skills_with_sources": 21,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 18
+    "skills_with_templates": 19
   },
   "edges": {
     "agent_produces": [
@@ -15732,11 +15741,27 @@
         "skill": "story-mapping"
       },
       {
+        "related": "glossary-management",
+        "skill": "story-mapping"
+      },
+      {
         "related": "impact-mapping",
         "skill": "story-mapping"
       },
       {
+        "related": "methodology-review",
+        "skill": "story-mapping"
+      },
+      {
         "related": "moscow-prioritization",
+        "skill": "story-mapping"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "story-mapping"
+      },
+      {
+        "related": "opportunity-solution-tree",
         "skill": "story-mapping"
       },
       {
@@ -16560,6 +16585,18 @@
       {
         "skill": "stakeholder-mapping",
         "source": "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+      },
+      {
+        "skill": "story-mapping",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "story-mapping",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "story-mapping",
+        "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
       },
       {
         "skill": "strategy-kernel",
