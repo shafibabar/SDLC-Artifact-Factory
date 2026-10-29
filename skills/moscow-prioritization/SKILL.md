@@ -130,8 +130,11 @@ prioritization of this repo's backlog, are in `references/moscow-and-kano.md`.
    missing?" If yes, consider promotion and re-run the 60% check; if no, confirm Should.
 4. **Assign Coulds** — remaining desirable, non-deferred stories.
 5. **Assign Won'ts** — valid-but-deferred stories get Won't + one-line rationale + target release.
-6. **Validate against the story map** — Must-haves must equal the MVP slice. A story in
-   the MVP slice ranked Should/Could is a conflict; resolve it before closing Ideate.
+6. **Validate against the story map** — the Musts are DSDM's Minimum Usable SubseT, which
+   is the story map's walking skeleton (D045). Check both ways: every skeleton story is a
+   Must, and every Must is on the skeleton (a legal, safety or regulatory Must is added to
+   the skeleton, not left off it). Resolve any mismatch before closing Ideate; the rule and
+   its fixes are in `story-mapping`.
 
 Category criteria, contested-item negotiation, the capacity-loading math, and the
 time-boxed framing: `references/moscow-rubric.md`. Kano cross-check and the worked
@@ -159,7 +162,7 @@ example: `references/moscow-and-kano.md`.
 | ~60% Must rule | Musts are ≤ ~60% of estimated capacity | Musts are 80%+ of capacity |
 | Won't documented | Exclusions carry rationale + target release | Exclusions implicit or verbal only |
 | Necessity + Must test | Every Must traces to a test pass | Musts that fail all test questions |
-| Story-map alignment | Musts equal the MVP slice | Discrepancy between Must list and MVP slice |
+| Story-map alignment | Musts equal the walking skeleton, both ways | A Must off the skeleton, or a skeleton story not a Must |
 
 Output-artifact template (frontmatter + Must/Should/Could/Won't tables + capacity check):
 `references/moscow-rubric.md`.

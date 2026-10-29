@@ -194,7 +194,7 @@ Ideate artifacts must be produced in this order because each depends on the prev
 8. User Story Backlog         ← epics decomposed into INVEST-compliant stories
 9. Example Maps               ← rules and examples per story, discovered first (produced story-by-story)
 10. Acceptance Criteria       ← verifiable conditions per story, drafted from the example map's rule/example cards (produced story-by-story)
-11. Story Map                 ← full user journey with MVP slice and release slices
+11. Story Map                 ← the persona's journey narrated with the user; the walking skeleton (= the Must set) and release slices by outcome
 12. MoSCoW Prioritisation     ← Must / Should / Could / Won't for the defined delivery window
 ```
 
@@ -343,8 +343,8 @@ The requirements-analyst escalates to the user (does not proceed autonomously) w
 - [ ] Every Must Have user story has acceptance criteria (Gherkin format) and an example map
 - [ ] NFR architecture handoff section is complete and reviewed
 - [ ] Every epic identifies its bounded context candidate
-- [ ] Story map covers the full end-to-end user journey with no gaps in the MVP slice
-- [ ] MoSCoW prioritisation is consistent with the story map MVP slice
+- [ ] Story map covers the full end-to-end user journey; the walking skeleton has a working cell under every activity
+- [ ] The Musts equal the story map's walking skeleton, checked both ways (at lean, the backlog's Must / Won't-this-time block)
 - [ ] All canonical domain terms use ubiquitous language from `glossary-management`
 - [ ] All open questions from example mapping are resolved
 - [ ] `pre-phase-advance` hook passes

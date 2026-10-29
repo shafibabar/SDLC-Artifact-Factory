@@ -202,7 +202,7 @@ must-capacity-pct: [estimated % of capacity consumed by Musts]
 **Status:** [Within ~60% ceiling / Exceeds ceiling — narrow window or demote Musts]
 
 ## Story-Map Alignment
-[Confirm Musts equal the MVP slice, or document and resolve each discrepancy]
+[Confirm the Musts equal the story map's walking skeleton, both ways (every skeleton story a Must, every Must on the skeleton), or document and resolve each discrepancy]
 ```
 
 ---
@@ -213,4 +213,4 @@ must-capacity-pct: [estimated % of capacity consumed by Musts]
 - Musts > ~60% of capacity → narrow the window or demote over-promoted Musts.
 - Any Won't with no rationale + target → incomplete; add both or close the item.
 - MoSCoW applied with no delivery window → invalid; define the window first.
-- Must list ≠ MVP slice on the story map → conflict; resolve before closing Ideate.
+- Must list ≠ walking skeleton on the story map (either direction) → conflict; resolve before closing Ideate (`story-mapping`).

@@ -320,7 +320,8 @@
           "lean": "optional",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "The persona's journey as a backbone seeded from the selected path's epics, stories ordered by necessity, and a walking skeleton that is the release's Must set (Minimum Usable SubseT, checked both ways with MoSCoW), then release slices by outcome with learning checkpoints. lean (when the user asks): one page, backbone, skeleton row and Later; otherwise the skeleton is the backlog's Must / Won't-this-time block. enterprise: several personas on one backbone, a skeleton for one tenant, regulatory Musts added to it, per-tenant slices, a re-cut log (story-mapping)."
       },
       {
         "artifact": "moscow-prioritisation",
