@@ -2371,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.3"
+        "version": "1.10.4"
       },
       {
         "created": "2026-06-25",
@@ -2504,7 +2504,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.5.0"
+        "version": "1.5.1"
       },
       {
         "created": "2026-06-25",
@@ -2873,7 +2873,7 @@
           "release-gate",
           "sign-off"
         ],
-        "version": "2.2.1"
+        "version": "2.3.0"
       },
       {
         "created": "2026-06-25",
@@ -4997,7 +4997,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.18.0"
+        "version": "1.19.0"
       },
       {
         "created": "2026-07-31",
@@ -9637,7 +9637,7 @@
           "progressive-disclosure",
           "skill-authoring"
         ],
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "created": "2026-07-20",
@@ -10116,34 +10116,63 @@
         "dir": "skills/uat-plan",
         "domain": "validation",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "uat-plan",
         "owner": "requirements-analyst",
         "phase": "customer-validation",
         "produces": [
           "uat-plan"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "acceptance-criteria",
+          "acceptance-sign-off",
+          "bdd-feature-file",
+          "beta-program-design",
+          "canary-deployment",
+          "compliance-design",
+          "compliance-verification",
+          "disaster-recovery-plan",
+          "environment-config",
+          "feature-flag-design",
+          "feedback-template",
+          "glossary-management",
+          "methodology-review",
+          "moscow-prioritization",
+          "runbook-authoring",
+          "slo-definition",
+          "stakeholder-mapping",
+          "story-mapping",
+          "test-pyramid",
+          "uat-scenario"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/explore-it-hendrickson.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/user-acceptance-testing-hambling.md"
+        ],
         "status": "stable",
         "tags": [
           "acceptance-testing",
-          "canary",
           "customer-validation",
-          "design-partners",
+          "entry-exit-criteria",
           "exploratory-testing",
-          "moscow",
-          "sign-off",
-          "uat"
+          "operational-acceptance",
+          "regulatory-acceptance",
+          "test-independence",
+          "uat",
+          "walking-skeleton"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -10182,7 +10211,7 @@
           "uat",
           "validation"
         ],
-        "version": "2.1.1"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -10610,8 +10639,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 947,
-    "edges_skill_sources": 131,
+    "edges_skill_related": 967,
+    "edges_skill_sources": 137,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10623,20 +10652,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 46,
+    "research_files_cited": 50,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 166,
+    "skills_with_contract_test": 165,
     "skills_with_domain": 189,
-    "skills_with_evals": 22,
-    "skills_with_examples": 22,
+    "skills_with_evals": 23,
+    "skills_with_examples": 23,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 21,
-    "skills_with_scripts": 22,
-    "skills_with_sources": 23,
+    "skills_with_resources": 22,
+    "skills_with_scripts": 23,
+    "skills_with_sources": 24,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 21
+    "skills_with_templates": 22
   },
   "edges": {
     "agent_produces": [
@@ -16028,6 +16057,86 @@
       },
       {
         "related": "acceptance-criteria",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "acceptance-sign-off",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "bdd-feature-file",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "beta-program-design",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "canary-deployment",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "compliance-design",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "compliance-verification",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "disaster-recovery-plan",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "environment-config",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "feature-flag-design",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "feedback-template",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "moscow-prioritization",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "runbook-authoring",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "slo-definition",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "story-mapping",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "test-pyramid",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "uat-scenario",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "acceptance-criteria",
         "skill": "uat-scenario"
       },
       {
@@ -16723,6 +16832,30 @@
       {
         "skill": "strategy-kernel",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/explore-it-hendrickson.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/user-acceptance-testing-hambling.md"
       },
       {
         "skill": "user-persona",
