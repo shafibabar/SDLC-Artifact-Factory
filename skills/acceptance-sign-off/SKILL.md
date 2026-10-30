@@ -14,7 +14,7 @@ description: >
   scripts/validate-signoff.sh (mechanically checks the checklist, both
   parties, and a stated decision/rollout action). Used by the
   requirements-analyst during Customer Validation.
-version: 2.2.1
+version: 2.3.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -41,7 +41,7 @@ Before a sign-off decision of any kind can be recorded, the following are verifi
 
 - [ ] Every UAT scenario tracing to a Must Have story has a recorded result (`uat-plan`, `uat-scenario`)
 - [ ] The UAT pass-rate threshold stated in the `uat-plan` is met
-- [ ] Every planned exploratory session has been run and debriefed (`uat-plan`'s Exploratory Testing Component) — a separate check from the pass-rate threshold, since a charter has no pass/fail; its findings are triaged into this checklist exactly like a scripted defect
+- [ ] Every planned exploratory session has been run and debriefed (`uat-plan`'s Exploratory Sessions) — a separate check from the pass-rate threshold, since a charter has no pass/fail; its findings are triaged into this checklist exactly like a scripted defect
 - [ ] Zero open Critical severity defects (`feedback-template`) — from either scripted UAT or exploratory sessions
 - [ ] Zero open High severity defects, **or** each is covered by a documented remediation plan with a target date (conditional path only — see below)
 - [ ] All feedback items have been triaged (`feedback-template`) — none left unreviewed, whether sourced from a scripted scenario or an exploratory debrief
@@ -49,6 +49,14 @@ Before a sign-off decision of any kind can be recorded, the following are verifi
 - [ ] Beta program graduation criteria met for the relevant stage, if this release slice is progressing through `beta-program-design` stages
 
 A checklist item left unchecked does not automatically mean no-go — it means the sign-off authority must explicitly decide how to handle the gap, recorded in the decision itself.
+
+### The Defect Rule
+
+This is the one statement of how open defects bound the outcome; `uat-plan`, `uat-scenario` and the requirements-analyst point here rather than restating it:
+
+- **An open Critical defect → no-go**, always.
+- **An open High defect → conditional sign-off only, and only with a fix plan**: owner, target date, workaround, the re-test that will verify the fix, and the rollout pace meanwhile. An open High with no fix plan → no-go.
+- **Open Medium / Low defects → conditional or full**, at the sign-off authority's judgment.
 
 ---
 
@@ -59,7 +67,9 @@ A checklist item left unchecked does not automatically mean no-go — it means t
 | **Product owner** | Accountable for the business decision to ship |
 | **Customer/design-partner representative** | The named contact from the participating design partner (e.g., Maya Chen) — accountable for confirming the release is genuinely usable and acceptable from the customer's side |
 
-Both parties review the compiled evidence and both must agree for a sign-off (full or conditional) to be recorded. This is deliberate: a unilateral internal decision to ship is not "acceptance" — acceptance, by definition, requires the accepting party's affirmative agreement. If no design-partner tenant participated in this release slice (an internal-proxy-only UAT per `uat-plan`), the sign-off cannot be full — it is capped at conditional, with the specific limitation ("validated by internal proxy only, no external design-partner confirmation") stated as one of the open conditions.
+Both parties review the compiled evidence and both must agree for a sign-off (full or conditional) to be recorded. This is deliberate: a unilateral internal decision to ship is not "acceptance" — acceptance, by definition, requires the accepting party's affirmative agreement.
+
+**Solo-operator exception (D045).** When the product owner is the only person available to execute and accept (no customer representative can take part), the product owner may sign alone, recorded as an exception: who executed, who accepted, the test independence level ("none", ISTQB), the evidence captured, and why no second party was available — the same record `uat-plan` requires. A **full sign-off is allowed**; the exception record carries the risk, not a cap on the outcome.
 
 This two-party, never-unilateral rule is this repo's clearest product-facing instance of keeping a human as the actual point of final consent (per Ethan Mollick's *Co-Intelligence*, `research/human-ai-collaboration/co-intelligence-mollick.md`) — the same principle `CLAUDE.md`'s own Session Startup gate applies to *this repo's* engineering work. No amount of green dashboards, passing scripted scenarios, or agent-generated confidence substitutes for an actual person affirming the release is acceptable.
 
@@ -80,7 +90,7 @@ Rollout action: canary-deployment widens to 100% and terminates;
 
 ### Conditional sign-off
 
-The Must Have bar is met (zero Critical/High defects blocking the core outcome) but one or more Medium/Low issues remain open, or a scope limitation exists (e.g., internal-proxy-only validation). The release proceeds, paired with an explicit, dated remediation commitment.
+The Must Have bar is met, but open defects or a scope limitation remain that the Defect Rule above allows on this path (no open Critical; any open High only with its fix plan). The release proceeds, paired with an explicit, dated remediation commitment.
 
 ```
 Decision: CONDITIONAL SIGN-OFF
@@ -97,7 +107,7 @@ A conditional sign-off is a legitimate, common outcome — it is not a weaker or
 
 ### No-go
 
-A Critical or High severity defect remains open with no acceptable remediation plan, or an unaddressed blocking pattern exists on a Must Have flow, or the customer representative does not agree the release is acceptable regardless of the internal checklist status.
+A Critical defect remains open, or a High remains open with no fix plan (the Defect Rule above), or an unaddressed blocking pattern exists on a Must Have flow, or the customer representative does not agree the release is acceptable regardless of the internal checklist status.
 
 ```
 Decision: NO-GO
@@ -142,7 +152,7 @@ UAT results and exploratory-session findings: `references/worked-example.md`.
 |---|---|---|
 | Checklist evidence-based | Every checklist item cites its source (`uat-plan`, `feedback-template`, `beta-program-design`) | Checklist items asserted without a traceable source |
 | Exploratory findings included | Exploratory-session results are checked and triaged alongside scripted UAT results, not treated as optional | A sign-off recorded while planned exploratory sessions never ran, or their findings were never triaged |
-| Two-party authority | Both the product owner and a customer/design-partner representative are named and recorded as agreeing | A unilateral internal decision recorded as "sign-off" |
+| Two-party authority | Both the product owner and a customer/design-partner representative are named and recorded as agreeing, or a solo-operator exception is recorded | A unilateral internal decision recorded as "sign-off" with no exception record |
 | Correct outcome category | Full/Conditional/No-go matches the actual defect/pattern status per the decision rules | A release with an open Critical defect recorded as full or conditional sign-off |
 | Conditions are dated and owned | Every conditional item has a remediation plan, an owner, and a target date | Vague "we'll fix it later" with no owner or date |
 | Rollout action explicit | The canary/flag action following the decision is stated, not implied | Sign-off recorded with no stated effect on the rollout |
@@ -152,7 +162,7 @@ UAT results and exploratory-session findings: `references/worked-example.md`.
 
 ## Anti-Patterns
 
-**Unilateral sign-off.** The product owner alone deciding to ship, without the customer/design-partner representative's affirmative agreement, is not acceptance — it is an internal release decision wearing the wrong label. If no design partner participated, the outcome is capped at conditional, with that gap stated explicitly.
+**Unilateral sign-off.** The product owner alone deciding to ship, without the customer/design-partner representative's affirmative agreement and without a recorded solo-operator exception, is not acceptance — it is an internal release decision wearing the wrong label.
 
 **Silent conditional-to-full drift.** Treating a conditional sign-off's remediation items as optional once the release has shipped — the tracked follow-up (target date, re-verification) is part of the sign-off record, not a suggestion that quietly expires.
 

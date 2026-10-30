@@ -82,12 +82,14 @@ Every scenario ends with an explicit result — a bare, unrecorded execution is 
 
 A `Fail` immediately opens a feedback record via `feedback-template`, classified for severity at the moment of capture by the facilitator (`requirements-analyst`) using the tester's description of impact — never negotiated down to make the sign-off numbers look better:
 
-| Severity | Definition | Effect on `acceptance-sign-off` |
-|---|---|---|
-| Critical | A Must Have behavior does not work at all, or causes data loss / security exposure | Blocks sign-off — no conditional path |
-| High | A Must Have behavior works incorrectly in a way that affects the core outcome | Blocks sign-off unless remediated before sign-off |
-| Medium | Behavior works but with friction, confusing wording, or a minor incorrect edge case | May ship under a conditional sign-off with a remediation plan |
-| Low | Cosmetic or negligible impact | Logged; does not block sign-off |
+| Severity | Definition |
+|---|---|
+| Critical | A Must Have behavior does not work at all, or causes data loss / security exposure |
+| High | A Must Have behavior works incorrectly in a way that affects the core outcome |
+| Medium | Behavior works but with friction, confusing wording, or a minor incorrect edge case |
+| Low | Cosmetic or negligible impact |
+
+What each severity allows at sign-off is the single defect rule in `acceptance-sign-off`; it is not restated here.
 
 ---
 

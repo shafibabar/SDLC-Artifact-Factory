@@ -63,4 +63,27 @@ expect "skill without a suite -> exit 2 naming the expected path" 2 "no-suites-h
   env SKILL_EVALS_ROOT=no-suites-here "$RUNNER" adr-authoring
 expect "unknown option -> exit 2 (before any run starts)" 2 "unknown option" "$RUNNER" adr-authoring --bogus 1
 
+# Freeze status (separate authorship + grader-change rule). A throwaway git repo
+# holds a copy of the runner, so the freeze commit is real but never this repo's.
+FZ="$SCRATCH_DIR/freeze-repo"
+mkdir -p "$FZ/tests" "$FZ/evals/demo/case-a/graders"
+cp "$RUNNER" "$FZ/tests/run-skill-evals.sh"
+echo "prompt" > "$FZ/evals/demo/case-a/prompt.md"
+echo "grader v1" > "$FZ/evals/demo/case-a/graders/g.md"
+git -C "$FZ" init -q
+git -C "$FZ" -c user.name=t -c user.email=t@t add -A
+git -C "$FZ" -c user.name=t -c user.email=t@t commit -qm "Add runner"
+expect "no freeze commit -> FREEZE: none" 0 "FREEZE: none" \
+  "$FZ/tests/run-skill-evals.sh" --freeze-status demo
+git -C "$FZ" -c user.name=t -c user.email=t@t commit -q --allow-empty -m "Freeze evals: demo"
+expect "frozen and untouched -> unchanged" 0 "suite unchanged since the freeze" \
+  "$FZ/tests/run-skill-evals.sh" --freeze-status demo
+echo "grader v2" > "$FZ/evals/demo/case-a/graders/g.md"
+expect "grader edited after the freeze -> listed" 0 "evals/demo/case-a/graders/g.md" \
+  "$FZ/tests/run-skill-evals.sh" --freeze-status demo
+mkdir -p "$FZ/evals/demo/case-b" && echo "new" > "$FZ/evals/demo/case-b/prompt.md"
+expect "case added after the freeze (untracked) -> listed" 0 "evals/demo/case-b/prompt.md" \
+  "$FZ/tests/run-skill-evals.sh" --freeze-status demo
+expect "freeze-status with no skill -> usage, exit 2" 2 "usage:" "$RUNNER" --freeze-status
+
 smoke_test_summary
