@@ -51,7 +51,7 @@ out="$(ps approve strategy/vision-statement.md 2>&1)"; rc=$?
 # 5. completing with work missing is refused and names what's missing
 write strategy/vision-statement.md
 out="$(ps complete strategy 2>&1)"; rc=$?
-if [[ $rc -eq 1 && "$out" == *'"unapproved"'* && "$out" == *"vision-statement"* && "$out" == *'"missing"'* && "$out" == *"mission-statement"* ]]; then
+if [[ $rc -eq 1 && "$out" == *'"unapproved"'* && "$out" == *"vision-statement"* && "$out" == *'"missing"'* && "$out" == *"strategy-kernel"* ]]; then
   _pass "complete refuses and lists missing and unapproved artifacts"
 else
   _fail "complete refuses and lists missing and unapproved artifacts" "rc=$rc $out"
@@ -62,11 +62,11 @@ cur="$(python3 -c "import json;print(json.load(open('$P/artifacts/lunch/_manifes
 [[ "$cur" == "strategy" && -z "$(valid)" ]] && _pass "hook rewrite keeps current_phase and stays valid" || _fail "hook rewrite keeps current_phase and stays valid" "$cur $(valid)"
 
 # 7. write and approve the full Strategy set (alternate filenames accepted), then complete
-for f in mission-statement stakeholder-map competitive-analysis lean-canvas positioning-gtm-strategy roadmap okrs; do
+for f in strategy-kernel stakeholder-map competitive-analysis lean-canvas positioning-gtm-strategy pricing-and-packaging roadmap okrs; do
   write "strategy/$f.md"
 done
-out="$(ps approve strategy/vision-statement.md strategy/mission-statement.md strategy/stakeholder-map.md \
-  strategy/competitive-analysis.md strategy/lean-canvas.md strategy/positioning-gtm-strategy.md strategy/roadmap.md strategy/okrs.md)"; rc=$?
+out="$(ps approve strategy/vision-statement.md strategy/strategy-kernel.md strategy/stakeholder-map.md \
+  strategy/competitive-analysis.md strategy/lean-canvas.md strategy/positioning-gtm-strategy.md strategy/pricing-and-packaging.md strategy/roadmap.md strategy/okrs.md)"; rc=$?
 [[ $rc -eq 0 ]] && _pass "approve records several artifacts" || _fail "approve records several artifacts" "$out"
 out="$(ps complete strategy)"; rc=$?
 if [[ $rc -eq 0 && "$out" == *'"current_phase": "ideate"'* ]] && [[ -z "$(valid)" ]]; then
@@ -126,7 +126,8 @@ read -r st reo <<<"$(okrs_entry)"
 out="$(ps complete implement)"; rc=$?
 [[ $rc -eq 0 && "$out" == *'"current_phase": "data"'* ]] && _pass "a code phase completes on the user's approval" || _fail "a code phase completes on the user's approval" "rc=$rc $out"
 
-# 12. (proposal 14) a lean product's Strategy needs only its 3 required artifacts
+# 12. (proposal 14; D045) a lean product's Strategy needs only its 5 required artifacts: vision, strategy kernel,
+#     Lean Canvas, then OKRs before the roadmap
 L="$SCRATCH_DIR/lean"; mkdir -p "$L"; git -C "$L" init -q
 printf '{"_meta":{"purpose":"x","how_to_use":"x","last_updated":"2026-10-12","updated_by":"x"},"product":"Lunch","product_slug":"lunch","scale_profile":"lean"}\n' > "$L/sdlc-config.json"
 lps() { (cd "$L" && SDLC_PRODUCT_ROOT="$L" python3 "$PS" "$@"); }
@@ -135,27 +136,27 @@ out="$(lps plan strategy)"
 if python3 -c "
 import json, sys
 d = json.loads(sys.argv[1])
-assert [r['artifact'] for r in d['required']] == ['vision-statement', 'strategic-roadmap', 'okr-set'], d['required']
-assert 'mission-statement' in d['skipped'] and d['approval_mode'] == 'batch', d
+assert [r['artifact'] for r in d['required']] == ['vision-statement', 'strategy-kernel', 'business-model-canvas', 'okr-set', 'strategic-roadmap'], d['required']
+assert 'stakeholder-map' in d['skipped'] and 'mission-statement' not in json.dumps(d) and d['approval_mode'] == 'batch', d
 " "$out" 2>/dev/null; then
-  _pass "lean plan: 3 required strategy artifacts, mission skipped, batch approval"
+  _pass "lean plan: 5 required strategy artifacts (strategy kernel, Lean Canvas, OKRs before roadmap), no mission, batch approval"
 else
-  _fail "lean plan: 3 required strategy artifacts, mission skipped, batch approval" "$out"
+  _fail "lean plan: 5 required strategy artifacts (strategy kernel, Lean Canvas, OKRs before roadmap), no mission, batch approval" "$out"
 fi
-for f in vision-statement roadmap okrs; do
+for f in vision-statement strategy-kernel lean-canvas okrs roadmap; do
   mkdir -p "$L/artifacts/lunch/strategy"
   printf '%s\n' '---' "name: $f" 'version: 1.0.0' 'phase: strategy' 'owner: product-strategist' 'created: 2026-10-12' 'summary: x.' '---' > "$L/artifacts/lunch/strategy/$f.md"
   echo '{"tool_input":{"file_path":"'"$L/artifacts/lunch/strategy/$f.md"'"},"cwd":"'"$L"'"}' | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
 done
-lps approve strategy/vision-statement.md strategy/roadmap.md strategy/okrs.md >/dev/null
+lps approve strategy/vision-statement.md strategy/strategy-kernel.md strategy/lean-canvas.md strategy/okrs.md strategy/roadmap.md >/dev/null
 out="$(lps complete strategy)"; rc=$?
-[[ $rc -eq 0 && "$out" == *'"current_phase": "ideate"'* ]] && _pass "lean strategy completes with its 3 artifacts" || _fail "lean strategy completes with its 3 artifacts" "rc=$rc $out"
+[[ $rc -eq 0 && "$out" == *'"current_phase": "ideate"'* ]] && _pass "lean strategy completes with its 5 artifacts" || _fail "lean strategy completes with its 5 artifacts" "rc=$rc $out"
 
-# 13. the same 3 artifacts are not enough for an enterprise product
+# 13. the lean set is not enough for an enterprise product
 out="$(ps plan strategy)"
-python3 -c "import json,sys; assert len(json.loads(sys.argv[1])['required']) == 8" "$out" 2>/dev/null \
-  && _pass "enterprise (no profile set) still requires all 8 strategy artifacts" \
-  || _fail "enterprise (no profile set) still requires all 8 strategy artifacts" "$out"
+python3 -c "import json,sys; assert len(json.loads(sys.argv[1])['required']) == 9" "$out" 2>/dev/null \
+  && _pass "enterprise (no profile set) still requires all 9 strategy artifacts" \
+  || _fail "enterprise (no profile set) still requires all 9 strategy artifacts" "$out"
 
 # 14. an unknown profile is a usage error, not a silent default
 printf '{"scale_profile":"tiny"}\n' > "$L/sdlc-config.json"

@@ -9,7 +9,7 @@ One row per artifact type this plugin can produce: Artifact Type, Producing Agen
 | Vision Statement | product-strategist | `strategy/vision-statement` | `artifacts/[product]/strategy/vision-statement.md` | strategy | name, version, phase, owner, created, summary |
 | Roadmap | product-strategist | `strategy/roadmap-authoring` | `artifacts/[product]/strategy/roadmap.md` | strategy | name, version, phase, owner, created, summary |
 | OKR Set | product-strategist | `strategy/okr-authoring` | `artifacts/[product]/strategy/okrs/[cycle].md` | strategy | name, version, phase, owner, created, summary |
-| User Story | requirements-analyst | `discovery/user-story-writing` | `artifacts/[product]/ideate/stories/[story-id].md` | ideate | name, version, phase, owner, created, summary |
+| User Story Backlog | requirements-analyst | `user-story-writing` | `artifacts/[product]/ideate/user-stories.md` | ideate | name, version, phase, owner, created, summary |
 | Epic | requirements-analyst | `discovery/epic-definition` | `artifacts/[product]/ideate/epics/[epic-id].md` | ideate | name, version, phase, owner, created, summary |
 | Acceptance Criteria | requirements-analyst | `discovery/acceptance-criteria` | `artifacts/[product]/ideate/stories/[story-id]-ac.md` | ideate | name, version, phase, owner, created, summary |
 | Event Storm Board | domain-modeler | `domain-modeling/event-storming-facilitation` | `artifacts/[product]/design/event-storms/[domain].md` | design | name, version, phase, owner, created, summary |

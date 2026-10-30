@@ -51,11 +51,13 @@ Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phase A and B ar
 |---|---|---|
 | A — folder spec, `sources:`, layout linter, evals runner, migration script, standard rewrite | #1224 | **done** — merged to main via #1237 (851ac0a), CI green |
 | B — pilot: vision-statement, adr-authoring, go-repository-pattern | #1238 | **done** — approved by Shafi, merged to main via #1245 (35a903f) |
-| C — domain waves (per-skill issues) | — | next — needs Shafi's go and answers on depth, eval budget, Go compile check |
+| C — domain waves (per-skill issues) | — | **started 2026-10-19** (Shafi's go; depth/eval budget/Go compile check decided 2026-10-12) |
+| C / Wave 1 — strategy + discovery + validation (21 skills + 2 new) | #1292 | discovery done (#1293 → [wave-1-findings.md](wave-1-findings.md), 50 findings); 15 research files (#1295, #1297–#1310); planning decisions D045; implementation sub-issues #1327 (pipeline) and #1328–#1350 (one per skill) in progress. Branch `fresh-eyes/wave-1-strategy-discovery-validation` |
 
 Phase A facts a resuming session needs:
 - Evals live at ROOT `evals/<skill>/<case>/` — `claude plugin eval` refuses dirs inside `skills/`.
-- `tests/run-skill-evals.sh <skill>` passes only if all cases pass AND mean delta > 0. Cost ref: 3 cases × 2 runs ≈ $1.70.
+- `tests/run-skill-evals.sh <skill>` passes only if all cases pass AND mean delta > 0. Cost ref: 3 cases × 3 runs × 2 arms ≈ $4.50–7; budget up to $7/skill (raised from ~$2 on 2026-10-30), the default cap.
+- Evals are written by a fresh subagent, not the rewriting session, and frozen in a `Freeze evals: <skill>` commit before the first run; a grader changed after that is logged in the PR (added 2026-10-30 on the user's go; applies from #1346 on). Brief: `skills/skill-authoring-standards/templates/eval-author-brief.md`.
 - Skill pointers start with `./`. A bare `templates/` or `scripts/` may be a product path (Helm) or repo-root scripts.
 - Layout baseline: 177/187 skills clean. The linter is report-only until the waves finish.
 - Plan tooling runs from the main-tracking worktree, with `.state.json` symlinked to the primary checkout's.

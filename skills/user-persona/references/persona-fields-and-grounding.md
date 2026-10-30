@@ -1,209 +1,136 @@
-# Persona Fields, Grounding, and the Proto→Research Lifecycle
+# Persona Fields, Grounding and What to Leave Out
 
-Reference material for the `user-persona` skill. This file defines every persona field, states the
-evidence-based grounding requirement, walks the proto-persona → research-persona lifecycle, and lists
-exactly what to leave out. It is self-contained: an agent applying `user-persona` can produce a
-complete, correctly-grounded persona from this file plus the template in
-`persona-template-and-examples.md`.
+Self-contained reference for the `user-persona` skill. It defines every persona field, the design decision each one drives, and the question that would ground it in an interview; then the grounding rules (provenance label, source tags, validation questions, who interviews) and the leave-out list. Read it when filling a field, labelling grounding, or writing the validation questions.
+
+Sources: Alan Cooper, *The Inmates Are Running the Asylum* and Cooper, Reimann, Cronin and Noessel, *About Face* (goal-directed personas, end / experience / life goals, persona types); John Pruitt and Tamara Adlin, *The Persona Lifecycle* (sourced factoids, assumption personas); Clayton Christensen et al., *Competing Against Luck* (forces of progress, the job/persona boundary); Rob Fitzpatrick, *The Mom Test* (elicitation); Ram Srinivasan, *Simple Data* (trust in automated decisions); Martina Lauchengco, *Loved* (persona-specific messaging).
 
 ---
 
-## 1. Why grounding is the whole point
+## 1. The header lines every persona carries
 
-A persona is only worth building if its attributes are *true of a real type of person*. The failure
-mode this skill guards against is a persona assembled from imagination — plausible-sounding goals and
-frustrations that no real user ever expressed — because such a persona will confidently generate
-requirements for problems nobody has. The discipline that prevents this is **evidence-based grounding**:
-every load-bearing attribute traces to something a real person actually said or did, gathered in a way
-that could not have been satisfied by politeness.
-
-The grounding standard is Rob Fitzpatrick's *The Mom Test*: good discovery data is a report of a
-**specific past event**, not an opinion about the future or a compliment. The three rules:
-
-1. **Talk about their life, not your idea.** The conversation is about how the person works today, not
-   a pitch or a request to validate your product.
-2. **Ask about specifics in the past, not generics or hypotheticals.** "What did you do the last time
-   this happened?" beats "what do you usually do?" beats "what would you do if?"
-3. **Talk less, listen more.** The interviewer extracts facts; they do not explain, defend, or sell.
-
-Three kinds of data feel like validation but carry no signal, and none of them may ground a persona
-attribute:
-
-| Bad data | What it sounds like | Why it is worthless | Fix |
-|---|---|---|---|
-| **Compliment** | "That's a great idea," "I'd definitely use that" | Politeness, unconnected to any behavior | Deflect into a specific-instance question |
-| **Fluff** | "I always…", "I usually…", "I would…" | An imagined average or future, phrased as fact | Press for the last actual occurrence |
-| **Idea** | "You should build a dashboard for that" | A proposed solution, not a validated need | Dig behind it for the motivating problem |
-
-An attribute grounded in any of these is not grounded at all. A design partner rating a need 9/10 out
-of goodwill toward a founder they like is a compliment wearing a number.
-
----
-
-## 2. Proto-persona vs research-persona — the two kinds
-
-Every persona is exactly one of two kinds and **must be labeled** at the top of the artifact.
-
-### Proto-persona (`PROTO — assumption-based`)
-
-An archetype built from the team's existing knowledge, informed guesses, and assumptions — **before**
-any customer interviews exist. It is a hypothesis about who the user is. Proto-personas are legitimate
-and valuable: they let discovery start, they seed `jtbd-analysis`, and they give the team a concrete
-target to test against. What makes a proto-persona *honest* is that it is clearly marked as
-assumption-based, so no one mistakes a guess for a finding. Every attribute in a proto-persona is
-implicitly prefixed "we believe…".
-
-### Research-persona (`RESEARCH — interview-grounded`)
-
-The same archetype after its attributes have been confirmed, corrected, or replaced by evidence from
-real conversations conducted to the Mom-Test standard. A research-persona's attributes are prefixed "we
-observed…". Each one traces to a specific person's specific past behavior.
-
-### The lifecycle: start proto, validate to research
-
-```
-Draft proto-persona ──► Run design-partner conversations ──► Upgrade each attribute
-   (assumptions)          (Mom-Test-compliant)                 to research grounding
-        │                                                            │
-        └────────────── attributes contradicted by evidence ◄───────┘
-                        are corrected or deleted, not defended
-```
-
-The persona is never "finished as proto." A proto-persona that is still driving requirements months
-later, unvalidated, is the honesty-rule violation this skill exists to catch. Track grounding
-**per attribute**, not per persona — a single persona commonly has some fields validated to research
-and others still proto at any given moment. Mark each field so a reviewer can see the seam.
-
-| Dimension | Proto-persona | Research-persona |
+| Line | Holds | Rule |
 |---|---|---|
-| Source | Team assumptions, prior knowledge | Real interviews, specific past behavior |
-| Attribute prefix | "We believe…" | "We observed…" |
-| Confidence | Hypothesis to be tested | Evidence to be acted on |
-| Risk if unlabeled | Guess mistaken for fact | — |
-| Required label | `PROTO — assumption-based` | `RESEARCH — interview-grounded` |
-| Repo timing | Before Stage 1 closed beta | During/after Stage 1 design-partner conversations |
+| **Type** | Primary · Secondary · Supplemental · Customer · Served · Negative | Exactly one. A primary also names its **Interface** (the surface it is the design target for); no two primaries share an interface |
+| **Grounding** | The provenance label (section 3) | Never blank. Agent-written with no interview notes → PROTO |
+| **Status** | active · retired (with the reason and date) | A retired persona stays in the artifact |
+| **Role and context** | The role this person holds and the company (or life) context they sit in, consistent with the ICP | Context, not identity: two people with the same title can be two personas (one trusts automation, one does not), and one persona can span several titles |
 
-At this repo's actual scale — 3-5 named design partners in `gtm-strategy`'s closed-beta motion — there
-is no large sample to average away one badly-elicited answer. That makes Mom-Test discipline *more*
-important, not less: at n=3-5 a single politeness-driven attribute can define the whole persona.
+## 2. The fields, what each drives, and how it would be grounded
 
----
+Every field carries a source tag (section 4). The elicitation question is for the **user** to ask a real person; the agent turns it into a validation question when the field is an assumption.
 
-## 3. Every field defined, with its elicitation question
+### Behavioural variables (the distinguishing ranges)
+- **Holds:** the three to five two-ended ranges on which this persona sits apart from the others, with its position ("verifies every reminder ↔ lets them send": far left).
+- **Drives:** why this is a separate persona at all; which interviewee pattern stands behind it.
+- **Grounded by:** placing interviewees on the ranges (procedure: `synthesis-and-lifecycle.md`).
 
-Each persona field below is defined, told what design decision it drives (its load-bearing use), and
-paired with the Mom-Test-compliant question that surfaces it for a research-persona. If a field cannot
-be tied to a downstream use, it does not belong in the persona.
+### End goals
+- **Holds:** what the person wants to get done, solution-free.
+- **Drives:** functional requirements and the job statement.
+- **Elicitation:** "What were you trying to get done the last time this came up? What happened?"
 
-### Segment / role
-- **Definition:** the *type* of user and the company profile they sit in — size, industry, regulatory
-  exposure — consistent with the ICP from `gtm-strategy`. The ICP is the company; the persona is the
-  person inside it.
-- **Drives:** which requirements apply at all; scopes every other attribute.
-- **Elicitation:** established from the ICP and from who the design partner actually is, not asked.
+### Experience goals
+- **Holds:** how they want to feel while doing it: in control, not stupid, not exposed in front of a client or an auditor.
+- **Drives:** usability NFRs and onboarding constraints ("must never make her feel the tool knows her data better than she does"). An adoption barrier is usually a violated experience goal.
+- **Elicitation:** "What was the worst part of the last time? How did that land with you?"
 
-### Primary goal
-- **Definition:** the single outcome this person most wants to achieve in their work.
-- **Drives:** the core job story's "so that" clause; the product's primary value proposition for them.
-- **Elicitation:** "What are you ultimately trying to get done here? What does a good week look like?"
+### Life goals
+- **Holds:** who they want to be beyond the product, including what gets them recognised.
+- **Drives:** messaging (`gtm-strategy`), long-term loyalty. Rarely a feature. One line or omitted for a B2B tool.
+- **Elicitation:** "How is your work judged? What did your last review focus on?"
 
-### Secondary goals
-- **Definition:** 2-3 further outcomes they care about but rank below the primary.
-- **Drives:** secondary requirements; the "Should/Could" tail in `moscow-prioritization`.
-- **Elicitation:** "Besides that, what else are you on the hook for?"
+### Current approach (habit)
+- **Holds:** how they get the end goal done today without the product: the workaround, spreadsheet, consultant or "nobody does it until the auditor asks" (non-consumption).
+- **Drives:** the switching story. This is the **habit** force and names what gets fired. The most load-bearing context field.
+- **Elicitation:** "Walk me through the last time you did this. What did you actually use?"
 
-### Success metric
-- **Definition:** how this person judges whether they succeeded — what gets them recognized or promoted.
-- **Drives:** which outcomes the product must make visible; often an NFR or a report requirement.
-- **Elicitation:** "How is your work measured? What did the last review focus on?"
+### Primary frustration (and up to two secondary)
+- **Holds:** the costliest pain in the current approach.
+- **Drives:** the motivation in the job; what the value proposition must relieve.
+- **Elicitation:** "What was the most annoying or expensive part of that last time? What did it cost you?"
 
-### Current approach
-- **Definition:** how they accomplish the goal today, **without** your product — the workaround.
-- **Drives:** the switching story. You cannot explain why someone adopts a product without knowing what
-  they are switching *from*. This is the most load-bearing behavior field.
-- **Elicitation:** "Walk me through the last time you had to do this. What did you actually do?"
+### Trigger (push)
+- **Holds:** the event that ends passive looking: the struggling moment.
+- **Drives:** the situation in the job stories (`jtbd-analysis`); demand timing for the GTM.
+- **Elicitation:** best reconstructed as a timeline in a switch interview ("What happened right before you started looking?"), not asked as a direct "what would make you look?".
 
-### Primary frustration
-- **Definition:** the single biggest pain with the current approach.
-- **Drives:** the sharpest job story; the pain the value proposition must relieve.
-- **Elicitation:** "What was the most annoying or costly part of that last time?"
-
-### Secondary frustrations
-- **Definition:** 2-3 additional recurring pains.
-- **Drives:** the backlog of related problems the product can expand into.
-- **Elicitation:** "What else about that process trips you up regularly?"
-
-### Decision-making style
-- **Definition:** analytical (data-driven) / relational (trusts referrals) / spontaneous (early
-  adopter) / methodical (waits for proof).
-- **Drives:** onboarding, trust-building, and evidence the product must surface to earn adoption.
-- **Elicitation:** "Last time you adopted a new tool for work, what convinced you it was worth it?"
-
-### Technical literacy
-- **Definition:** how comfortable this person is with technology — self-serves vs needs guidance.
-- **Drives:** usability NFRs, whether a CLI is acceptable, how much hand-holding onboarding needs.
-- **Elicitation:** observed from how they describe their current tools, not asked directly.
-
-### Information sources
-- **Definition:** where they go to learn about new tools (peer communities, analyst reports, LinkedIn).
-- **Drives:** GTM channel selection (feeds `gtm-strategy`), not the product itself.
-- **Elicitation:** "Where did you first hear about the last tool you brought in?"
-
-### Trigger
-- **Definition:** the specific event that causes this person to start looking for a solution.
-- **Drives:** the situational front of a JTBD job story ("When \<trigger\>…"); demand timing.
-- **Elicitation:** "What actually happened right before you started looking for a fix last time?"
-
-### Expected time to first value
-- **Definition:** how quickly they must see value before they lose patience and revert.
-- **Drives:** a usability/onboarding NFR — a hard constraint on first-run design.
-- **Elicitation:** inferred from their described patience with the current workaround.
-
-### Adoption barrier
-- **Definition:** the most likely reason they abandon the product after trying it.
-- **Drives:** onboarding constraints; what must never be required in the first session.
+### Adoption barrier (anxiety)
+- **Holds:** the most likely reason they abandon after trying: the **anxiety** force.
+- **Drives:** what the first session must never require; onboarding constraints.
 - **Elicitation:** "What made the last tool you dropped not stick?"
 
-### Jobs to be done (the link out)
-- **Definition:** the core job(s) this persona is hiring a solution for — the explicit handoff to
-  `jtbd-analysis`. Every persona names at least one.
-- **Drives:** the entire job-story set written against this persona.
-- **Elicitation:** synthesized from the goal + current approach + trigger, once those are grounded.
+### Trust in automated output
+- **Holds:** for a product that drafts, classifies, matches or decides for this person: must they see the reasoning and verify before acting, or will they accept output once it has proven reliable a few times? What erodes that trust?
+- **Drives:** explainability requirements (reason and evidence beside every automated result, a correct-this control). A trust barrier is fixed with transparency; a usability barrier with less friction. Do not confuse them.
+- **Elicitation:** "Last time a tool made a call for you, what did you check before you acted on it?"
 
----
+### Time to first value
+- **Holds:** how fast they must see value before they revert. Christensen's **Big Hire** (the purchase) is not the **Little Hire** (each use); time to first value is about the first Little Hire.
+- **Drives:** a first-run usability NFR.
+- **Elicitation:** inferred from their described patience with the current workaround.
 
-## 4. What to leave out
+### Decision style and information sources (customer and secondary personas mainly)
+- **Holds:** how they decide to adopt (wants proof on their own data, trusts peers' references, waits for others) as a position on a range, not a fixed category; where they learn about tools.
+- **Drives:** which proof points the GTM leads with for this audience (Lauchengco, *Loved*) and the channel choice. Not the daily interface.
+- **Elicitation:** "Last time you brought in a new tool, what convinced you? Where did you first hear of it?"
 
-The default temptation is to novelize the persona — a name, a face, a commute, a favorite coffee. Almost
-all of it is decoration. Leave out anything that does not change a design decision:
+### Job statement (the link out)
+- **Holds:** one line, `[verb] [object] [clarifier]`, solution-free (Ulwick's syntax, as taught in `jtbd-analysis`): "Get paid for billed work without chasing clients by hand."
+- **Drives:** the entire job-story set `jtbd-analysis` writes against this persona.
+- **At lean only**, where `jtbd-analysis` is skipped, add one or two job stories ("When … I want to … so I can …") and a one-line forces summary (push · pull · habit · anxiety).
+
+Supplemental, served and negative personas carry only the header lines, role and context, and the one or two attributes that justify them (what the product does to a served persona; why a negative persona is excluded).
+
+## 3. The provenance label
+
+| Label | Exact form | Allowed when |
+|---|---|---|
+| PROTO | `PROTO — assumption-based · written by requirements-analyst (AI) from <inputs> · no user research` | Always allowed. The default for agent-written personas |
+| MIXED | `MIXED — <n> of <m> load-bearing attributes interview-grounded` | The user supplied notes from interviews they (or a design-partner session) held, and those notes support n attributes |
+| RESEARCH | `RESEARCH — interview-grounded` | Every load-bearing attribute is interview-tagged **and** the user confirmed the upgrade at review. The agent never applies it on its own authority |
+
+`<inputs>` names the real sources: "the problem statement, the ICP and stakeholder map §2", "the user's description of their office". The frontmatter repeats the artifact-level picture: `grounding: proto | mixed | research`, `authored-by:`, `evidence: none | second-hand: … | interviews: …`.
+
+**Who interviews.** The agent cannot hold an interview. The user, or a design-partner session the user runs, is the interviewer. The agent writes the guide (the validation questions and the recruiting hint) and synthesises the notes it is given.
+
+## 4. Source tags
+
+Each attribute line ends in one tag, Pruitt and Adlin's factoid in miniature:
+
+| Tag | Meaning |
+|---|---|
+| `[DP-2 · 2026-11-03]`, `[INT-4]` | An interview the user held; the reference points at the notes |
+| `[support tickets]`, `[stakeholder map §2]`, `[ICP]`, `[problem statement]`, `[user's description]` | Second-hand evidence |
+| `[assumption]` | The agent's inference with nothing behind it |
+
+Only notes that report a **specific past event** ground an attribute. Fitzpatrick's three kinds of bad data ground nothing, even when they came from a real interview:
+
+| Bad data | Sounds like | Fix |
+|---|---|---|
+| Compliment | "Great idea, I'd definitely use that" | Ask about the last time the problem happened |
+| Fluff | "I usually…", "I would…" | Press for the last actual occurrence |
+| Idea | "You should build a dashboard" | Ask what problem that would solve, and when it last bit |
+
+At three to five design partners there is no sample to average a bad answer away: one politeness-driven answer can define a persona.
+
+## 5. Validation questions
+
+Every PROTO or MIXED persona ends with a table: for each load-bearing `[assumption]`, the question that would test it and the answer that would mean the persona is wrong.
+
+| Attribute | Ask (a specific past event) | Wrong if |
+|---|---|---|
+| Current approach: a shared spreadsheet | "Show me what you used to send last Friday's order." | They used the restaurant's own app |
+
+Add one line on **whom to recruit first**: the people whose positions on the behavioural variables would split or merge the hypothesised personas.
+
+## 6. What to leave out
 
 | Leave out | Why |
 |---|---|
-| Age, gender, hometown, marital status | Do not predict product behavior; goals and pains do. |
-| A stock photo / fictional backstory | Adds vividness, drives zero requirements. |
-| Personality color (hobbies, "loves hiking") | Not traceable to any requirement, story, or NFR. |
-| Exact salary, tenure, headcount reporting lines | Unless they gate a buying decision, they are noise. |
-| Aspirational traits ("a visionary, forward-thinking leader") | Marketing language; model who they *are*, not who you wish. |
-| Invented quotes not said by a real person | A fabricated quote reads as evidence but is imagination. |
+| Age, gender, hometown, marital status, hobbies | Do not predict behaviour; goals, forces and variables do |
+| A photo, stock image or generated face | Encodes a stereotype and makes an assumption look like a real person. Cooper and Pruitt-Adlin recommend an image; this skill deliberately departs from them for agent-written personas |
+| Invented quotes | A fabricated quote reads as evidence. Quote only interview notes, with the tag |
+| Aspirational traits ("a visionary data leader") | Marketing language; model who they are |
+| Salary, tenure, reporting lines | Noise, unless they gate a buying decision (then they belong to the customer persona, with the reason) |
 
-The single test for every attribute: *can this be used to write or validate a requirement, a job story,
-an onboarding decision, or an NFR?* If not, cut it. A short, fully load-bearing persona beats a rich,
-mostly-decorative one every time.
-
-Demographics are not banned outright — regulatory exposure, company size, and industry are demographic
-facts that *do* drive requirements for a compliance product. The rule is narrower: leave out
-demographics that do not drive a design decision. Include the ones that do; name the reason they do.
-
----
-
-## 5. Grounding quality checklist
-
-Before a persona is presented for review:
-
-- [ ] Labeled `PROTO` or `RESEARCH` at the top; mixed personas mark grounding per attribute.
-- [ ] Every load-bearing attribute (goals, current approach, frustrations, trigger) is present.
-- [ ] For a research pass, each such attribute traces to a specific-past-event answer, not a
-      compliment, fluff, or an unsolicited idea.
-- [ ] No attribute is decoration — each maps to a requirement, job story, onboarding decision, or NFR.
-- [ ] The persona links to at least one JTBD and can serve as an "As a \<persona\>" story role.
-- [ ] Demographics present only where they drive a design decision, with the reason named.
+Keep the first name: a named persona is what defeats the elastic user. Keep firmographic or life facts that drive a requirement (company size, regulatory exposure, works one-handed on a ward) and name the requirement they drive.

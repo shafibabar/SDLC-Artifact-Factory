@@ -50,6 +50,12 @@
         "adr-authoring"
       ]
     },
+    "assumption-test": {
+      "agents": [],
+      "skills": [
+        "opportunity-solution-tree"
+      ]
+    },
     "beta-program": {
       "agents": [],
       "skills": [
@@ -619,6 +625,18 @@
         "integration-design"
       ]
     },
+    "interview-guide": {
+      "agents": [],
+      "skills": [
+        "jtbd-analysis"
+      ]
+    },
+    "interview-snapshot": {
+      "agents": [],
+      "skills": [
+        "jtbd-analysis"
+      ]
+    },
     "jtbd-analysis": {
       "agents": [],
       "skills": [
@@ -675,14 +693,6 @@
         "miro-board-notation"
       ]
     },
-    "mission-statement": {
-      "agents": [
-        "product-strategist"
-      ],
-      "skills": [
-        "mission-statement"
-      ]
-    },
     "moscow-prioritized-backlog": {
       "agents": [],
       "skills": [
@@ -730,6 +740,12 @@
         "opentofu-module"
       ]
     },
+    "opportunity-solution-tree": {
+      "agents": [],
+      "skills": [
+        "opportunity-solution-tree"
+      ]
+    },
     "pattern-selection-rationale": {
       "agents": [],
       "skills": [
@@ -763,6 +779,14 @@
       ],
       "skills": [
         "slo-definition"
+      ]
+    },
+    "pricing-and-packaging-plan": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "pricing-and-packaging"
       ]
     },
     "privacy-design": {
@@ -1108,6 +1132,14 @@
         "roadmap-authoring"
       ]
     },
+    "strategy-kernel": {
+      "agents": [
+        "product-strategist"
+      ],
+      "skills": [
+        "strategy-kernel"
+      ]
+    },
     "subdomain-classification": {
       "agents": [],
       "skills": [
@@ -1420,12 +1452,16 @@
       "agent_count": 0,
       "agents": [],
       "artifacts": [
+        "assumption-test",
         "epic-list",
         "functional-requirements-document",
         "impact-map",
+        "interview-guide",
+        "interview-snapshot",
         "jtbd-analysis",
         "moscow-prioritized-backlog",
         "nfr-specification",
+        "opportunity-solution-tree",
         "user-persona",
         "user-story-backlog",
         "user-story-map"
@@ -1433,13 +1469,14 @@
       "owners": [
         "requirements-analyst"
       ],
-      "skill_count": 9,
+      "skill_count": 10,
       "skills": [
         "epic-definition",
         "impact-mapping",
         "jtbd-analysis",
         "moscow-prioritization",
         "nfr-specification",
+        "opportunity-solution-tree",
         "requirements-analysis",
         "story-mapping",
         "user-persona",
@@ -1684,24 +1721,26 @@
         "business-model-canvas",
         "competitive-analysis",
         "go-to-market-strategy",
-        "mission-statement",
         "okr",
+        "pricing-and-packaging-plan",
         "stakeholder-map",
         "strategic-roadmap",
+        "strategy-kernel",
         "vision-statement"
       ],
       "owners": [
         "product-strategist"
       ],
-      "skill_count": 8,
+      "skill_count": 9,
       "skills": [
         "business-model-canvas",
         "competitive-analysis",
         "gtm-strategy",
-        "mission-statement",
         "okr-authoring",
+        "pricing-and-packaging",
         "roadmap-authoring",
         "stakeholder-mapping",
+        "strategy-kernel",
         "vision-statement"
       ]
     },
@@ -2235,10 +2274,11 @@
           "business-model-canvas",
           "competitive-analysis",
           "go-to-market-strategy",
-          "mission-statement",
           "okr",
+          "pricing-and-packaging-plan",
           "stakeholder-map",
           "strategic-roadmap",
+          "strategy-kernel",
           "vision-statement"
         ],
         "role": "Product Strategy — full Strategy phase ownership",
@@ -2251,10 +2291,11 @@
           "jtbd-analysis",
           "memory-recall",
           "methodology-review",
-          "mission-statement",
           "okr-authoring",
+          "pricing-and-packaging",
           "roadmap-authoring",
           "stakeholder-mapping",
+          "strategy-kernel",
           "user-persona",
           "vision-statement"
         ],
@@ -2279,7 +2320,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.3.0"
+        "version": "3.10.0"
       },
       {
         "created": "2026-06-24",
@@ -2304,6 +2345,7 @@
           "methodology-review",
           "moscow-prioritization",
           "nfr-specification",
+          "opportunity-solution-tree",
           "requirements-analysis",
           "story-mapping",
           "uat-plan",
@@ -2329,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.7.0"
+        "version": "1.10.4"
       },
       {
         "created": "2026-06-25",
@@ -2462,7 +2504,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.5.0"
+        "version": "1.5.1"
       },
       {
         "created": "2026-06-25",
@@ -2654,7 +2696,7 @@
       {
         "allowed_tools": [],
         "argument_hint": null,
-        "description": "Run the Strategy phase — vision, mission, roadmap, GTM, OKRs",
+        "description": "Run the Strategy phase — vision, strategy kernel, GTM, OKRs, roadmap",
         "disable_model_invocation": true,
         "file": "commands/sdlc-strategy.md",
         "has_test": true,
@@ -2831,7 +2873,7 @@
           "release-gate",
           "sign-off"
         ],
-        "version": "2.2.1"
+        "version": "2.3.0"
       },
       {
         "created": "2026-06-25",
@@ -3139,7 +3181,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.5.0"
+        "version": "2.6.0"
       },
       {
         "created": "2026-06-25",
@@ -3205,7 +3247,7 @@
           "feature-flags",
           "rollout"
         ],
-        "version": "2.2.0"
+        "version": "2.3.0"
       },
       {
         "created": "2026-07-20",
@@ -3289,14 +3331,14 @@
         "dir": "skills/business-model-canvas",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "business-model-canvas",
         "owner": "product-strategist",
         "phase": "strategy",
@@ -3304,13 +3346,27 @@
           "business-model-canvas"
         ],
         "related": [
+          "beta-program-design",
           "competitive-analysis",
+          "glossary-management",
           "gtm-strategy",
           "impact-mapping",
           "jtbd-analysis",
+          "okr-authoring",
+          "strategy-kernel",
+          "user-persona",
           "vision-statement"
         ],
-        "sources": [],
+        "sources": [
+          "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md",
+          "research/product-strategy-and-gtm/business-model-generation-osterwalder.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
+          "research/product-strategy-and-gtm/running-lean-maurya.md"
+        ],
         "status": "stable",
         "tags": [
           "business-model",
@@ -3318,9 +3374,10 @@
           "discovery",
           "lean-canvas",
           "strategy",
-          "value-proposition"
+          "value-proposition",
+          "value-proposition-canvas"
         ],
-        "version": "2.1.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-20",
@@ -3521,31 +3578,47 @@
         "dir": "skills/competitive-analysis",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "competitive-analysis",
         "owner": "product-strategist",
         "phase": "strategy",
         "produces": [
           "competitive-analysis"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "business-model-canvas",
+          "glossary-management",
+          "gtm-strategy",
+          "jtbd-analysis",
+          "requirements-analysis",
+          "stakeholder-mapping",
+          "strategy-kernel",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+        ],
         "status": "stable",
         "tags": [
+          "competitive-alternatives",
           "competitive-analysis",
           "differentiation",
-          "gtm",
           "positioning",
-          "strategy"
+          "strategy",
+          "win-loss"
         ],
-        "version": "1.2.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-25",
@@ -4567,14 +4640,14 @@
         "dir": "skills/epic-definition",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "epic-definition",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -4583,24 +4656,39 @@
         ],
         "related": [
           "acceptance-criteria",
+          "example-mapping",
           "glossary-management",
           "impact-mapping",
+          "jtbd-analysis",
           "methodology-review",
           "moscow-prioritization",
+          "nfr-specification",
+          "okr-authoring",
+          "opportunity-solution-tree",
+          "requirements-analysis",
+          "roadmap-authoring",
           "story-mapping",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md",
+          "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+        ],
         "status": "stable",
         "tags": [
-          "acceptance-criteria",
-          "agile",
           "epic",
+          "epic-list",
+          "four-risks",
+          "hypothesis",
           "ideate",
           "requirements",
-          "story-decomposition"
+          "story-decomposition",
+          "traceability"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -4890,7 +4978,17 @@
           "ubiquitous-language-glossary"
         ],
         "related": [],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/business-model-generation-osterwalder.md",
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md",
+          "research/product-strategy-and-gtm/running-lean-maurya.md"
+        ],
         "status": "stable",
         "tags": [
           "cross-cutting",
@@ -4899,7 +4997,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.1.1"
+        "version": "1.19.0"
       },
       {
         "created": "2026-07-31",
@@ -6175,14 +6273,14 @@
         "dir": "skills/gtm-strategy",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "gtm-strategy",
         "owner": "product-strategist",
         "phase": "strategy",
@@ -6190,25 +6288,42 @@
           "go-to-market-strategy"
         ],
         "related": [
+          "beta-program-design",
           "business-model-canvas",
           "competitive-analysis",
           "glossary-management",
           "methodology-review",
+          "okr-authoring",
+          "pricing-and-packaging",
+          "roadmap-authoring",
+          "stakeholder-mapping",
+          "strategy-kernel",
           "user-persona",
           "vision-statement"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md",
+          "research/storytelling-and-narrative/business-storytelling-for-dummies.md",
+          "research/storytelling-and-narrative/the-best-story-wins.md"
+        ],
         "status": "stable",
         "tags": [
+          "beachhead",
           "channels",
           "gtm",
           "launch",
+          "messaging",
           "positioning",
           "pricing",
-          "product-discovery",
           "strategy"
         ],
-        "version": "2.0.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-06-25",
@@ -6288,40 +6403,52 @@
         "dir": "skills/impact-mapping",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "impact-mapping",
         "owner": "requirements-analyst",
-        "phase": "strategy",
+        "phase": "ideate",
         "produces": [
           "impact-map"
         ],
         "related": [
           "epic-definition",
+          "glossary-management",
           "jtbd-analysis",
+          "methodology-review",
           "moscow-prioritization",
           "okr-authoring",
+          "opportunity-solution-tree",
+          "requirements-analysis",
           "story-mapping",
           "user-persona"
         ],
-        "sources": [],
+        "sources": [
+          "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md",
+          "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/requirements-and-user-stories/impact-mapping-adzic.md"
+        ],
         "status": "stable",
         "tags": [
           "actors",
+          "assumptions",
           "deliverables",
+          "discovery",
           "goal",
+          "ideate",
           "impact-map",
           "outcomes",
-          "requirements",
-          "strategy"
+          "selected-path"
         ],
-        "version": "2.1.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-31",
@@ -6444,38 +6571,61 @@
         "dir": "skills/jtbd-analysis",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "jtbd-analysis",
         "owner": "requirements-analyst",
-        "phase": "strategy",
+        "phase": "ideate",
         "produces": [
+          "interview-guide",
+          "interview-snapshot",
           "jtbd-analysis"
         ],
         "related": [
           "business-model-canvas",
+          "competitive-analysis",
+          "feedback-template",
+          "glossary-management",
+          "gtm-strategy",
           "impact-mapping",
+          "methodology-review",
           "moscow-prioritization",
+          "nfr-specification",
+          "opportunity-solution-tree",
+          "requirements-analysis",
+          "strategy-kernel",
           "user-persona",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+        ],
         "status": "stable",
         "tags": [
-          "customer-motivation",
           "discovery",
+          "forces-of-progress",
+          "ideate",
+          "interview-snapshot",
           "job-statement",
+          "job-story",
           "jobs-to-be-done",
+          "opportunity-score",
           "requirements",
-          "strategy"
+          "switch-interview"
         ],
-        "version": "2.1.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-07-20",
@@ -6758,42 +6908,6 @@
         "version": "1.0.1"
       },
       {
-        "created": "2026-06-24",
-        "dir": "skills/mission-statement",
-        "domain": "strategy",
-        "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
-        "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
-        "has_steps": false,
-        "has_templates": false,
-        "name": "mission-statement",
-        "owner": "product-strategist",
-        "phase": "strategy",
-        "produces": [
-          "mission-statement"
-        ],
-        "related": [
-          "business-model-canvas",
-          "gtm-strategy",
-          "okr-authoring",
-          "vision-statement"
-        ],
-        "sources": [],
-        "status": "stable",
-        "tags": [
-          "mission",
-          "north-star",
-          "product-strategy",
-          "strategy",
-          "vision"
-        ],
-        "version": "2.1.1"
-      },
-      {
         "created": "2026-06-25",
         "dir": "skills/mock-generation",
         "domain": "testing",
@@ -6842,14 +6956,14 @@
         "dir": "skills/moscow-prioritization",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "moscow-prioritization",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -6857,22 +6971,38 @@
           "moscow-prioritized-backlog"
         ],
         "related": [
+          "epic-definition",
+          "glossary-management",
           "jtbd-analysis",
+          "methodology-review",
+          "nfr-specification",
           "requirements-analysis",
+          "roadmap-authoring",
           "story-mapping",
+          "uat-plan",
+          "user-persona",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md",
+          "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+        ],
         "status": "stable",
         "tags": [
+          "dsdm",
           "ideate",
+          "kano",
+          "minimum-usable-subset",
           "moscow",
-          "must-should-could",
           "prioritization",
           "release-planning",
-          "requirements"
+          "requirements",
+          "walking-skeleton"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -6921,14 +7051,14 @@
         "dir": "skills/nfr-specification",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "nfr-specification",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -6936,39 +7066,53 @@
           "nfr-specification"
         ],
         "related": [
+          "adr-authoring",
+          "competitive-analysis",
           "dora-metrics",
+          "glossary-management",
+          "go-load-test",
+          "gtm-strategy",
+          "methodology-review",
+          "okr-authoring",
           "platform-engineering-design",
+          "requirements-analysis",
           "slo-definition"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/accelerate-forsgren-humble-kim.md",
+          "research/devops-and-delivery/platform-engineering-fournier-nowland.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/software-architecture-in-practice-bass.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture-input",
-          "compliance",
-          "delivery",
-          "dora",
+          "deployability",
           "ideate",
+          "iso-25010",
           "nfr",
-          "performance",
-          "platform-dx",
-          "scalability",
-          "security"
+          "quality-attribute-scenario",
+          "quality-attributes",
+          "trade-off",
+          "utility-tree"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
         "dir": "skills/okr-authoring",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "okr-authoring",
         "owner": "product-strategist",
         "phase": "strategy",
@@ -6981,9 +7125,16 @@
           "methodology-review",
           "roadmap-authoring",
           "story-mapping",
+          "strategy-kernel",
           "vision-statement"
         ],
-        "sources": [],
+        "sources": [
+          "research/data-and-analytics/lean-analytics-croll-yoskovitz.md",
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
+          "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+        ],
         "status": "stable",
         "tags": [
           "goal-setting",
@@ -6993,7 +7144,7 @@
           "outcomes",
           "strategy"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -7069,6 +7220,57 @@
         "version": "1.3.0"
       },
       {
+        "created": "2026-10-24",
+        "dir": "skills/opportunity-solution-tree",
+        "domain": "discovery",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": true,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "opportunity-solution-tree",
+        "owner": "requirements-analyst",
+        "phase": "ideate",
+        "produces": [
+          "assumption-test",
+          "opportunity-solution-tree"
+        ],
+        "related": [
+          "beta-program-design",
+          "feedback-template",
+          "glossary-management",
+          "impact-mapping",
+          "jtbd-analysis",
+          "methodology-review",
+          "okr-authoring",
+          "user-persona",
+          "user-story-writing"
+        ],
+        "sources": [
+          "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/requirements-and-user-stories/impact-mapping-adzic.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "assumption-testing",
+          "continuous-discovery",
+          "desired-outcome",
+          "discovery",
+          "ideate",
+          "opportunity-mapping",
+          "opportunity-solution-tree",
+          "target-opportunity"
+        ],
+        "version": "1.0.0"
+      },
+      {
         "created": "2026-07-31",
         "dir": "skills/platform-engineering-design",
         "domain": "platform",
@@ -7100,6 +7302,57 @@
           "service-catalog",
           "toil",
           "tvp"
+        ],
+        "version": "1.0.0"
+      },
+      {
+        "created": "2026-10-23",
+        "dir": "skills/pricing-and-packaging",
+        "domain": "strategy",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": true,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "pricing-and-packaging",
+        "owner": "product-strategist",
+        "phase": "strategy",
+        "produces": [
+          "pricing-and-packaging-plan"
+        ],
+        "related": [
+          "beta-program-design",
+          "business-model-canvas",
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "methodology-review",
+          "okr-authoring",
+          "roadmap-authoring",
+          "stakeholder-mapping",
+          "strategy-kernel"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/business-model-generation-osterwalder.md",
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md",
+          "research/product-strategy-and-gtm/running-lean-maurya.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "business-case",
+          "discount-policy",
+          "monetisation",
+          "packaging",
+          "pricing",
+          "strategy",
+          "tiers",
+          "willingness-to-pay"
         ],
         "version": "1.0.0"
       },
@@ -9011,32 +9264,58 @@
         "dir": "skills/requirements-analysis",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "requirements-analysis",
         "owner": "requirements-analyst",
         "phase": "ideate",
         "produces": [
           "functional-requirements-document"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "acceptance-criteria",
+          "competitive-analysis",
+          "epic-definition",
+          "glossary-management",
+          "impact-mapping",
+          "jtbd-analysis",
+          "methodology-review",
+          "moscow-prioritization",
+          "nfr-specification",
+          "okr-authoring",
+          "opportunity-solution-tree",
+          "stakeholder-mapping",
+          "strategy-kernel",
+          "user-persona",
+          "user-story-writing",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/product-management-in-practice-lemay.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md",
+          "research/requirements-and-user-stories/impact-mapping-adzic.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+        ],
         "status": "stable",
         "tags": [
+          "business-rules",
+          "fit-criteria",
           "frd",
           "functional-requirements",
           "ideate",
-          "product-discovery",
           "requirements",
-          "traceability"
+          "traceability",
+          "transition-requirements"
         ],
-        "version": "1.2.1"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-20",
@@ -9081,31 +9360,51 @@
         "dir": "skills/roadmap-authoring",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "roadmap-authoring",
         "owner": "product-strategist",
         "phase": "strategy",
         "produces": [
           "strategic-roadmap"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "glossary-management",
+          "gtm-strategy",
+          "moscow-prioritization",
+          "nfr-specification",
+          "okr-authoring",
+          "stakeholder-mapping",
+          "story-mapping",
+          "strategy-kernel",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
+          "research/product-strategy-and-gtm/product-management-in-practice-lemay.md",
+          "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md",
+          "research/requirements-and-user-stories/user-story-mapping-patton-economy.md",
+          "research/storytelling-and-narrative/the-best-story-wins.md"
+        ],
         "status": "stable",
         "tags": [
           "okr",
-          "product-discovery",
+          "prioritisation",
           "roadmap",
           "sequencing",
-          "strategy"
+          "strategy",
+          "themes"
         ],
-        "version": "1.2.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-20",
@@ -9338,7 +9637,7 @@
           "progressive-disclosure",
           "skill-authoring"
         ],
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "created": "2026-07-20",
@@ -9380,51 +9679,73 @@
           "sli",
           "slo"
         ],
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       {
         "created": "2026-06-24",
         "dir": "skills/stakeholder-mapping",
         "domain": "strategy",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "stakeholder-mapping",
         "owner": "product-strategist",
         "phase": "strategy",
         "produces": [
           "stakeholder-map"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "beta-program-design",
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "methodology-review",
+          "pricing-and-packaging",
+          "roadmap-authoring",
+          "strategy-kernel",
+          "uat-plan",
+          "user-persona",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md",
+          "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md",
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md",
+          "research/service-design/this-is-service-design-doing-stickdorn.md",
+          "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+        ],
         "status": "stable",
         "tags": [
+          "buying-committee",
           "communication",
+          "power-interest-grid",
           "product-discovery",
+          "raci",
           "stakeholders",
           "strategy"
         ],
-        "version": "1.2.1"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-24",
         "dir": "skills/story-mapping",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "story-mapping",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -9434,24 +9755,79 @@
         "related": [
           "acceptance-criteria",
           "epic-definition",
+          "glossary-management",
           "impact-mapping",
+          "methodology-review",
           "moscow-prioritization",
+          "okr-authoring",
+          "opportunity-solution-tree",
           "roadmap-authoring",
           "user-persona",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+        ],
         "status": "stable",
         "tags": [
           "backbone",
           "ideate",
+          "minimum-usable-subset",
           "patton",
           "release-slicing",
           "requirements",
           "story-map",
           "walking-skeleton"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
+      },
+      {
+        "created": "2026-10-19",
+        "dir": "skills/strategy-kernel",
+        "domain": "strategy",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": false,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "strategy-kernel",
+        "owner": "product-strategist",
+        "phase": "strategy",
+        "produces": [
+          "strategy-kernel"
+        ],
+        "related": [
+          "business-model-canvas",
+          "competitive-analysis",
+          "glossary-management",
+          "gtm-strategy",
+          "okr-authoring",
+          "roadmap-authoring",
+          "stakeholder-mapping",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
+          "research/product-strategy-and-gtm/inspired-cagan.md",
+          "research/product-strategy-and-gtm/measure-what-matters-doerr.md",
+          "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "coherent-actions",
+          "diagnosis",
+          "guiding-policy",
+          "rumelt",
+          "strategy",
+          "strategy-kernel"
+        ],
+        "version": "1.0.0"
       },
       {
         "created": "2026-06-25",
@@ -9740,34 +10116,63 @@
         "dir": "skills/uat-plan",
         "domain": "validation",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "uat-plan",
         "owner": "requirements-analyst",
         "phase": "customer-validation",
         "produces": [
           "uat-plan"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "acceptance-criteria",
+          "acceptance-sign-off",
+          "bdd-feature-file",
+          "beta-program-design",
+          "canary-deployment",
+          "compliance-design",
+          "compliance-verification",
+          "disaster-recovery-plan",
+          "environment-config",
+          "feature-flag-design",
+          "feedback-template",
+          "glossary-management",
+          "methodology-review",
+          "moscow-prioritization",
+          "runbook-authoring",
+          "slo-definition",
+          "stakeholder-mapping",
+          "story-mapping",
+          "test-pyramid",
+          "uat-scenario"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/explore-it-hendrickson.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/user-acceptance-testing-hambling.md"
+        ],
         "status": "stable",
         "tags": [
           "acceptance-testing",
-          "canary",
           "customer-validation",
-          "design-partners",
+          "entry-exit-criteria",
           "exploratory-testing",
-          "moscow",
-          "sign-off",
-          "uat"
+          "operational-acceptance",
+          "regulatory-acceptance",
+          "test-independence",
+          "uat",
+          "walking-skeleton"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -9806,7 +10211,7 @@
           "uat",
           "validation"
         ],
-        "version": "2.1.1"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -9925,52 +10330,66 @@
         "dir": "skills/user-persona",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "user-persona",
         "owner": "requirements-analyst",
-        "phase": "strategy",
+        "phase": "ideate",
         "produces": [
           "user-persona"
         ],
         "related": [
+          "glossary-management",
           "gtm-strategy",
+          "impact-mapping",
           "jtbd-analysis",
+          "methodology-review",
+          "moscow-prioritization",
           "stakeholder-mapping",
+          "user-journey-mapping",
           "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md",
+          "research/product-strategy-and-gtm/about-face-personas-cooper.md",
+          "research/product-strategy-and-gtm/competing-against-luck-christensen.md",
+          "research/product-strategy-and-gtm/lean-product-playbook-olsen.md",
+          "research/product-strategy-and-gtm/loved-lauchengco.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+        ],
         "status": "stable",
         "tags": [
+          "behavioural-variables",
           "discovery",
+          "ideate",
           "persona",
+          "persona-types",
           "proto-persona",
           "requirements",
-          "research-persona",
-          "strategy",
           "user-research"
         ],
-        "version": "2.1.1"
+        "version": "3.0.1"
       },
       {
         "created": "2026-06-24",
         "dir": "skills/user-story-writing",
         "domain": "discovery",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "user-story-writing",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -9979,24 +10398,38 @@
         ],
         "related": [
           "acceptance-criteria",
+          "bdd-feature-file",
           "epic-definition",
           "example-mapping",
           "glossary-management",
+          "impact-mapping",
+          "jtbd-analysis",
+          "methodology-review",
           "moscow-prioritization",
+          "nfr-specification",
+          "okr-authoring",
+          "requirements-analysis",
+          "story-mapping",
           "user-persona"
         ],
-        "sources": [],
+        "sources": [
+          "research/requirements-and-user-stories/dsdm-agile-project-framework.md",
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+        ],
         "status": "stable",
         "tags": [
-          "acceptance-criteria",
-          "connextra",
+          "backlog",
           "ideate",
           "invest",
           "requirements",
           "story-splitting",
+          "three-cs",
+          "traceability",
           "user-story"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10097,11 +10530,12 @@
           "competitive-analysis",
           "glossary-management",
           "gtm-strategy",
-          "mission-statement",
-          "okr-authoring"
+          "okr-authoring",
+          "strategy-kernel"
         ],
         "sources": [
           "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md",
           "research/product-strategy-and-gtm/inspired-cagan.md",
           "research/product-strategy-and-gtm/loved-lauchengco.md",
           "research/product-strategy-and-gtm/obviously-awesome-dunford.md",
@@ -10115,7 +10549,7 @@
           "strategy",
           "vision"
         ],
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "created": "2026-07-31",
@@ -10199,17 +10633,17 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 181,
+    "artifacts": 186,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 71,
-    "edges_agent_skills": 192,
-    "edges_skill_produces": 188,
-    "edges_skill_related": 816,
-    "edges_skill_sources": 18,
+    "edges_agent_produces": 72,
+    "edges_agent_skills": 194,
+    "edges_skill_produces": 193,
+    "edges_skill_related": 967,
+    "edges_skill_sources": 137,
     "hooks": 11,
     "orphan_skills": 0,
-    "skills": 187,
+    "skills": 189,
     "unresolved_skill_related": 0
   },
   "coverage": {
@@ -10218,20 +10652,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 18,
+    "research_files_cited": 50,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 182,
-    "skills_with_domain": 187,
-    "skills_with_evals": 4,
-    "skills_with_examples": 4,
-    "skills_with_produces": 187,
-    "skills_with_references": 182,
-    "skills_with_resources": 3,
-    "skills_with_scripts": 10,
-    "skills_with_sources": 4,
-    "skills_with_status": 187,
+    "skills_with_contract_test": 165,
+    "skills_with_domain": 189,
+    "skills_with_evals": 23,
+    "skills_with_examples": 23,
+    "skills_with_produces": 189,
+    "skills_with_references": 184,
+    "skills_with_resources": 22,
+    "skills_with_scripts": 23,
+    "skills_with_sources": 24,
+    "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 3
+    "skills_with_templates": 22
   },
   "edges": {
     "agent_produces": [
@@ -10501,11 +10935,11 @@
       },
       {
         "agent": "product-strategist",
-        "artifact": "mission-statement"
+        "artifact": "okr"
       },
       {
         "agent": "product-strategist",
-        "artifact": "okr"
+        "artifact": "pricing-and-packaging-plan"
       },
       {
         "agent": "product-strategist",
@@ -10514,6 +10948,10 @@
       {
         "agent": "product-strategist",
         "artifact": "strategic-roadmap"
+      },
+      {
+        "agent": "product-strategist",
+        "artifact": "strategy-kernel"
       },
       {
         "agent": "product-strategist",
@@ -11023,11 +11461,11 @@
       },
       {
         "agent": "product-strategist",
-        "skill": "mission-statement"
+        "skill": "okr-authoring"
       },
       {
         "agent": "product-strategist",
-        "skill": "okr-authoring"
+        "skill": "pricing-and-packaging"
       },
       {
         "agent": "product-strategist",
@@ -11036,6 +11474,10 @@
       {
         "agent": "product-strategist",
         "skill": "stakeholder-mapping"
+      },
+      {
+        "agent": "product-strategist",
+        "skill": "strategy-kernel"
       },
       {
         "agent": "product-strategist",
@@ -11096,6 +11538,10 @@
       {
         "agent": "requirements-analyst",
         "skill": "nfr-specification"
+      },
+      {
+        "agent": "requirements-analyst",
+        "skill": "opportunity-solution-tree"
       },
       {
         "agent": "requirements-analyst",
@@ -11660,6 +12106,14 @@
         "skill": "integration-design"
       },
       {
+        "artifact": "interview-guide",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "artifact": "interview-snapshot",
+        "skill": "jtbd-analysis"
+      },
+      {
         "artifact": "jtbd-analysis",
         "skill": "jtbd-analysis"
       },
@@ -11696,10 +12150,6 @@
         "skill": "miro-board-notation"
       },
       {
-        "artifact": "mission-statement",
-        "skill": "mission-statement"
-      },
-      {
         "artifact": "go-test-doubles",
         "skill": "mock-generation"
       },
@@ -11728,8 +12178,20 @@
         "skill": "opentofu-module"
       },
       {
+        "artifact": "assumption-test",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "artifact": "opportunity-solution-tree",
+        "skill": "opportunity-solution-tree"
+      },
+      {
         "artifact": "platform-design",
         "skill": "platform-engineering-design"
+      },
+      {
+        "artifact": "pricing-and-packaging-plan",
+        "skill": "pricing-and-packaging"
       },
       {
         "artifact": "privacy-design",
@@ -11966,6 +12428,10 @@
       {
         "artifact": "user-story-map",
         "skill": "story-mapping"
+      },
+      {
+        "artifact": "strategy-kernel",
+        "skill": "strategy-kernel"
       },
       {
         "artifact": "go-logging-instrumentation",
@@ -12222,7 +12688,15 @@
         "skill": "bounded-context-mapping"
       },
       {
+        "related": "beta-program-design",
+        "skill": "business-model-canvas"
+      },
+      {
         "related": "competitive-analysis",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "glossary-management",
         "skill": "business-model-canvas"
       },
       {
@@ -12235,6 +12709,18 @@
       },
       {
         "related": "jtbd-analysis",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "business-model-canvas"
+      },
+      {
+        "related": "user-persona",
         "skill": "business-model-canvas"
       },
       {
@@ -12316,6 +12802,38 @@
       {
         "related": "domain-event-catalog",
         "skill": "command-catalog"
+      },
+      {
+        "related": "business-model-canvas",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "competitive-analysis"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "competitive-analysis"
       },
       {
         "related": "access-control-model",
@@ -12806,6 +13324,10 @@
         "skill": "epic-definition"
       },
       {
+        "related": "example-mapping",
+        "skill": "epic-definition"
+      },
+      {
         "related": "glossary-management",
         "skill": "epic-definition"
       },
@@ -12814,11 +13336,35 @@
         "skill": "epic-definition"
       },
       {
+        "related": "jtbd-analysis",
+        "skill": "epic-definition"
+      },
+      {
         "related": "methodology-review",
         "skill": "epic-definition"
       },
       {
         "related": "moscow-prioritization",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "opportunity-solution-tree",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "epic-definition"
+      },
+      {
+        "related": "roadmap-authoring",
         "skill": "epic-definition"
       },
       {
@@ -13758,6 +14304,10 @@
         "skill": "grpc-contract-design"
       },
       {
+        "related": "beta-program-design",
+        "skill": "gtm-strategy"
+      },
+      {
         "related": "business-model-canvas",
         "skill": "gtm-strategy"
       },
@@ -13771,6 +14321,26 @@
       },
       {
         "related": "methodology-review",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "pricing-and-packaging",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "gtm-strategy"
+      },
+      {
+        "related": "strategy-kernel",
         "skill": "gtm-strategy"
       },
       {
@@ -13802,7 +14372,15 @@
         "skill": "impact-mapping"
       },
       {
+        "related": "glossary-management",
+        "skill": "impact-mapping"
+      },
+      {
         "related": "jtbd-analysis",
+        "skill": "impact-mapping"
+      },
+      {
+        "related": "methodology-review",
         "skill": "impact-mapping"
       },
       {
@@ -13811,6 +14389,14 @@
       },
       {
         "related": "okr-authoring",
+        "skill": "impact-mapping"
+      },
+      {
+        "related": "opportunity-solution-tree",
+        "skill": "impact-mapping"
+      },
+      {
+        "related": "requirements-analysis",
         "skill": "impact-mapping"
       },
       {
@@ -13870,11 +14456,47 @@
         "skill": "jtbd-analysis"
       },
       {
+        "related": "competitive-analysis",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "feedback-template",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "jtbd-analysis"
+      },
+      {
         "related": "impact-mapping",
         "skill": "jtbd-analysis"
       },
       {
+        "related": "methodology-review",
+        "skill": "jtbd-analysis"
+      },
+      {
         "related": "moscow-prioritization",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "opportunity-solution-tree",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "jtbd-analysis"
+      },
+      {
+        "related": "strategy-kernel",
         "skill": "jtbd-analysis"
       },
       {
@@ -13910,22 +14532,6 @@
         "skill": "message-broker-selection"
       },
       {
-        "related": "business-model-canvas",
-        "skill": "mission-statement"
-      },
-      {
-        "related": "gtm-strategy",
-        "skill": "mission-statement"
-      },
-      {
-        "related": "okr-authoring",
-        "skill": "mission-statement"
-      },
-      {
-        "related": "vision-statement",
-        "skill": "mission-statement"
-      },
-      {
         "related": "go-integration-test",
         "skill": "mock-generation"
       },
@@ -13946,7 +14552,23 @@
         "skill": "mock-generation"
       },
       {
+        "related": "epic-definition",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "moscow-prioritization"
+      },
+      {
         "related": "jtbd-analysis",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "nfr-specification",
         "skill": "moscow-prioritization"
       },
       {
@@ -13954,7 +14576,19 @@
         "skill": "moscow-prioritization"
       },
       {
+        "related": "roadmap-authoring",
+        "skill": "moscow-prioritization"
+      },
+      {
         "related": "story-mapping",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "uat-plan",
+        "skill": "moscow-prioritization"
+      },
+      {
+        "related": "user-persona",
         "skill": "moscow-prioritization"
       },
       {
@@ -13990,11 +14624,43 @@
         "skill": "multi-tenancy-design"
       },
       {
+        "related": "adr-authoring",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "nfr-specification"
+      },
+      {
         "related": "dora-metrics",
         "skill": "nfr-specification"
       },
       {
+        "related": "glossary-management",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "go-load-test",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "nfr-specification"
+      },
+      {
         "related": "platform-engineering-design",
+        "skill": "nfr-specification"
+      },
+      {
+        "related": "requirements-analysis",
         "skill": "nfr-specification"
       },
       {
@@ -14022,8 +14688,88 @@
         "skill": "okr-authoring"
       },
       {
+        "related": "strategy-kernel",
+        "skill": "okr-authoring"
+      },
+      {
         "related": "vision-statement",
         "skill": "okr-authoring"
+      },
+      {
+        "related": "beta-program-design",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "feedback-template",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "impact-mapping",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "user-persona",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "user-story-writing",
+        "skill": "opportunity-solution-tree"
+      },
+      {
+        "related": "beta-program-design",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "business-model-canvas",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "pricing-and-packaging"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "pricing-and-packaging"
       },
       {
         "related": "access-control-model",
@@ -14798,6 +15544,70 @@
         "skill": "reporting-spec"
       },
       {
+        "related": "acceptance-criteria",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "epic-definition",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "impact-mapping",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "moscow-prioritization",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "opportunity-solution-tree",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "user-persona",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "user-story-writing",
+        "skill": "requirements-analysis"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "requirements-analysis"
+      },
+      {
         "related": "adr-authoring",
         "skill": "risk-register"
       },
@@ -14816,6 +15626,42 @@
       {
         "related": "multi-tenancy-design",
         "skill": "risk-register"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "moscow-prioritization",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "story-mapping",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "roadmap-authoring"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "roadmap-authoring"
       },
       {
         "related": "artifact-manifest",
@@ -14930,6 +15776,50 @@
         "skill": "slo-definition"
       },
       {
+        "related": "beta-program-design",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "pricing-and-packaging",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "uat-plan",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "user-persona",
+        "skill": "stakeholder-mapping"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "stakeholder-mapping"
+      },
+      {
         "related": "acceptance-criteria",
         "skill": "story-mapping"
       },
@@ -14938,11 +15828,27 @@
         "skill": "story-mapping"
       },
       {
+        "related": "glossary-management",
+        "skill": "story-mapping"
+      },
+      {
         "related": "impact-mapping",
         "skill": "story-mapping"
       },
       {
+        "related": "methodology-review",
+        "skill": "story-mapping"
+      },
+      {
         "related": "moscow-prioritization",
+        "skill": "story-mapping"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "story-mapping"
+      },
+      {
+        "related": "opportunity-solution-tree",
         "skill": "story-mapping"
       },
       {
@@ -14956,6 +15862,38 @@
       {
         "related": "user-story-writing",
         "skill": "story-mapping"
+      },
+      {
+        "related": "business-model-canvas",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "competitive-analysis",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "roadmap-authoring",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "strategy-kernel"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "strategy-kernel"
       },
       {
         "related": "component-diagram",
@@ -15119,6 +16057,86 @@
       },
       {
         "related": "acceptance-criteria",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "acceptance-sign-off",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "bdd-feature-file",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "beta-program-design",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "canary-deployment",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "compliance-design",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "compliance-verification",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "disaster-recovery-plan",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "environment-config",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "feature-flag-design",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "feedback-template",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "moscow-prioritization",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "runbook-authoring",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "slo-definition",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "story-mapping",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "test-pyramid",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "uat-scenario",
+        "skill": "uat-plan"
+      },
+      {
+        "related": "acceptance-criteria",
         "skill": "uat-scenario"
       },
       {
@@ -15186,7 +16204,15 @@
         "skill": "user-journey-mapping"
       },
       {
+        "related": "glossary-management",
+        "skill": "user-persona"
+      },
+      {
         "related": "gtm-strategy",
+        "skill": "user-persona"
+      },
+      {
+        "related": "impact-mapping",
         "skill": "user-persona"
       },
       {
@@ -15194,7 +16220,19 @@
         "skill": "user-persona"
       },
       {
+        "related": "methodology-review",
+        "skill": "user-persona"
+      },
+      {
+        "related": "moscow-prioritization",
+        "skill": "user-persona"
+      },
+      {
         "related": "stakeholder-mapping",
+        "skill": "user-persona"
+      },
+      {
+        "related": "user-journey-mapping",
         "skill": "user-persona"
       },
       {
@@ -15203,6 +16241,10 @@
       },
       {
         "related": "acceptance-criteria",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "bdd-feature-file",
         "skill": "user-story-writing"
       },
       {
@@ -15218,7 +16260,35 @@
         "skill": "user-story-writing"
       },
       {
+        "related": "impact-mapping",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "user-story-writing"
+      },
+      {
         "related": "moscow-prioritization",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "okr-authoring",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "user-story-writing"
+      },
+      {
+        "related": "story-mapping",
         "skill": "user-story-writing"
       },
       {
@@ -15266,11 +16336,11 @@
         "skill": "vision-statement"
       },
       {
-        "related": "mission-statement",
+        "related": "okr-authoring",
         "skill": "vision-statement"
       },
       {
-        "related": "okr-authoring",
+        "related": "strategy-kernel",
         "skill": "vision-statement"
       },
       {
@@ -15328,6 +16398,114 @@
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
       },
       {
+        "skill": "business-model-canvas",
+        "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/business-model-generation-osterwalder.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "business-model-canvas",
+        "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "competitive-analysis",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "epic-definition",
+        "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/business-model-generation-osterwalder.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md"
+      },
+      {
+        "skill": "glossary-management",
+        "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
         "skill": "go-repository-pattern",
         "source": "research/domain-driven-design/learning-ddd-khononov.md"
       },
@@ -15352,6 +16530,250 @@
         "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
       },
       {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+      },
+      {
+        "skill": "gtm-strategy",
+        "source": "research/storytelling-and-narrative/the-best-story-wins.md"
+      },
+      {
+        "skill": "impact-mapping",
+        "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
+      },
+      {
+        "skill": "impact-mapping",
+        "source": "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md"
+      },
+      {
+        "skill": "impact-mapping",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "impact-mapping",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "impact-mapping",
+        "source": "research/requirements-and-user-stories/impact-mapping-adzic.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "jtbd-analysis",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "moscow-prioritization",
+        "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/devops-and-delivery/accelerate-forsgren-humble-kim.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/devops-and-delivery/platform-engineering-fournier-nowland.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "nfr-specification",
+        "source": "research/software-architecture/software-architecture-in-practice-bass.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/data-and-analytics/lean-analytics-croll-yoskovitz.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
+      },
+      {
+        "skill": "okr-authoring",
+        "source": "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/product-strategy-and-gtm/continuous-discovery-habits-torres.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "opportunity-solution-tree",
+        "source": "research/requirements-and-user-stories/impact-mapping-adzic.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/business-model-generation-osterwalder.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "pricing-and-packaging",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/impact-mapping-adzic.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md"
+      },
+      {
+        "skill": "requirements-analysis",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/product-strategy-and-gtm/product-management-in-practice-lemay.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "roadmap-authoring",
+        "source": "research/storytelling-and-narrative/the-best-story-wins.md"
+      },
+      {
         "skill": "skill-authoring-standards",
         "source": "research/ai-agent-engineering/context-engineering-for-ai-agents-zhu.md"
       },
@@ -15360,8 +16782,132 @@
         "source": "research/ai-agent-engineering/mastering-claude-code-agent-skills-gale.md"
       },
       {
+        "skill": "stakeholder-mapping",
+        "source": "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/service-design/this-is-service-design-doing-stickdorn.md"
+      },
+      {
+        "skill": "stakeholder-mapping",
+        "source": "research/storytelling-and-narrative/business-storytelling-for-dummies.md"
+      },
+      {
+        "skill": "story-mapping",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "story-mapping",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "story-mapping",
+        "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
+      },
+      {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/inspired-cagan.md"
+      },
+      {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/measure-what-matters-doerr.md"
+      },
+      {
+        "skill": "strategy-kernel",
+        "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/explore-it-hendrickson.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "uat-plan",
+        "source": "research/testing/user-acceptance-testing-hambling.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/data-governance-and-mdm/simple-data-mdm-srinivasan.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/about-face-personas-cooper.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/competing-against-luck-christensen.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/loved-lauchengco.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "user-persona",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "user-story-writing",
+        "source": "research/requirements-and-user-stories/dsdm-agile-project-framework.md"
+      },
+      {
+        "skill": "user-story-writing",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "user-story-writing",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "user-story-writing",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
         "skill": "vision-statement",
         "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "vision-statement",
+        "source": "research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md"
       },
       {
         "skill": "vision-statement",

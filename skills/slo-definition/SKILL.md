@@ -8,7 +8,7 @@ description: >
   multiwindow policy that alerting builds on, and the review cadence that keeps
   targets honest. Turns the NFR specification into measurable, enforceable
   operational targets. Used by the platform-engineer during Deploy.
-version: 1.2.0
+version: 1.2.1
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -33,7 +33,7 @@ Three terms, used exactly (canonical glossary):
 - **Service Level Objective (SLO)** — a target value or range for an SLI. SLOs are the internal target.
 - **Service Level Agreement (SLA)** — the formal external contract with a customer, with penalties for breach. The SLA is always *looser* than the SLO, so the internal target trips first and there is room to react before money is owed.
 
-The chain through the factory: `nfr-specification` (Discovery) states the reliability requirements → this skill formalises them as SLIs and SLOs → `prometheus-metrics-design` computes the SLIs as recorded series → `alerting-rules-design` pages on budget burn → `go-load-test` verifies the targets hold under peak load before release.
+The chain through the factory: `nfr-specification` (Ideate) states the reliability requirements as availability and latency quality-attribute scenarios → this skill formalises them as SLIs and SLOs → `prometheus-metrics-design` computes the SLIs as recorded series → `alerting-rules-design` pages on budget burn → `go-load-test` verifies the targets hold under peak load before release.
 
 ---
 
