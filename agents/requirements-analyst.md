@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.5
+version: 1.10.6
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -299,7 +299,7 @@ If the Quality phase gates have not passed or no deployed environment exists, ha
 4. Beta Program Design   ← only if a design-partner cohort is in scope for this release (beta-program-design)
 5. UAT Execution         ← scripted scenarios AND exploratory sessions run against the deployed environment, same executor(s), same window; scripted results, defects, and exploratory debriefs all recorded; fixes re-tested before the decision; OAT evidence from platform-engineer and regulatory evidence from security-engineer compiled, not run, by this agent
 6. Feedback Capture      ← structured intake and triage of everything surfaced during UAT/beta/exploratory sessions (feedback-template)
-7. Acceptance Sign-Off   ← the formal go/no-go closing this phase (acceptance-sign-off)
+7. Acceptance Sign-Off   ← the one go/no-go per release closing this phase: full, conditional or no-go under the single defect rule, two-party or a recorded solo exception, and the rollout path to GA; beta stage moves are graduation records, not further sign-offs (acceptance-sign-off)
 ```
 
 UAT scenarios are not automated tests — `test-strategist`'s `bdd-feature-file`/`go-e2e-test` already proved the system behaves correctly in the Quality phase. UAT proves the system is *right* for real users; it is human-executed, once per release, against a live environment. Exploratory sessions (step 3, run in step 5) are a distinct activity from both — see `uat-plan`'s Exploratory Sessions. A charter has no pass/fail, only findings; step 5 does not close having run zero exploratory sessions and still call itself complete.
