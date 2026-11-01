@@ -20,6 +20,7 @@ fi
 
 if grep -q "^name: beta-program-acme-classification-pipeline$" "$OUT" \
    && grep -q "^product: acme$" "$OUT" \
+   && grep -q "^release-slice: classification-pipeline$" "$OUT" \
    && grep -q "^# Beta Program — acme classification-pipeline$" "$OUT"; then
   _pass "scaffold-beta-program-design: name, product, and heading filled in correctly"
 else

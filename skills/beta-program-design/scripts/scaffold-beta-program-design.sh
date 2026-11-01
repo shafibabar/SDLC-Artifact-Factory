@@ -1,7 +1,7 @@
 #!/bin/bash
 # scripts/scaffold-beta-program-design.sh — skill-owned script for skills/beta-program-design.
 # Purpose: generate a new beta program record from
-#          assets/beta-program-design-template.md, pre-filled with product
+#          templates/beta-program.md, pre-filled with product
 #          and release-slice metadata -- replaces hand-copying the template
 #          and hand-typing the release slice into three separate places.
 # Usage:   scaffold-beta-program-design.sh <product> <release-slice>
@@ -16,7 +16,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(dirname "$SCRIPT_DIR")"
-TEMPLATE="$SKILL_DIR/assets/beta-program-design-template.md"
+TEMPLATE="$SKILL_DIR/templates/beta-program.md"
 
 if [ $# -lt 2 ]; then
   echo "Usage: scaffold-beta-program-design.sh <product> <release-slice>" >&2
@@ -55,6 +55,7 @@ ESCAPED_PRODUCT=$(printf '%s' "$PRODUCT" | sed -e 's/[\/&]/\\&/g')
 sed \
   -e "s/name: beta-program-\[product\]-\[release-slice\]/name: beta-program-$ESCAPED_PRODUCT-$SLUG/" \
   -e "s/product: \[product name\]/product: $ESCAPED_PRODUCT/" \
+  -e "s/^release-slice: \[release-slice\]/release-slice: $ESCAPED_SLICE/" \
   -e "s/# Beta Program — \[product\] \[release-slice\]/# Beta Program — $ESCAPED_PRODUCT $ESCAPED_SLICE/" \
   -e "s/\[date\]/$DATE/g" \
   "$TEMPLATE" > "$OUT"

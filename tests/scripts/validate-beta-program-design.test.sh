@@ -1,6 +1,8 @@
 #!/bin/bash
 # Tests skills/beta-program-design/scripts/validate-beta-program-design.sh — a
 # skill-owned script exercised directly with a file-path CLI arg.
+# Fixtures are built here from a fresh scaffold, never from the skill's
+# examples, so the test does not pin the live skill's prose.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
@@ -11,69 +13,90 @@ SCAFFOLD="$REPO_ROOT/skills/beta-program-design/scripts/scaffold-beta-program-de
 
 cd "$SCRATCH_DIR"
 
+# Output only; the exit code is swallowed so pipefail does not mask grep.
+run_validate() { "$VALIDATE" "$1" 2>&1 || true; }
+
+# A fresh scaffold has eight unfilled checks (Stage, Participants, frameworks
+# and telemetry, four graduation dimensions, Decision); the no-relaxation
+# sentence and the Pivot check pass from the template as written.
 FRESH="$("$SCAFFOLD" acme classification-pipeline)"
+OUTPUT="$("$VALIDATE" "$FRESH" 2>&1)"
+EXIT_CODE=$?
 
-# A fresh scaffold fails exactly the two placeholder-sensitive checks (Stage,
-# Participants) while the three purely-structural checks pass, since the
-# unfilled bracket placeholders already mention SOC 2 CC6/CC7/A1 and both
-# Graduation Criteria dimensions as instructional text.
-OUTPUT0="$("$VALIDATE" "$FRESH" 2>&1)"
-if echo "$OUTPUT0" | grep -q "FAIL: Stage is a real value" \
-   && echo "$OUTPUT0" | grep -q "FAIL: Participants section is filled in" \
-   && echo "$OUTPUT0" | grep -q "PASS: Data Handling Statement" \
-   && echo "$OUTPUT0" | grep -q "PASS: Graduation Criteria: Quantitative" \
-   && echo "$OUTPUT0" | grep -q "PASS: Graduation Criteria: Qualitative" \
-   && echo "$OUTPUT0" | grep -q "2 check(s) failed"; then
-  _pass "validate-beta-program-design: a fresh scaffold fails exactly the two placeholder-sensitive checks"
+if [ "$EXIT_CODE" -eq 1 ] && echo "$OUTPUT" | grep -q "8 check(s) failed"; then
+  _pass "validate-beta-program-design: a fresh scaffold fails exactly the 8 unfilled checks"
 else
-  _fail "validate-beta-program-design: a fresh scaffold fails exactly the two placeholder-sensitive checks" "expected exactly Stage + Participants to FAIL, the other three to PASS"
+  _fail "validate-beta-program-design: a fresh scaffold fails exactly the 8 unfilled checks" "exit $EXIT_CODE; $(echo "$OUTPUT" | grep FAIL)"
 fi
 
-# Filling in Stage and Participants makes it pass all checks.
-sed -i \
-  -e 's/\[Closed alpha \/ Closed beta \/ Open beta \/ GA\]/Closed beta/' \
-  -e 's/\[Names, companies, ICP-fit rationale, named contact\]/Northwind Compliance Co. (Maya Chen)/' \
-  "$FRESH"
-if "$VALIDATE" "$FRESH" >/dev/null 2>&1; then
-  _pass "validate-beta-program-design: filling in Stage and Participants passes all checks"
+if echo "$OUTPUT" | grep -q "PASS: Data Handling Statement says no control is relaxed"; then
+  _pass "validate-beta-program-design: does not false-fail the no-relaxation sentence on a fresh scaffold"
 else
-  _fail "validate-beta-program-design: filling in Stage and Participants passes all checks" "expected exit 0 once Stage and Participants are filled in"
+  _fail "validate-beta-program-design: does not false-fail the no-relaxation sentence on a fresh scaffold" "expected PASS"
 fi
 
-# Each of the four independently-breakable checks fails on its own trigger
-# without false-failing the others.
-sed 's/^Closed beta$/Some Weird Stage/' "$FRESH" > "$SCRATCH_DIR/broken_stage.md"
-OUTPUT1="$("$VALIDATE" "$SCRATCH_DIR/broken_stage.md" 2>&1)"
-if echo "$OUTPUT1" | grep -q "FAIL: Stage is a real value" && echo "$OUTPUT1" | grep -q "1 check(s) failed"; then
-  _pass "validate-beta-program-design: catches an invalid Stage value"
+# Fill a closed-beta record whose frameworks are not SOC 2.
+fill() {
+  sed -i \
+    -e 's|^\[Closed alpha / Closed beta / Open beta / GA\]$|Closed beta|' \
+    -e 's|^\[Names, companies, ICP-fit rationale, named contact\]$|Three screened design partners.|' \
+    -e 's#^| \[name, company\] .*#| Ferris \& Lowe | y | y | y | Dana Ferris | merged-firm spreadsheet | y | in |#' \
+    -e 's|^- Frameworks: .*|- Frameworks: UK GDPR; SRA confidentiality duties|' \
+    -e 's|^- Telemetry: .*|- Telemetry: none beyond GA|' \
+    -e 's|^- Quality: .*|- Quality: all Must UAT scenarios pass|' \
+    -e 's|^- Traction: .*|- Traction: 80% of new matters checked per firm, weeks 4-6|' \
+    -e 's|^- Behaviour and commitment: .*|- Behaviour and commitment: a recent check described; six-week commitment|' \
+    -e 's|^- Repeatability and operations: .*|- Repeatability and operations: onboarded from the guide alone|' \
+    -e 's|^Decision: .*|Decision: Pending|' \
+    -e 's|^Suspect hypothesis: .*|Suspect hypothesis: none|' \
+    "$1"
+}
+
+cp "$FRESH" filled.md
+fill filled.md
+if "$VALIDATE" filled.md >/dev/null 2>&1; then
+  _pass "validate-beta-program-design: a filled record with non-SOC-2 frameworks passes"
 else
-  _fail "validate-beta-program-design: catches an invalid Stage value" "expected exactly 1 failed check naming Stage"
+  _fail "validate-beta-program-design: a filled record with non-SOC-2 frameworks passes" "$(run_validate filled.md | grep FAIL)"
 fi
 
-sed '/^## Participants$/{n; s/.*//}' "$FRESH" > "$SCRATCH_DIR/broken_participants.md"
-OUTPUT2="$("$VALIDATE" "$SCRATCH_DIR/broken_participants.md" 2>&1)"
-if echo "$OUTPUT2" | grep -q "FAIL: Participants section is filled in" && echo "$OUTPUT2" | grep -q "1 check(s) failed"; then
-  _pass "validate-beta-program-design: catches an empty Participants section"
-else
-  _fail "validate-beta-program-design: catches an empty Participants section" "expected exactly 1 failed check naming Participants"
-fi
+# Each check fails on its own trigger without false-failing the others.
+expect_one() {
+  local label="$1" file="$2" pattern="$3"
+  local out; out="$(run_validate "$file")"
+  if echo "$out" | grep -q "FAIL: $pattern" && echo "$out" | grep -q "1 check(s) failed"; then
+    _pass "validate-beta-program-design: $label"
+  else
+    _fail "validate-beta-program-design: $label" "expected exactly one FAIL for '$pattern'; got: $(echo "$out" | grep FAIL)"
+  fi
+}
 
-sed 's/\[Confirmation of unchanged SOC 2 CC6\/CC7\/A1 posture\]/[Same posture as always]/' "$FRESH" > "$SCRATCH_DIR/broken_soc2.md"
-OUTPUT3="$("$VALIDATE" "$SCRATCH_DIR/broken_soc2.md" 2>&1)"
-if echo "$OUTPUT3" | grep -q "FAIL: Data Handling Statement" && echo "$OUTPUT3" | grep -q "1 check(s) failed"; then
-  _pass "validate-beta-program-design: catches a Data Handling Statement missing the SOC 2 control codes"
-else
-  _fail "validate-beta-program-design: catches a Data Handling Statement missing the SOC 2 control codes" "expected exactly 1 failed check naming Data Handling Statement"
-fi
+sed 's/^Closed beta$/Some Weird Stage/' filled.md > bad-stage.md
+expect_one "catches an invalid Stage value" bad-stage.md "Stage is a real value"
 
-sed '/^- Qualitative:/d' "$FRESH" > "$SCRATCH_DIR/broken_qual.md"
-OUTPUT4="$("$VALIDATE" "$SCRATCH_DIR/broken_qual.md" 2>&1)"
-if echo "$OUTPUT4" | grep -q "FAIL: Graduation Criteria: Qualitative" \
-   && echo "$OUTPUT4" | grep -q "PASS: Graduation Criteria: Quantitative" \
-   && echo "$OUTPUT4" | grep -q "1 check(s) failed"; then
-  _pass "validate-beta-program-design: catches a missing Qualitative Graduation Criteria bullet without false-failing Quantitative"
+sed 's/^Three screened design partners\.$/[Names, companies, ICP-fit rationale, named contact]/' filled.md > bad-participants.md
+expect_one "catches the unfilled Participants placeholder" bad-participants.md "Participants section is filled in"
+
+sed '/^No control is relaxed/d' filled.md > bad-relax.md
+expect_one "catches a Data Handling Statement without the no-relaxation sentence" bad-relax.md "Data Handling Statement says no control is relaxed"
+
+sed 's/^- Frameworks: .*/- Frameworks: [the product'"'"'s own]/' filled.md > bad-frameworks.md
+expect_one "catches unfilled frameworks" bad-frameworks.md "Data Handling Statement names the product's own frameworks"
+
+sed '/^- Traction:/d' filled.md > bad-traction.md
+expect_one "catches a missing Traction dimension" bad-traction.md "Graduation Criteria: Traction dimension filled"
+
+sed 's/^Decision: Pending$/Decision: Ship it/' filled.md > bad-decision.md
+expect_one "catches an invalid Decision" bad-decision.md "Graduation Record decision"
+
+sed 's/^Decision: Pending$/Decision: Pivot/' filled.md > pivot-none.md
+expect_one "catches a Pivot with no suspect hypothesis" pivot-none.md "a Pivot names its suspect hypothesis"
+
+sed -e 's/^Decision: Pending$/Decision: Pivot/' -e 's/^Suspect hypothesis: none$/Suspect hypothesis: segment — Customer Segments/' filled.md > pivot-ok.md
+if "$VALIDATE" pivot-ok.md >/dev/null 2>&1; then
+  _pass "validate-beta-program-design: a Pivot naming its suspect hypothesis passes"
 else
-  _fail "validate-beta-program-design: catches a missing Qualitative Graduation Criteria bullet without false-failing Quantitative" "expected FAIL only for Qualitative"
+  _fail "validate-beta-program-design: a Pivot naming its suspect hypothesis passes" "$(run_validate pivot-ok.md | grep FAIL)"
 fi
 
 # Missing file argument -> exit 2, distinct from exit 1 validation failure.

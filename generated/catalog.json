@@ -2371,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.6"
+        "version": "1.10.7"
       },
       {
         "created": "2026-06-25",
@@ -3237,33 +3237,62 @@
         "created": "2026-07-20",
         "dir": "skills/beta-program-design",
         "domain": "validation",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "beta-program-design",
         "owner": "requirements-analyst",
         "phase": "customer-validation",
         "produces": [
           "beta-program"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "acceptance-sign-off",
+          "access-control-model",
+          "business-model-canvas",
+          "canary-deployment",
+          "compliance-design",
+          "data-classification",
+          "feature-flag-design",
+          "feedback-template",
+          "glossary-management",
+          "gtm-strategy",
+          "jtbd-analysis",
+          "methodology-review",
+          "opportunity-solution-tree",
+          "pricing-and-packaging",
+          "slo-definition",
+          "stakeholder-mapping",
+          "uat-plan",
+          "uat-scenario"
+        ],
+        "sources": [
+          "research/product-strategy-and-gtm/crossing-the-chasm-moore.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/product-strategy-and-gtm/running-lean-maurya.md",
+          "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md",
+          "research/service-design/this-is-service-design-doing-stickdorn.md"
+        ],
         "status": "stable",
         "tags": [
           "beta-program",
           "canary",
           "customer-validation",
           "design-partners",
+          "earlyvangelist",
           "feature-flags",
+          "graduation",
+          "pivot",
+          "retention",
           "rollout"
         ],
-        "version": "2.4.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -10664,8 +10693,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 975,
-    "edges_skill_sources": 147,
+    "edges_skill_related": 993,
+    "edges_skill_sources": 152,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10678,19 +10707,19 @@
     "agents_with_status": 5,
     "commands_with_test": 15,
     "research_files_cited": 52,
-    "skills_with_assets": 13,
-    "skills_with_contract_test": 163,
+    "skills_with_assets": 12,
+    "skills_with_contract_test": 162,
     "skills_with_domain": 189,
-    "skills_with_evals": 25,
-    "skills_with_examples": 25,
+    "skills_with_evals": 26,
+    "skills_with_examples": 26,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 24,
+    "skills_with_resources": 25,
     "skills_with_scripts": 24,
-    "skills_with_sources": 26,
+    "skills_with_sources": 27,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 24
+    "skills_with_templates": 25
   },
   "edges": {
     "agent_produces": [
@@ -12695,6 +12724,78 @@
       {
         "related": "zero-trust-design",
         "skill": "api-gateway-design"
+      },
+      {
+        "related": "acceptance-sign-off",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "access-control-model",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "business-model-canvas",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "canary-deployment",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "compliance-design",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "data-classification",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "feature-flag-design",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "feedback-template",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "gtm-strategy",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "jtbd-analysis",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "opportunity-solution-tree",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "pricing-and-packaging",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "slo-definition",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "stakeholder-mapping",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "uat-plan",
+        "skill": "beta-program-design"
+      },
+      {
+        "related": "uat-scenario",
+        "skill": "beta-program-design"
       },
       {
         "related": "alerting-rules-design",
@@ -16473,6 +16574,26 @@
       {
         "skill": "adr-authoring",
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "beta-program-design",
+        "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
+      },
+      {
+        "skill": "beta-program-design",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "beta-program-design",
+        "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "beta-program-design",
+        "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "beta-program-design",
+        "source": "research/service-design/this-is-service-design-doing-stickdorn.md"
       },
       {
         "skill": "business-model-canvas",
