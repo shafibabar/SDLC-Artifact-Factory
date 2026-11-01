@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.4
+version: 1.10.5
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -294,7 +294,7 @@ If the Quality phase gates have not passed or no deployed environment exists, ha
 
 ```
 1. UAT Plan             ← acceptance types in scope (UAT/OAT/contractual/regulatory/alpha-beta), scope from Must Have stories, roles and independence level, environment, entry/exit criteria (uat-plan)
-2. UAT Scenarios         ← one per Must Have story, extending its Ideate-phase acceptance criteria for human execution (uat-scenario)
+2. UAT Scenarios         ← one file per Must Have story, one or more scenarios per acceptance criterion (UAT-<n>a, b…), translating its Ideate-phase criteria for human execution without changing them (uat-scenario)
 3. Exploratory Charters  ← drafted per area of meaningful risk/complexity, distinct from scripted scenarios — surfaces what no one wrote a scenario for (uat-plan)
 4. Beta Program Design   ← only if a design-partner cohort is in scope for this release (beta-program-design)
 5. UAT Execution         ← scripted scenarios AND exploratory sessions run against the deployed environment, same executor(s), same window; scripted results, defects, and exploratory debriefs all recorded; fixes re-tested before the decision; OAT evidence from platform-engineer and regulatory evidence from security-engineer compiled, not run, by this agent
