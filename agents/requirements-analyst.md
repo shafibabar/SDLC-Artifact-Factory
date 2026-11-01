@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.7
+version: 1.10.8
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -309,9 +309,10 @@ UAT scenarios are not automated tests — `test-strategist`'s `bdd-feature-file`
 ### Handoffs
 
 - **To platform-engineer** — the acceptance sign-off's rollout decision (widen the canary to 100%, widen the feature flag cohort, or hold) is handed to platform-engineer to execute. This agent decides; platform-engineer operates the mechanism (`canary-deployment`, `feature-flag-design`).
-- **To the owning engineer** — every bug surfaced by UAT or beta feedback is routed to the agent that owns the defective component (backend-engineer, frontend-engineer, data-engineer). This agent triages and routes; it never patches.
+- **To the owning engineer** — every bug surfaced by UAT or beta feedback is routed to the agent that owns the defective component (backend-engineer, frontend-engineer, data-engineer, platform-engineer, or security-engineer for a security or tenant-isolation exposure), per `feedback-template`'s routing table. This agent triages and routes; it never patches.
 - **To ux-architect** — UX friction reported in feedback is routed for spec revision, not silently reinterpreted.
 - **Into the opportunity solution tree** — missing-capability feedback is evidence of a customer opportunity: its underlying need is placed on the tree for the next discovery cycle and compared, not built ad hoc (`opportunity-solution-tree`). Only a gap that challenges positioning or the ICP goes to product-strategist.
+- **Into the win/loss log** — positioning feedback (a trial lost or a customer gone to a named alternative) is recorded in `competitive-analysis`'s win/loss log, which feeds `gtm-strategy`'s Positioning Refresh Trigger.
 
 ---
 
