@@ -2371,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.4"
+        "version": "1.10.5"
       },
       {
         "created": "2026-06-25",
@@ -10179,14 +10179,14 @@
         "dir": "skills/uat-scenario",
         "domain": "validation",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "uat-scenario",
         "owner": "requirements-analyst",
         "phase": "customer-validation",
@@ -10197,21 +10197,30 @@
           "acceptance-criteria",
           "acceptance-sign-off",
           "bdd-feature-file",
+          "example-mapping",
           "feedback-template",
-          "risk-register",
+          "glossary-management",
+          "methodology-review",
           "uat-plan"
         ],
-        "sources": [],
+        "sources": [
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/explore-it-hendrickson.md",
+          "research/testing/specification-by-example-adzic.md",
+          "research/testing/user-acceptance-testing-hambling.md"
+        ],
         "status": "stable",
         "tags": [
           "acceptance-testing",
-          "exploratory",
+          "business-scenarios",
           "given-when-then",
           "specification-by-example",
+          "test-results",
           "uat",
           "validation"
         ],
-        "version": "2.2.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10639,8 +10648,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 967,
-    "edges_skill_sources": 137,
+    "edges_skill_related": 969,
+    "edges_skill_sources": 142,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10652,20 +10661,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 50,
+    "research_files_cited": 51,
     "skills_with_assets": 14,
-    "skills_with_contract_test": 165,
+    "skills_with_contract_test": 164,
     "skills_with_domain": 189,
-    "skills_with_evals": 23,
-    "skills_with_examples": 23,
+    "skills_with_evals": 24,
+    "skills_with_examples": 24,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 22,
-    "skills_with_scripts": 23,
-    "skills_with_sources": 24,
+    "skills_with_resources": 23,
+    "skills_with_scripts": 24,
+    "skills_with_sources": 25,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 22
+    "skills_with_templates": 23
   },
   "edges": {
     "agent_produces": [
@@ -16148,11 +16157,19 @@
         "skill": "uat-scenario"
       },
       {
+        "related": "example-mapping",
+        "skill": "uat-scenario"
+      },
+      {
         "related": "feedback-template",
         "skill": "uat-scenario"
       },
       {
-        "related": "risk-register",
+        "related": "glossary-management",
+        "skill": "uat-scenario"
+      },
+      {
+        "related": "methodology-review",
         "skill": "uat-scenario"
       },
       {
@@ -16855,6 +16872,26 @@
       },
       {
         "skill": "uat-plan",
+        "source": "research/testing/user-acceptance-testing-hambling.md"
+      },
+      {
+        "skill": "uat-scenario",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "uat-scenario",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "uat-scenario",
+        "source": "research/testing/explore-it-hendrickson.md"
+      },
+      {
+        "skill": "uat-scenario",
+        "source": "research/testing/specification-by-example-adzic.md"
+      },
+      {
+        "skill": "uat-scenario",
         "source": "research/testing/user-acceptance-testing-hambling.md"
       },
       {

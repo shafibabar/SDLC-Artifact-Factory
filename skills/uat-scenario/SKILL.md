@@ -1,112 +1,116 @@
 ---
 name: uat-scenario
 description: >
-  Write a UAT scenario — the human-executed, live-environment counterpart to an
-  Ideate-phase Gherkin acceptance criterion and its automated bdd-feature-file
-  scenario. Covers Given/When/Then in plain tester language (Context, numbered
-  Steps, observable Expected Outcome), preconditions and seeded test data,
-  pass/fail recording with tester identity and environment, Specification by
-  Example carried from agreement to human proof, same-ID traceability
-  (AC-US-005 to UAT-005), the automated-vs-manual execution-mode split, defect
-  capture feeding feedback-template on failure, and pairing scripted scenarios
-  with a time-boxed exploratory charter so a release is checked for both known
-  rules and unanticipated risk. Use when a Data Steward or Compliance Officer
-  must confirm a deployed release does what was agreed, during Customer
-  Validation, before acceptance-sign-off.
-version: 2.2.0
+  Teaches how to write UAT scenarios: the human-executed, live-environment
+  form of a Must story's agreed acceptance criteria. Covers translating
+  Given/When/Then into plain-language Context, numbered Steps and an Expected
+  Outcome the tester can see, without inventing or softening the rule;
+  business scenarios that follow a whole piece of work; the 1:N ID convention
+  (AC-US-5 to UAT-5a, UAT-5b); preconditions and named seeded test data,
+  per-tenant fixtures and recorded environment and flag state; recording each
+  result as Pass, Fail, Blocked or Not run with tester, date, environment and
+  evidence; on a Fail, a defect record with workaround and re-test; and
+  logging a stray finding as feedback instead of folding it into the result.
+  Use when writing or reviewing UAT scenarios or UAT test scripts, turning
+  acceptance criteria into steps a business user can run, recording UAT
+  results, deciding what to do with a scenario that could not run or a bug
+  found outside the scenario, or scaling scenarios for lean, standard or
+  enterprise products. Used by the requirements-analyst agent in Customer
+  Validation (/sdlc-validate), after uat-plan and before acceptance-sign-off;
+  written to customer-validation/uat-scenarios/.
+version: 3.0.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
-tags: [validation, uat, acceptance-testing, given-when-then, specification-by-example, exploratory]
+tags: [validation, uat, acceptance-testing, given-when-then, specification-by-example, business-scenarios, test-results]
 produces: uat-scenario
 domain: validation
 status: stable
-related: [acceptance-criteria, bdd-feature-file, uat-plan, feedback-template, acceptance-sign-off, risk-register]
+related: [uat-plan, acceptance-criteria, bdd-feature-file, feedback-template, acceptance-sign-off, example-mapping, glossary-management, methodology-review]
+sources:
+  - research/testing/user-acceptance-testing-hambling.md
+  - research/testing/specification-by-example-adzic.md
+  - research/requirements-and-user-stories/lean-agile-atdd-pugh.md
+  - research/testing/agile-testing-crispin-gregory.md
+  - research/testing/explore-it-hendrickson.md
 ---
 
 # UAT Scenario
 
 ## Purpose
 
-A UAT scenario takes an existing Ideate-phase Gherkin acceptance criterion (`acceptance-criteria`) and restates it as a script a non-technical human can follow, in the live or live-like environment, to confirm the deployed release actually does what was agreed. It does not invent new rules and does not rewrite the rule the criterion already stated. It changes only the **execution mode** — from an automated assertion running in CI to a person performing an action and observing an outcome.
+A UAT scenario is a script a business user follows in the deployed (canary or live-like) environment to confirm the release does what was agreed. It starts from a Must story's agreed `acceptance-criteria` and changes only the **execution mode**: from an automated check in CI (`bdd-feature-file`) to a person doing real work and looking at the result.
 
 ```
-acceptance-criteria (Ideate)  →  bdd-feature-file (Implement/Quality)  →  uat-scenario (Customer Validation)
-   the agreement                    the automated proof                    the human proof, live
+acceptance-criteria (Ideate)  →  bdd-feature-file (Implement, Quality)  →  uat-scenario (Customer Validation)
+    the agreement                    the automated check                     the human proof, live
 ```
 
-## Specification by Example — the load-bearing principle
+It answers one question per scenario: *can the person this story was written for do this piece of work, and does the outcome match what we agreed?*
 
-This is Specification by Example (Adzic) carried all the way through: the same concrete example agreed during Ideate, made executable by code during Implement, is now made executable by a human during Customer Validation. **One rule, three moments, one identifier.** The value comes from concrete, checkable examples — real file names, real personas, real values — not abstract restatements of the rule (Pugh's declarative-over-imperative discipline, one phase later).
+## What this skill does not cover
 
-Two rules follow directly:
+- Scope, roles, the independence level, entry and exit criteria, schedule, exploratory charters and the acceptance types in scope: `uat-plan`. Exploration is **not** a scenario. Its charter, session and debrief formats live in `uat-plan`.
+- The severity scale, triage and routing of a defect or a stray finding: `feedback-template`.
+- What an open defect allows at sign-off: the single defect rule in `acceptance-sign-off`. It is never restated here. When someone asks what a defect allows, read that rule and give it whole, every severity it covers, not only the one asked about, and name `acceptance-sign-off` as where it lives.
+- Automated acceptance checks: `bdd-feature-file` (test-strategist). A UAT scenario never stands in for a missing automated check.
 
-- **Never re-derive the rule.** Open the source `acceptance-criteria`, take its `Given/When/Then`, and translate execution mode mechanically. If translating forces you to invent a rule the criterion never stated, that is an Ideate-phase gap to flag — not something to silently patch at UAT time.
-- **Carry the same ID root.** `AC-US-005` becomes `UAT-005` so a reviewer traces forward and back without ambiguity. Once agreed, an acceptance test is not renegotiated by whoever executes it next.
+## The rules that shape every scenario
 
-## Scenario format at a glance
+**1. Translate, never re-derive (Pugh; Adzic).** The agreed acceptance test is a contract: once agreed, it is not renegotiated by whoever executes it next (Pugh, *Lean-Agile ATDD*). Take the criterion's Given/When/Then and translate the execution mode only. If the translation forces you to invent a rule, or a user asks you to soften one ("just check the report opens"), stop: that is a change to the acceptance criterion, and it goes back to the product owner through the loop that created it. Flag it; do not patch it in the scenario.
 
-Every UAT scenario is Given/When/Then rewritten for a human executor:
+**2. Business language, observable outcome (Pugh; Adzic).** Given/When/Then illustrates a business rule; it is not a script for the machinery (Adzic, *Specification by Example*). Steps use words the user would use, one action each. The Expected Outcome is something the tester can **see**: a screen, a message, an exported file, an email. A criterion written as `Then sensitivity_level = 'restricted'` becomes "the file shows the label Restricted". A database value, an API response or an event on a topic is never an expected outcome, because the tester cannot check it. Keep the technical wording out of the scenario entirely, notes beside a line included: the `Traces to:` line is the link to the criterion, and the criterion keeps its own wording. If no visible proxy exists, that is a gap to flag to the product owner, not a step to fake.
 
-| Gherkin element | UAT element | Written as |
+**3. Business scenarios, traced both ways (Hambling).** UAT owns its test basis: business requirements and how the work is actually done, not the technical specification (Hambling, *User Acceptance Testing*). Write each scenario around a realistic piece of work that crosses screens ("a planner closes today's orders"), then confirm every acceptance criterion of every Must story is covered by at least one scenario. Never copy system-test scripts into UAT: re-running them with a user at the keyboard adds no new information.
+
+**4. One criterion, one or more scenarios: the 1:N ID convention.** IDs keep the story's number root and add a letter per scenario: `AC-US-5` → `UAT-5a`, `UAT-5b`. Always add the letter, even for one scenario, so adding a second never renames the first. Each scenario isolates one rule (Pugh: several small examples over one combinatorial one) and uses the minimum set of examples that pins the rule down (Adzic's key examples).
+
+**5. Real, named test data.** Specification by Example depends on concreteness: "invoice INV-2041, €1,200, due 3 March" is checkable; "an invoice" is not. Each scenario lists its preconditions and seeded fixtures, and how the tester confirms each one before starting. On a multi-tenant product, every fixture names its tenant, and a scenario that proves isolation seeds data in **two** tenants and checks that one cannot see the other's. Record the environment (tenant, region, build) and any feature-flag state the outcome depends on, so a failure can be reproduced.
+
+**6. Four results, with evidence (Hambling).** Every scenario ends with exactly one result:
+
+| Result | Meaning | Counts as passed? |
 |---|---|---|
-| `Given` | **Context** | A checkable starting state, plain language, no system-internal detail the tester cannot verify |
-| `When` | **Steps** | Numbered, one observable UI/system action per step — no jargon the persona wouldn't use |
-| `Then` | **Expected Outcome** | Something visible on screen or in an export — never an internal state the tester cannot check |
+| **Pass** | Every expected outcome observed | Yes |
+| **Fail** | An expected outcome not observed | No; opens a defect record |
+| **Blocked** | Could not run: an environment problem or an earlier defect, with the reason | No, until re-run |
+| **Not run** | Not attempted in this window | No, until run |
 
-Each scenario also records **preconditions and seeded test data** (what must be true before the tester starts), and an explicit **pass/fail result** with tester identity, date, and environment (the canary tenant or staging label). A `Fail` is never a bare checkbox — it opens a `feedback-template` record with an assigned severity that feeds the `acceptance-sign-off` go/no-go decision.
+A scenario that could not run is never marked Pass "so it doesn't hold us up": that hides it and overstates readiness. Each result carries tester, date, environment and evidence (a screenshot or recording), so a later reviewer can re-judge it without trusting the executor. This evidence matters most under `uat-plan`'s solo-operator exception, where the tester and the approver are the same person.
 
-The full scenario template, the plain-language authoring rules, the test-data setup convention for per-tenant isolated fixtures, the severity ladder, worked scenarios (a Compliance Officer signing off an audit-ready report; a Restricted DataAsset classification), and the emitted `## Output Format` block are all in **`references/scenario-format-and-examples.md`**.
+**7. A Fail opens a defect record; a fix is re-tested.** Each Fail opens a `feedback-template` record. Severity (business impact, on `feedback-template`'s scale) is set once, at capture, from what the tester saw, never bargained down later. Priority (how urgently to fix) is separate. The record carries a workaround a business user could follow, because a conditional sign-off needs one for every open High. A fix counts only when the scenario is re-run and passes: the re-run records `Re-test of:` the failed run, and the neighbouring scenarios are re-checked. "Deployed" is not "fixed".
 
-## Automated vs. human-executed — not a replacement
+**8. Checking is not testing; stray findings go to feedback (Crispin and Gregory; Hendrickson).** A scripted scenario *checks* what was specified. It cannot find what nobody wrote down, which is why `uat-plan` pairs scenarios with exploratory charters run by a human (Crispin and Gregory, *Agile Testing*; Hendrickson, *Explore It!*). A bug the tester trips over outside the scenario's Context is logged as its own `feedback-template` item and listed under the scenario's *Found outside this scenario* line. It never changes this scenario's result. Folding it in breaks the trace to the acceptance criterion.
 
-`bdd-feature-file` and `uat-scenario` are both Specification by Example. Neither replaces the other. A UAT scenario is never a substitute for missing automated coverage: if a Must Have behavior has no `bdd-feature-file` scenario, that is a Quality-phase gap owned by `test-strategist`, not something UAT quietly covers instead.
+## Scale: what changes by profile
 
-| | `bdd-feature-file` (automated) | `uat-scenario` (manual) |
-|---|---|---|
-| Executed by | CI pipeline (godog / Playwright) | A human — design partner or internal proxy |
-| Runs | Every commit/PR, continuously | Once per release slice, live/live-like |
-| Owner | test-strategist | requirements-analyst |
-| Proves | Code satisfies the rule under controlled, repeatable conditions | The deployed release behaves correctly to a real person — including things automation cannot judge (is this useful? is the language clear?) |
-| On failure | Build fails, blocks merge | Defect captured (`feedback-template`), feeds sign-off |
+| | lean | standard | enterprise |
+|---|---|---|---|
+| Scenarios | One per Must criterion, usually | 1:N where the work crosses screens or roles | 1:N, plus per-tenant isolation and per-region variants where the Must depends on them |
+| Test data | Named records in the one environment | Named fixtures per partner tenant, seeded before the window | Per-tenant, per-region fixtures; flag state and build recorded per run |
+| Evidence | One screenshot per result | Screenshot per result; recording for any Fail | Screenshot or recording per result, kept with the sign-off evidence |
 
-This is the "checking vs. testing" distinction (Crispin & Gregory): automation *checks* what was specified; both are required, and they answer different questions.
+The rules above never relax with the profile. Only the volume does.
 
-## Scripted scenarios plus exploration
+## Applying This Skill
 
-A scripted UAT scenario set can only confirm rules someone already wrote down. It is structurally incapable of finding what nobody thought to specify — usability friction, unanticipated interactions, edge cases no criterion covered. That is the business-facing / critiquing-the-product quadrant (Q3 in the Agile Testing Quadrants), and it is filled not by another scenario but by a **time-boxed exploratory charter** (Hendrickson) run by the same executor, in the same environment, alongside the scripted set.
-
-The two are complementary, not interchangeable:
-
-- **Scripted UAT scenarios** prove the agreed Must Have rules work — pass/fail, one-to-one with acceptance criteria.
-- **An exploratory charter** is a mission, not a script — it has findings, not a pass/fail, and surfaces risk the scenarios cannot by construction.
-
-A tester who discovers an interesting edge case *outside* a scenario's Context logs it as feedback — never folds it into that scenario's result, keeping traceability to the source criterion clean. The charter format, the heuristics an executor runs down, the charter/time-box/debrief session shape, where findings route (`feedback-template`, and a recurring finding to `risk-register`), and the human-executor caveat (an agent authors the charter; a human does the exploring) are in **`references/exploratory-charter-link.md`**.
-
-## Relationship to uat-plan and acceptance-criteria
-
-- **`acceptance-criteria` (Ideate)** is the upstream source. A UAT scenario cites its criterion's ID and preserves its meaning exactly. `acceptance-criteria` + `bdd-feature-file` together are this repo's ATDD (pre-code) practice; `uat-scenario` is a distinct, later, human-executed validation of the *deployed* release — do not conflate the two.
-- **`uat-plan` (Customer Validation)** is the campaign that owns the whole UAT effort: scope traceability across all Must Have stories, entry/exit criteria, schedule, and the executor assignment. A single `uat-scenario` is one line item in that plan; the exploratory charter above is authorized and scheduled by `uat-plan`, not by an individual scenario.
-
-## Quality criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Traces to source AC | Cites its Ideate `acceptance-criteria` ID, same rule | No traceable source, or restates a different rule |
-| No rule rewriting | Given/When/Then meaning matches the source exactly | Loosens, tightens, or invents behavior not in the AC |
-| Plain-language steps | A non-technical tester can follow every step | Steps reference APIs, DB fields, or internal calls |
-| Observable outcome | Expected Outcome is visible on screen or in an export | Describes an internal state the tester cannot check |
-| Result recorded | Explicit pass/fail, tester identity, date, environment | Executed with no recorded outcome or attribution |
-| Failure captured | Every `Fail` opens a `feedback-template` record with severity | Failures noted only as a checkbox with no follow-up |
+1. **Read** the Must stories' `acceptance-criteria` and `uat-plan`'s scope traceability, roles and environment. Without a plan, stop and ask for one.
+2. **Draft** the scenarios in `./templates/uat-scenarios.md`, one file per Must story, at `artifacts/<product>/customer-validation/uat-scenarios/US-<n>.md`. For the translation table, plain-language rules, fixtures, flag state and the defect fields, read `./references/authoring-rules.md`.
+3. **Compare** with an example at the product's profile: `./examples/01-lean-lunch-orders.md` (one criterion, one scenario), `./examples/02-standard-invoice-export.md` (1:N, seeded partner fixtures, a Fail with workaround and re-test), or `./examples/03-enterprise-tenant-isolation.md` (two-tenant isolation, flag state, a Blocked result, a stray finding).
+4. **Validate** against `./resources/uat-scenario-checklist.md` and run `python3 ./scripts/check-uat-scenarios.py <file>` on each file. If you cannot run it, walk the checklist by hand.
+5. **Hand off**: defects and stray findings to `feedback-template`; the recorded results to `uat-plan`'s completion summary and then `acceptance-sign-off`. Any acceptance criterion that could not be translated without a new rule goes back to the product owner.
 
 ## Anti-Patterns
 
-**Writing scenarios from scratch instead of deriving them.** Inventing the language independently risks testing a different rule than what was agreed, producing two disagreeing specifications of one story.
-
-**Engineering language in tester-facing steps.** "Verify the `sensitivity_level` field equals `restricted`" is not executable by a Compliance Officer. Steps must match the persona's literacy level.
-
-**Treating a passing UAT scenario as license to thin the automated tests.** UAT validates once, by a human; automation validates every commit. Removing automated coverage because "UAT covers it" reintroduces regressions the next release.
-
-**No severity discipline on failure.** Collapsing every failure into an undifferentiated "bug" breaks the sign-off decision — Critical and Low defects demand different responses (`acceptance-sign-off`).
-
-**Silent scope expansion during execution.** An edge case found outside a scenario's Context is captured as feedback, not folded into the UAT result — the traceability to the original AC must stay clean.
+| Anti-pattern | Why it fails |
+|---|---|
+| **Writing scenarios from scratch** | Tests a different rule from the one agreed; two specs now disagree |
+| **Softening the criterion while translating** | Renegotiates the contract at execution time; the change bypasses the product owner |
+| **Engineering words in steps** (`PATCH`, field names, SQL) | The intended user cannot run it; an internal value is not observable |
+| **System-test scripts reused as UAT** | Adds no information; misses the end-to-end work the business does |
+| **"An invoice", "a user"** | Not checkable; not reproducible |
+| **Blocked or Not run marked Pass** | Overstates readiness; hides the scenarios nobody ran |
+| **A stray bug folded into the result** | Breaks traceability; the scenario now fails for a reason the criterion never stated |
+| **Severity bargained after capture** | Makes the sign-off numbers lie |
+| **A restated defect bar** | A second rule that drifts from `acceptance-sign-off`'s |
+| **"Fixed" without a re-run** | A deploy is not evidence |

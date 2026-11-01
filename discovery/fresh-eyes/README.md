@@ -56,7 +56,7 @@ Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phase A and B ar
 
 Phase A facts a resuming session needs:
 - Evals live at ROOT `evals/<skill>/<case>/` — `claude plugin eval` refuses dirs inside `skills/`.
-- `tests/run-skill-evals.sh <skill>` passes only if all cases pass AND mean delta > 0. Cost ref: 3 cases × 3 runs × 2 arms ≈ $4.50–7; budget up to $7/skill (raised from ~$2 on 2026-10-30), the default cap.
+- `tests/run-skill-evals.sh <skill>` passes only if all cases pass AND mean delta > 0. Cost ref: 3 cases × 3 runs × 2 arms ≈ $4.50–7; budget up to $7 per run (raised from ~$2/skill on 2026-10-30), the default cap; re-runs after a fix are fine.
 - Evals are written by a fresh subagent, not the rewriting session, and frozen in a `Freeze evals: <skill>` commit before the first run; a grader changed after that is logged in the PR (added 2026-10-30 on the user's go; applies from #1346 on). Brief: `skills/skill-authoring-standards/templates/eval-author-brief.md`.
 - Skill pointers start with `./`. A bare `templates/` or `scripts/` may be a product path (Helm) or repo-root scripts.
 - Layout baseline: 177/187 skills clean. The linter is report-only until the waves finish.
