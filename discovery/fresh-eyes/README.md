@@ -45,14 +45,15 @@ A whole-repo traversal to find refactor ideas. It looks at the components **as t
 
 ## Refactor campaign progress (scope expanded 2026-10-11: discover + augment)
 
-Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phase A and B are merged; Phase C needs Shafi's go.
+Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phases A and B and Wave 1 are merged; Wave 2 is in progress.
 
 | Phase | Parent | Status |
 |---|---|---|
 | A — folder spec, `sources:`, layout linter, evals runner, migration script, standard rewrite | #1224 | **done** — merged to main via #1237 (851ac0a), CI green |
 | B — pilot: vision-statement, adr-authoring, go-repository-pattern | #1238 | **done** — approved by Shafi, merged to main via #1245 (35a903f) |
 | C — domain waves (per-skill issues) | — | **started 2026-10-19** (Shafi's go; depth/eval budget/Go compile check decided 2026-10-12) |
-| C / Wave 1 — strategy + discovery + validation (21 skills + 2 new) | #1292 | discovery done (#1293 → [wave-1-findings.md](wave-1-findings.md), 50 findings); 15 research files (#1295, #1297–#1310); planning decisions D045; implementation done: #1327 (pipeline) and #1328–#1350 (one per skill), PRs #1351–#1374; all 23 skills clean on structure, layout and evals; decisions D045, D046. Branch `fresh-eyes/wave-1-strategy-discovery-validation`, PR to `main` pending review |
+| C / Wave 1 — strategy + discovery + validation (21 skills + 2 new) | #1292 | **done** — merged to main via #1375 (53af4ce). Findings: [wave-1-findings.md](wave-1-findings.md) (50); 15 research files; decisions D045, D046; 23 skills rebuilt (PRs #1351–#1374), all clean on structure, layout and evals |
+| C / Wave 2 — domain-modeling + architecture (24 skills + 1 new) | #1376 | **started 2026-11-01** — discovery round in progress. Branch `fresh-eyes/wave-2-domain-modeling-architecture` |
 
 Phase A facts a resuming session needs:
 - Evals live at ROOT `evals/<skill>/<case>/` — `claude plugin eval` refuses dirs inside `skills/`.
