@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.6
+version: 1.10.7
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -296,7 +296,7 @@ If the Quality phase gates have not passed or no deployed environment exists, ha
 1. UAT Plan             ← acceptance types in scope (UAT/OAT/contractual/regulatory/alpha-beta), scope from Must Have stories, roles and independence level, environment, entry/exit criteria (uat-plan)
 2. UAT Scenarios         ← one file per Must Have story, one or more scenarios per acceptance criterion (UAT-<n>a, b…), translating its Ideate-phase criteria for human execution without changing them (uat-scenario)
 3. Exploratory Charters  ← drafted per area of meaningful risk/complexity, distinct from scripted scenarios — surfaces what no one wrote a scenario for (uat-plan)
-4. Beta Program Design   ← only if a design-partner cohort is in scope for this release (beta-program-design)
+4. Beta Program Design   ← only if a staged beta is in scope for this release: design partners, an internal staff rollout, or a consumer waitlist; each stage move is a graduation record (beta-program-design)
 5. UAT Execution         ← scripted scenarios AND exploratory sessions run against the deployed environment, same executor(s), same window; scripted results, defects, and exploratory debriefs all recorded; fixes re-tested before the decision; OAT evidence from platform-engineer and regulatory evidence from security-engineer compiled, not run, by this agent
 6. Feedback Capture      ← structured intake and triage of everything surfaced during UAT/beta/exploratory sessions (feedback-template)
 7. Acceptance Sign-Off   ← the one go/no-go per release closing this phase: full, conditional or no-go under the single defect rule, two-party or a recorded solo exception, and the rollout path to GA; beta stage moves are graduation records, not further sign-offs (acceptance-sign-off)
