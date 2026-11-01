@@ -1,210 +1,147 @@
 # Impact Map Levels — Depth Reference
 
-The four levels of an Impact Map (Gojko Adzic, *Impact Mapping*) in full: the exact
-questions to ask at each, the distinction that makes the map work (impacts are actor
-behavior changes / outcomes; deliverables are hypotheses that may be wrong), and how
-to prune deliverables down to an MVP cut. This reference is grounded in Adzic's
-technique and cross-read against Cagan's outcome-over-output framing (*Inspired*) and
-Olsen's problem-space/solution-space discipline (*The Lean Product Playbook*).
+Self-contained. The four levels of an impact map (Gojko Adzic, *Impact Mapping*) and the opportunity link between HOW and WHAT (Teresa Torres, *Continuous Discovery Habits*): the questions to ask at each, the distinctions that make the map work, and how deliverables are generated. Cross-read against Cagan's outcome-over-output framing (*Inspired*), Olsen's problem-space / solution-space discipline (*The Lean Product Playbook*) and Bier's divergent-generation techniques (*Unleash Your Creativity with AI*). Selecting the path, typing assumptions and re-planning are in `selected-path-and-replanning.md` beside this file.
 
 ---
 
-## The map is a directed chain, not four independent lists
+## The map is a directed chain, not five lists
 
-An Impact Map is a mind-map with the **goal at the centre (or root)** and three rings
-of branches: actors branch off the goal, impacts branch off each actor, deliverables
-branch off each impact. The direction is what matters. Reading **down** (WHY → WHO →
-HOW → WHAT) is how you *build* the map — you are decomposing a goal into the concrete
-things that might move it. Reading **up** (WHAT → HOW → WHO → WHY) is how you *defend
-scope* — every leaf deliverable must trace all the way back to the goal, or it does
-not belong on the map.
-
-This bidirectional traceability is the entire value. A flat feature list cannot answer
-"why is this feature here?"; an impact map answers it structurally — "this deliverable
-exists to cause *that* behavior change in *that* actor, which moves *this* goal."
+The goal sits at the root. Actors branch off the goal, impacts off each actor, the opportunity behind each impact, and deliverables off each impact. Read **down** (WHY → WHO → HOW → WHAT) to *build* the map; read **up** (WHAT → HOW → WHO → WHY) to *defend scope*: every leaf must trace to the goal along one path, or it does not belong.
 
 ```
-                        ┌── HOW impact ──┬── WHAT deliverable
-        ┌── WHO actor ──┤                └── WHAT deliverable
-        │               └── HOW impact ───── WHAT deliverable
+                        ┌── HOW impact ── OPP ──┬── WHAT option
+        ┌── WHO actor ──┤                       └── WHAT option
+        │               └── HOW impact ── —  ──── WHAT option
 WHY ────┤
-Goal    │               ┌── HOW impact ───── WHAT deliverable
-        └── WHO actor ──┤  (blocker)
-                        └── HOW impact ───── WHAT deliverable
+Goal    │               ┌── HOW impact ── OPP ──── WHAT option
+        └── WHO blocker ┤  (remove the obstruction)
+                        └── HOW impact (prevent) ─ WHAT option
 ```
+
+A flat feature list cannot answer "why is this here?". The map answers it structurally: this deliverable exists to cause *that* behaviour change in *that* actor, because of *that* customer need, which moves *this* goal.
 
 ---
 
 ## Level 1 — WHY: the Goal
 
-**Question asked:** *Why are we doing this? What measurable outcome are we trying to
-create?*
+**Question:** *Why are we doing this? What measurable change are we trying to create?*
 
-The goal is the single most important element and the most commonly botched. It must be:
+- **An outcome, not an output.** A change someone *outside the team* produces through their behaviour. "Launch the reminders feature" is an output; the team can do it alone. "No-show rate 12% → 7%" is an outcome.
+- **A problem, not a solution.** "Build a mobile app" is a solution; the goal is the business change the app was supposed to bring.
+- **Measured in fields, not prose.** Adzic borrows the measurement discipline from Tom Gilb: say *what* is measured (the scale or metric), *how* it is measured (the meter), the current value (baseline), the target and the deadline, plus an optional **constraint**, a level something must not fall below. These are the same fields `okr-authoring` requires on every Key Result, so the map copies them field by field from the opportunity solution tree's root and the linked KR. A field the KR lacks says "not set in KR" and goes back to `okr-authoring`; the map never invents a number.
+- **A product outcome.** The opportunity solution tree has already classified the KR (Torres): a **business outcome** (revenue, retention) is too far away to steer by, and a **traction metric** (use of one feature) decides the solution in advance. The map's goal is the tree's **desired outcome**, a product outcome. With no tree, classify first with `opportunity-solution-tree`.
+- **One goal per map.** An "and" in the goal means two maps.
 
-- **An outcome, not an output.** An outcome is a change in the world that someone
-  *outside the delivery team* produces through their behavior. "Ship the compliance
-  dashboard" is an output — it is entirely within the team's control and requires no
-  one else to do anything. "80% of trial teams discover their first compliance gap
-  within 30 minutes of connecting a source" is an outcome.
-- **Measurable.** A number with a target, or a binary condition. "Improve the product"
-  fails; it can never be shown true or false.
-- **Sourced from an OKR Key Result.** Each Key Result becomes its own goal, its own
-  map. Do not put two Key Results on one map — the actor and impact analysis for each
-  is different, and merging them hides which behavior serves which result.
-
-**The single-goal rule.** One map, one goal. If you find yourself writing "and" in the
-goal statement, you have two maps.
-
-**Litmus test for a goal:** ask "could the team achieve this entirely on its own,
-without anyone outside the team changing what they do?" If yes, it is a deliverable
-masquerading as a goal (Cagan's feature-factory tell), and the real goal is the
-behavior change you were *hoping* the deliverable would cause.
+**Litmus test:** *could the team achieve this entirely on its own, with nobody outside it changing what they do?* If yes, it is a deliverable posing as a goal.
 
 ---
 
 ## Level 2 — WHO: the Actors
 
-**Question asked:** *Who can produce the desired outcome? Who can obstruct it?*
+**Questions, in order:**
+1. Who can **produce** the desired effect?
+2. Who can **obstruct** it?
+3. Who are the **users** of the product?
+4. Who will be **affected** by it?
 
-Actors are people or groups whose behavior can *cause or block* the goal. List them
-before thinking about any feature. Four types are worth distinguishing:
+Record the answers before thinking about any feature. Actors can be individuals, roles or groups, as long as their behaviour can be observed.
 
-| Actor type | Definition | Example (this repo's product) |
+| Actor type | Definition | Example |
 |---|---|---|
-| **Primary** | Behavior directly produces the goal; usually the end user | Data Steward, Compliance Officer |
-| **Secondary** | Supports the primary actor's behavior | Customer IT / onboarding lead |
-| **Off-stage** | Decisions affect the goal but they don't use the product | CISO (sponsor), auditor, procurement |
-| **Blocker** | Can *prevent* the goal by withholding an action | IT Security (deployment approval) |
+| **Primary** | Their behaviour directly produces the goal; often the end user | A patient with a booking weeks ahead; a carrier's dispatcher |
+| **Secondary** | Supports the primary actor's behaviour | A clinic's front desk; a driver updating availability |
+| **Off-stage** | Decisions affect the goal, but they do not use the product | A sponsor, an auditor, a regulator, procurement |
+| **Blocker** | Can *prevent* the goal by withholding an action | A practitioner who keeps a paper diary; a works council that can veto location sharing |
 
-**The blocker discipline.** Adzic is explicit that identifying who can *block* the goal
-is as important as identifying who can cause it. A map with only supporters has skipped
-half the analysis. For a blocker, the impact (next level) is phrased as *removing* the
-blocking behavior — "IT Security approves the deployment request without escalating it."
+**The blocker discipline.** Obstructing actors matter as much as helpful ones, because removing an obstacle is often the cheapest path to the goal. Record at least one, or state why none exists. A blocker's impact is phrased as removing the obstruction: "enters every booking in the system the same day instead of in the paper diary".
 
-**Actor specificity test.** An actor must be concrete enough to have *observable
-behavior*. "The customer", "IT", "the market" fail — none of them can be watched doing
-anything. The Data Steward *can* be observed connecting a storage source. If you cannot
-finish the sentence "we would know this actor changed because we'd see them ___", the
-actor is too vague. This is where `user-persona` output feeds the map: a persona is
-already specific enough to be a WHO actor.
+**The affected question** finds side-effect actors: people the change touches who never asked for it (a patient's family who reads a reminder text; a driver whose location is shared). They are where **ethical** assumptions come from.
+
+**Specificity test.** Finish the sentence "we would know this actor changed because we would see them ___". "The customer", "IT", "the market" cannot finish it. A persona from `user-persona` usually can. In enterprise maps, use one **shared actor register** across all maps, so the same dispatcher is not a primary actor described one way in one map and another way in the next.
 
 ---
 
 ## Level 3 — HOW: the Impacts (the crux)
 
-**Question asked:** *How should this actor's behavior change for the goal to be reached?
-What would they start doing, stop doing, or do differently?*
+**Question:** *How should this actor's behaviour change for the goal to be reached?*
 
-**This is the level that makes an impact map an impact map, and the level teams get
-wrong.** An impact is a **change in an actor's behavior — an outcome**, never a feature
-and never an activity.
+This is the level that makes an impact map an impact map, and the one teams skip. An impact is a **change in an actor's behaviour**: never a feature, never an activity of the team, never the system's behaviour.
 
-The distinction, stated three ways because it is that important:
+- **Outcomes, not outputs.** "The patient confirms or cancels ahead instead of not turning up" is the actor's behaviour. "Send reminder texts" is the team's; it belongs in WHAT.
+- **Behaviours, not feature usage.** "The dispatcher uses the availability screen" names a deliverable. The impact is what it lets them do differently: "accepts a tender within the hour without phoning drivers first". A correctly phrased impact could be caused by several different deliverables.
+- **The actor's, not the product's.** "The system sends alerts" is not an impact; "the front desk refills a cancelled slot the same day" is.
+- **Zone of control vs sphere of influence** (Adzic and Evans, *Fifty Quick Ideas to Improve Your User Stories*): deliverables sit in the team's zone of control (it ships them); impacts sit in its sphere of influence (it can make them likelier, not guarantee them); the wider world lies beyond both. That is why an impact can never be a deliverable, and why every impact needs a signal.
 
-- **Impacts are outcomes, not outputs.** An outcome is something the *actor* does
-  differently. An output is something the *team* ships. "Maya connects all her storage
-  sources in the first session" is an outcome (Maya's behavior). "Build a connector" is
-  an output (the team's behavior) — it belongs one level down, in WHAT.
-- **Impacts are behaviors, not feature-usage.** "Maya uses the report feature" is a
-  disguised deliverable — it names the feature, not the behavior change. The real impact
-  is what the feature *lets her do differently*: "Maya briefs the CISO from live data
-  instead of a week-old spreadsheet." Notice this impact could be caused by several
-  different features — that is the sign it is phrased correctly.
-- **Impacts are the actor's, not the product's.** The product does not have behavior;
-  actors do. "The system generates a report" is not an impact. "The auditor accepts the
-  generated report without requesting a manual evidence pack" is.
+**Phrasing formula:** *[Actor] [starts / stops / does more / does less / does faster / does differently] [observable behaviour] instead of [current behaviour].* Naming the current behaviour forces a real change.
 
-**Good vs. bad impacts:**
+**Prevent impacts.** Impacts can be negative: behaviour that hurts the goal and should stop or not start. Not only blockers have them: a primary actor whose current behaviour works against the goal does too ("stops accepting a load and cancelling it an hour later").
 
-| Bad (feature/activity) | Good (behavior change / outcome) |
+**Signal.** Each impact says how it would be observed: "we would see it in the share of 72 h confirm requests answered", "in acceptance timestamps". An impact with no signal cannot be tested when its deliverable ships.
+
+| Bad (feature / activity) | Good (behaviour change, with signal) |
 |---|---|
-| Maya uses the compliance report | Maya briefs the CISO from live data, not a stale spreadsheet |
-| IT deploys the product | IT deploys without raising a support ticket |
-| User connects a source | Data Steward connects *all* sources in the first session |
-| System sends alerts | Compliance Officer acts on a gap the day it appears, not at quarter-end |
+| The clinic owner uses the reminders page | The patient replies to confirm or cancel instead of not turning up. *Signal: reply rate; no-show rate* |
+| Front desk gets notifications | The front desk offers a released slot to the waitlist the same day. *Signal: share of released slots refilled* |
+| Dispatcher uses the app | The dispatcher accepts within the hour without phoning drivers. *Signal: median time to accept* |
+| System shares location | The driver keeps availability current without being chased. *Signal: share of drivers with an entry under 24 h old* |
 
-**Phrasing formula:** *[Actor] [starts / stops / does more / does less / does
-differently] [observable behavior] [instead of the current behavior].* Naming the
-*current* behavior the impact replaces is what keeps it honest — it forces the impact
-to describe a real change, not a restatement of the feature.
-
-**Where impacts come from.** `jtbd-analysis` job stories are the richest source: a
-validated job story already describes what the actor is trying to get done in their real
-work context, which is exactly the behavior an impact should move. Olsen's problem-space
-discipline applies here — an impact written in the product's UI vocabulary ("uses the
-dashboard") is a solution-space smell; rewrite it in the actor's work-context language
-until it could be satisfied by more than one deliverable.
+**Where impacts come from.** `jtbd-analysis` job stories describe what an actor is trying to get done in their real context, the behaviour an impact should move. Olsen's rewrite test applies: an impact in the product's UI vocabulary ("uses the dashboard") is a solution-space smell; rewrite it in the actor's work-context language until more than one deliverable could satisfy it.
 
 ---
 
-## Level 4 — WHAT: the Deliverables (droppable hypotheses)
+## Between HOW and WHAT — the Opportunity
 
-**Question asked:** *What could we build or do to cause this behavior change?*
+**Question:** *Why doesn't the actor already behave that way?*
 
-Deliverables are features, content, processes, or configuration options that *might*
-cause an impact. The defining property, and the reason the map prevents waste:
+Torres's opportunity solution tree holds the answer: customer needs, pain points and desires, in the customer's voice, each answerable by more than one solution. The map's Opportunity column cites the tree's OPP-ID behind each impact:
 
-**Deliverables are hypotheses that may be wrong — and are therefore droppable.**
+- The **selected path** cites the tree's **target opportunity**, so the impact the team bets on is explained by the need the user chose to work on.
+- Other impacts cite whichever tree opportunity explains them, or "— not on tree". An impact with no opportunity behind it is not wrong, but it is unevidenced: a candidate for the next discovery cycle's interviews.
+- Blocker and off-stage actors are rarely the tree's customers; their rows usually say "— not on tree" with a short reason ("internal practice habit").
 
-Adzic's framing is that the WHAT level is the *most uncertain* level, not the most
-certain. The team is confident about the goal (it came from strategy), reasonably
-confident about the actors, thoughtful about the impacts — but the deliverables are
-*guesses* about what will cause the impact. Any given deliverable might fail to move the
-behavior at all. This is the same claim Cagan makes about all four product risks
-(value/usability/feasibility/viability) being *assumptions* until tested, and the same
-reason Olsen builds a hi-fi MVP before committing engineering: the feature is a bet, not
-a fact.
-
-Three consequences follow, and they are the whole payoff of the technique:
-
-1. **Multiple deliverables can serve one impact — you don't build them all.** List every
-   candidate that might cause the behavior change, then pick the cheapest one or two that
-   would plausibly do it. The rest wait.
-2. **A deliverable that causes no impact is cut immediately.** If you cannot draw a line
-   from a proposed feature up to a behavior change that moves the goal, it is waste by
-   definition — no further debate needed. This is the map's forcing function against the
-   feature factory.
-3. **You stop as soon as the impact is achieved.** Because deliverables are means to a
-   behavioral end, you keep only enough of them to cause the change. Once an impact is
-   met, remaining deliverables under it become deferred backlog, not obligations.
-
-### Pruning: from full map to MVP cut
-
-The full map is a *menu of options*, all traced to the goal. Turning it into a scope
-decision is a deliberate three-step prune:
-
-1. **Rank actors by leverage.** Which actor, if their behavior changed, moves the goal
-   most directly? Focus there first. (Off-stage and blocker actors are often addressed
-   with a single deliverable, not a whole branch.)
-2. **Rank impacts by leverage within the priority actors.** For the priority actor,
-   which behavior change has the most effect on the goal per unit of effort?
-3. **Select the minimum deliverable set for the priority impacts.** For each priority
-   impact, choose the *smallest* set of deliverables that would reliably cause the
-   behavior change. That set — and only that set — is the MVP scope.
-
-Everything not selected stays on the map as **deferred deliverables**, each already
-traced to an impact and a goal, so re-prioritizing it later is nearly free. A map
-delivered *without* this cut has skipped its entire purpose: the impact map is a
-prioritization instrument, and the prioritization is the cut.
-
-**Optional risk annotation (Cagan).** For each deliverable selected into MVP scope, you
-can note which of the four product risks — value, usability, feasibility, viability — is
-already tested versus still assumed. This upgrades the MVP cut from "traced to a goal"
-(the map's default bar) to "traced to a goal *and* risk-tested," and flags which
-deliverables should get a cheap prototype or concierge test before they are committed.
+An opportunity is not an impact: the opportunity is the need ("patients forget appointments booked weeks ahead"); the impact is the behaviour change it unlocks ("confirms or cancels ahead"). Keeping both on the row is what lets a deliverable answer the need rather than restate the behaviour.
 
 ---
 
-## Common failure modes at each level
+## Level 4 — WHAT: the Deliverables (options)
+
+**Question:** *What could we, the organisation, do to cause this behaviour change?*
+
+Adzic is clear that WHAT holds *possible* deliverables. They are **options, and many are expected never to be built**. It is the *most uncertain* level: the goal came from strategy, the actors and impacts from evidence, but each deliverable is a guess about what will cause a behaviour change. This is the same claim Cagan makes about value, usability, feasibility and viability: assumptions until tested.
+
+**Not only software.** Training, a process change, a message template, a policy, a partnership, a manual workaround or content can each cause an impact more cheaply than a feature. Ask first: *what is the cheapest thing, not necessarily software, that might cause this?*
+
+**Generating candidates, as an agent.** Bier's point is that the first few ideas a model (or a person) produces are the most average, and a second attempt anchors on the first unless a constraint breaks it. So:
+
+1. **Where the tree already compared solutions** (the impact explained by the target opportunity), its carried-forward solutions are the candidates, with their assumptions and tests. Do not re-generate them.
+2. **Elsewhere**, generate two to three times as many candidates as will be kept. Pass one: unconstrained. Pass two: under a deliberate constraint ("no new code", "one week", "assume the opposite of pass one", "what would a sceptical clinic owner do instead?"). Then narrow.
+3. **At least one non-software option per impact** on or near the selected path.
+
+Three consequences are the payoff of the technique:
+1. **Several deliverables can serve one impact; you do not build them all.** Pick the cheapest one or two likely to cause the change; the rest stay as options.
+2. **A deliverable that traces to no impact is cut**, with no further debate.
+3. **Stop when the impact is achieved.** Remaining options under it stay on the map, not in the plan.
+
+**Keep it small.** Detail deliverables only under impacts the team might choose next; leave deeper branches as one-line placeholders.
+
+---
+
+## Failure modes at each level
 
 | Level | Failure mode | Fix |
 |---|---|---|
-| WHY | Goal is an output ("ship X") or unmeasurable ("improve X") | Restate as a metric an actor's behavior produces |
-| WHO | "The customer" / "IT" — no observable behavior | Replace with a specific persona/role |
-| WHO | Only supporters, no blockers | Ask "who can *prevent* this?" and add them |
-| HOW | Impact names a feature ("uses the dashboard") | Rewrite as the behavior it enables, in work-context language |
-| HOW | Impact describes the *system's* behavior | Reattribute to the actor — products don't have behavior |
-| WHAT | Every deliverable treated as required | Select the minimum set; defer the rest |
-| WHAT | Deliverable traces to no impact | Cut it — it is waste by definition |
-| whole map | Built backwards to justify an existing backlog | Discard the backlog; rebuild top-down from the goal |
+| WHY | Goal is an output or unmeasurable | Restate as a metric actors' behaviour produces, in fields |
+| WHY | Revenue or a feature's usage as the goal | Use the tree's product outcome (`opportunity-solution-tree`) |
+| WHY | Invented baseline or target | Copy from the KR; "not set in KR" goes back to `okr-authoring` |
+| WHO | "The customer", "IT" | A specific persona or role with observable behaviour |
+| WHO | Only supporters | Ask "who can obstruct this?"; add a blocker or say why none exists |
+| WHO | Same actor described twice across enterprise maps | One shared actor register |
+| HOW | Names a feature ("uses the dashboard") | Rewrite as the behaviour it enables, in work-context language |
+| HOW | Describes the system | Reattribute to an actor |
+| HOW | No signal | Add "we would see it in ___" |
+| Opportunity | Selected impact has no tree opportunity | Cite the target opportunity, or question the path |
+| WHAT | Features only | Add the cheapest non-software option first |
+| WHAT | One candidate per impact | Two passes, the second under a constraint |
+| WHAT | Deliverable traces to no impact | Cut it |
+| whole map | Drawn from existing requirements or a backlog | Discard the list; rebuild from the goal |
+| whole map | Hundreds of nodes | Keep detail only where the next choice is |

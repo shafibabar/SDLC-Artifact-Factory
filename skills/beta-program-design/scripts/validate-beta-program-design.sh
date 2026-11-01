@@ -1,12 +1,12 @@
 #!/bin/bash
 # scripts/validate-beta-program-design.sh — skill-owned script for skills/beta-program-design.
-# Purpose: mechanically check a beta program record against the parts of
-#          this skill's Quality Criteria table that are actually checkable
-#          by a script -- a real (non-placeholder) Stage value, a non-empty
-#          Participants section, an unchanged SOC 2 CC6/CC7/A1 Data Handling
-#          Statement, and both Graduation Criteria dimensions present.
-#          Judgment calls (is this participant actually representative, is
-#          the qualitative affirmation genuinely outside-the-building)
+# Purpose: mechanically check a beta program record against the structural
+#          items of resources/beta-program-checklist.md -- a real Stage, filled
+#          Participants, a Data Handling Statement that relaxes no control and
+#          names the product's own frameworks (never a fixed framework list),
+#          all four graduation dimensions filled, a valid Decision, and a
+#          suspect hypothesis on a Pivot. Judgment calls (is this participant
+#          an earlyvangelist, did the evidence come from outside the building)
 #          stay with the requirements-analyst's own review.
 # Usage:   validate-beta-program-design.sh <path-to-beta-program-doc.md>
 # Output:  one PASS/FAIL line per check to stdout.
@@ -38,50 +38,71 @@ _check() {
   fi
 }
 
-CONTENT="$(cat "$FILE")"
+# Body of a "## <heading>" section, up to the next "## ".
+_section() {
+  awk -v h="## $1" '$0 == h {f=1; next} f && /^## / {exit} f' "$FILE"
+}
 
-# Stage: must be exactly one of the four valid values, not the unfilled
-# bracket placeholder listing all four as alternatives.
-STAGE_LINE="$(printf '%s\n' "$CONTENT" | awk '/^## Stage$/{getline; print; exit}')"
-if printf '%s' "$STAGE_LINE" | grep -qE '^(Closed alpha|Closed beta|Open beta|GA)$'; then
-  _check "Stage is a real value, not the unfilled placeholder" 1
-else
-  _check "Stage is a real value, not the unfilled placeholder" 0
-fi
+# The text after "<prefix>" on the first matching line of a section.
+_field() {
+  _section "$1" | awk -v p="$2" 'index($0, p) == 1 {print substr($0, length(p) + 1); exit}'
+}
 
-# Participants: the section must have real content, not the unfilled
-# bracket placeholder.
-PARTICIPANTS_LINE="$(printf '%s\n' "$CONTENT" | awk '/^## Participants$/{getline; print; exit}')"
-if printf '%s' "$PARTICIPANTS_LINE" | grep -qF '[Names, companies, ICP-fit rationale, named contact]'; then
-  _check "Participants section is filled in (not the unfilled placeholder)" 0
-elif [ -n "$(printf '%s' "$PARTICIPANTS_LINE" | tr -d '[:space:]')" ]; then
+# A field is filled when it has text and no unfilled "[...]" placeholder.
+_filled() {
+  [ -n "$(printf '%s' "$1" | tr -d '[:space:]')" ] && ! printf '%s' "$1" | grep -q '\['
+}
+
+# Stage: exactly one of the four values, not the placeholder listing all four.
+STAGE="$(_section "Stage" | awk 'NF {print; exit}')"
+printf '%s' "$STAGE" | grep -qE '^(Closed alpha|Closed beta|Open beta|GA)$'
+_check "Stage is a real value, not the unfilled placeholder" "$([ $? -eq 0 ] && echo 1 || echo 0)"
+
+# Participants: real content, neither the summary nor the table-row placeholder.
+PARTICIPANTS="$(_section "Participants")"
+if [ -n "$(printf '%s' "$PARTICIPANTS" | tr -d '[:space:]')" ] \
+   && ! printf '%s' "$PARTICIPANTS" | grep -qF '[Names, companies' \
+   && ! printf '%s' "$PARTICIPANTS" | grep -qF '[name, company]'; then
   _check "Participants section is filled in (not the unfilled placeholder)" 1
 else
   _check "Participants section is filled in (not the unfilled placeholder)" 0
 fi
 
-# Data Handling Statement: must name all three unchanged SOC 2 control
-# families this skill's Beta Agreement section treats as non-negotiable.
-if printf '%s\n' "$CONTENT" | grep -q 'CC6' \
-   && printf '%s\n' "$CONTENT" | grep -q 'CC7' \
-   && printf '%s\n' "$CONTENT" | grep -q 'A1'; then
-  _check "Data Handling Statement names the unchanged SOC 2 CC6/CC7/A1 posture" 1
+# Data handling: the no-relaxation statement, and the product's own frameworks.
+if _section "Data Handling Statement" | grep -q '^No control is relaxed'; then
+  _check "Data Handling Statement says no control is relaxed for the beta" 1
 else
-  _check "Data Handling Statement names the unchanged SOC 2 CC6/CC7/A1 posture" 0
+  _check "Data Handling Statement says no control is relaxed for the beta" 0
+fi
+FRAMEWORKS="$(_field "Data Handling Statement" "- Frameworks:")"
+TELEMETRY="$(_field "Data Handling Statement" "- Telemetry:")"
+if _filled "$FRAMEWORKS" && _filled "$TELEMETRY"; then
+  _check "Data Handling Statement names the product's own frameworks and its telemetry" 1
+else
+  _check "Data Handling Statement names the product's own frameworks and its telemetry" 0
 fi
 
-# Graduation Criteria: both dimensions must be present as real sub-bullets,
-# not just the section heading.
-if printf '%s\n' "$CONTENT" | grep -qE '^- Quantitative:'; then
-  _check "Graduation Criteria: Quantitative dimension present" 1
-else
-  _check "Graduation Criteria: Quantitative dimension present" 0
-fi
+# Graduation: all four dimensions present and filled.
+for DIM in "Quality" "Traction" "Behaviour and commitment" "Repeatability and operations"; do
+  VALUE="$(_field "Graduation Criteria" "- $DIM:")"
+  if _filled "$VALUE"; then
+    _check "Graduation Criteria: $DIM dimension filled" 1
+  else
+    _check "Graduation Criteria: $DIM dimension filled" 0
+  fi
+done
 
-if printf '%s\n' "$CONTENT" | grep -qE '^- Qualitative:'; then
-  _check "Graduation Criteria: Qualitative dimension present" 1
+# Decision: one valid value; a Pivot names its suspect hypothesis.
+DECISION="$(_field "Graduation Record" "Decision: ")"
+printf '%s' "$DECISION" | grep -qE '^(Pending|Advance|Extend|Remediate|Pivot)$'
+_check "Graduation Record decision is Pending, Advance, Extend, Remediate or Pivot" "$([ $? -eq 0 ] && echo 1 || echo 0)"
+
+HYPOTHESIS="$(_field "Graduation Record" "Suspect hypothesis: ")"
+if [ "$DECISION" != "Pivot" ] \
+   || { _filled "$HYPOTHESIS" && printf '%s' "$HYPOTHESIS" | grep -qiE '^(segment|problem|solution|process)'; }; then
+  _check "a Pivot names its suspect hypothesis (segment, problem, solution or process)" 1
 else
-  _check "Graduation Criteria: Qualitative dimension present" 0
+  _check "a Pivot names its suspect hypothesis (segment, problem, solution or process)" 0
 fi
 
 echo "---"

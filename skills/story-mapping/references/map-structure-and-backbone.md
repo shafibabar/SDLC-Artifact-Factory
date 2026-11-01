@@ -1,164 +1,104 @@
 # Map Structure and the Backbone
 
-Reference for the *shape* of a User Story Map (Jeff Patton, *User Story Mapping*,
-with Peter Economy): the three working layers, the backbone vs. the body, how to
-facilitate building one, and the failure modes that produce a map-shaped thing
-that is not a map. Read alongside `slicing-and-walking-skeleton.md`, which covers
-the vertical cut (releases and the walking skeleton).
+Self-contained reference for `story-mapping`. Read it before laying a backbone, when the spine does not read as a story, when more than one persona acts in the journey, and when reading a filled map for gaps. The vertical cut (walking skeleton, release slices, the Must check) is in `slicing-and-walking-skeleton.md`.
+
+Grounded in Jeff Patton with Peter Economy, *User Story Mapping* (the two axes, the three layers, the backbone, narrating the spine, mapping as a conversation).
 
 ---
 
-## The three working layers
+## 1. The three working layers
 
-Patton frames a map as three layers of resolution, built roughly top-down:
+Patton builds a map in three layers of resolution, top down:
 
-| Layer | Patton's name | What it is | This repo's Level |
+| Layer | Patton's name | What it is | In this plugin |
 |---|---|---|---|
-| 1 | **Big picture** | *Why* you're building this and for *whom* — the opportunity, the target user, the outcome hoped for | Framed upstream by `impact-mapping` / JTBD, not on the map |
-| 2 | **Backbone** | The narrative spine: **activities** decomposed into **tasks** | Level 1 (Activities) + Level 2 (Tasks/Epics) |
-| 3 | **Details** | The individual **stories** placed under each task | Level 3 (Stories) |
+| 1 | **Big picture** | Why this is being built, for whom, and the outcome hoped for | Already written upstream: the Key Result, the impact map's selected path, the primary persona. The map's Big Picture section cites them; it never re-derives them |
+| 2 | **Backbone** | The narrative spine: **activities** decomposed into **tasks** | The epics (backbone candidates), arranged in journey order |
+| 3 | **Details** | The stories under each task | The written stories (US-n) |
 
-The big picture is produced *before* the backbone — Patton's "frame the
-opportunity" pass. It is one page stating the business objective, the target
-persona, and the outcome hypothesis. In this repo that framing already exists as
-the impact map and the JTBD job statements; the story map consumes them rather
-than re-deriving them.
+Patton has the team "frame the opportunity" before any task or story. In this plugin that frame is the KR and the impact map. Without it, the map is a tidy picture of the wrong product: stop and name the missing input.
 
 ---
 
-## Backbone vs. body — the distinction that makes it a map
+## 2. The backbone (horizontal: time)
 
-This is the single most important structural idea, and the one most often lost.
+- **Left to right in the order the persona meets each activity.** Narrative order, never priority.
+- **Two grains.**
+  - **Activities:** coarse buckets of what the user is trying to do ("Fill the diary", "Prepare an application"). Categories, not stories.
+  - **Tasks:** user goals within an activity ("Send a confirm request", "See the checklist for my site"). A task is a goal, never a click ("open the modal") and never a system stage ("persist the record").
+- **Epics are backbone candidates.** Patton has no "epic"; his backbone tasks are the closest equivalent (`epic-definition` says the same). Each epic usually becomes one task. When an epic's stories happen at different points of the journey (a confirm request is *sent* early and *followed up* later), place each story at its step, tagged with its epic. The journey wins over the epic's grouping.
+- **Only the selected path.** The backbone is seeded from the impact map's selected-path deliverables, through the epics. Option branches and non-software deliverables (a procedure, training) are not tasks. A selected procedure can still appear as a **manual cell** in the walking skeleton when the journey depends on it.
+- **Transition work** (a migration, a parallel run) sits at the step where the user meets it, usually at the start ("bring existing cases over") or the end ("retire the old system").
+- **Rules that protect a step** (tenant isolation, access, consent) are not their own activity. Their stories sit under the activity where the user would otherwise see someone else's data.
 
-### The backbone (horizontal, time)
+### Several personas, one backbone
 
-- Runs **left-to-right in the order the user actually encounters activities and
-  tasks** — narrative flow, not priority.
-- Two grains:
-  - **Activities** — big, coarse buckets of user behaviour ("Connect Sources",
-    "Scan & Classify", "Review & Report", "Manage & Govern"). These are
-    categories, not stories.
-  - **Tasks** — the specific things a user does within an activity ("Connect
-    Google Drive", "Trigger a scan", "View the gap report"). A task is at the
-    grain of a goal the user is trying to accomplish, *not* a UI interaction
-    ("click the blue button" is never a backbone task).
-- Backbone tasks are the rough equivalent of what this repo calls **epics** —
-  the pre-decomposition form. Patton's own vocabulary doesn't use "epic"; that is
-  Cohn/Lean-Startup territory layered on top.
-
-### The body (vertical, necessity)
-
-- Under each backbone task sit the **stories** for that task.
-- Ordered **top-to-bottom by necessity** — *what the story needs to be minimally
-  whole* — **not** by "depth of detail" and **not** by an arbitrary priority
-  number.
-  - **Top row:** the one story that makes the task work at all.
-  - **Middle rows:** improvements, additional personas, richer options.
-  - **Bottom rows:** edge cases, configuration, nice-to-haves.
-- The vertical axis must read as a *necessity gradient*: minimal-but-functional at
-  the top, refinements descending below. If every row looks equally important,
-  the body has not been ordered — it has been dumped.
-
-### Why the two axes matter together
-
-A flat backlog is a single sorted list; it destroys the narrative relationships
-between stories. The two-axis map restores them: horizontal tells you *when* in
-the journey a story lives, vertical tells you *how essential* it is to that step.
-Only with both can you cut a coherent release (see the sibling reference).
+When more than one persona acts (an admin sets up, an applicant submits, an officer decides), keep **one** backbone in the order things happen to the work, and name the persona on each activity: "Bring the council on (council admin)", "Prepare an application (applicant)". Three separate maps hide the hand-offs, which is where journeys break. A persona with a separate journey that never touches the others' work (an auditor reading exports months later) gets a short second backbone below the first, with its own skeleton row.
 
 ---
 
-## The narrative-spine test
+## 3. The body (vertical: necessity)
 
-The backbone is correct when you can **read the activities and tasks aloud, left
-to right, as a coherent story**:
+Under each activity, stories run top to bottom by **necessity**: what the step needs to be minimally whole.
 
-> "First the Data Steward *connects a source*. Then they *trigger a scan* over it.
-> Then they *review the compliance gap report* it produces. Then they *set a
-> retention policy* to close a gap."
+- **Top:** the one story (or existing capability, or manual step) that makes the step work at all.
+- **Middle:** improvements, a second persona, richer options.
+- **Bottom:** edge cases, configuration, nice-to-haves.
 
-If the reading has a logical jump, an unexplained sequence, or a step that only
-makes sense from the system's point of view, the spine is wrong. Loops and
-branches are allowed (a user may re-scan, or connect several sources before
-scanning) — mark them with an annotation rather than forcing a strict line.
-
-Because this repo cannot run Patton's live whole-team session, the adaptation is
-to **narrate the spine aloud with the user** as an explicit step before the map is
-final — the closest available analog to the book's cross-functional walkthrough,
-and the moment where the "map is a conversation, not an artifact" value is
-approximated. This is distinct from the generic "present artifact, wait for
-approval" step used for every other Ideate artifact.
+The vertical order is not the provisional priority carried over from the epic. A high-priority epic's edge-case story still sits low. DSDM says the same about priority: a Must epic's stories are judged one by one.
 
 ---
 
-## How to facilitate building a map
+## 4. Narrating the spine (with the user)
 
-Patton's practice is a live, whole-team session (product, design, engineering,
-business, in one room or call, on sticky notes or a shared board). Under this
-repo's solo-agent workflow the *sequence* still holds even though the room does
-not:
+The backbone is right when it reads aloud, left to right, as one story: "First the front desk has the appointment in the diary. Then the patient gets a confirm request and replies. Then, before the cut-off, the front desk sees who hasn't answered and offers those slots to the waitlist."
 
-1. **Frame the opportunity first.** Confirm the big picture — objective, target
-   persona, outcome hypothesis — is already stated (impact map / JTBD). Do not
-   generate a backbone without it.
-2. **Lay the backbone before any stories.** Walk the product from the persona's
-   viewpoint and place activities left-to-right, then decompose each into tasks.
-   Resist writing stories until the horizontal reading narrates cleanly.
-3. **Narrate the spine** (the test above). Fix ordering before going deeper.
-4. **Fill the body.** Under each task, place every story from the backlog,
-   ordered top-to-bottom by necessity. Every backlog story must land somewhere.
-5. **Read for gaps** (checklist below) before cutting any release slice.
-6. **Cut slices** — covered in `slicing-and-walking-skeleton.md`.
-7. **Keep it living.** After a slice ships, absorb what changed and re-cut. A map
-   that disagrees with the backlog is worse than none — it is trusted and wrong.
+A jump, an unexplained step, or a step that only makes sense from the system's side means the spine is wrong. Loops (re-scan, re-submit) and branches are allowed: annotate them rather than forcing a straight line.
+
+**The narration step is this plugin's adaptation of Patton's live session.** Patton treats a map produced alone and handed over as having missed the point. A single agent cannot gather a team, so before the map is final the agent **reads the spine to the user as a story and asks where it is wrong**: a missing step, the wrong order, a persona who would not do this. Record what changed in the map's narration line. This is separate from the ordinary approval at the end, and it comes first.
 
 ---
 
-## Reading the map for gaps
+## 5. Facilitation order
 
-After the body is filled, walk the spine and interrogate each activity:
+1. **Confirm the big picture** exists (KR, selected path or lean KR trace, primary persona).
+2. **Lay the backbone** before placing any story: activities, then tasks.
+3. **Narrate the spine with the user.** Fix the order before going deeper.
+4. **Place every story** under its step, by necessity.
+5. **Read for gaps** (section 6).
+6. **Cut the skeleton and slices** (`slicing-and-walking-skeleton.md`).
+7. **Keep it living.** After a slice ships, absorb what changed and re-cut. A map that disagrees with the backlog is trusted and wrong.
 
-| Question | What a "no" means |
+**Stories first, map second, on purpose.** Patton uses mapping to *generate* the backbone and stories. Here the stories were already written from the epics, so the map's job shifts to arranging them and exposing what the decomposition missed. Each gap is proposed as a new story for `user-story-writing`; nothing is added to the backlog without the user.
+
+---
+
+## 6. Reading the map for gaps
+
+| Question | A "no" means |
 |---|---|
-| Can the user complete this activity using only its top-row story? | If not, a lower story must move up to make the step minimally whole. |
-| Is there a backbone step with *no* stories under it at all? | A discovery gap — the journey has a hole; go write the missing stories. |
-| Are some activities piled deep while others are shallow? | Imbalanced discovery — investigate whether the shallow steps are truly simple or just under-explored. |
-| Does every backlog story appear somewhere on the map? | An orphan story belongs to a step (place it) or to no journey (challenge why it exists). |
-| Does the top row, read across the whole backbone, function end-to-end? | The walking skeleton is broken — see the sibling reference. |
+| Can the user finish each activity using only its top-row cell? | Move a lower story up, or name the manual step |
+| Does every activity have at least one story or a named existing or manual capability? | A **discovery gap**: the journey has a hole. Propose the missing story |
+| Are some activities deep and others shallow? | Check whether the shallow ones are simple or just under-explored |
+| Does every backlog story appear on the map? | An **orphan**: place it, or challenge why it exists (no journey needs it) |
+| Does every map story trace back to a selected-path deliverable (or the KR at lean)? | Scope from an option branch or nowhere: remove it or record the trace |
+| Read across the top row: does it walk end to end? | The skeleton is broken (`slicing-and-walking-skeleton.md`) |
 
 ---
 
-## Common mistakes (map-shaped things that are not maps)
+## 7. Map-shaped things that are not maps
 
-- **A backlog turned sideways.** The columns are just the flat backlog pasted in
-  priority order, with no necessity gradient down any column. If the vertical axis
-  does not read "minimally whole at the top, refinements below," it is a backlog
-  wearing a map's clothes. This is the defining failure — a real map *cannot* be
-  produced by re-arranging a priority-sorted list, because priority is not
-  narrative order.
-- **The system-perspective spine.** "Ingest → Process → Store → Serve" narrates
-  the *pipeline's* journey, not the user's. The backbone must narrate what the
-  *persona* does, or the map can never reveal where a user gets stuck.
-- **Tasks at UI grain.** "Click connect", "open the modal" are interactions, not
-  tasks. Backbone tasks are user goals ("Connect Google Drive"); UI steps are
-  implementation detail that belongs inside a story's acceptance criteria.
-- **Skipping the big picture.** Jumping straight to tasks without the opportunity
-  frame produces a tidy map of the wrong product.
-- **The solo document.** Treating the finished diagram as the deliverable and
-  skipping the narration entirely — capturing a picture while missing the shared
-  understanding Patton says is the actual point.
-- **The frozen map.** Built once during discovery and never revisited, so it
-  silently drifts out of agreement with the evolving backlog.
+- **A backlog turned sideways.** Columns pasted in priority order with no necessity gradient. The defining failure: priority is not narrative order, so a priority list cannot be rearranged into a map without re-thinking it.
+- **The system-perspective spine.** "Ingest → Process → Store → Serve", "Upload → Parse → Index → Query". The pipeline's journey, not the persona's. Ask "what is the *person* trying to get done at this point?" and rename each step as their goal; often several system stages collapse into one user task.
+- **Tasks at UI grain.** "Click connect" is an interaction; it belongs in a story's acceptance criteria.
+- **Skipping the big picture.** A backbone with no KR or selected path behind it.
+- **The solo document.** No narration with the user: a picture, not shared understanding.
+- **The frozen map.** Built once, never re-cut.
 
 ---
 
-## Terminology notes (accuracy)
+## 8. Terminology accuracy
 
-- **Backbone** and **walking skeleton** are Patton's terms (he credits Alistair
-  Cockburn for the walking skeleton).
-- **INVEST** (the story-quality checklist applied to body stories) is Bill Wake's,
-  popularised by Mike Cohn — not Patton's. Do not attribute it to this book.
-- **MoSCoW** is DSDM's, not Patton's; it can inform vertical placement but a
-  release slice is not a MoSCoW "Must" cut (see the sibling reference).
-- The **"skateboard → bicycle → car"** MVP sketch is Henrik Kniberg's
-  illustration, not Patton/Economy content — do not attribute it to this book.
+- **Backbone**, **walking skeleton** and **release slice** are Patton's terms; he credits Alistair Cockburn with the walking skeleton.
+- **INVEST** is Bill Wake's, popularised by Mike Cohn. **MoSCoW** and the **Minimum Usable SubseT** are DSDM's. **Given/When/Then** comes from BDD (Dan North, Chris Matts). None is Patton's.
+- The **"skateboard → bicycle → car"** MVP sketch is Henrik Kniberg's, not Patton's.

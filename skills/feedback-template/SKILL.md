@@ -1,106 +1,135 @@
 ---
 name: feedback-template
 description: >
-  Capture, interpret, and triage customer feedback during Customer Validation —
-  the structured capture fields (context, expected vs actual, category, severity),
-  the Mom-Test question-design rules for facilitated check-ins (talk about their
-  life not your idea; ask for specific past behavior not opinions or future
-  hypotheticals; avoid leading questions), the triage workflow (dedupe → interpret
-  the underlying need → severity/frequency → route to owning agent), and the
-  pattern-vs-over-reaction aggregation discipline that separates a real signal
-  across independent reporters from one loud complaint. Fires when a UAT-scenario
-  failure, a beta-program-design check-in, or an ad hoc report must be logged;
-  when a stated feature request must be probed for its real job (jtbd-analysis);
-  when compliments, fluff, or ideas must be filtered out of feedback; or when a
-  feedback log feeds an acceptance-sign-off decision. Used by requirements-analyst.
-version: 2.1.0
+  Teaches how to capture and triage feedback in Customer Validation into a
+  feedback log: one structured item per finding from a UAT failure, a beta
+  check-in, an exploratory session debrief, an ad hoc report, or a lost
+  trial or churned customer. Covers story-based capture (a specific past
+  event), Mom Test question design for check-ins (no pitch, past tense, no
+  "would you"), filtering compliments, fluff and ideas, converting a feature
+  request into the underlying customer need, deduping by cause rather than
+  symptom, the house severity scale, routing each item to the agent that owns
+  it (which engineer for a bug; the requirements-analyst for a missing
+  capability; the win/loss log for positioning feedback), and rolling items up
+  by symptom and by customer need, so a single loud report is not a pattern
+  and a confirmed pattern reaches acceptance-sign-off. Use when logging
+  feedback, writing check-in questions, deciding what a piece of feedback
+  means or who owns it, or summarising a feedback log. Used by the
+  requirements-analyst agent; written to customer-validation/feedback/<date>.md.
+version: 3.0.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
-tags: [validation, feedback, customer-validation, mom-test, interview, feedback-triage]
+tags: [customer-validation, feedback, feedback-triage, mom-test, severity, routing, opportunity, win-loss, exploratory-debrief]
 produces: feedback-log
 domain: validation
 status: stable
-related: [uat-scenario, beta-program-design, acceptance-sign-off, jtbd-analysis, user-persona, gtm-strategy]
+related: [uat-scenario, uat-plan, beta-program-design, acceptance-sign-off, opportunity-solution-tree, jtbd-analysis, user-persona, competitive-analysis, gtm-strategy, moscow-prioritization, risk-register, glossary-management, methodology-review]
+sources:
+  - research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md
+  - research/testing/explore-it-hendrickson.md
+  - research/product-strategy-and-gtm/loved-lauchengco.md
+  - research/product-strategy-and-gtm/continuous-discovery-habits-torres.md
 ---
 
 # Feedback Template
 
 ## Purpose
 
-Feedback from UAT execution (`uat-scenario`) and beta program check-ins (`beta-program-design`) is only useful if it is captured in a consistent, comparable format and interpreted for the real need behind it. Unstructured notes ("Maya said the report was confusing") cannot be triaged, aggregated, or used to defend an `acceptance-sign-off` decision. This skill defines the capture fields, the Mom-Test discipline for facilitating feedback without leading the participant or accepting a compliment as data, and the triage workflow that gets each report to the agent who owns fixing it.
+Feedback is only evidence once it is captured in a shape that can be compared, interpreted for the need behind it, and handed to whoever owns it. "The customer wasn't thrilled with the report" cannot be triaged, rolled up, or used to defend a sign-off. This skill turns raw feedback into **feedback items** in a **feedback log**.
 
-The requirements-analyst captures, interprets, and routes — it does not resolve bugs or UX issues itself. Resolution ownership stays with the domain agent named in the routing table (see reference), consistent with each agent's declared Owns/Does-not-own boundary.
+The requirements-analyst captures, interprets and routes; it never fixes a bug or redesigns a screen itself.
 
----
+| Owned here | Owned elsewhere |
+|---|---|
+| The item shape; check-in question design; filtering bad data; dedupe; **the severity scale** (the one copy; `uat-scenario` points here); routing; the symptom and customer-need rollups | What an open defect allows at sign-off, and treating a blocking pattern as High: `acceptance-sign-off` · exploratory charters and sessions: `uat-plan` · scripted results: `uat-scenario` · the opportunity space: `opportunity-solution-tree` · the win/loss log: `competitive-analysis` |
 
-## Capture Fields
+## 1. Where Feedback Comes From
 
-Every feedback item — a UAT failure, a structured check-in, or an ad hoc report — is captured in the same shape so items can be compared and aggregated:
-
-- **FB-ID + short title** — a stable identifier and one-line summary
-- **Source** — UAT-[ID] failure / structured check-in / ad hoc report
-- **Reporter** — name, persona (Data Steward / Compliance Officer), company
-- **Context — what happened** — the plain situation the reporter was in, in their words
-- **Expected vs. Actual** — what they believed should happen vs. what did
-- **Category** — bug / UX friction / missing capability / positive signal / documentation gap
-- **Severity/Impact** — Critical / High / Medium / Low (N/A for a positive signal), the same scale `uat-scenario` uses so severity is comparable across every source
-- **Supporting detail** — screenshot reference, the scenario/story ID it relates to, reproduction steps
-
-Full capture template, the category definitions, the severity rubric, the routing table, and worked examples: `references/feedback-capture-and-triage.md`.
-
----
-
-## Mom-Test Question Design for Check-Ins
-
-The facilitator's job during a structured check-in is to surface what the participant actually experienced — not to confirm what the team already believes. A design-partner group per `gtm-strategy`'s Stage 1 is small, relationship-warm, and reflexively polite: it is the single easiest place to self-deceive, so the question discipline matters most here. Fitzpatrick's **Mom Test** is the standard: a question either passes all three rules or it produces false-positive data that *feels* like validation.
-
-**The three rules, applied to feedback elicitation:**
-
-1. **Talk about their life, not your idea.** Ask what they did, not what they think of the product. Describing or pitching the feature first ("leading the witness") tells them what answer would please you and biases everything after.
-2. **Ask about specific past behavior, not opinions or future hypotheticals.** "Walk me through the last time you needed to export a gap report" beats "would you use an export button?" A question answerable only by describing something that actually happened cannot be satisfied by a polite guess.
-3. **Talk less, listen more.** Ask what happened before asking what they think about it; let silence sit; when a participant volunteers a complaint, ask "what would you have expected instead?" rather than proposing a fix — proposing one anchors their answer, and the fix is this plugin's job, not theirs.
-
-**Separate the stated request from the real job.** An unsolicited feature idea ("you should build a dashboard") is evidence of a pain, not a validated spec. Record the underlying problem — "what's the problem you picture that dashboard solving?" — not the raw request, so it reaches `jtbd-analysis` as a real job rather than a solution-shaped one.
-
-Good-vs-bad question pairs, the compliments/fluff/ideas taxonomy, and the advancement/commitment discipline: `references/mom-test-question-design.md`.
-
----
-
-## Triage Workflow
-
-Every captured item runs through the same four steps, fastest for Critical/High per the beta agreement's response SLA:
-
-1. **Dedupe.** Collapse items describing the same underlying issue into one entry with multiple reporters — but only when the *cause* is the same, not merely the symptom. Two participants confused by different screens for different reasons are two items, not one.
-2. **Interpret the underlying need.** For a UX-friction or missing-capability item, name the job the reporter was trying to make progress on, not just the surface complaint — this is where a stated request is converted into its real job before it can distort a roadmap or sign-off decision.
-3. **Assess severity and frequency.** Severity is assigned once, at capture, from the reporter's actual impact — never adjusted later to make an exit-criteria pass rate look better. Frequency is a separate axis: a single report is a data point; multiple *independent* reporters converging on the same cause is a pattern.
-4. **Route to the owning agent.** Each category routes to exactly one owning agent (bug → engineering, UX friction → `ux-architect`, missing capability → `product-strategist`, documentation gap → requirements-analyst, positive signal → logged as evidence). The routing table lives in the reference.
-
-**Pattern vs. over-reaction.** A single Medium complaint, however loud, is logged and watched for a second independent report — not escalated as if three people said it. A confirmed pattern (independent reporters, same root cause) is named explicitly in the sign-off record ("3 of 3 design partners independently found the PDF export below the fold"), not left as a buried count. High/Critical items block regardless of frequency — one report of data loss is enough. The full frequency/severity matrix and worked examples are in the reference.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
+| Source | What arrives | Note |
 |---|---|---|
-| Structured capture | Every item uses the full field set | Free-text notes, no consistent fields |
-| Consistent severity | Same scale as `uat-scenario` across all sources | A different severity vocabulary per source |
-| Mom-Test questions | Open, past-tense, specific-instance; no pitch before the question | Questions that supply the expected answer |
-| Need interpreted | Stated requests probed for the underlying job | Raw feature requests logged verbatim as requirements |
-| Correct routing | Every item reaches the agent owning its category | Bugs left with requirements-analyst |
-| Pattern discipline | Independent reports named as a pattern; single reports not over-weighted | One loud complaint treated as a confirmed pattern |
-| Positive signals retained | Logged as evidence for `acceptance-sign-off` | Only complaints captured, usability confirmation lost |
+| **UAT failure** | A Fail or Blocked from `uat-scenario` | One item per failure; its severity is set at the scenario |
+| **Beta check-in** | Notes from a structured check-in (`beta-program-design`) | Facts and quotes, then filtered (§ 4) |
+| **Exploratory debrief** | A session's findings from `uat-plan`'s charter | Hendrickson (*Explore It!*): the debrief records what the session found, including what no scenario expected. Each finding becomes an item; questions for a further session go back to `uat-plan` as new charters, not into the log. A finding that recurs from an earlier release is a standing exposure: log it and add it to `risk-register`, never close it as a one-off |
+| **Ad hoc report** | An email, a support ticket, a message | Captured the same day; Critical and High triaged the same day |
+| **Lost trial or churn** | "We went with a spreadsheet", "we chose a rival" | Positioning evidence (§ 5), not only a product complaint |
 
----
+## 2. Capture One Item per Finding
+
+Every item has the same fields (`./templates/feedback-item.md`): ID and title; source; **reporter by role** (and organisation or tenant), never a product-specific persona list; date; **context as a specific past event**, in the reporter's words (Torres, *Continuous Discovery Habits*: collect stories, not opinions); expected vs actual; category; severity; underlying need; supporting detail; routed to; rollup notes.
+
+One finding, one item. Five complaints in one email are five items, so each can be routed and counted.
+
+## 3. Ask So the Answers Are Facts
+
+In a check-in the facilitator surfaces what happened, not confirmation of what the team believes. Fitzpatrick's **Mom Test** (*The Mom Test*):
+
+1. **Talk about their life, not your idea.** No demo or pitch before the questions.
+2. **Ask about specific past behaviour.** "Walk me through the last time you…", never "Would you use…?" or "How much would you pay?"
+3. **Talk less, listen more.** When they complain, ask what they did next, not whether a proposed fix would help.
+
+End by asking for a **commitment**: the next session on the calendar, an introduction, real data, a paid pilot. Write the guide from `./templates/check-in-guide.md`; question pairs and scripts: `./references/mom-test-question-design.md`.
+
+## 4. Filter Bad Data Before Logging
+
+| Type | Sounds like | What to log |
+|---|---|---|
+| **Compliment** | "It's great", "love it" | Nothing on its own. Ask for the last time they used it. A **positive signal** is logged only when it rests on behaviour ("ran last month's close in it, two days faster") |
+| **Fluff** | "I always…", "I'd definitely…" | Nothing until a specific instance is named |
+| **Idea** | "You should add a dashboard" | The **underlying need** behind it, as a missing-capability item; the requested feature goes in supporting detail |
+
+## 5. Triage Each Item
+
+1. **Dedupe by cause, not symptom.** Merge items only when the cause is the same. The same symptom with different causes stays separate: at two tenants "the export is slow" may be a large estate at one and a misconfigured region at the other.
+2. **Interpret the underlying need.** Write it in the customer's voice, at a level where more than one solution could meet it, tagged with the moment in their workflow. This is Torres's **opportunity**, and it is what `opportunity-solution-tree` places on the tree.
+3. **Set severity once, at capture**, from the impact on the reporter, on the house scale in `./resources/severity-and-routing.md`. The scale is **this plugin's house rule**, not an industry standard and not from the research library; it exists so every source uses the same four words. Never adjust it later to make an exit criterion pass. What each severity allows at sign-off is `acceptance-sign-off`'s defect rule.
+4. **Route to the one owner** (`./resources/severity-and-routing.md`):
+   - a bug goes to the engineer who owns the broken part: backend, frontend, data, platform or security, never just "engineering";
+   - UX friction goes to the `ux-architect`;
+   - a **missing capability goes to the requirements-analyst**: a requirement or story for a later release (`moscow-prioritization`) and an opportunity on the tree, never a silent Must for this release. Escalate to the `product-strategist` only when the gap challenges the positioning or the ICP;
+   - **positioning feedback** ("we went back to our spreadsheet", "we chose a rival") is never skipped as a one-off preference. Record it in `competitive-analysis`'s win/loss log **and** flag it to `gtm-strategy` as a possible **Positioning Refresh Trigger**: the alternative the customer chose, for which job, and the reason given. The product-strategist decides whether the positioning changes. Lauchengco (*Loved*): positioning is a hypothesis tested against real market contact, and this is that contact.
+
+## 6. Roll Up: Symptoms and Customer Needs
+
+The log's summary has **two rollups**:
+- **By symptom and cause**, for defect handling: reports, independent reporters, severity, status.
+- **By customer need**, for discovery: each need heard, how many independent stories mention it, and the parent opportunity it sits under (Torres). A feature asked for by five people is one need counted five times, not five features.
+
+**One report is a data point.** A pattern needs independent reporters with the same cause; one participant repeating themselves is one concern. A loud single Low or Medium is logged and watched, never escalated as if three people said it. A **confirmed pattern** is named in words for the sign-off ("3 of 4 partners independently missed the export on the report page"); when it blocks a Must flow, `acceptance-sign-off` treats it as High. A single Critical needs no pattern.
+
+## Scale
+
+`phase-requirements.json`: `feedback-log` is **optional at every profile**; it becomes the evidence behind the sign-off whenever one is kept.
+
+| Profile | Shape |
+|---|---|
+| **lean** | A short list of items in one file; often a single ad hoc report. `./examples/01-lean-single-report.md` |
+| **standard** | Items per check-in and UAT window; both rollups. `./examples/02-standard-check-in.md` |
+| **enterprise** | Per-tenant items, dedupe across tenants by cause, patterns named for the sign-off, positioning routed to win/loss. `./examples/03-enterprise-multi-tenant.md` |
+
+## Producing the Log
+
+1. Start `artifacts/<product>/customer-validation/feedback/<date>.md` from `./templates/feedback-log.md`.
+2. **Before a check-in**, draft the guide (§ 3); the user, or the design partner's session, holds the conversation, and the agent works from their notes.
+3. **Capture** one item per finding (§ 2), **filter** (§ 4), **triage** (§ 5).
+4. **Roll up** (§ 6) and list positive signals that rest on behaviour.
+5. **Present it to the user**: each route and each pattern named for the sign-off. Cross-check `./resources/severity-and-routing.md`.
 
 ## Anti-Patterns
 
-- **Free-text feedback with no structure.** "Maya wasn't thrilled with the report" cannot be triaged, routed, or aggregated.
-- **Leading the witness.** "That worked well, right?" manufactures agreement instead of surfacing real experience.
-- **Accepting a compliment as data.** "This is great" costs the speaker nothing and predicts nothing — deflect it back into a specific-instance question.
-- **Logging a feature request as a requirement.** A proposed solution is evidence of a pain; record the job, not the request.
-- **Requirements-analyst fixing bugs itself.** Routing exists so each item reaches its owning agent; crossing that boundary violates every agent's declared ownership.
-- **Treating one report as a pattern.** A single Medium complaint escalated as if three people said it inflates the sign-off record and can force needless scope changes.
-- **Ignoring positive signals.** Capturing only complaints biases the record toward negativity and discards evidence a Must Have flow works.
-- **Severity inflation or deflation to hit a number.** Severity is assigned once, at capture, from real impact — not adjusted to make exit criteria pass.
+| Anti-pattern | Why it fails |
+|---|---|
+| **Free-text notes** | Cannot be triaged, routed or counted |
+| **Leading the witness** | "That worked well, right?" manufactures agreement |
+| **A compliment logged as a positive signal** | Costs the speaker nothing and predicts nothing |
+| **A feature request logged as a requirement** | Records the customer's guess at a solution, not their need |
+| **Dedupe by symptom** | Hides a second cause; one fix closes only one tenant's problem |
+| **"Route to engineering"** | Nobody in particular owns it |
+| **Missing capability sent to strategy** | Strategy is approved; requirements are the requirements-analyst's |
+| **Positioning feedback filed as a bug** | The win/loss evidence never reaches positioning |
+| **One loud report treated as a pattern** | Forces scope changes on noise |
+| **Severity moved to hit a number** | Defeats the sign-off |
+| **The scale presented as a standard** | It is a house rule; say so |
+| **A product's personas as a required field** | Ties the skill to one product; use roles |
+
+Use canonical terms from `glossary-management`: **Acceptance Testing**, **User Acceptance Testing**, **Residual Risk**. Run `methodology-review` before hand-off.

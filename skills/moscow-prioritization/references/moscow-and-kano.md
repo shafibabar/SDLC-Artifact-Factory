@@ -1,134 +1,62 @@
-# MoSCoW and Kano — Two Different Axes, and a Worked Prioritization
+# MoSCoW and Kano — Two Different Axes
 
-Reference material for `moscow-prioritization`. The SKILL.md body states that MoSCoW and
-Kano answer different questions. This file makes the relationship precise, gives the full
-category-to-category mapping, and works a prioritization of this repo's backlog through
-both lenses so the two are visibly complementary rather than redundant.
+Self-contained reference for `moscow-prioritization`. Read it when a story's Kano class is offered as the reason for its MoSCoW bin ("it's Basic, so it's a Must"), when ordering the contingency, and when the backlog has no differentiator left after the cut. A worked case is in `../examples/02-standard-rebound.md`.
 
-The Kano model is Noriaki Kano's feature-classification framework. Its adoption here
-follows Dan Olsen, *The Lean Product Playbook*, which uses Kano to classify a Feature Set
-by the *shape of the satisfaction-response curve* before that set is binned into a
-delivery-window prioritization method such as MoSCoW.
+The Kano model is Noriaki Kano's. This plugin uses it as Dan Olsen does in *The Lean Product Playbook*: classify the feature set by the shape of its satisfaction curve, then bin it with a delivery-window method such as MoSCoW. Mike Cohn (*User Stories Applied*) also uses Kano, as a way to reason about *why* a feature matters, which is a different question from how much room the release has. MoSCoW itself is DSDM's.
 
 ---
 
-## 1. Why they are different axes, not two flavors of the same thing
+## 1. Why they are different axes
 
 | | MoSCoW | Kano |
 |---|---|---|
-| **Question answered** | Given a *fixed capacity constraint*, which scoped stories are IN this release versus deferred? | For a *given feature*, what is the shape of the curve between how well it is built and how satisfied customers are? |
-| **Unit** | Per story — binary (in / out of this release) | Per feature — a curve classification (flat, linear, exponential) |
-| **Depends on** | A delivery window / capacity — meaningless without one | Nothing about a delivery window; only the presence/absence and quality of the feature |
-| **Output** | Must / Should / Could / Won't bins for one release | Basic / Performance / Delighter (+ Indifferent / Reverse) classes |
-| **When run** | After the feature set is scoped, against a specific release | Once candidate features exist, typically *before or alongside* MoSCoW binning |
-| **Changes when** | The delivery window or capacity changes | The market's expectations shift (today's Delighter is tomorrow's Basic) |
+| **Question** | For this release, what is guaranteed and what is contingency? | For this feature, how does satisfaction respond to its presence, absence and quality? |
+| **Unit** | Per story, per release | Per feature, per persona or segment |
+| **Depends on** | A release; meaningless without one | Nothing about a release; only customer expectations |
+| **Output** | Must / Should / Could / Won't this time | Basic / Performance / Delighter (+ Indifferent / Reverse) |
+| **Changes when** | The release or its constraint changes | The market's expectations shift (today's Delighter is tomorrow's Basic) |
 
-They are orthogonal. Kano tells you *where marginal investment pays off* and *which items
-differentiate*; MoSCoW tells you *what fits in the next release*. A feature has one Kano
-class and, independently, one MoSCoW bin per release.
+A feature has one Kano class per persona and, independently, one MoSCoW bin per release. Kano says **where extra investment pays off** and **what differentiates**; MoSCoW says **what this release guarantees**.
 
 ---
 
-## 2. The Kano classes (as used by Olsen)
+## 2. The Kano classes
 
-Each candidate feature is classified by how its presence/absence and quality move
-satisfaction:
+- **Basic (threshold, must-be):** expected table stakes. Absence causes strong dissatisfaction; doing it better than the baseline adds no satisfaction. Meet the bar and stop.
+- **Performance (one-dimensional):** satisfaction rises roughly in line with how well it is delivered. Buy it incrementally.
+- **Delighter (attractive, excitement):** unexpected. Absence causes no dissatisfaction; presence causes disproportionate delight and word of mouth.
+- **Indifferent:** nobody cares either way. Investment is waste.
+- **Reverse:** some segment prefers its absence.
 
-- **Basic (Threshold / Must-be):** expected table stakes. Absence causes strong
-  dissatisfaction; presence beyond the baseline adds *no* satisfaction — a flat,
-  diminishing-returns curve. Customers simply expect it and stop noticing once met.
-- **Performance (One-dimensional):** satisfaction scales roughly *linearly* with how well
-  it is delivered. More/better genuinely produces more satisfaction; less produces
-  dissatisfaction.
-- **Delighter (Attractive / Excitement):** unexpected. Absence causes *no* dissatisfaction
-  (nobody expected it); presence produces disproportionate delight — an exponential curve.
-  Differentiation and word-of-mouth come disproportionately from these.
-- **Indifferent:** customers do not care either way — investment here is waste.
-- **Reverse:** some segment actually prefers the feature's *absence*.
+Olsen classifies with a **paired question** per feature: the functional form ("how would you feel if it had this?") and the dysfunctional form ("…if it did not?"), each answered like it / expect it / neutral / can tolerate it / dislike it, cross-referenced in the Kano table. The pair separates the cost of absence from the value of presence, which a single importance rating mixes up. Classes are **segment-specific**: classify per persona, never on a blended average. With a handful of design partners, a survey is not feasible: classify from interview snapshots and label the class **directional**.
 
-Kano classification uses a paired **functional / dysfunctional** survey question per
-feature ("How would you feel if it had this?" / "…if it did NOT?"), cross-referenced in a
-Kano table — which separates the cost of *absence* from the value of *presence*, something
-a single importance rating conflates. Classes are also **segment-specific**: a Delighter
-for the Compliance Officer can be Indifferent for the IT lead, so classify per persona,
-never on a blended average.
+Three different meanings of "must" are in play and must not be confused: the **MoSCoW Must** (a release guarantee), the **Kano must-be** (Basic, a satisfaction class) and the **Planguage Must** (an NFR's minimum acceptable level, `nfr-specification`).
 
 ---
 
-## 3. The mapping — how a Kano class informs a MoSCoW bin
+## 3. How a Kano class informs a MoSCoW bin
 
-There is **no fixed one-to-one mapping** — that is the whole point. But the cross-tab is a
-powerful sanity check. The interesting cells:
+There is no fixed one-to-one mapping. The cross-tab is a sanity check:
 
-| Kano class | Typical MoSCoW bin | Sanity-check signal |
+| Kano class | Typical bin | Signal |
 |---|---|---|
-| **Basic** | **Must** (usually) | A Kano-Basic that is *not* a MoSCoW-Must is a likely miscategorization — its absence causes strong dissatisfaction, which usually fails the necessity test. Look again. |
-| **Performance** | Must → Should → Could, by capacity | Invest *incrementally* — buy the amount of Performance the ~60% Must budget and the Should/Could buffer afford, not all of it. |
-| **Delighter** | **Should or Could** (rarely Must) | A Delighter absent does *not* fail the necessity test, so it is rarely a Must — but it may be the release's only differentiator. Flag Delighters so they are protected from being cut as generic "nice to have." |
-| **Indifferent** | **Won't** (or drop) | If customers do not care, do not spend a release slot on it. |
-| **Reverse** | **Won't** for the segment that dislikes it | Building it actively harms a segment — exclude, or gate behind a setting. |
+| **Basic** | Often Must | A Basic that is **not** a Must gets a **second look** with the Must test and the workaround clause. If a workaround exists, it stays a Should, but is cut late, because its absence is felt sharply. Never promote on the class alone |
+| **Performance** | Must, Should or Could by release | Invest incrementally: the skeleton gets the minimum, the contingency buys more |
+| **Delighter** | Should or Could (rarely Must) | Absent, it fails the Must test, so it is rarely a Must. It may be the release's only differentiator: **protect it**, last in its tier's cut order |
+| **Indifferent** | Won't this time (or close) | Do not spend a release on it; drop it first if it slipped into the contingency |
+| **Reverse** | Won't, for the segment that dislikes it | Exclude, or gate it behind a setting |
 
-The two cases the SKILL.md body names, expanded:
+Illustration, not a rule: audit logging that a regulator requires is typically **Kano-Basic** (auditors assume it, and over-building it adds nothing) and a **MoSCoW Must** (illegal without it). The two answers agree for different reasons; that is the point of keeping the axes apart.
 
-- **MoSCoW-Must + Kano-Basic:** SOC 2 control mapping. Expected (Basic — auditors and the
-  Compliance Officer simply assume it exists), and its absence fails the release on the
-  legal/contractual criterion (Must). Building it *better* than the compliance bar adds no
-  satisfaction — so meet the bar and stop; do not gold-plate a Basic.
-- **MoSCoW-Should + Kano-Delighter:** a feature the Data Steward would not miss if absent
-  (fails the necessity test → not a Must) but that produces outsized delight and
-  word-of-mouth if present (Delighter). MoSCoW alone would file this next to genuinely
-  low-value Shoulds; Kano flags it as the differentiator to protect first when the buffer
-  is under pressure.
-
-**The forcing function:** a feature set with **zero Delighters** is differentiation-free by
-construction — every item is either table stakes (Basic) or linear grind (Performance).
-Run the Kano pass partly to confirm at least one Delighter survives the MoSCoW cut.
+**The forcing function:** a contingency with **zero Delighters** is differentiation-free by construction. Run the Kano pass partly to confirm at least one Delighter survives in the release or in the next one.
 
 ---
 
-## 4. Worked prioritization — data-estate / compliance backlog
+## 4. Sequencing the two
 
-Release: MVP, 8-week window, ~16 person-weeks capacity, Must ceiling ~9.6 person-weeks.
-Primary persona: the Data Steward. Secondary: the Compliance Officer. Each story is scored
-on **both** axes, then reconciled.
+1. Candidate features and needs exist (`jtbd-analysis`, `user-persona`).
+2. **Kano pass:** classify each candidate per persona.
+3. **MoSCoW pass:** the Must test and workaround clause on every story; Musts = walking skeleton; bin the rest.
+4. **Reconcile:** every Basic that is not a Must gets its second look; Delighters are flagged and placed last in their tier; Indifferent and Reverse go to Won't.
 
-| Story | Kano class (primary persona) | MoSCoW bin | Reconciliation note |
-|---|---|---|---|
-| US-001 Connect Google Drive via OAuth | Basic | **Must** | No source, no product; Basic + necessity-test pass — consistent. |
-| US-005 Run initial scan, classify files by sensitivity | Performance→Basic | **Must** | The release goal ("first gap in 30 min") fails without it. Classification *accuracy* is Performance — buy accuracy incrementally, do not perfect it now. |
-| US-009 View compliance gap report | Basic | **Must** | The gap report *is* the first-value moment — Basic and necessity-critical. |
-| US-014 SOC 2 access-audit logging | Basic | **Must** | Legal/contractual criterion. Kano-Basic — meet the audit bar and stop; over-building adds no satisfaction. |
-| US-010 Export gap report as PDF | Performance | **Should** | The Compliance Officer can present from the app meanwhile; absence degrades audit-prep but does not block it. |
-| US-021 One-click "remediation suggestion" per gap | **Delighter** | **Should** | Would not be missed if absent (not a Must) — but this is the release's differentiator. **Protect from cuts before other Shoulds.** |
-| US-006 Real-time scan-progress bar | Performance | **Could** | A static "scan running" state suffices; live progress is comfort. Absence barely noticed. |
-| US-030 Custom report theming / logos | Indifferent | **Could / Won't** | Kano-Indifferent for the Steward — do not spend a Must or Should slot; drop if capacity is tight. |
-| US-003 Connect SharePoint | Basic (for a *different* segment) | **Won't (this release)** | Design-partner evidence: Google Drive + S3 covers the ICP. Acknowledged, target Release 3. |
-
-**Capacity check:** the four Musts (US-001, 005, 009, 014) estimate at ~9 person-weeks ≈
-56% of the 16-week capacity — inside the ~60% ceiling. US-010's promotion to Must (which
-the Compliance Officer might argue) would push Musts over the ceiling — so the necessity
-test governs: the Officer is the *secondary* persona and can present from the app, so it
-holds at Should.
-
-**What the Kano lens added that MoSCoW alone missed:** US-021 (remediation suggestion) is
-a Should on both readings — but Kano marks it a Delighter and therefore the differentiator
-to defend when the Should/Could buffer is squeezed, rather than a generic "nice to have"
-cut alongside US-006 and US-030. And US-030 (theming) is a Should-looking cosmetic that
-Kano exposes as Indifferent — safe to drop first. MoSCoW ranked *release necessity*; Kano
-ranked *satisfaction leverage*; together they say **keep US-021, cut US-030 first.**
-
----
-
-## 5. Sequencing the two techniques
-
-1. Identify candidate features/needs (see `jtbd-analysis`).
-2. **Kano pass** — classify each candidate (Basic / Performance / Delighter /
-   Indifferent / Reverse), per persona, not blended.
-3. **MoSCoW pass** — bin the scoped stories into Must / Should / Could / Won't against
-   the release's capacity constraint (`references/moscow-rubric.md`).
-4. **Reconcile** — every Kano-Basic that is not a Must gets a second look; confirm at
-   least one Delighter survives as a Should/Could and is flagged for protection; drop
-   Indifferent/Reverse items to Won't.
-
-Kano informs, but never replaces, the Must/Should/Could/Won't decision — the release
-constraint still decides what ships.
+Kano informs the contingency order and catches miscategorised Basics. It never replaces the Must test: the release's guarantee is still decided by "what happens if it is not delivered, and is there a workaround?"

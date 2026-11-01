@@ -33,18 +33,6 @@
         }
       },
       {
-        "artifact": "mission-statement",
-        "paths": [
-          "strategy/mission-statement.md"
-        ],
-        "agent": "product-strategist",
-        "profiles": {
-          "lean": "skip",
-          "standard": "required",
-          "enterprise": "required"
-        }
-      },
-      {
         "artifact": "stakeholder-map",
         "paths": [
           "strategy/stakeholder-map.md"
@@ -69,6 +57,19 @@
         }
       },
       {
+        "artifact": "strategy-kernel",
+        "paths": [
+          "strategy/strategy-kernel.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "Rumelt's kernel: diagnosis, guiding policy, coherent actions; replaces the mission statement (D045). lean: about 150 words, one short paragraph per part."
+      },
+      {
         "artifact": "business-model-canvas",
         "paths": [
           "strategy/business-model-canvas.md",
@@ -76,10 +77,11 @@
         ],
         "agent": "product-strategist",
         "profiles": {
-          "lean": "skip",
+          "lean": "required",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: the Lean Canvas variant (strategy/lean-canvas.md), Maurya's one-page canvas for the smallest products."
       },
       {
         "artifact": "gtm-strategy",
@@ -95,18 +97,17 @@
         }
       },
       {
-        "artifact": "strategic-roadmap",
+        "artifact": "pricing-and-packaging",
         "paths": [
-          "strategy/roadmap.md",
-          "strategy/strategic-roadmap.md"
+          "strategy/pricing-and-packaging.md"
         ],
         "agent": "product-strategist",
         "profiles": {
-          "lean": "required",
-          "standard": "required",
+          "lean": "skip",
+          "standard": "optional",
           "enterprise": "required"
         },
-        "note": "lean: one page."
+        "note": "The price book under the GTM's pricing decision: tier matrix with fences, list prices, bottom-up business case, discount give-get policy (Ramanujam and Tacke). standard: write it when the GTM has two or more tiers aimed at different segments, when anyone besides the product owner can discount, or when the user asks; otherwise the GTM's pricing section is enough."
       },
       {
         "artifact": "okr-set",
@@ -120,7 +121,21 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "lean: one objective."
+        "note": "lean: one Objective with about three Key Results."
+      },
+      {
+        "artifact": "strategic-roadmap",
+        "paths": [
+          "strategy/roadmap.md",
+          "strategy/strategic-roadmap.md"
+        ],
+        "agent": "product-strategist",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "lean: one page, two to five themes, each serving the lean Objective's Key Results."
       }
     ],
     "ideate": [
@@ -134,7 +149,8 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Written after the impact map; each user requirement traces to a selected-path deliverable (or, with no map at standard, the Key Result) and to a job statement and the job story beneath it; every functional requirement has a fit criterion and a provisional priority, finalised by MoSCoW. lean: no FRD, the user story backlog is the functional requirements (a short header for scope, business rules and transition lines). enterprise: typed business-rules catalogue, transition plan, conflicts, forward traceability and a change log (requirements-analysis)."
       },
       {
         "artifact": "nfr-specification",
@@ -147,7 +163,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "lean: short — only the NFRs that change a design decision."
+        "note": "Consumes the FRD's quality-attribute hand-off (QA-n) and cites its business rules (BR-n), never restating them; each NFR is a quality-attribute scenario over the ISO/IEC 25010 characteristics plus deployability, with conflicts recorded as candidate trade-off points. Targets scale: lean is short — only the NFRs that change a design decision (3-8 scenarios, Must only, no process targets unless asked); standard rates value and impact, Must and Plan; enterprise adds a utility tree and Stretch per service tier. DORA rates are optional process targets set from dora-metrics, not NFRs (nfr-specification)."
       },
       {
         "artifact": "user-personas",
@@ -160,7 +176,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "lean: 1–2 proto-personas with the job each hires the product for (JTBD folded in)."
+        "note": "lean: 1–2 PROTO personas, one primary per interface, each with its job statement, 1–2 job stories and a forces line (JTBD folded in)."
       },
       {
         "artifact": "jtbd-analysis",
@@ -172,19 +188,75 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Job statements with job stories under them, each story citing an interview snapshot or tagged as an assumption; outcomes ranked by compare-and-contrast at a handful of design partners, by per-segment opportunity score only with a survey sample."
+      },
+      {
+        "artifact": "interview-guide",
+        "paths": [
+          "ideate/interviews/guides/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "when the user (or a design partner) is about to hold a customer conversation; the agent writes the guide, never the interview (jtbd-analysis)."
+      },
+      {
+        "artifact": "interview-snapshot",
+        "paths": [
+          "ideate/interviews/snapshots/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "one new dated file per conversation, from the interviewer's notes; evidence, so a new snapshot never reopens an approved artifact (jtbd-analysis)."
+      },
+      {
+        "artifact": "opportunity-solution-tree",
+        "paths": [
+          "ideate/opportunity-solution-tree.md",
+          "ideate/opportunity-solution-trees/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "One product outcome at the root (never a business outcome or traction metric); opportunities in the customer's voice, citing snapshots or feedback items; a target opportunity chosen by comparing siblings. lean (when the user has heard from customers): a short ranked opportunity list, not a tree. standard: the full tree with about three solutions and assumption tests. enterprise: one tree per product outcome under opportunity-solution-trees/, opportunities tagged by segment or tenant role, tests tracked. Versioned per discovery cycle (opportunity-solution-tree)."
+      },
+      {
+        "artifact": "assumption-test",
+        "paths": [
+          "ideate/assumption-tests/*.md"
+        ],
+        "agent": "requirements-analyst",
+        "profiles": {
+          "lean": "optional",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "one dated file per assumption test, its success criterion set before the run; evidence, so recording a result never reopens the approved tree (opportunity-solution-tree)."
       },
       {
         "artifact": "impact-map",
         "paths": [
-          "ideate/impact-map.md"
+          "ideate/impact-map.md",
+          "ideate/impact-maps/*.md"
         ],
         "agent": "requirements-analyst",
         "profiles": {
           "lean": "skip",
           "standard": "optional",
           "enterprise": "required"
-        }
+        },
+        "note": "Written after the opportunity solution tree and before the functional requirements; its goal is the tree's product outcome, in fields. lean: no map, epics trace to the Key Result. standard (when produced): one map for the outcome the first release serves. enterprise: one map per product outcome in scope under impact-maps/, with shared actor names. Ends in a selected path with typed assumptions, signals and a re-plan trigger, never a MoSCoW column (impact-mapping)."
       },
       {
         "artifact": "epic-list",
@@ -196,7 +268,8 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Outcome-named epics, each a falsifiable hypothesis traced to a selected-path deliverable (or the Key Result with no map), a job story and the user requirements it carries, with a four-risk line, 3-5 high-level criteria with examples, a Bounded Context candidate, size by story count and a provisional priority MoSCoW finalises. lean: no epics.md; epic headings with a KR trace line in ideate/user-stories.md. enterprise: grouped by impact map, transition epics per tenant, cross-context flags for the domain-modeler (epic-definition)."
       },
       {
         "artifact": "user-story-backlog",
@@ -209,7 +282,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "lean: MoSCoW priority inline in the backlog; the backlog is also the functional requirements."
+        "note": "lean: stories carry a provisional priority, finalised by a closing Must / Won't-this-time block in the backlog (the MoSCoW artifact is skipped); the backlog is also the functional requirements."
       },
       {
         "artifact": "acceptance-criteria",
@@ -247,7 +320,8 @@
           "lean": "optional",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "The persona's journey as a backbone seeded from the selected path's epics, stories ordered by necessity, and a walking skeleton that is the release's Must set (Minimum Usable SubseT, checked both ways with MoSCoW), then release slices by outcome with learning checkpoints. lean (when the user asks): one page, backbone, skeleton row and Later; otherwise the skeleton is the backlog's Must / Won't-this-time block. enterprise: several personas on one backbone, a skeleton for one tenant, regulatory Musts added to it, per-tenant slices, a re-cut log (story-mapping)."
       },
       {
         "artifact": "moscow-prioritisation",
@@ -259,7 +333,8 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Finalises the provisional priorities: a prioritisation agreement (the product owner decides), Musts = the walking skeleton checked both ways (DSDM's Minimum Usable SubseT and workaround clause, story by story; legal, safety or regulatory Musts added to the skeleton), Should / Could as a contingency in cut order, Won't this time with a reason and a look-again point; no person-week capacity percentage. lean: no moscow.md, the Must / Won't-this-time block closes ideate/user-stories.md. enterprise: provisional value / penalty beside the release bins, the optional report-only Must share, a priority change log and any scope escalation (moscow-prioritization)."
       }
     ],
     "design": [

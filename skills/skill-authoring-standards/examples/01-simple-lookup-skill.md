@@ -7,7 +7,7 @@ Self-contained. Shows the **simplest** correct outcome of the folder decision: e
 A skill teaching MoSCoW prioritisation for a story backlog:
 
 - the four categories and what each one means (≈15 lines);
-- one rule: Must Haves capped at about 60% of the release's effort (≈5 lines);
+- one rule: any workaround, even manual, means a story is not a Must (≈5 lines);
 - a short "how to run the session" procedure (≈20 lines);
 - quality criteria and anti-patterns (≈25 lines);
 - one 6-row illustration of a prioritised backlog (≈10 lines).
@@ -16,7 +16,7 @@ A skill teaching MoSCoW prioritisation for a story backlog:
 
 | Content | Folder test | Result |
 |---|---|---|
-| Categories, 60% rule, procedure | Decision-shaping; needed on almost every invocation | Body |
+| Categories, workaround rule, procedure | Decision-shaping; needed on almost every invocation | Body |
 | Quality criteria, anti-patterns | Decision-shaping and short | Body |
 | 6-row illustration | An example, but only 10 lines and needed to understand the categories | Body: too small to earn a file |
 

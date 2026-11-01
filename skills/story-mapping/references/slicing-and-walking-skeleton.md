@@ -1,200 +1,105 @@
 # Slicing and the Walking Skeleton
 
-Reference for the *vertical* dimension of a User Story Map (Jeff Patton, *User
-Story Mapping*): the walking skeleton, how to slice the map horizontally into
-releases by outcome, how a slice becomes an MVP, and a full worked map for this
-repo's Data Steward end-to-end estate-review flow. Read alongside
-`map-structure-and-backbone.md`, which covers the backbone and the body.
+Self-contained reference for `story-mapping`. Read it before cutting the walking skeleton or any release slice, whenever the Must list and the skeleton disagree, when someone calls an experiment the MVP, and after a release ships (re-cutting). The backbone and body are in `map-structure-and-backbone.md`.
+
+Grounded in Jeff Patton with Peter Economy, *User Story Mapping* (walking skeleton, slices, learning vs release MVP, re-cutting); the DSDM Agile Project Framework (MoSCoW, the Minimum Usable SubseT, the workaround clause, priority per release); and Marty Cagan, *Inspired* (prototypes belong to discovery).
 
 ---
 
-## The walking skeleton
+## 1. The walking skeleton
 
-**Definition.** The walking skeleton (Patton credits Alistair Cockburn) is the
-**thinnest possible slice of the map that actually functions end-to-end across
-the entire backbone** — one complete working path through the whole user journey,
-even if every step is ugly, manual, or minimal.
+**Definition.** The thinnest slice of the map that **works end to end across the whole backbone**: one complete path from the first activity to the outcome the product exists for, however bare. Read it as the top row across every activity at once. The name is literal: a skeleton that can already walk before any flesh is added.
 
-It is *read as the top row across every backbone step at once*. The name is
-literal: a skeleton that can already **walk** — move under its own power from one
-end of the journey to the other — before any flesh is added.
+**The end-to-end test.** Read the top row aloud as one sentence: "The member *sees the drill is in*, *borrows it*, *gets a reminder*, *brings it back*." If any activity has no working top cell, the user hits a wall there and the skeleton is **broken**, not incomplete.
 
-### Why "walking skeleton" is more precise than "MVP slice"
+**What a skeleton cell may hold.**
 
-"MVP slice" invites the reading "the minimum viable set of stuff," which teams
-satisfy by picking their favourite must-haves. The walking-skeleton framing fixes
-a harder, testable bar: the slice must **work end-to-end**. A pile of high-value
-stories that does not connect into a complete path is not a walking skeleton, no
-matter how "minimum viable" it feels.
-
-### The end-to-end test
-
-Read the candidate top row across the *whole* backbone and ask: **does this form
-one complete, functioning path from the first activity to the delivered outcome?**
-
-- If *any* backbone step's top row is missing or non-functional, the skeleton is
-  **broken**, not merely incomplete — the user hits a wall mid-journey.
-- A broken skeleton is the single most common release-scoping failure and is
-  exactly what the "vertical-slice MVP" anti-pattern produces.
-
----
-
-## Slice by outcome, not by layer
-
-Below the walking skeleton, additional horizontal cuts mark **releases**. The
-governing rule: **each slice must itself be end-to-end viable — it delivers a user
-*outcome*, not a completed component.**
-
-| | Outcome slice (correct) | Layer/component slice (wrong) |
+| Cell | Allowed | Example |
 |---|---|---|
-| Shape | Thin cut crossing *every* backbone step | Deep cut completing *one* backbone step |
-| User experience | Can finish the whole journey, with fewer options | Can perfect one step, then hits a wall |
-| Example | "Connect one source → scan it → see the gap report" | "All four connectors, perfectly — scanning next quarter" |
+| A story (US-n) | Yes | `US-4` |
+| Several stories | Yes, when the step needs both to work at all | `US-41, US-42 (regulatory: BR-6)` |
+| An existing capability | Yes, marked | `(existing: appointment already in the diary)` |
+| A named manual step | Yes, marked; ugly still walks | `(manual: front desk phones the waitlist)` |
+| Blank or "—" | **Never** | The skeleton does not walk |
 
-### A release slice is not a MoSCoW "Must" cut
-
-MoSCoW (a DSDM technique, not Patton's) ranks stories by category. A release slice
-is a different operation: it must be **end-to-end viable**, not "the collection of
-Must-Haves." A set of Musts scattered across three backbone steps with a gap in
-between is a broken slice even though every story in it is a Must. Use MoSCoW to
-inform *vertical placement* within a step; use the end-to-end test to decide the
-*horizontal cut*.
-
-### Re-cutting as learning happens
-
-Slices are not frozen. After a slice ships, Patton expects an explicit **"what did
-we learn"** checkpoint that may reshape later slices. The map is a living tool
-revisited across releases, not a one-time discovery output.
+"Walking skeleton" is more precise than "MVP slice": "minimum viable" invites a favourite-features list; "walks end to end" is a test anyone can run.
 
 ---
 
-## How a slice maps to an MVP — and the two MVPs
+## 2. Must = Minimum Usable SubseT = walking skeleton
 
-The **MVP slice** of a story map is the walking skeleton: the smallest thing you
-can actually **ship** to real users and have them complete the journey. That is a
-**release-MVP**.
+The plugin's decision (D045): **the release's Musts are DSDM's Minimum Usable SubseT, and that is the walking skeleton.** DSDM expands MUST as *Minimum Usable SubseT*, the guaranteed set that together gives a usable solution. A Must set with a hole in the journey is not *usable*, so it fails DSDM's own definition. Patton states the same idea as a shape on the map. The two meet in one rule, checked both ways.
 
-Patton is careful to distinguish it from a **learning-MVP** — the *cheapest thing
-you can build to test a belief* (a fake-door test, a concierge/manual experiment,
-a throwaway prototype), which may never ship at all:
+### The two-way check
+
+| Direction | Check | If it fails |
+|---|---|---|
+| Skeleton → Must | Every story on the skeleton row is a Must for this release | MoSCoW found a workaround (DSDM: **any** workaround, even manual or painful, means not a Must)? Move the story to a later slice, put the workaround in the cell as a named manual step, and re-run the end-to-end test |
+| Must → skeleton | Every Must for this release is on the skeleton row | Not needed for the journey and not legal, safety or regulatory? **Demote it** (Should or Could). Legal, safety or regulatory (DSDM's other Must signals)? **Add it to the skeleton** at the step it protects, marked with its rule |
+
+The second fix is the one DSDM does not state: it never mentions story maps, so "a regulatory Must must sit on the skeleton" is this plugin's reading of "usable". It keeps the two lists identical, which is the point.
+
+**Who does what.** The map **proposes** the skeleton and records the two-way check against the provisional priorities. `moscow-prioritization` **confirms** it at release level, applying the workaround clause story by story. At lean, the backlog's closing Must / Won't-this-time block is the skeleton list. Neither skill may leave the two disagreeing.
+
+**Provisional priority is not the answer.** Epics and stories carry high / medium / low until MoSCoW. A high epic's stories are judged one by one (DSDM): some are on the skeleton, some are not. Do not copy an epic's priority onto all of its stories.
+
+**Slices below the skeleton.** Their stories are not Musts of *this* release. DSDM prioritises per release: when Release 2 comes, MoSCoW runs again and Release 2's skeleton additions become that release's Musts.
+
+---
+
+## 3. Release slices: by outcome, never by layer
+
+Each horizontal cut below the skeleton is a **release slice**. The rule: **each slice, added to those above it, leaves the journey complete for the users it targets, and names the outcome it adds.**
+
+| | Outcome slice (right) | Vertical or component slice (wrong) |
+|---|---|---|
+| Shape | Thin cut across the activities that change | Deep cut finishing one activity, or one service |
+| User | Completes the whole journey, with fewer options | Perfects one step, then hits a wall |
+| Example | "Paper-diary clinics join: copy the day's bookings in; reminders and confirm requests already work" | "All four connectors first, scanning next quarter"; "Tenant Service release" |
+
+A slice may be empty in a column where nothing changes for its users (a new segment joining may only add an onboarding step). A slice that adds a *new user segment or tenant* is legitimate and common at enterprise: "council B goes live" is an outcome.
+
+**Name the outcome, not the content.** "Release 2: refills run themselves" tells the roadmap something; "Release 2: US-3, US-5, US-6" does not.
+
+At standard and enterprise, cut at least the skeleton and Release 2. Everything beyond the last slice is listed as "Later", not left unplaced.
+
+---
+
+## 4. Learning checkpoints and re-cutting
+
+Patton expects a "what did we learn?" checkpoint after each slice ships, and he expects later slices to change. Each slice in the artifact carries:
+
+- **Signal:** what to read after it ships. Copy it from the impact map's selected path (or the KR at lean); do not invent a second one.
+- **Re-cut trigger:** what result would change the later slices. Copy the impact map's re-plan trigger where it exists ("reply rate under 70% after four weeks → try the calendar-file option").
+
+When a trigger fires, re-cut: move stories between slices, add the next option's stories (through a new epic, after the impact map changes), and record the re-cut. At enterprise the map keeps a **re-cut log** (date, what moved, why). A story map that no longer matches the backlog is worse than none.
+
+**The roadmap.** The roadmap is written in Strategy, before the map exists. The first release slice is the first concrete test of the roadmap's Now horizon, and the map's arrival is a named roadmap revision trigger (`roadmap-authoring`). Note it in the artifact; do not edit the roadmap from here.
+
+---
+
+## 5. Release MVP and learning MVP
+
+Patton separates two things both called "MVP":
 
 | | Release-MVP | Learning-MVP |
 |---|---|---|
-| Purpose | Ship a usable outcome | Validate a hypothesis cheaply |
-| On the map? | Yes — the walking-skeleton cut | No — lives upstream (`impact-mapping` / JTBD) |
-| Rigour | Production-worthy (if minimal) | Deliberately throwaway |
-| Failure mode | Treating it as a mere prototype | Treating it as shippable |
+| Question | What is the smallest thing real users can complete the journey with? | What is the cheapest way to test this belief? |
+| Form | The walking skeleton, production quality, minimal scope | Fake door, concierge or Wizard-of-Oz test, clickable or live-data prototype, feasibility spike |
+| Home | This map | Upstream: assumption tests on the `opportunity-solution-tree`, typed assumptions on the impact map |
+| Failure | Treating it as a prototype (cutting quality) | Shipping it, or demanding production rigour from it |
 
-A story map produces a **release-MVP**. Never let a validated-learning experiment
-be treated as shippable, or demand production rigour from a learning experiment.
+Marty Cagan (*Inspired*) makes the same cut from the other side: discovery uses prototypes of different fidelities to test value, usability and feasibility *before* delivery is committed, and none of them ship. When a user calls a fake-door test "our MVP", answer both halves: the test belongs upstream as an assumption test (and its result can reshape the map), and the release-MVP is still the walking skeleton, which ships.
 
----
-
-## Worked map — Data Steward end-to-end estate review
-
-Primary persona: the **Data Steward** at an SMB, using the data-estate/compliance
-platform. Narrated spine: *connect a source → scan & classify it → review the
-compliance gap report → manage & govern the estate.*
-
-### The map
-
-```
-BACKBONE →  Connect Sources     │  Scan & Classify      │  Review & Report        │  Manage & Govern
-TASKS    →  Connect a source    │  Run a scan           │  See compliance gaps    │  Act on findings
-────────────────────────────────┼───────────────────────┼─────────────────────────┼──────────────────────────
-WALKING SKELETON (Release 1 — the shippable MVP; read across = one working path)
-  US-001 Connect Google Drive   │  US-005 Trigger a scan │  US-009 View gap report │  US-013 Set retention policy
-  (OAuth, one source)           │  (manual, one source)  │  (on-screen, top risks) │  (one policy, applied)
-────────────────────────────────┼───────────────────────┼─────────────────────────┼──────────────────────────
-RELEASE 2 — broaden sources & sharing (still end-to-end for more users)
-  US-002 Connect AWS S3         │  US-006 Monitor scan   │  US-010 Export gap      │  US-014 Manage user
-                                │        progress        │        report (PDF)     │        access
-────────────────────────────────┼───────────────────────┼─────────────────────────┼──────────────────────────
-RELEASE 3 — automate & govern at scale
-  US-003 Connect SharePoint     │  US-007 Schedule       │  US-011 Schedule        │  US-015 Configure data
-                                │        recurring scan  │        recurring report │        residency
-  US-004 Connect local upload   │  US-008 Scan results   │  US-012 Trend view      │  US-016 Audit log of
-                                │        summary         │        over time        │        actions
-```
-
-### Why the walking skeleton is genuinely a skeleton
-
-Read the top row across all four steps: **the Data Steward connects Google Drive,
-triggers a scan over it, reads the compliance gaps it finds on screen, and sets a
-retention policy to start closing them.** That is a complete, if bare, compliance
-review — the persona achieves the outcome the product exists to deliver. Remove
-*any* one of the four and the skeleton no longer walks: connect-and-scan with no
-report leaves the Steward with data and no insight; a report with no policy action
-leaves them informed but unable to act.
-
-### Why the vertical-slice alternative fails
-
-"Ship all four connectors first, perfectly" would complete the **Connect Sources**
-column down to US-004 while **Scan & Classify** stays empty. The Data Steward can
-connect Google Drive, S3, SharePoint, and local uploads flawlessly — and then has
-nowhere to go, because nothing scans them. Impressive column, no outcome.
+A spike story on the map (a feasibility question inside delivery, "what does each council's GIS return?") is not a learning-MVP: it is a delivery task that unblocks a story, and sits under the story's step.
 
 ---
 
-## Quality Criteria
+## 6. Common slicing mistakes
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Complete backbone | Narrative spine covers the full journey from start to delivered value | Spine stops before the persona achieves their goal |
-| Walking skeleton walks | Top row read across the *entire* backbone forms one functioning end-to-end path | An activity in the skeleton has no functioning top-row story |
-| Necessity, not priority | Body stories ordered vertically by what makes the step minimally whole | Flat rows with no necessity gradient |
-| Outcome slices | Every release slice is end-to-end viable, not a completed component | A slice completes one activity and leaves later steps empty |
-| Release slices defined | At least the MVP (skeleton) and Release 2 are cut | A single cut with everything else undefined |
-| Every story placed | Each backlog story appears on the map | Orphan stories placed nowhere |
-| MVP kind is explicit | The map's MVP is stated as a release-MVP (shippable), not a learning experiment | "MVP" used ambiguously for a throwaway experiment |
-
----
-
-## Output Format
-
-```markdown
----
-name: story-map
-product: [product name]
-version: 1.0.0
-phase: ideate
-created: [date]
-summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
-owner: requirements-analyst
-primary-persona: [name]
-walking-skeleton: [the release name of the top-row end-to-end slice]
----
-
-# User Story Map
-
-## Big Picture
-- **Opportunity:** [business objective this map serves]
-- **Primary persona:** [name]
-- **Outcome hypothesis:** [the outcome shipping the skeleton should produce]
-
-## Narrative Spine
-[Walk the backbone in prose: "First, [Persona] does X... then Y... then Z..."]
-
-## Story Map
-
-| Activity → | [Activity 1] | [Activity 2] | [Activity 3] | [Activity 4] |
-|---|---|---|---|---|
-| **Tasks** | [Task 1.1] | [Task 2.1] | [Task 3.1] | [Task 4.1] |
-| **Walking skeleton (MVP)** | US-[ID] | US-[ID] | US-[ID] | US-[ID] |
-| **Release 2** | US-[ID] | US-[ID] | US-[ID] | US-[ID] |
-| **Release 3** | US-[ID] | — | US-[ID] | US-[ID] |
-
-## Release Definitions
-
-### Release 1 — Walking Skeleton (MVP)
-**Walks end-to-end:** [what the persona can complete start-to-finish with only these stories]
-**Stories:** US-[IDs]
-**MVP kind:** Release-MVP (shippable) — not a learning experiment.
-
-### Release 2 — [name and outcome]
-**Enables:** [additional outcome or user type, still end-to-end]
-**Stories:** US-[IDs]
-
-## Map Gaps, Learning Checkpoints, and Open Questions
-[Backbone steps with no stories; orphan stories; what to re-check after Release 1 ships]
-```
+- **The broken skeleton.** A top row with a blank activity.
+- **Musts with a hole.** A Must list that skips a journey step: not usable, not a skeleton.
+- **The orphan Must.** A Must nobody needs to walk the journey: demote, unless legal, safety or regulatory.
+- **The Should on the skeleton.** A skeleton story with no workaround but ranked Should: the release is not guaranteed to walk.
+- **Every tenant at once.** "Release 1 = onboarding complete for all tenants" is the vertical slice at enterprise scale. One tenant (or pilot segment) walking end to end comes first; the others are later slices.
+- **The everything slice.** One cut containing the whole map: there was no slicing.

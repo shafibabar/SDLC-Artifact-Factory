@@ -5,7 +5,7 @@ description: >
   Defines every domain term used across all agents, skills, commands, hooks, and artifacts.
   Provides the reference all agents consult to prevent terminology drift. When any agent
   is unsure whether a term is canonical, they check this skill first.
-version: 1.1.1
+version: 1.19.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
@@ -13,6 +13,16 @@ tags: [ddd, ubiquitous-language, glossary, governance, cross-cutting]
 produces: ubiquitous-language-glossary
 domain: governance
 status: stable
+sources:
+  - research/product-strategy-and-gtm/good-strategy-bad-strategy-rumelt.md
+  - research/product-strategy-and-gtm/measure-what-matters-doerr.md
+  - research/product-strategy-and-gtm/product-roadmaps-relaunched-lombardo.md
+  - research/product-strategy-and-gtm/business-model-generation-osterwalder.md
+  - research/product-strategy-and-gtm/running-lean-maurya.md
+  - research/product-strategy-and-gtm/monetizing-innovation-ramanujam.md
+  - research/product-strategy-and-gtm/crossing-the-chasm-moore.md
+  - research/product-strategy-and-gtm/loved-lauchengco.md
+  - research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md
 ---
 
 # Glossary Management

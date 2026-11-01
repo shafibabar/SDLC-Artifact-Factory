@@ -1,182 +1,178 @@
 ---
 name: uat-plan
 description: >
-  Teaches how to plan User Acceptance Testing for the Customer Validation
-  phase — deriving UAT scope from MoSCoW Must Have stories, defining
-  participant roles (design partners or an internal proxy as executors, the
-  requirements-analyst as facilitator, the product owner plus a customer stakeholder as
-  sign-off authority), the canary tenant or staging environment UAT runs
-  against, entry and exit criteria, the schedule structure, and — per
-  Elisabeth Hendrickson's exploratory testing practice — a time-boxed
-  exploratory session component run alongside scripted scenarios, since
-  scripted scenarios can only check what someone already wrote down. UAT
-  proves a deployed release behaves correctly for real users before wide
-  rollout — it is the final human-in-the-loop gate, not pre-deployment QA.
-  Used by the requirements-analyst during Customer Validation.
-version: 2.1.1
+  Teaches how to plan acceptance testing for a deployed release in Customer
+  Validation: choosing the acceptance types in scope (user acceptance testing,
+  operational acceptance testing, contractual, regulatory, alpha / beta),
+  scoping UAT to the release's Must stories (the walking skeleton) with the
+  acceptance criteria and feature files as the test basis, naming the executor,
+  UAT lead and accepting authority, the solo-operator exception when the
+  product owner is the only person who can test and accept, the environment,
+  entry and exit criteria (Pass / Fail / Blocked / Not run, residual risk), a
+  time-boxed schedule with re-test time, and exploratory sessions with charters
+  a human runs. Use when planning UAT or acceptance testing, deciding who
+  tests and who accepts, writing UAT entry or exit criteria, planning
+  operational acceptance (restore, rollback, alerting) or regulatory
+  acceptance, asking whether an agent can do the exploratory testing, keeping
+  Should stories out of UAT, or deciding what UAT looks like at the lean,
+  standard or enterprise profile. Used by the requirements-analyst agent first
+  in Customer Validation (/sdlc-validate), before uat-scenario and
+  acceptance-sign-off; written to customer-validation/uat-plan.md.
+version: 3.0.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
-tags: [customer-validation, uat, acceptance-testing, moscow, canary, sign-off, design-partners, exploratory-testing]
+tags: [customer-validation, uat, acceptance-testing, operational-acceptance, regulatory-acceptance, exploratory-testing, test-independence, walking-skeleton, entry-exit-criteria]
 produces: uat-plan
 domain: validation
 status: stable
+related: [uat-scenario, acceptance-sign-off, beta-program-design, feedback-template, moscow-prioritization, story-mapping, acceptance-criteria, bdd-feature-file, canary-deployment, environment-config, feature-flag-design, disaster-recovery-plan, runbook-authoring, slo-definition, compliance-verification, compliance-design, stakeholder-mapping, test-pyramid, glossary-management, methodology-review]
+sources:
+  - research/testing/user-acceptance-testing-hambling.md
+  - research/testing/explore-it-hendrickson.md
+  - research/testing/agile-testing-crispin-gregory.md
+  - research/requirements-and-user-stories/lean-agile-atdd-pugh.md
+  - research/testing/testing-web-apis-winteringham.md
+  - research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md
 ---
 
 # UAT Plan
 
 ## Purpose
 
-A UAT Plan defines what will be validated, by whom, in which environment, and against what pass/fail bar, before a release is widened from a canary tenant to the full customer fleet. It is the single document that turns "we deployed it" into "a human confirmed it does what we promised, in production conditions" — through **both** scripted scenarios (proving known examples work) and time-boxed exploratory sessions (surfacing what no one wrote a scenario for).
+A UAT plan answers: **which acceptance tests does this deployed release need, against what, run by whom, and by what bar is it ready for the acceptance decision?** Hambling and van Goethem (*User Acceptance Testing: A Step-by-Step Guide*) put the point plainly: acceptance testing exists to give the accepting party enough confidence to **decide**. Finding defects is a side effect. The output that matters is the decision, which `acceptance-sign-off` records.
 
-UAT in this plugin is **not** a pre-deployment gate. By the time UAT begins, the release has already passed every Quality-phase gate (automated test suites, `bdd-feature-file` scenarios green in CI, NFR verification) and has already been deployed via `canary-deployment` to a canary tenant or a production-like `environment-config` staging environment. UAT is what happens *after* that — real people exercising the deployed system, under real (or realistic) conditions, before the canary widens to 100% and the rest of the fleet receives the release.
+UAT here runs **after** Deploy, against the release that will reach everyone. It is not the pre-code agreement: `acceptance-criteria` and `bdd-feature-file` together are this plugin's ATDD (Pugh, *Lean-Agile Acceptance Test-Driven Development*), agreed before coding and automated in Quality. UAT is the later, human proof in the business-facing, product-critiquing quadrant (Q3 of the Agile Testing Quadrants, Crispin and Gregory, *Agile Testing*). Automation **checks** what was specified; UAT and exploration **test** what nobody specified. Neither replaces the other.
 
-| If you are asking... | You want... |
+| Asking | Owner |
 |---|---|
-| "Does the code work, verified by automated tests before merge?" | Quality phase, `test-strategist`, `bdd-feature-file` |
-| "Does the deployed release behave correctly for a real user, before we widen the rollout?" | Customer Validation phase, `requirements-analyst`, this skill |
+| Does the code meet the agreed rule, before merge? | Quality: `test-strategist`, `bdd-feature-file` |
+| Does the deployed release do the job for its users, before we widen it? | Customer Validation: `requirements-analyst`, this skill |
 
----
+## What the Plan Owns, and What It Does Not
 
-## Scope Derivation from MoSCoW Must Haves
+The plan owns **scope, approach (acceptance types, scripted plus exploratory), roles, environment, entry and exit criteria, and schedule**. It does not own:
+- the individual test scripts: each is a `uat-scenario`, one or more per Must story;
+- the defect severity scale and triage: `feedback-template`;
+- the go / no-go, the defect rule and the sign-off record: `acceptance-sign-off`;
+- the staged rollout to wider cohorts: `beta-program-design`.
 
-UAT scope is never "test everything." It is derived directly from the `moscow-prioritization` artifact's Must Have list for the release slice being validated — a Must Have story that has no UAT scenario is an ungated risk about to ship to the full fleet; a Should/Could Have consuming UAT time is scope creep that dilutes the signal UAT exists to produce.
+## 1. Choose the Acceptance Types First
 
-**Traceability table** — every UAT plan opens with this, populated from the release's `moscow.md` and `story-map.md`:
+Before scoping, decide which acceptance forms this release needs. The five forms are ISTQB's (Certified Tester Foundation Level), which Hambling's process sits inside. Each type in scope gets its own scope line, executor and evidence, and later its own line on the sign-off.
 
-| Epic | Must Have Story (ID) | Ideate Acceptance Criteria Ref | UAT Scenario(s) Required |
-|---|---|---|---|
-| Data Source Connection | US-001 Connect Google Drive via OAuth | `AC-US-001` | UAT-001 |
-| Sensitivity Classification | US-005 Trigger initial scan and classify files by sensitivity level | `AC-US-005` | UAT-002, UAT-003 |
-| Compliance Reporting | US-009 View compliance gap report | `AC-US-009` | UAT-004 |
+| Type | In scope when | Checked against | Executed by | Evidence comes from |
+|---|---|---|---|---|
+| **User acceptance (UAT)** | Always | The Must stories' acceptance criteria, as business scenarios | Intended users (or the product owner under the solo exception) | `uat-scenario` results, exploratory debriefs |
+| **Operational acceptance (OAT)** | The product is run and supported by someone, or holds user data | Can it be operated: restore, rollback, alerting, upgrade, user management | `platform-engineer` | `disaster-recovery-plan` restore drill, `runbook-authoring` runbooks exercised, `slo-definition` alert fired |
+| **Contractual** | Only when a signed contract states acceptance criteria | The contract's own clauses | Users or independent testers | The clause, the scenario that proves it, the result |
+| **Regulatory** | The product is in a compliance scope (`compliance-design` says which laws or frameworks) | Regulation-derived requirements, with retained evidence | Users or independent testers; a named compliance signatory accepts | `compliance-verification` attestations |
+| **Alpha / beta** | A cohort will use the release in its own context before general release | Feedback from real use | Real users at their own site | **Hand off to `beta-program-design`**; this plan only names the cohort's UAT |
 
-Should Have and Could Have stories are validated implicitly if a design partner exercises them during the beta window (`beta-program-design`), but they do not require a dedicated UAT scenario or block sign-off — see `acceptance-sign-off`.
+Never hard-code a framework: which regulation applies comes from the product's own `compliance-design`. When to pick each type, what OAT covers at each profile, and the three-line lean OAT smoke: `./references/acceptance-types.md`. Read it whenever any type other than UAT might apply.
 
----
+## 2. Scope: the Musts, Tested as Business Scenarios
 
-## Participant Roles
+UAT scope is the release's **Must stories, which are the walking skeleton** (`moscow-prioritization`, `story-mapping`; at lean, the Must / Won't-this-time block closing `ideate/user-stories.md`). The **test basis** is each Must's `acceptance-criteria` and its `bdd-feature-file` scenarios: UAT tests against what was agreed, never against the executor's memory of what was meant.
 
-UAT is a facilitated activity with named, non-overlapping roles. No role executes and signs off — the executor and the signer are never the same person, which is what makes sign-off meaningful rather than self-certifying.
+- Every Must story has **at least one** UAT scenario. A Must with none is an ungated promise. IDs are 1:N: `AC-US-5` → `UAT-5a`, `UAT-5b` (the same root, a letter per scenario).
+- Design from **business scenarios** (Hambling): a realistic piece of work across several functions ("a steward closes Friday's overdue list"), then confirm every Must is touched. Re-running system tests with a person at the keyboard adds nothing.
+- **Should, Could and Won't stories are out of scope.** A request to "add every Should too" is declined: it dilutes the time the Musts need and delays the decision. A Should a user happens to exercise is logged as feedback, never as a UAT result.
+- **Risk decides depth** (Hambling): put extra scenarios and charters where failure would hurt the business most, not evenly.
 
-| Role | Who | Responsibility |
-|---|---|---|
-| **Executor** | A design partner from the stakeholder register's design-partner cohort (`stakeholder-mapping`), acting as their real persona | Runs each UAT scenario **and each exploratory session** in the live/live-like environment, records pass/fail and observations |
-| **Internal proxy executor** | An internal stand-in (e.g., the product owner acting as Maya Chen) | Used **only** when no design partner is available yet for this release slice — never a permanent substitute; every UAT plan states whether it used a design partner or a proxy, and a proxy-only sign-off is downgraded to conditional (see `acceptance-sign-off`) |
-| **Facilitator** | requirements-analyst | Prepares scenarios (`uat-scenario`) **and drafts exploratory charters**, briefs executors, observes without leading (see anti-leading-question guidance in `feedback-template`), captures defects and feedback, compiles results |
-| **Sign-off authority** | The product owner + a customer/design-partner representative | Reviews the compiled results against exit criteria and issues the `acceptance-sign-off` decision — two-party, never unilateral |
+## 3. Roles, Independence and the Solo-Operator Exception
 
----
+Hambling's three-way split: an **executor** (an intended user) runs the scenarios and sessions; the **UAT lead** (the requirements-analyst) plans, briefs, observes without leading and compiles results; the **accepting authority** (the product owner plus a customer representative) decides. **By default the executor and the accepting authority are different people.** Every plan states the **test independence level** reached (ISTQB's scale, from "none" up to external independent testers).
 
-## Environment
+**Solo-operator exception (D045).** When the product owner is the only person available, they may run UAT **and** sign off. The plan records it as an exception, not a hidden weakness:
+- `Exception: solo operator`, with **independence level "none"** (ISTQB) and why no second party was available;
+- scenarios **frozen before the build is seen**: they come from Ideate's acceptance criteria, which gives independence in time;
+- **per-scenario evidence** (screenshot or recording, date, environment, digest, flag state), so anyone can re-judge later;
+- at least one **borrowed session** with a real intended user, a colleague or a friend wherever one exists;
+- **the agent is never the independent party**: it wrote the scenarios and facilitates.
 
-UAT runs against a **canary tenant** (`canary-deployment`) or a dedicated **staging** environment (`environment-config`) — never a local development environment. The reason is structural, not procedural: UAT's entire value is that it observes the same chart, same image digest, and same configuration class the rest of the fleet will run. A local dev environment fails Environment Parity by definition, so anything validated there proves nothing about what ships. Exploratory sessions run in the **same** environment as scripted scenarios — a different, less-representative environment would undermine exploration's value the same way it would a scripted scenario's.
+A **full sign-off is allowed** under the exception; the exception record carries the risk. Do not cap the outcome at conditional because of it. The sign-off's own Exception block is `acceptance-sign-off`'s. Levels, the independence-without-headcount techniques, and a design partner who cannot attend: `./references/roles-and-independence.md`.
 
-| Environment choice | When to use |
-|---|---|
-| Canary tenant | Design partner is a live, contracted tenant already on the canary wave — UAT runs in their actual namespace against their actual data, the strongest possible signal |
-| Staging | No design partner tenant is provisioned yet for this slice, or the scenario requires data conditions (volume, edge-case content) staging can be seeded with more safely than a live customer's environment |
+## 4. Environment
 
-Either way, the environment record for the UAT run (chart version, image digest, tenant id or staging label, feature-flag state per `feature-flag-design`) is captured in the UAT Plan's Environment section — this is what lets a failed scenario be reproduced exactly.
+UAT runs where the release that will ship runs: the same image digest and configuration class, never a developer's local instance. At **standard and enterprise** that is a canary tenant (`canary-deployment`) or a production-like staging environment (`environment-config`); at **lean**, with no canary, it is production with the release flag on for the executor only (`feature-flag-design`), or the one staging environment. Record the environment, version or digest, and flag state, so a failed scenario can be reproduced exactly. Exploratory sessions use the same environment.
 
----
+## 5. Entry Criteria
 
-## Entry Criteria
+UAT does not start until all hold:
+- Quality-phase gates passed for this release; the release is deployed to the UAT environment at the digest that will ship; release flags set for the UAT cohort only.
+- Every Must story has its `uat-scenario`(s), traced to its acceptance criteria.
+- **The acceptance criteria, pass threshold and defect bar are agreed by the accepting authority before execution** (Hambling: agree the yardstick first). They are never lowered once results arrive: a release that falls short goes to the acceptance decision as it is, and anything the authority then accepts is recorded there, in `acceptance-sign-off`.
+- At least one exploratory charter per area of real risk; executors briefed and scheduled; each other acceptance type's evidence owner booked.
 
-UAT does not start until all of the following are true:
+## 6. Exit Criteria
 
-- [ ] All Quality-phase gates have passed for this release slice (automated suite green, NFRs verified)
-- [ ] The release is deployed to the UAT environment via `canary-deployment` (or `environment-config` staging) — same digest that will eventually reach the full fleet
-- [ ] The relevant `feature-flag-design` release flag is configured `true` for the UAT cohort's tenant(s) only
-- [ ] Every Must Have story in scope has a corresponding `uat-scenario` written and traced to its Ideate `acceptance-criteria`
-- [ ] At least one exploratory charter is drafted per area of meaningful risk or complexity in scope (not every Must Have story needs one — see Exploratory Testing Component below)
-- [ ] Executors are briefed and scheduled
+UAT closes, and the evidence moves to `acceptance-sign-off`, when:
+- **Every scenario has a result: Pass, Fail, Blocked or Not run.** Blocked (an environment problem or an earlier defect stopped it) and Not run both **fail** this criterion until the scenario is run. Hiding them overstates readiness.
+- **Pass threshold: 100% of Must scenarios by default**, because the Musts are the release's promise: one failing Must means the release is not usable. A lower threshold is allowed only if agreed and signed before execution, with its reason. Lowering it after the results ("we got 90%, so make it 90%") is refused.
+- Open defects are handled by the **single defect rule in `acceptance-sign-off`**, which says what an open Critical or High allows. The plan never sets a defect bar of its own.
+- All feedback triaged (`feedback-template`); every planned charter run and debriefed (a separate criterion: a charter has no pass/fail); every acceptance type in scope has a result.
+- **Residual risk evaluated and written down** (ISTQB): what is knowingly accepted, by whom.
+- A short **completion summary** (planned vs run, results, open defects, residual risk, recommendation) closes the plan. It is a section, not a new artifact.
 
-If any entry criterion is unmet, UAT does not begin — starting early produces results that cannot be trusted, because the thing being tested is not yet the thing that will ship.
+Meeting the exit criteria readies the decision; it does not make it.
 
----
+## 7. Schedule
 
-## Exit Criteria
-
-UAT closes (moves to `acceptance-sign-off`) when:
-
-- [ ] Every UAT scenario in scope has a recorded pass/fail result
-- [ ] Pass rate meets or exceeds the threshold stated in the plan (default: 100% of Must Have scenarios pass; see the plan's stated threshold if lowered with rationale)
-- [ ] Zero open Critical or High severity defects (per `feedback-template`'s severity classification) remain unresolved
-- [ ] All feedback has been triaged (`feedback-template`) — no unreviewed reports sitting in the queue
-- [ ] Every planned exploratory charter has been run and debriefed — this is a **separate** criterion from the pass-rate threshold, since a charter has no pass/fail, only findings; a phase does not close having planned an exploratory session that never actually ran
-
-Exit criteria being met does not automatically mean full sign-off — it means the plan is ready to move to the `acceptance-sign-off` decision, which may still be conditional. See that skill for the sign-off decision itself.
-
----
-
-## Schedule and Duration
-
-UAT is time-boxed. An open-ended UAT window loses urgency and blocks the release indefinitely for diminishing signal. A typical structure for a single release slice:
+Time-boxed, with the decision date fixed before execution:
 
 | Day | Activity |
 |---|---|
-| Day 0 | Entry criteria verified; executors briefed; scenarios distributed; exploratory charters drafted |
-| Day 1–3 | Scripted scenario execution **and** exploratory sessions, same executor(s), same environment; facilitator observes and logs defects/feedback live |
-| Day 4 | Facilitator compiles results; triage pass on all captured feedback (`feedback-template`), scripted and exploratory alike |
-| Day 5 | Sign-off meeting — the product owner + customer representative review against exit criteria (`acceptance-sign-off`) |
+| 0 | Entry criteria verified; executors briefed; charters handed over |
+| 1–3 | Scripted scenarios and exploratory sessions, same executors, same environment |
+| 4 | Compile results; triage all feedback |
+| 4–5 | **Re-test and regression**: a fix counts only when its failing scenario re-runs green and its neighbours are re-checked |
+| 5 | Acceptance decision (`acceptance-sign-off`) |
 
-Exploratory sessions run **alongside** scripted execution, not as a separate phase — they share the same time-box (Day 1–3), the same executor, and the same environment. For a design-partner cohort of 3 companies validating a small Must Have slice, 5 business days is typically sufficient. Larger slices or a design-partner cohort with limited availability may extend the execution window (Day 1–3 → Day 1–7) but the compile-and-decide tail (facilitator compile, triage, sign-off) should not stretch — a slow decision after data is in hand is a process failure, not a testing one.
+Lean compresses to one or two days. Enterprise runs this per tenant wave, with a separate OAT window. Execution may stretch for executor availability; the compile-and-decide tail does not.
 
----
+Where there are several executors or design partners, note whether each was set up the **same documented way**. Blank (*The Four Steps to the Epiphany*) defines Customer Validation by repeatability: three passes that each needed bespoke, founder-led hand-holding are weaker evidence than they look.
 
-## Exploratory Testing Component
+## 8. Exploratory Sessions
 
-Scripted `uat-scenario`s prove a known example works; they cannot find what no one anticipated. Per Elisabeth Hendrickson's *Explore It!*, this plan includes one or more **time-boxed exploratory sessions**, distinct from (never a replacement for) the scripted Must Have checklist.
+Scripted scenarios prove the known; they cannot find what nobody wrote down. The plan therefore includes time-boxed **exploratory sessions** (Hendrickson, *Explore It!*): each has a charter, *"Explore [target], with [resources], to discover [information]"*, a 45–90 minute time-box, notes taken during the session, and a debrief that may produce new charters. The requirements-analyst **drafts** charters; **a human explores**. An agent reasoning over screenshots or a UI description is scripted testing with an exploratory label: say so plainly if asked to "do the exploratory testing". API-level probing of raw HTTP is a different practice that belongs earlier, with `test-strategist` (Winteringham, *Testing Web APIs*). It is not a UAT session.
 
-Each session is scoped by a **charter**: *"Explore [target/area], with [resources], to discover [information]."* A charter names what to explore and what you're trying to learn, without prescribing exact steps — preserving the freedom to follow what's found. Sessions are time-boxed (typically 45–90 minutes), produce a running log captured live, and end with a debrief (findings, and any new charters the session itself surfaced).
+Charter writing, the heuristics (CRUD, boundaries, Goldilocks, interruptions, configuration, saboteur) and charter-generates-charter: `./references/exploratory-testing.md`. Record each session in `./templates/exploratory-session.md`.
 
-A short heuristics checklist for generating test ideas within a charter: **CRUD** (create/read/update/delete and their interactions), **Boundaries** (min/max/zero/off-by-one), **Position/Goldilocks** (first/last/none/many), **Interruptions** (stop mid-workflow and resume — a high-yield heuristic for state-management bugs scripted tests rarely cover), **Configuration variance** (browser/device/locale/permission/flag differences), and the **Saboteur mindset** (deliberately trying to break things a well-behaved user never would).
+## Scale
 
-**Honesty about who explores**: the requirements-analyst (facilitator) drafts the charter; a human executor (design partner or the user as proxy) actually explores. An agent reasoning over a UI without a live human driving is not exploratory testing under this definition — it's scripted testing wearing an exploratory label. State this plainly rather than gloss over it.
+`phase-requirements.json`: `uat-plan` and `acceptance-sign-off` are **required at every profile**; `beta-program-design` is skipped at lean and optional above; `feedback-log` is optional.
 
-Full session-record template, the SFDIPOT coverage audit, and charter-generates-charter discipline: `references/exploratory-session-template.md`.
+| Profile | Shape of `customer-validation/uat-plan.md` |
+|---|---|
+| **lean** | **One page** from `./templates/uat-plan-lean.md`: UAT plus, if the product holds user data, a three-line OAT smoke (restore works, rollback works, someone gets alerted); scope = the Must block; roles usually the solo-operator exception; production behind a flag or one staging environment; one or two days; at least one charter; exit criteria and residual risk in a few lines. `./examples/01-lean-toolshed.md` |
+| **standard** | Full template `./templates/uat-plan.md`: UAT and OAT; design-partner executors on a canary tenant or staging; a five-day window with re-test; charters per risky area; repeatability note. `./examples/02-standard-rebound.md` |
+| **enterprise** | Every type that applies, each with its own executor and sign-off line (OAT by platform-engineer, regulatory against attestations, contractual per tenant contract); UAT per tenant wave on the canary; independence level per type. `./examples/03-enterprise-permitry.md` |
 
----
+## Producing the Plan
 
-## Worked Example
-
-Full UAT plan for Release 1, including two exploratory sessions filled in: `references/worked-example.md`.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Scope traces to Musts | Every UAT scenario maps to a Must Have story and its AC | UAT scenarios invented ad hoc, untraceable to the backlog |
-| Live/live-like environment | Canary tenant or staging, digest and flags recorded | "Local dev" or an environment not on the promotion path |
-| Roles separated | Executor, facilitator, and sign-off authority are distinct people | The same person executes and signs off |
-| Entry criteria enforced | UAT does not begin until Quality gates and deployment are confirmed | UAT starting against an unverified or pre-Quality-gate build |
-| Time-boxed | A stated schedule with a compile-and-decide tail that does not drift | Open-ended UAT window with no decision date |
-| Exit criteria explicit | Pass-rate threshold and defect bar stated before execution begins | Vague "looks good" closure with no stated bar |
-| Exploratory sessions run | At least one charter drafted and debriefed per area of meaningful risk | Zero exploratory sessions, or a charter drafted but never run |
-| Exploration stays human-driven | Charter drafted by the agent, explored by a human executor | An agent's own reasoning over the UI presented as "exploratory testing" |
-
----
+1. **Read** the product manifest, the Must stories (story map skeleton and MoSCoW, or the lean Must block), their acceptance criteria and feature files, `compliance-design` and any customer contract.
+2. **Select the acceptance types** (§ 1).
+3. **Write the traceability table**: Must story → AC → UAT scenario IDs (§ 2).
+4. **Name the roles and independence level**; record the exception if solo (§ 3).
+5. **Fix environment, entry and exit criteria, and schedule** (§ 4–7); draft charters (§ 8).
+6. **Validate** against `./resources/uat-plan-checklist.md` and run `python3 ./scripts/check-uat-plan.py customer-validation/uat-plan.md`. If you cannot run it, walk the checklist by hand.
+7. **Hand off**: scenarios to `uat-scenario`; OAT and regulatory evidence requests to their owners; after execution, the completion summary to `acceptance-sign-off`.
 
 ## Anti-Patterns
 
-**UAT as a second QA pass.** Re-running the same automated-test scope with humans clicking instead of asserting duplicates the Quality phase and produces no new signal. UAT scenarios validate real-world behavior and human judgment calls (is this report actually useful to Maya?) that automated assertions cannot. **This is not an argument against exploratory sessions** — exploration is the complementary activity that finds what scripted scenarios structurally can't, not a second scripted pass under a different name.
+| Anti-pattern | Why it fails |
+|---|---|
+| **UAT as a second QA pass** | Same scope as automation, with a person clicking: no new signal |
+| **Every Should in scope** | Dilutes the Must signal and delays the decision |
+| **UAT on local dev** | Not what ships; proves nothing about the rollout |
+| **Yardstick set after the results** | An acceptance decided without agreed criteria is a negotiation |
+| **Blocked counted as passed** | Overstates readiness; Blocked and Not run fail the exit |
+| **A defect bar of the plan's own** | Two rules drift; the one rule is `acceptance-sign-off`'s |
+| **Hidden solo testing** | Same person executes and accepts with no recorded exception |
+| **"The agent explored it"** | No human judgement in the loop; it is scripted testing |
+| **UAT only, for a hosted or regulated product** | Nobody checked it can be operated, or that the regulation is met |
+| **No re-test time** | "Fixed" means deployed, not proven |
+| **Product rules as skill rules** | A persona, framework or tenant rule belongs in that product's plan |
 
-**UAT in a non-production-like environment.** Running scenarios against a developer's local instance of the app proves nothing about what the canary tenant or the fleet will experience — it violates Environment Parity by definition and its results cannot be trusted for a widen-rollout decision. The same applies to exploratory sessions.
-
-**Unbounded scope.** Testing every Should Have and Could Have "while we're at it" dilutes facilitator and executor time and delays the sign-off decision without improving the Must Have signal the release actually depends on.
-
-**No entry criteria check.** Starting UAT before Quality gates pass means defects found during UAT could have been caught cheaper, earlier, by automation — and any UAT pass recorded against a not-yet-final build is not evidence about the build that will actually ship.
-
-**Executor and signer are the same person.** Self-certification defeats the purpose of a two-party sign-off; see `acceptance-sign-off`.
-
-**A charter drafted but never run.** Listing exploratory charters in the plan without a session record, notes, and a debrief is the exploratory equivalent of a UAT scenario with no recorded result — the exit criterion requires charters run and debriefed, not merely proposed.
-
-**An agent "exploring" without a human.** Simulating exploratory testing by having an agent reason over screenshots or a UI description, with no live human actually driving the session, produces a scripted-testing artifact mislabeled as exploratory — the value Hendrickson's technique provides comes specifically from in-the-moment human judgment.
-
----
-
-## Output Format
-
-Full fill-in template, including the exploratory-session fields: `references/output-format-template.md`.
+Use canonical terms from `glossary-management`: **Acceptance Testing**, **User Acceptance Testing**, **Operational Acceptance Testing**, **Test Independence**, **Exploratory Testing**, **Test Charter**, **Entry Criteria**, **Exit Criteria**, **Residual Risk**, **Walking Skeleton**. Run `methodology-review` before hand-off.

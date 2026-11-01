@@ -1,182 +1,142 @@
 ---
 name: acceptance-sign-off
 description: >
-  Teaches how to produce the formal go/no-go artifact that closes Customer
-  Validation — the sign-off criteria checklist (including exploratory
-  session findings alongside scripted UAT results), the two-party sign-off
-  authority (the user plus a customer/design-partner representative), the
-  distinction between full sign-off, conditional sign-off (with a documented
-  remediation plan and target date), and no-go, and this artifact's role as
-  the trigger for widening the `canary-deployment` rollout and the
-  `feature-flag-design` release flag to General Availability. Includes
-  scripts/scaffold-signoff.sh (generates a new sign-off doc pre-filled with
-  release-slice metadata and the full checklist) and
-  scripts/validate-signoff.sh (mechanically checks the checklist, both
-  parties, and a stated decision/rollout action). Used by the
-  requirements-analyst during Customer Validation.
-version: 2.2.1
+  Teaches how to record the acceptance decision that closes Customer
+  Validation for a release: full sign-off, conditional sign-off or no-go,
+  decided by the accepting authority against evidence compiled from the UAT
+  plan's completion summary, scenario results (Pass / Fail / Blocked / Not
+  run), exploratory debriefs, triaged feedback, the other acceptance types in
+  scope (operational, contractual, regulatory) and beta graduation. Owns the
+  single defect rule (what an open Critical, High, Medium or Low defect
+  allows), the two-party authority and the solo-operator exception, residual
+  risk, the repeatability check, dated conditions with owner, workaround and
+  re-test, one sign-off per release, and the rollout action it hands to
+  canary-deployment and feature-flag-design. Use when deciding go / no-go,
+  asking whether a release can ship with an open defect, signing off alone,
+  handling a customer representative who will not accept, accepting some
+  tenants but not others, or re-attempting after a no-go. Used by the
+  requirements-analyst agent last in Customer Validation (/sdlc-validate);
+  written to customer-validation/sign-off/<release>.md.
+version: 3.0.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
-tags: [customer-validation, sign-off, go-no-go, canary, release-gate]
+tags: [customer-validation, sign-off, go-no-go, acceptance-decision, defect-rule, residual-risk, test-independence, canary, release-gate]
 produces: acceptance-sign-off-record
 domain: validation
 status: stable
-related: [skill-authoring-standards, uat-plan, feedback-template]
+related: [uat-plan, uat-scenario, feedback-template, beta-program-design, canary-deployment, feature-flag-design, compliance-verification, glossary-management, methodology-review]
+sources:
+  - research/testing/user-acceptance-testing-hambling.md
+  - research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md
+  - research/testing/agile-testing-crispin-gregory.md
+  - research/testing/explore-it-hendrickson.md
+  - research/human-ai-collaboration/co-intelligence-mollick.md
 ---
 
 # Acceptance Sign-Off
 
 ## Purpose
 
-Acceptance sign-off is the formal decision that closes the Customer Validation phase for a release slice. It is the single artifact that answers one question in a way that cannot be quietly reinterpreted later: **does this release proceed to General Availability, proceed with conditions, or not proceed at all?**
+The sign-off answers one question so it cannot be quietly reinterpreted later: **does this release widen to everyone, widen with conditions, or not widen at all?** Hambling and van Goethem (*User Acceptance Testing: A Step-by-Step Guide*) put the purpose of acceptance testing plainly: give the business enough confidence to **decide**. Finding defects is a side effect. This record is the decision, made by the people who will live with the system, against criteria agreed before execution.
 
-Everything upstream in this domain — `uat-plan`'s execution, `uat-scenario` results, `beta-program-design`'s graduation evidence, `feedback-template`'s triaged items — exists to feed this one decision. Acceptance sign-off is not a status update; it is the trigger that widens `canary-deployment` toward 100% and expands the `feature-flag-design` release flag's scope toward the full fleet. Nothing advances past this gate without it.
+The release is already running on a canary or behind a flag. The sign-off is what lets it **widen**. It is the only artifact that authorises `canary-deployment` to go to 100% or `feature-flag-design`'s release flag to reach the full fleet.
 
----
-
-## Sign-Off Criteria Checklist
-
-Before a sign-off decision of any kind can be recorded, the following are verified — this is the evidence base the decision is made against, not the decision itself:
-
-- [ ] Every UAT scenario tracing to a Must Have story has a recorded result (`uat-plan`, `uat-scenario`)
-- [ ] The UAT pass-rate threshold stated in the `uat-plan` is met
-- [ ] Every planned exploratory session has been run and debriefed (`uat-plan`'s Exploratory Testing Component) — a separate check from the pass-rate threshold, since a charter has no pass/fail; its findings are triaged into this checklist exactly like a scripted defect
-- [ ] Zero open Critical severity defects (`feedback-template`) — from either scripted UAT or exploratory sessions
-- [ ] Zero open High severity defects, **or** each is covered by a documented remediation plan with a target date (conditional path only — see below)
-- [ ] All feedback items have been triaged (`feedback-template`) — none left unreviewed, whether sourced from a scripted scenario or an exploratory debrief
-- [ ] No unaddressed blocking pattern exists — a pattern (`feedback-template`'s aggregation discipline) that, even at Medium severity, represents a majority of participants independently reporting the same friction on a Must Have flow is treated as blocking unless explicitly accepted with rationale
-- [ ] Beta program graduation criteria met for the relevant stage, if this release slice is progressing through `beta-program-design` stages
-
-A checklist item left unchecked does not automatically mean no-go — it means the sign-off authority must explicitly decide how to handle the gap, recorded in the decision itself.
-
----
-
-## Sign-Off Authority — Two-Party, Never Unilateral
-
-| Party | Role |
+| Owned here | Owned elsewhere |
 |---|---|
-| **Product owner** | Accountable for the business decision to ship |
-| **Customer/design-partner representative** | The named contact from the participating design partner (e.g., Maya Chen) — accountable for confirming the release is genuinely usable and acceptable from the customer's side |
+| The decision and its record; **the single defect rule**; who may sign; the solo-operator Exception block; residual risk; conditions; the rollout action | Scope, roles, exit criteria and the completion summary: `uat-plan` · scenario results: `uat-scenario` · severity scale and triage: `feedback-template` · stage graduation: `beta-program-design` · executing the rollout: `platform-engineer` |
 
-Both parties review the compiled evidence and both must agree for a sign-off (full or conditional) to be recorded. This is deliberate: a unilateral internal decision to ship is not "acceptance" — acceptance, by definition, requires the accepting party's affirmative agreement. If no design-partner tenant participated in this release slice (an internal-proxy-only UAT per `uat-plan`), the sign-off cannot be full — it is capped at conditional, with the specific limitation ("validated by internal proxy only, no external design-partner confirmation") stated as one of the open conditions.
+## 1. Compile the Evidence, Then Decide
 
-This two-party, never-unilateral rule is this repo's clearest product-facing instance of keeping a human as the actual point of final consent (per Ethan Mollick's *Co-Intelligence*, `research/human-ai-collaboration/co-intelligence-mollick.md`) — the same principle `CLAUDE.md`'s own Session Startup gate applies to *this repo's* engineering work. No amount of green dashboards, passing scripted scenarios, or agent-generated confidence substitutes for an actual person affirming the release is acceptable.
+The decision **cites** the evidence; it is never a separate impression (Hambling). Start from `uat-plan`'s completion summary (planned vs run, results, open defects, residual risk, recommendation) and confirm each line of `./resources/sign-off-checklist.md`. In short:
 
----
+- every Must scenario has a result, and **none is Blocked or Not run**: a blocked scenario is not a pass;
+- the pass threshold agreed **before** execution is met; a threshold changed after the results is recorded as a decision in its own right, never a silent edit;
+- every planned exploratory session ran and was debriefed, its findings triaged like any scripted failure (Hendrickson, *Explore It!*: exploration finds what no scenario was written for; Crispin and Gregory, *Agile Testing*: Q3 findings feed the decision);
+- **every acceptance type in scope has a result**: OAT, contractual, regulatory, each accepted by its own signatory;
+- open defects sit within the defect rule (§ 2); all feedback triaged; no unaddressed blocking pattern;
+- **repeatability**, when there was more than one executor or cohort: were they all set up the same documented way? Blank (*The Four Steps to the Epiphany*) defines Customer Validation by repeatability. Three passes that each needed bespoke hand-holding are weaker evidence than they look: record it as residual risk;
+- **residual risk written down**: what is knowingly accepted, and by whom (ISTQB).
 
-## Three Outcomes
+An unchecked item does not decide the outcome by itself. The authority decides how to handle it, and the record says so.
 
-### Full sign-off
+## 2. The Defect Rule
 
-All checklist items are met with no exceptions. The release proceeds to GA with no outstanding conditions.
+This is the **one** statement of what open defects allow. `uat-plan`, `uat-scenario`, `beta-program-design` and the requirements-analyst point here and never restate it. Severity is `feedback-template`'s, set at capture and never bargained down.
 
-```
-Decision: FULL SIGN-OFF
-Rollout action: canary-deployment widens to 100% and terminates;
-                 feature-flag-design release flag deleted at its removal_date
-                 (or immediately, if its purpose was purely the canary scope)
-```
+- **An open Critical defect → no-go**, always.
+- **An open High defect → conditional sign-off only, and only with a fix plan**: owner, target date, a workaround a business user can follow, the re-test that will verify the fix, and the rollout pace meanwhile. An open High with no fix plan → no-go.
+- **Open Medium and Low defects → conditional or full**, at the authority's judgment. Each one accepted is listed under residual risk, rated, with a workaround where a user needs one and the release it is scheduled for (Hambling: accepting known defects is normal; accepting them *implicitly* is not).
+- **A confirmed blocking pattern** (`feedback-template`: most participants independently hitting the same friction on a Must flow) is treated as High, even when each report is Medium.
 
-### Conditional sign-off
+When asked "can we still ship with this open?", answer with the whole rule, every severity, not only the one asked about.
 
-The Must Have bar is met (zero Critical/High defects blocking the core outcome) but one or more Medium/Low issues remain open, or a scope limitation exists (e.g., internal-proxy-only validation). The release proceeds, paired with an explicit, dated remediation commitment.
+## 3. Who Signs
 
-```
-Decision: CONDITIONAL SIGN-OFF
-Conditions:
-  - [Issue] — remediation plan: [what will be done] — target date: [date]
-  - [Issue] — remediation plan: [what will be done] — target date: [date]
-Rollout action: canary-deployment widens per the plan's stated pace (may still
-                 reach 100%, or may hold at a lower stage pending remediation —
-                 stated explicitly, not left ambiguous)
-Follow-up: remediation tracked; re-verification required by target date
-```
+**Two parties by default.** The **product owner** is accountable for the business decision. A **customer representative** (a named person at the design partner or customer, by role) confirms the release is usable from their side. Acceptance means the accepting party's affirmative agreement, so an internal decision to ship is not acceptance.
 
-A conditional sign-off is a legitimate, common outcome — it is not a weaker or embarrassing version of full sign-off. It exists precisely so that Medium/Low findings don't either get silently ignored (shipping with no record) or block a release that genuinely delivers its Must Have value.
+**Other acceptance types bring their own signatory.** Regulatory: a named compliance signatory, against `compliance-verification` attestations. Contractual: the contract's signatory, per clause. OAT: the product owner, on `platform-engineer`'s evidence.
 
-### No-go
+**Several customers, several cohorts.** At enterprise each customer representative accepts for **their own** tenant cohort. One refusal keeps that cohort out of the widening: the release is at most conditional, and that cohort's re-attempt (a new UAT pass and their signature) is an **addendum** to this record, not a second sign-off.
 
-A Critical or High severity defect remains open with no acceptable remediation plan, or an unaddressed blocking pattern exists on a Must Have flow, or the customer representative does not agree the release is acceptable regardless of the internal checklist status.
+**Solo-operator exception (D045).** When the product owner is the only person who can execute and accept, they sign alone and the record carries an `## Exception: solo operator` block, in the same words as `uat-plan`: who executed, who accepted, **independence level "none"** (ISTQB), why no second party was available, the per-scenario evidence, and any borrowed session. **A full sign-off is allowed**; the exception carries the risk. Never cap the outcome at conditional because of it, and never sign alone without the block.
 
-```
-Decision: NO-GO
-Blocking items:
-  - [Defect/pattern] — required remediation before re-attempt: [what must change]
-Rollout action: canary-deployment holds or reverts to 0% for this release
-                 (per canary-deployment's rollback mechanics); feature-flag-design
-                 release flag stays false beyond the validation cohort
-Re-attempt: Customer Validation re-opens for this release slice once blocking
-             items are remediated; a new UAT pass is required, not a re-review
-             of the same evidence
-```
+**A human signs.** Mollick (*Co-Intelligence*): the human stays the point of final judgment, not a rubber stamp. The agent compiles evidence and drafts; it never records a signature on a person's behalf, and it is never the independent party. Each signature records the date and how it was given.
 
-A no-go is not a failure of the process — it is the process working. The gate existing to sometimes say no is what makes a "yes" mean something.
+## 4. Three Outcomes
 
----
-
-## Trigger for GA Rollout
-
-Acceptance sign-off is the only artifact authorized to trigger the final rollout actions:
-
-| Sign-off outcome | Canary action (`canary-deployment`) | Flag action (`feature-flag-design`) |
+| Outcome | When | The record must carry |
 |---|---|---|
-| Full | Widen to 100%, terminate rollout, canary Deployment becomes stable | Release flag deleted at (or ahead of) its removal_date |
-| Conditional | Widen per the explicitly stated plan — may reach 100% with remediation tracked separately, or hold at an intermediate stage pending a Medium/High fix | Release flag scope widens to match the stated rollout pace; not deleted until conditions close |
-| No-go | Hold or revert to 0% | Release flag remains scoped to the validation cohort only, or reverts to `false` |
+| **FULL SIGN-OFF** | No open Critical or High; every Medium or Low accepted is listed as residual risk | Rollout to GA |
+| **CONDITIONAL SIGN-OFF** | No open Critical; any open High has its fix plan; or a scope or cohort is held back | Each condition: issue, severity, workaround, owner, target date, re-test; the rollout pace meanwhile |
+| **NO-GO** | An open Critical; a High with no fix plan; an unaddressed blocking pattern; or the customer representative does not accept, whatever the checklist says | Each blocking item and what must change; re-attempt = a **new UAT pass**, never a re-review of the same evidence |
 
-No agent widens a canary rollout or a release flag's scope to GA without a recorded sign-off artifact — this keeps the human decision, not a schedule or a dashboard-green status, as the actual gate.
+A conditional sign-off is acceptance *with concessions*: each concession is named, rated and time-bound. It is a legitimate, common outcome, not a weaker full. A no-go is the process working: a gate that can say no is what makes a yes mean something. The conditional's re-verification, a missed target date, and the no-go re-attempt: `./references/outcomes-and-rollout.md`.
 
----
+## 5. One Sign-Off per Release, and the Rollout It Triggers
 
-## Worked Example
+There is **one sign-off per release**, at the close of Customer Validation. Its rollout action states the whole path to GA. Beta stage moves (closed → open beta → GA) are graduation records in `beta-program-design`, not further sign-offs. A conditional sign-off **may reach 100%** with its conditions tracked. Customer Validation re-opens, with a new UAT pass and a new sign-off that supersedes this one, only when widening surfaces a new Critical or High, a graduation fails, or a representative withdraws.
 
-Full worked example — a conditional sign-off incorporating both scripted
-UAT results and exploratory-session findings: `references/worked-example.md`.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
+| Outcome | `canary-deployment` | `feature-flag-design` release flag |
 |---|---|---|
-| Checklist evidence-based | Every checklist item cites its source (`uat-plan`, `feedback-template`, `beta-program-design`) | Checklist items asserted without a traceable source |
-| Exploratory findings included | Exploratory-session results are checked and triaged alongside scripted UAT results, not treated as optional | A sign-off recorded while planned exploratory sessions never ran, or their findings were never triaged |
-| Two-party authority | Both the product owner and a customer/design-partner representative are named and recorded as agreeing | A unilateral internal decision recorded as "sign-off" |
-| Correct outcome category | Full/Conditional/No-go matches the actual defect/pattern status per the decision rules | A release with an open Critical defect recorded as full or conditional sign-off |
-| Conditions are dated and owned | Every conditional item has a remediation plan, an owner, and a target date | Vague "we'll fix it later" with no owner or date |
-| Rollout action explicit | The canary/flag action following the decision is stated, not implied | Sign-off recorded with no stated effect on the rollout |
-| No-go triggers re-validation | A no-go explicitly requires a new UAT pass on re-attempt, not a re-review of old evidence | Blocking items "fixed" and shipped without re-running UAT |
+| Full | Widen to 100% and terminate | Removed at (or before) its `removal_date` |
+| Conditional | Widen at the stated pace: to 100%, or hold at a named stage until a condition closes | Scope widens to match; not removed until conditions close |
+| No-go | Hold, or revert to 0% | Stays scoped to the validation cohort, or reverts to off |
 
----
+The requirements-analyst decides; `platform-engineer` operates the mechanism. No agent widens a canary or a flag to GA without this record. Per-cohort rollout, stage paths and the hand-off: `./references/outcomes-and-rollout.md`.
+
+## Scale
+
+`phase-requirements.json`: `acceptance-sign-off` is **required at every profile**, at `customer-validation/sign-off/<release>.md`.
+
+| Profile | Shape |
+|---|---|
+| **lean** | One page; usually the solo-operator exception; UAT plus the three-line OAT smoke; rollout = the flag to everyone. `./examples/01-lean-solo-full.md` |
+| **standard** | Two-party; design-partner evidence on a canary; repeatability line; dated conditions. `./examples/02-standard-conditional-high.md` |
+| **enterprise** | A signatory per acceptance type; a representative per tenant cohort; per-cohort rollout and addenda. `./examples/03-enterprise-split-cohorts.md` |
+
+## Producing the Sign-Off
+
+1. **Scaffold**: `bash ./scripts/scaffold-signoff.sh <product> <release>` copies `./templates/acceptance-sign-off.md` to `artifacts/<product>/customer-validation/sign-off/<release>.md` with today's date and the checklist unchecked.
+2. **Compile** the evidence from `uat-plan`'s completion summary, the scenario results, the feedback log and any beta graduation records; tick only what the evidence shows (§ 1).
+3. **Apply the defect rule** (§ 2) and draft the outcome (§ 4); name the signatories or fill the Exception block (§ 3).
+4. **Present it to the user.** Every conditional's fix plan and dates need the user's explicit approval; the customer representative's agreement is theirs to give, not the agent's to assume.
+5. **Validate**: `bash ./scripts/validate-signoff.sh <path>` checks structure only (signatories or a filled Exception, one valid decision, no open Critical under a sign-off, conditions with owner and date, a High condition with workaround and re-test, residual risk and rollout stated). It never judges acceptability. Cross-check `./resources/sign-off-checklist.md` by hand.
+6. **Hand off** the rollout action to `platform-engineer`; track each condition to its re-test.
 
 ## Anti-Patterns
 
-**Unilateral sign-off.** The product owner alone deciding to ship, without the customer/design-partner representative's affirmative agreement, is not acceptance — it is an internal release decision wearing the wrong label. If no design partner participated, the outcome is capped at conditional, with that gap stated explicitly.
+| Anti-pattern | Why it fails |
+|---|---|
+| **Unilateral sign-off** | An internal decision to ship labelled as acceptance, with no representative and no Exception block |
+| **A no-go relabelled conditional** | Defeats the gate; an open Critical is no-go |
+| **Silent conditional-to-full drift** | Conditions quietly expire once shipped; the re-test and date are part of the record |
+| **Blocked counted as passed** | Overstates readiness |
+| **Yardstick moved after the results** | An acceptance decided against criteria changed afterwards is a negotiation |
+| **Re-attempt on old evidence** | "Fixed" means deployed, not proven; a no-go re-attempt needs a new UAT pass |
+| **Exploratory findings off the record** | Reintroduces the blind spot the sessions exist to close |
+| **The agent signs or assumes agreement** | No human judgment in the loop |
+| **A second defect rule elsewhere** | Two rules drift; this skill holds the only one |
+| **A sign-off per beta stage** | Duplicates the decision; stage moves are graduation records |
 
-**Silent conditional-to-full drift.** Treating a conditional sign-off's remediation items as optional once the release has shipped — the tracked follow-up (target date, re-verification) is part of the sign-off record, not a suggestion that quietly expires.
-
-**No-go treated as a process failure to route around.** Re-labeling a no-go as "conditional" to avoid halting the rollout defeats the purpose of the gate; the checklist and decision rules exist precisely to make a no-go possible when it's warranted.
-
-**Sign-off as a rubber stamp.** Recording "full sign-off" without the underlying checklist evidence attached turns the artifact into a formality instead of a decision — the checklist and its sources must be visible in the same document.
-
-**Skipping re-validation after remediation.** Assuming a fix works because it was deployed, without re-running the specific UAT scenario or re-checking the pattern, converts "remediated" into an untested claim — exactly the gap the whole Customer Validation phase exists to close.
-
-**Exploratory findings treated as informal, off-the-record chatter.** A finding surfaced during an exploratory session (`uat-plan`) is exactly as real as a scripted scenario's failure — it goes through the same `feedback-template` triage and the same checklist evidence requirement. Recording a sign-off decision without checking whether planned exploratory sessions actually ran and were debriefed reintroduces exactly the blind spot the sessions exist to close.
-
----
-
-## Scripts
-
-Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides *whether* a release is acceptable, only whether the sign-off record is structurally complete, leaving the actual go/no-go judgment to the two named parties.
-
-| Script | Does | Run when |
-|---|---|---|
-| `scripts/scaffold-signoff.sh <product> <release-slice>` | Copies `assets/sign-off-template.md`, fills in the release-slice name and today's date, writes a new sign-off doc under `artifacts/[product]/customer-validation/sign-off/` with the full Sign-Off Criteria Checklist copied in unchecked | Starting the sign-off record for a release slice, once `uat-plan` execution and any exploratory sessions have run |
-| `scripts/validate-signoff.sh <path>` | Checks the Sign-Off Criteria Checklist section is present, both sign-off parties are named (not still bracketed placeholders), the Decision line names exactly one of the three valid outcomes, and a Rollout Action is stated | Before treating a sign-off record as final |
-
----
-
-## Output Format
-
-Fill-in-and-go: `assets/sign-off-template.md` (or generate it directly via `scripts/scaffold-signoff.sh`). Annotated template explaining each field: `references/output-format-template.md`. Mechanical check before treating a sign-off as final: `scripts/validate-signoff.sh`.
+Use canonical terms from `glossary-management`: **Acceptance Testing**, **User Acceptance Testing**, **Operational Acceptance Testing**, **Test Independence**, **Exit Criteria**, **Residual Risk**, **Canary Deployment**. Run `methodology-review` before hand-off.

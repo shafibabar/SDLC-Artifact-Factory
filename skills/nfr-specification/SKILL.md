@@ -1,225 +1,163 @@
 ---
 name: nfr-specification
 description: >
-  Teaches how to identify, categorise, and write measurable Non-Functional
-  Requirements (NFRs) across performance, scalability, availability, security,
-  compliance, usability, maintainability, data, delivery (DORA metrics), and
-  platform developer-experience domains. NFRs directly constrain architecture
-  decisions in the Design phase and become the acceptance criteria for Quality
-  phase testing. Used by the requirements-analyst agent during the Ideate phase,
-  immediately after functional requirements.
-version: 2.1.0
+  Teaches how to write the non-functional requirements (NFR) specification in
+  Ideate: consume the functional requirements document's quality-attribute
+  hand-off (QA-n) and business-rule catalogue (BR-n), walk the ISO/IEC 25010
+  quality characteristics plus deployability, write each NFR as a
+  quality-attribute scenario (Bass: source, stimulus, environment, artifact,
+  response, response measure) with Planguage Must / Plan / Stretch targets
+  scaled to the profile, rank the scenarios (a utility tree at enterprise),
+  cross-check them for conflicts as candidate trade-off points, and hand the
+  architecturally significant ones to enterprise-architect. Use when writing,
+  reviewing or ranking non-functional requirements or quality attributes
+  (performance, latency, availability, RTO/RPO, scalability, security,
+  usability, accessibility, maintainability, deployability), turning "fast",
+  "instantly" or "99.9%" into a testable requirement, citing data residency or
+  retention rules in an NFR, or deciding whether DORA delivery metrics belong
+  in an NFR (they are process targets owned by dora-metrics). Used by the
+  requirements-analyst agent in Ideate (/sdlc-ideate) after the functional
+  requirements and before epics; required at lean, standard and enterprise.
+version: 3.0.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, nfr, performance, scalability, security, compliance, architecture-input, dora, delivery, platform-dx]
+tags: [ideate, nfr, quality-attributes, quality-attribute-scenario, iso-25010, utility-tree, trade-off, architecture-input, deployability]
 produces: nfr-specification
 domain: discovery
 status: stable
-related: [dora-metrics, slo-definition, platform-engineering-design]
+related: [requirements-analysis, okr-authoring, gtm-strategy, competitive-analysis, dora-metrics, slo-definition, go-load-test, platform-engineering-design, adr-authoring, glossary-management, methodology-review]
+sources:
+  - research/software-architecture/software-architecture-in-practice-bass.md
+  - research/requirements-and-user-stories/software-requirements-wiegers-beatty.md
+  - research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md
+  - research/software-architecture/fundamentals-of-software-architecture-richards-ford.md
+  - research/devops-and-delivery/accelerate-forsgren-humble-kim.md
+  - research/devops-and-delivery/platform-engineering-fournier-nowland.md
 ---
 
 # NFR Specification
 
 ## Purpose
 
-Non-Functional Requirements (NFRs) define the qualities the system must have — not what it does, but how well it does it and under what constraints it operates. They are the primary input to architecture decisions: a system designed without NFRs is designed for an unknown context and will fail under real conditions.
+The NFR specification answers: **how well must the product do what the functional requirements say, under which conditions, and how will each target be checked?** Wiegers and Beatty (*Software Requirements*) call these **quality attributes**; the Hathaways (*Getting and Writing IT Requirements in a Lean and Agile World*) place them in the Solution tier as its non-functional half. Bass, Clements and Kazman (*Software Architecture in Practice*, 4th ed.) give the reason they matter: almost any structure can deliver the features, but only some deliver them with the required availability or latency. **Quality attributes, not features, drive the architecture**, so this artifact is `enterprise-architect`'s first input.
 
-Every NFR must be:
-- **Measurable** — expressed as a metric with a specific target value
-- **Testable** — verifiable by a defined test type (performance test, security audit, compliance check)
-- **Traceable** — linked to a business driver (user expectation, regulatory obligation, operational constraint)
+An NFR that cannot fail a test is a wish. "Fast" and "highly available" become NFRs only when they say under what conditions, by how much, and how it will be measured.
 
-Vague NFRs ("the system should be fast") are not NFRs — they are wishes. They must be made specific or removed.
+## Where It Sits
 
----
+```
+Ideate: … impact map ─► functional requirements (FRD) ─► NFR SPECIFICATION ─► epics ─► stories … ─► MoSCoW
+                                                              └─► Design: enterprise-architect (handoff) · Deploy: slo-definition
+```
 
-## NFR Categories
-
-### 1. Performance
-
-Response time, throughput, and resource consumption under defined load conditions.
-
-| Attribute | Format | Example |
-|---|---|---|
-| Response time | P50/P95/P99 latency at defined RPS | "API responses: P95 < 200ms at 100 concurrent users" |
-| Throughput | Requests or operations per second | "File classification: minimum 1,000 files/minute per worker node" |
-| Resource consumption | CPU/memory at defined load | "Worker node: < 2 CPU cores, < 1GB RAM at peak scanning load" |
-
----
-
-### 2. Scalability
-
-How the system behaves as load and data volume increase.
-
-| Attribute | Format | Example |
-|---|---|---|
-| Horizontal scaling | How additional nodes change capacity | "Each additional worker node adds 1,000 files/minute scanning capacity linearly" |
-| Data volume | Maximum supported dataset size | "Must support estates of up to 10 million files without performance degradation" |
-| Tenant scaling | Isolation under multi-tenant load | "One tenant's peak load must not affect another tenant's response times" |
-
----
-
-### 3. Availability
-
-Uptime commitments and recovery targets.
-
-| Attribute | Definition | Example |
-|---|---|---|
-| Uptime SLO | Percentage of time the system is operational | "99.5% monthly uptime for the compliance dashboard" |
-| RTO (Recovery Time Objective) | Maximum time to restore service after failure | "RTO: 4 hours for complete infrastructure failure" |
-| RPO (Recovery Point Objective) | Maximum data loss acceptable after failure | "RPO: 1 hour — no more than 1 hour of scan results lost" |
-| Planned downtime | Maintenance window | "Maximum 2 hours planned downtime per month, announced 48 hours in advance" |
-
----
-
-### 4. Security
-
-Technical security requirements that constrain implementation and architecture.
-
-| Attribute | Example |
+| Reads | What it takes |
 |---|---|
-| Authentication | "All API endpoints require JWT authentication; tokens expire after 1 hour" |
-| Authorisation | "ABAC: every resource access evaluated against user attributes, resource classification, and environment context" |
-| Encryption in transit | "All service-to-service communication encrypted with mTLS via Linkerd" |
-| Encryption at rest | "All data at rest encrypted with AES-256; keys managed per-tenant in customer-controlled key store" |
-| Secrets management | "No secrets in source control, environment variables, or container images; injected at runtime via secrets manager" |
-| Vulnerability management | "Container images scanned on every build; no HIGH or CRITICAL CVEs in production images" |
-| Penetration testing | "Annual third-party penetration test; critical and high findings remediated within 30 days" |
+| `requirements-analysis` (FRD) | The **Quality-Attribute Hand-off** (QA-n, each with the FRs it constrains), the **Business Rules** catalogue (BR-n), constraints (CON-n) and data requirements (DR-n). At lean there is no FRD: read the quality concerns and business rules in the requirements header of `ideate/user-stories.md`, or ask the user |
+| `okr-authoring`, `gtm-strategy`, `competitive-analysis` | Business value behind a target: an SLA buyers expect, table-stakes quality, the KR a slow path would hurt |
+| `sdlc-config.json` | Scale profile; `compliance_frameworks` (control families the product must satisfy) |
 
----
-
-### 5. Compliance
-
-Regulatory and standards requirements that impose verifiable obligations.
-
-| Framework | Requirement format |
+| Feeds | What it gives |
 |---|---|
-| SOC 2 Type II | "CC6.1: All access to production systems is controlled and logged" |
-| GDPR | "Article 30: Data processing register auto-generated and kept current" |
-| ISO 27001 | "A.12.4.1: Event logs produced and retained for 12 months" |
+| `enterprise-architect` | The **Architecture Handoff**: architecturally significant scenarios, their ratings and the candidate trade-off points |
+| `security-architect`, `domain-modeler` | Security scenarios; residency and isolation obligations (citing BR-n) |
+| `slo-definition` (Deploy) | Availability and latency scenarios, which it formalises as SLIs and SLOs. The NFR states the requirement; the SLO is how it is monitored |
+| Quality phase (`go-load-test`, test plan) | Each response measure is a test's pass condition; the NFR ID is the traceability key |
 
-Each compliance NFR must reference the specific control or article and state how it will be verified (Compliance as Code — automated test that checks the control).
+## Step One: Consume the Hand-offs, Never Restate Them
 
----
+`requirements-analysis` refused to put "instantly" or "99.9%" inside a functional requirement and handed them here as QA-n. It catalogued regulations such as data residency once, as BR-n. This skill picks both up; **one fact, one home**:
 
-### 6. Usability
-
-How easily the target user can achieve their goal.
-
-| Attribute | Example |
-|---|---|
-| Time to first value (TTFV) | "A new user must reach their first compliance gap discovery within 30 minutes of connecting their first storage source, without contacting support" |
-| Error recovery | "All user-facing errors include a plain-language description and a remediation step" |
-| Accessibility | "UI meets WCAG 2.1 Level AA" |
-| Onboarding completion rate | "80% of trial users complete setup without abandoning" |
-
----
-
-### 7. Maintainability
-
-How easily the system can be changed, debugged, and extended.
-
-| Attribute | Example |
-|---|---|
-| Test coverage | "Minimum 80% unit test coverage on all service packages; 100% on domain logic" |
-| Build time | "Full CI pipeline completes in under 10 minutes" |
-| Mean Time to Diagnose (MTTD) | "Any production incident diagnosable to a root cause within 30 minutes using distributed tracing and structured logs" |
-| Dependency currency | "No dependency older than 12 months without documented reason; no known CVEs in dependencies" |
-| Code review gate | "No code merged without passing automated tests, lint, and at least one review" |
-
----
-
-### 8. Data
-
-Requirements governing how data is stored, retained, and governed.
-
-| Attribute | Example |
-|---|---|
-| Data residency | "All customer data — files, metadata, entity extractions — processed and stored exclusively within the customer's declared infrastructure boundary" |
-| Data retention | "Scan results retained for 90 days by default; configurable per tenant to 12 months" |
-| Audit log retention | "Audit logs retained for 7 years; append-only; tamper-evident" |
-| Data classification | "Every data asset assigned a sensitivity classification (Public / Internal / Confidential / Restricted) within 24 hours of discovery" |
-| Backup | "Daily encrypted backups; backup restoration tested monthly" |
-
----
-
-### 9. Delivery (DORA Metrics)
-
-**Applies to every service.** Delivery NFRs define how rapidly and reliably a service can be changed and shipped to production. They are process constraints verified by measuring the CI/CD pipeline's actual behaviour — not performance tests, not security audits. Based on the DORA research programme (Forsgren, Humble, Kim — *Accelerate*), high-performing delivery organisations achieve all four targets simultaneously; tempo and stability reinforce each other, not trade off.
-
-| Attribute | DORA High Performer Target | Format |
+| From the FRD | Becomes here | Never |
 |---|---|---|
-| Deployment Frequency | On demand — multiple times per day | "This service must be deployable to production on demand; releases are not batched or gated by a release window" |
-| Lead Time for Changes | < 1 hour from commit to production | "From the moment a commit merges to main, it must be running in production within 1 hour via the automated CD pipeline" |
-| MTTR (Mean Time to Restore) | < 1 hour to restore after a production incident | "Any production incident affecting this service must be resolved — via rollback, hotfix, or feature flag — within 1 hour of detection" |
-| Change Failure Rate | < 15% of deployments cause an incident | "No more than 15% of deployments to production may require a rollback, hotfix, or immediate patch; measured over a rolling 30-day window" |
+| QA-n quality concern | One or more scenarios tracing to QA-n and the FRs it constrains, or a one-line decline with its reason | Silently dropped; a QA-n with no line in **Inputs Consumed** is a defect |
+| BR-n regulation or policy (residency, retention, a control) | An **obligation** row (NFR-OBL-n): the measurable thing *this system* must do or prove, and its check, citing BR-n | Restating the rule, or a second residency or retention rule written here |
+| CON-n constraint | Read as a fixed condition on scenarios (an environment or a limit) | Turned into an NFR target |
+| A number the user gave ("99.9%") | A **candidate** Plan value, kept only if a business driver justifies it | Copied as the target without asking why |
 
-**Testing approach:** Delivery NFRs are verified by measuring the pipeline. Deployment Frequency is counted from GitHub Actions workflow run events on main. Lead Time is the delta between commit timestamp and deploy-complete timestamp. MTTR is measured from alert-open to alert-closed in Alertmanager. Change Failure Rate is rollback events divided by total deployments in the window. A service that cannot be deployed without a manual release window fails the Deployment Frequency NFR by construction.
+If an obligation has no BR-n yet, do not create the rule here: add it to the FRD's Business Rules (the backlog header at lean), as a change request if the FRD is approved, then cite it. Likewise, when an NFR implies functional behaviour ("lock the account after 5 failed sign-ins"), send it back to the FRD as a **derived requirement** (Wiegers) rather than leaving it only here.
 
-**DORA cluster thresholds for calibration (from *Accelerate* Ch. 3):**
-- High performers: deploy on demand, lead time < 1 hour, MTTR < 1 hour, change failure rate 0–15%
-- Medium performers: deploy weekly–monthly, lead time 1 day–1 week, MTTR < 1 day, change failure rate 0–15%
-- Low performers: deploy monthly or quarterly, lead time 1–6 months, MTTR 1 week to 1 month, change failure rate 46–60%
+## What Is, and Is Not, an NFR
 
----
+| Item | Where it lives |
+|---|---|
+| How well the product behaves under stated conditions (latency, recovery, isolation, learnability, deployability) | **Here**, as a quality-attribute scenario |
+| A regulation, policy or contract term (residency, retention, a SOC 2 or GDPR control) | FRD business rule (BR-n); here only the measurable obligation that cites it |
+| How the *team* delivers: deployment frequency, lead time for changes, change failure rate, test coverage, CI duration | **Process targets** (PT-n), a separate, optional section. Values come from `dora-metrics`, never set here |
+| SLI definitions, error budgets, burn-rate alerts | `slo-definition` (Deploy), formalising this artifact's availability and latency scenarios |
+| What the software does, with its fit criterion | The FRD |
 
-### 10. Platform DX (Developer Experience)
+**Why DORA figures are not NFRs.** Forsgren, Humble and Kim (*Accelerate*) validate the four key metrics as measures of a team's **delivery performance** across many changes, and warn that the clusters are directional, not hard thresholds. No ISO/IEC 25010 characteristic is "how often the team deploys". What the architecture must support is **deployability** (Bass, 4th ed.): one service can be deployed and rolled back on its own, with no manual step. That is a product scenario here; the rates are process targets, calibrated in `dora-metrics`, and never defaulted to the high-performer cluster.
 
-**Applies when the artifact being specified is a platform capability, not a product feature.** Platform DX NFRs define how effectively the platform reduces cognitive load for the engineers who build on it. Based on Fournier and Nowland's *Platform Engineering*: a platform that is technically correct but imposes high cognitive load has failed its customers. These NFRs are measurable, testable, and tracked via the `platform-engineering-design` skill's DX measurement cadence.
+## The Quality-Attribute Scenario
 
-| Attribute | Target | Verification |
+Every NFR is a **quality-attribute scenario** (Bass): six parts, so the conditions are part of the shape and a missing one is visible.
+
+| Part | Says | Example |
 |---|---|---|
-| Time-to-First-Deploy | A new engineer can deploy to the local environment within 1 business day using only the golden path and its documentation, without requiring help from a platform team member | Timed during engineer onboarding; the stopwatch starts on day one and stops when a successful deployment is confirmed in the local environment |
-| Self-Service Coverage | ≥ 90% of common platform operations (create service, provision database, create environment, rotate secret, view logs, roll back deployment) are achievable without opening a support ticket | Enumerated as a percentage: count of operations achievable via golden path CLI or UI / total enumerated common operations |
-| Exception Rate | The number of out-of-band deviations from the golden path requested per quarter must trend downward after initial platform adoption | Tracked as an inverse-adoption metric; a rising exception rate signals the golden path does not cover real developer needs |
+| **Source** | Who or what causes the event | 200 parents at once; an attacker with a stolen password; the on-call developer |
+| **Stimulus** | The event | Opens the timetable; a zone fails; a fix is ready to release |
+| **Environment** | Conditions at the time | Monday 07:00 peak; normal operation; one node lost |
+| **Artifact** (affected part) | The part of the system affected | The booking API; the tenant database; the whole system |
+| **Response** | What the system does | Returns the page; fails over and keeps accepting writes; blocks and logs |
+| **Response measure** | The number that makes it testable | P95 ≤ 800 ms (Must), ≤ 400 ms (Plan); RTO 15 min, RPO 0 |
 
-**Testing approach:** Time-to-First-Deploy is verified by observing (and timing) actual onboarding sessions. Self-Service Coverage is verified by enumerating the ten most common platform operations identified from support ticket history and checking each against the golden path. Exception Rate is a quarterly review metric from the platform team's deviation log.
+Call it a *quality-attribute scenario*, never just "scenario" (that word means a Gherkin `Scenario`), and read "artifact" as *the part of the system affected*, not a document. Put the target inside the response measure in **Planguage** (Tom Gilb, as taught by Wiegers and Beatty): **Must** is the minimum acceptable, **Plan** the target, **Stretch** the ambition. Planguage *Must* is not MoSCoW *Must*. Latency is always a percentile with its load, never an average. Availability is written as **failure scenarios** (what fails, what the system does, time to detect and recover, data lost); an uptime percentage is one response measure among them, which `slo-definition` later turns into an SLO.
 
----
+The six parts, the general-scenario library per characteristic, Planguage and the Platform DX scenarios for internal platforms: `./references/quality-attribute-scenarios.md`. Read it before drafting the first scenario and whenever a characteristic's stimuli or measures are unclear.
 
-## Step-by-Step Production
+## Coverage: Walk ISO/IEC 25010, Then Keep Only What Matters
 
-1. For each NFR category, extract obligations from: the FRD constraints, the GTM strategy (SLA expectations for the target market), the competitive analysis (table-stakes quality expectations), and explicit regulatory requirements identified in the stakeholder map.
-2. Write each NFR using the format: **what** the requirement is + **the measurable target** + **the test type that will verify it**.
-3. Assign each NFR a unique ID (`NFR-[category prefix]-[number]`, e.g. `NFR-PERF-001`, `NFR-DLVR-002`, `NFR-PDX-001`). Category prefixes: PERF, SCAL, AVAIL, SEC, COMP, USE, MAINT, DATA, DLVR, PDX.
-4. For every NFR, ask: "How will this be tested in the Quality phase?" If it cannot be tested, it cannot be verified — refine it until it can.
-5. Flag NFRs that impose significant architecture constraints for explicit handoff to the `enterprise-architect` agent.
-6. For Delivery NFRs: verify the CI/CD pipeline is instrumented to emit the four DORA metric events; an NFR-DLVR entry without a measurement source is unverifiable.
-7. For Platform DX NFRs: confirm that onboarding documentation and a golden path CLI/UI exist before declaring them testable.
+ISO/IEC 25010 (2023) names nine product-quality characteristics: functional suitability, performance efficiency, compatibility, interaction capability (2011: usability), reliability, security, maintainability, flexibility (2011: portability, now including scalability) and safety. Bass adds **deployability**, which the standard lacks. Walk all ten: each gets at least one candidate scenario or a one-line decline with its reason ("flexibility: one cloud region, no portability need"). Functional suitability is declined by default: the FRD's fit criteria own it. The standard is a checklist, not a quota, and it gives names, not targets.
 
----
+Then **rank**. Wiegers advises specifying the few attributes that matter. Bass's utility tree rates each scenario on **business value** and **architectural impact**, High / Medium / Low. A scenario rated H on architectural impact is an **architecturally significant requirement** (ASR) and goes into the handoff. (L, L) scenarios get one line or are dropped. The lean rule in `phase-requirements.json` ("only the NFRs that change a design decision") is this test.
 
-## Architecture Handoff
+The characteristics with sub-characteristics and typical stimuli, the utility tree, the conflict check and the handoff format: `./references/ranking-and-trade-offs.md`. Read it when ranking, and before the handoff.
 
-These NFR types impose the strongest architecture constraints and must be explicitly flagged in the NFR document for the `enterprise-architect`:
+## The Conflict Check
 
-- Physical data residency requirements → constrain deployment topology
-- mTLS and Zero Trust requirements → mandate service mesh
-- Tenant isolation at infrastructure level → constrain database and network architecture
-- RTO/RPO targets → mandate backup, replication, and failover architecture
-- Horizontal scaling requirements → mandate stateless service design
-- Deployment Frequency + Lead Time NFRs (DLVR) → mandate a fully automated CD pipeline with no manual release steps; any manual gate in the pipeline makes the Lead Time NFR unachievable
+Richards and Ford (*Fundamentals of Software Architecture*) call architecture characteristics competing forces: everything is a trade-off. Before the handoff, take each pair of highly rated scenarios and ask whether meeting one makes the other harder. Typical pairs: cross-region failover vs data that must stay in one country; low latency vs encryption and audit on every call; tenant isolation vs cost per tenant; fast deployability vs a manual approval gate. Record each clash as a **candidate trade-off point** (TP-n, Bass's ATAM term) naming the scenarios, why they pull apart and the options open. **Do not choose**: resolving it is an architecture decision for `enterprise-architect`, recorded in an ADR (`adr-authoring`), or a product decision for the user.
 
----
+## Producing the Artifact
 
-## Quality Criteria
+1. **Check the profile** (Scale, below) and read the inputs. If the FRD (standard, enterprise) is missing or not approved, stop and say so.
+2. **List Inputs Consumed**: every QA-n, BR-n and CON-n the NFRs draw on, and what each became.
+3. **Walk the characteristics**; draft candidate scenarios from the general-scenario library; decline the rest with a reason.
+4. **Rank** (lean: an ordered list; standard: rated value and impact; enterprise: a utility tree).
+5. **Write the kept scenarios** in the profile's form, each tracing to QA-n, the FRs and, for an obligation, BR-n. Ask "why this number?" of every Plan value: a business driver, or it is a copy-paste target.
+6. **Name the verification** for each response measure: the Quality-phase test or measurement that passes or fails it.
+7. **Run the conflict check**; record candidate trade-off points.
+8. **Send derived requirements** back to the FRD and record them.
+9. **Process targets** only as the profile allows, values chosen by the user from `dora-metrics`.
+10. **Write the Architecture Handoff**: every ASR, its rating, the trade-off points it is in, and (as pointers only) the tactic families that usually serve it. Tactics are chosen at Design.
+11. **Validate** against `./resources/nfr-checklist.md`, run `python3 ./scripts/check-nfr.py <artifact>`, and write from `./templates/nfr-specification.md` to `ideate/nfr-specification.md`.
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Measurability | Every NFR has a numeric target or binary pass/fail condition | Any NFR containing "should be", "reasonable", "fast", "secure" without a metric |
-| Testability | Every NFR references a test type or measurement source | NFR with no stated verification approach |
-| Category coverage | All 10 categories addressed, even if only to document "no requirement in this category" | Missing categories with unexamined assumptions |
-| Architecture flags | NFRs with architecture implications are marked | Architecture-constraining NFRs buried without flagging |
-| Compliance traceability | Compliance NFRs reference the specific control or article | Generic compliance claims with no control reference |
-| Delivery instrumentation | Each DLVR NFR names its measurement source (pipeline event, alert timestamp, deploy count) | Delivery NFR with no identified data source |
-| Platform DX scope | PDX NFRs included only when the artifact is a platform capability, not a product feature | Platform DX NFRs on a product feature (wrong applicability) |
+## Scale
 
----
+`phase-requirements.json`: **required** at every profile; lean is "short — only the NFRs that change a design decision". Targets scale with the profile: **minimum** at lean, **target** at standard, **stretch** at enterprise.
 
-## Anti-Patterns and Output Format Template
+| Profile | Shape |
+|---|---|
+| **lean** | Inputs from the backlog header and the user. The ten characteristics at top level, one line each to keep or decline. **3–8 scenarios** in short form: stimulus, environment, response measure with **Must** only. An ordered list, each kept scenario because it changes a design decision. One deployability scenario. No process targets unless the user asks. Conflict check on the kept few: `./examples/01-lean-toolshed.md` |
+| **standard** | The FRD hand-off in full. Characteristics plus the relevant sub-characteristics. Each scenario rated business value / architectural impact; all six parts for any scenario rated H, short form for the rest. **Must and Plan**. Candidate trade-off points. Process targets optional: `./examples/02-standard-rebound.md` |
+| **enterprise** | A full **utility tree** (utility → characteristic → refinement → rated scenarios). All six parts on every kept scenario. **Must, Plan and Stretch**, per service tier and per tenant tier or region where they differ. Trade-off and sensitivity points flagged for a lightweight architecture evaluation at Design. Process targets per service tier, set by the user from `dora-metrics`: `./examples/03-enterprise-permitry.md` |
 
-See `references/nfr-antipatterns-and-output.md` for:
-- The six named anti-patterns (wish NFRs, copy-paste SLOs, targets without load context, compliance hand-waving, specified-then-orphaned NFRs, averages as targets)
-- The full output format template, updated to include Delivery and Platform DX sections
-- Worked examples for DLVR and PDX NFRs
+## Anti-Patterns
+
+| Anti-pattern | Why it fails |
+|---|---|
+| **Wish NFR** ("fast", "secure", "highly available") | No falsifying condition; it passes every demo |
+| **Target without environment** | "P95 < 200 ms" at what load, on what data? A missing environment part shows it |
+| **Average as target** | The mean hides the tail where users suffer; use percentiles |
+| **Copy-paste nines** | Each nine multiplies cost; a 99.99% rated M on business value is caught by its own rating |
+| **Restated rule** | Residency written here as well as BR-n: two homes drift apart |
+| **DORA as an NFR** | Team process rates, mandated per service, contradict *Accelerate*'s caution; deployability is the product property |
+| **Every characteristic in full** | A lean product drowns; rank, keep few, decline the rest with a reason |
+| **Conflict left implicit** | The architect discovers the clash mid-design; record it as a candidate trade-off point |
+| **Tactic chosen in the NFR** | "Use a service mesh" is a design decision; the NFR stops at the response measure |
+| **Orphaned NFR** | An NFR ID no Quality-phase test references was never verified |
+| **Product rule as skill rule** | A SOC 2 control or a region belongs in that product's BR-n, not in every product's NFRs |
+
+Each anti-pattern with its fix: `./references/anti-patterns.md`. Read it when reviewing an NFR document or when a draft target feels arbitrary.
+
+Use canonical terms from `glossary-management`: **Quality Attribute**, **Quality-Attribute Scenario**, **Utility Tree**, **Architecturally Significant Requirement**, **Trade-off Point**, **Planguage**, **Deployability**, **Process Target**, **Business Rule**, **Encryption at Rest**, **Encryption in Transit**, **Zero Trust Architecture**. Run `methodology-review` before hand-off.

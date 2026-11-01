@@ -1,164 +1,77 @@
 # Story-Splitting Patterns
 
-When a story fails **Small** or **Estimable**, it is split into INVEST-compliant
-children rather than planned as-is. Splitting is a first-class, continuous
-craftsmanship skill — not a fallback you reach for only once a story has already grown
-too big. This reference catalogues the named patterns (drawn from Mike Cohn's *User
-Stories Applied*, Cohn's later **SPIDR** framework, and Richard Lawrence's widely-cited
-splitting patterns) and then walks a full worked split of an oversized repo story.
+Self-contained reference for `user-story-writing`, the single home of the story-level splitting catalogue in this plugin. Read it before splitting any story, and whenever a story fails INVEST's **Small** or **Estimable**. Splitting an *epic into epics* (by outcome, user class, deliverable, tenant, or new capability vs transition) is `epic-definition`'s job; it points here once an epic is being turned into stories.
 
-**The golden rule of a good split: every child is still a vertical slice.** A child
-story must remain Independent, Valuable, and Testable on its own. Splitting by
-architectural layer ("build the database story, then the API story, then the UI story")
-violates this — none of those layers delivers user value alone. Split so each child
-ships a thin end-to-end increment.
+**Sources.** Mike Cohn, *User Stories Applied*: workflow step, business-rule variation, data boundary, CRUD operation, deferring performance or robustness, spikes, and simple vs complex. **SPIDR** (Spike, Paths, Interfaces, Data, Rules) is Cohn's later Mountain Goat Software material, not *User Stories Applied*; credit it that way. "Verb before noun" is this plugin's house rule.
 
 ---
 
-## SPIDR (Mike Cohn)
+## The golden rule: every child is an end-to-end slice
 
-SPIDR is Cohn's mnemonic for five reliable ways to split almost any story. Try them in
-roughly this order; the first that yields valuable children wins.
+Each child story must still be **Independent, Valuable and Testable on its own**: a thin slice through every layer the behaviour needs (screen, logic, storage, message), which a named user can see working. Splitting by architectural layer ("the database story, then the API story, then the UI story") breaks this: no layer delivers value alone, and none can be accepted by a user. Those are **tasks** inside a story.
 
-| Letter | Split by | When to use it |
-|---|---|---|
-| **S — Spikes** | A time-boxed investigation whose output is knowledge | The story is not estimable due to technical uncertainty |
-| **P — Paths** | The distinct paths through the workflow | The story has a happy path plus error/alternate paths |
-| **I — Interfaces** | The different interfaces or clients | The story spans several UIs, devices, or entry points |
-| **D — Data** | The different data types or sources it handles | The story works across Drive / S3 / SharePoint, etc. |
-| **R — Rules** | The distinct business rules it must honor | The story bundles several rules (thresholds, tiers) |
-
-- **Spikes** — carve out the uncertainty as a separate, time-boxed spike story. Its
-  deliverable is a decision or a proof of concept, not shippable software. Once it
-  lands, the original story becomes estimable.
-- **Paths** — the happy path becomes the first story; each alternate or error path
-  becomes its own follow-on. Re-authenticating an expired token, handling a revoked
-  permission, and retrying a failed scan are all separate Paths.
-- **Interfaces** — if the same capability is offered through a web UI, a CLI, and an API,
-  each interface is a candidate story once one of them proves the capability.
-- **Data** — one story per data type or source. This is the most common split for this
-  repo's connector work: "connect Google Drive" and "connect S3" are separate Data
-  splits of "connect a storage source."
-- **Rules** — one story per business rule. See "By Business-Rule Variation" below.
+A naming note: this kind of cut is often called a "vertical slice" through the architecture. That is different from the story map's **vertical-slice MVP** anti-pattern (`story-mapping`), which means finishing one activity of the journey while the rest waits. Both rules point the same way: thin and end to end.
 
 ---
 
-## By Workflow Step
+## The patterns
 
-If the story covers a multi-step process, split each step into its own story. A "review
-and approve a data-classification change" story splits into *view the pending change*,
-*add a reviewer comment*, and *approve or reject* — each independently demonstrable.
+### Verb before noun (house rule)
+When the want joins actions ("connect, configure and monitor a source"), split by the verb first: *connect*, *configure*, *monitor*. Only then ask whether any one of them needs a finer data or rule split. Decomposing the compound action first usually yields stories that are each clearly valuable.
 
-## By CRUD Operation
+### Workflow step (Cohn)
+A multi-step process becomes one story per step the user can see: "review and approve a change" → *see the pending change* · *comment on it* · *approve or reject it*. Each step is independently demonstrable. If a step is only meaningful with the next, keep them together.
 
-Cohn treats Create / Read / Update / Delete as a *specific and separate* pattern from a
-generic "read vs. write" pair. When a story bundles all four operations for one entity,
-split each operation into its own story:
+### Business-rule variation (Cohn; SPIDR Rules)
+When behaviour differs by business rule, tier or policy, write one story per rule instead of conditional logic inside one story: "apply the loan rules" → *a loan is due after 7 days (BR-1)* · *a member 7+ days overdue cannot borrow (BR-2)* · *a steward extends once (BR-1)*. In a multi-tenant product, **per-tenant policy** is a rules split: one story for the rule mechanism with the first tenant's policy, then a story per genuinely different policy, never a story per tenant that repeats the same behaviour.
 
-> "Manage retention policies" → *Create a retention policy* · *View retention policies*
-> · *Edit a retention policy* · *Delete a retention policy*.
+### Data boundary (Cohn; SPIDR Data)
+One story per data type, source or format the behaviour handles: "import bookings" → *from the practice's CSV export* · *from a paper diary checklist*. Ship the most common source first.
 
-Create and Read almost always deliver value first; Update and Delete often follow. This
-is finer-grained than merely separating reading from writing, and it surfaces which
-operations are actually needed for the increment.
+### CRUD operation (Cohn)
+When a story bundles create, read, update and delete for one entity, split each operation into its own story, not just "read vs write": "manage retention policies" → *create* · *view* · *edit* · *delete*. Create and read usually deliver value first; update and delete often wait, and sometimes a workaround (delete and re-create) covers them for a release.
 
-## By Business-Rule Variation
+### Paths: happy path first (SPIDR Paths)
+The success path is the first story; each alternate or error path is its own follow-on: *patient confirms or cancels by reply* first, then *front desk sees replies that were not understood*, then *a reply after the cut-off*. This is usually the single most effective shrink.
 
-When a story's behavior differs by business rule, split each rule variation into its own
-story instead of writing conditional logic inside one story. For this repo: "classify a
-file by sensitivity" splits by the classification rules — *flag files matching a PII
-pattern*, *flag files above a size threshold*, *flag files shared externally* — each rule
-an independently valuable and testable increment.
+### Interfaces (SPIDR Interfaces)
+When the same capability is reached through several interfaces (web, phone, an API) or by several user classes with different views (officer, applicant, public), one interface or class proves the capability and each other becomes a story. Access for **disfavoured user classes** (another tenant's staff, an anonymous visitor) is a story of its own, at the step where they would meet the data.
 
-## Happy Path First
+### Simple then complex; defer performance and robustness (Cohn)
+Ship the common case, defer the rare or hard one, even if a stakeholder asked for the hard version by default: *scan a folder* before *scan 1M+ files and resume after a failure*. A quality target (time, volume, uptime) is not split out as a story: it is an NFR the later story cites.
 
-Write the basic success scenario as the first story; error and edge cases become
-subsequent stories. This is the **Paths** split applied with the happy path taken first,
-and it is usually the single most effective way to shrink a story: ship the case that
-covers 80% of usage, defer the exceptions.
-
-## Simple Then Complex (defer the hard part)
-
-Split the simple/common case from the complex/rare case within one capability, shipping
-the simple version first even when a stakeholder asked for the complex version by
-default. "Scan a folder" ships before "scan a folder with 1M+ files and resume on
-failure" — the robustness/performance hardening is deferred to its own story rather than
-holding the common case hostage to the rare one.
-
-## Split by Verb Before Noun
-
-When a story bundles multiple actions ("connect, configure, and monitor a source"),
-split by the *verb* (connect / configure / monitor) before considering finer data-based
-splits. Decomposing the compound action first usually yields three cleanly valuable
-stories; only then ask whether any one of them needs a further Data split.
+### Spike (Cohn; SPIDR Spike)
+When nobody can say what a story involves (an unfamiliar external system, an unknown data shape), carve out a **spike**: one named question, a bounded investigation, and an output that is a decision note, not shippable software. Write it as `US-n Spike: <question>` with the story it unblocks; the blocked story notes "waits on US-n". Agents have no time boxes in days, so bound the spike by its question and its output.
 
 ---
 
-## Choosing a Pattern
+## Choosing a pattern
 
 | The story is too big because… | Reach for |
 |---|---|
-| It handles many data types/sources | Data (SPIDR) |
-| It has a happy path plus error paths | Happy path first / Paths (SPIDR) |
-| It bundles several verbs/actions | Split by verb before noun |
-| It enforces several business rules | Rules (SPIDR) / by business-rule variation |
-| It is a multi-step workflow | By workflow step |
-| It does all of CRUD on one entity | By CRUD operation |
-| It is too uncertain to estimate | Spike (SPIDR) |
-| The hard case is blocking the easy case | Simple then complex |
+| It joins several verbs | Verb before noun |
+| It is a multi-step workflow | Workflow step |
+| It enforces several rules, tiers or tenant policies | Business-rule variation |
+| It handles many data types or sources | Data boundary |
+| It does all of CRUD on one entity | CRUD operation |
+| It has a happy path plus error paths | Paths, happy path first |
+| Several interfaces or user classes reach it | Interfaces |
+| The hard or large case blocks the common case | Simple then complex |
+| Nobody can say what it involves | Spike |
 
-Most oversized stories admit several valid splits. Prefer the one whose children are
-each **independently valuable** — a split that produces a child no user cares about
-(e.g., a pure infrastructure slice) is the wrong split.
+Most oversized stories admit several valid splits. **Prefer the split whose children are each independently valuable.** A split that produces a child no user cares about (a pure infrastructure slice) is the wrong split; try another pattern.
 
 ---
 
-## Worked Split — an Oversized Repo Story
+## Bad splits
 
-**Original (fails Small and Estimable):**
+| Bad split | Why | Instead |
+|---|---|---|
+| By layer: UI / API / database | Nothing a user can accept | End-to-end slices by path, rule or data |
+| By service or team | The layer split at service scale | By outcome or rule; teams follow Design's Bounded Contexts |
+| By tenant, when tenants behave identically | Duplicate stories that differ only by name | One story; split only where policy or data differs |
+| "Part 1 / part 2" of the same behaviour | Neither half is testable alone | Find the path or rule that divides it |
+| Happy path in one story, all "edge cases" in another | The second is a grab-bag of unrelated paths | One story per path |
+| A spike that ships code | A spike's output is knowledge | Decision note; the follow-on story ships |
 
-> **US-100:** As a Data Steward, I want to connect any supported storage source and scan
-> it for sensitive data, so that our whole data estate is mapped for the SOC 2 audit.
-
-Why it fails: "any supported storage source" spans Google Drive, S3, and SharePoint
-(a **Data** axis); "connect … and scan" bundles two verbs; each connector has a happy
-path plus an expired-credential path; scanning enforces several classification rules.
-This is an epic, not a story — it will span multiple sprints and cannot be estimated as
-one unit.
-
-### Step 1 — Split by verb before noun
-
-*connect* and *scan* separate cleanly:
-- **US-101:** connect a storage source
-- **US-102:** scan a connected source for sensitive data
-
-### Step 2 — Split US-101 by Data (SPIDR) and take the happy path first
-
-- **US-101a:** As a Data Steward, I want to connect our Google Drive via a guided OAuth
-  flow, so that the estate scan can begin without raising an IT ticket. *(happy path)*
-- **US-101b:** Connect an S3 bucket via IAM role. *(Data split)*
-- **US-101c:** Connect a SharePoint site. *(Data split)*
-- **US-101d:** Re-authenticate a Google Drive source whose token has expired, so a scan
-  that failed on an expired token resumes. *(Paths split of US-101a)*
-
-### Step 3 — Split US-102 by business-rule variation and simple-then-complex
-
-- **US-102a:** Scan a connected source and flag files matching a PII pattern. *(Rule 1)*
-- **US-102b:** Flag files shared externally. *(Rule 2)*
-- **US-102c:** Flag files above a retention-age threshold. *(Rule 3)*
-- **US-102d:** Resume a large scan (1M+ files) after a mid-scan failure. *(deferred hard
-  case — simple then complex)*
-
-### Step 4 — Spike out remaining uncertainty
-
-If SharePoint's connector API is unfamiliar and US-101c cannot be estimated:
-- **US-101c-spike:** Time-boxed investigation of the SharePoint Graph API auth model;
-  output is a one-page decision note, not shippable code.
-
-### Result
-
-One un-estimable epic becomes nine INVEST-compliant children (plus a spike). Each is a
-vertical slice a Data Steward can see working, each fits a sprint, and each carries its
-own acceptance criteria. Independence check: US-101a can ship first with no dependency;
-US-102a depends only on *some* source being connected, satisfied once US-101a lands —
-recorded as an ordering note, not baked into the cards.
+After a split, re-run INVEST on every child, trace each to the same epic, UR and job story as the parent (or the narrower FR it now carries), and keep the parent title only as the epic's story title if the epic list used it.

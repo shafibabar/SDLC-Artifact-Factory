@@ -1,157 +1,129 @@
 # OKR Rules and Grading
 
-Reference material for `okr-authoring`. Covers the quality tests for Objectives and Key Results, the honest-baseline rule, the 0.0-1.0 grading method with what each band means, cadence, and the sandbagging-vs-moonshot tension. Grading conventions here follow the widely-taught Google/Doerr OKR practice (John Doerr, *Measure What Matters*); the outcome-over-output discipline follows Marty Cagan (*Inspired* / *Empowered*, `inspired-cagan`) and Matt LeMay's hypothesis framing (*Product Management in Practice*, `product-management-in-practice-lemay`).
+Self-contained reference for `okr-authoring`. Read it when you need the detailed tests for an Objective or a Key Result, when setting baselines, and when grading a cycle. Sources: grading, cadence, committed vs aspirational and alignment follow John Doerr's *Measure What Matters* and Christina Wodtke's *Radical Focus* (both summarised in `research/product-strategy-and-gtm/measure-what-matters-doerr.md`); the proximate and one-policy tests follow Richard Rumelt's *Good Strategy / Bad Strategy*; the outcome-only Key Result rule is Marty Cagan's (*Inspired*); the metric tests are Croll and Yoskovitz's (*Lean Analytics*). These are practitioner books, so treat their numbers (0.7, three to five Objectives, quarterly) as calibrated defaults, not findings.
 
 ---
 
-## 1. Writing a good Objective
-
-An Objective is a **qualitative, inspiring, time-bound statement of direction**. It is where you are trying to go, not how far or by when in numbers.
+## 1. Objective tests
 
 | Test | Pass | Fail |
 |---|---|---|
-| **Qualitative** | No numbers appear in it | A metric or target is embedded ("reach 500 users") |
-| **Inspiring** | Someone reading it understands *why it matters* without a footnote | Flat, internal, jargon-only ("improve the funnel") |
-| **Time-bound** | Scoped to a named cycle (a quarter, a half) | Open-ended, could apply to any period |
-| **Outcome-oriented** | Names a destination — a state of the world | Names an activity or a deliverable ("launch v2") |
-| **Ambitious but real** | Set at ~70% confidence; a genuine stretch | Either a sure thing, or pure fantasy |
+| **Qualitative** | No numbers in it | "Reach 500 users" |
+| **Proximate** (Rumelt) | Reachable this cycle with the means at hand; the team knows what to do next | Blue-sky end state: "become the trusted leader" |
+| **From the guiding policy** | Traces to a proximate objective the strategy kernel hands on | Invented; or each Objective serves a different policy (dog's dinner) |
+| **Not business as usual** (Google) | Would not happen without the OKR | Describes work already under way ("keep the lights on") |
+| **Passes "who cares?"** (Google) | Someone outside the team would notice it succeeding | Internal housekeeping |
+| **A real choice** | Another direction was genuinely possible (Rumelt: strategy requires choice) | Inevitable work, written down |
+| **Labelled** | Committed or aspirational | No type |
 
-**Good:** "Make it effortless for any SMB to understand their data-compliance posture within hours of deploying the product."
-
-**Bad — task list:** "Launch onboarding improvements and the Google Drive connector."
-
-**Bad — vague:** "Improve the product." (not inspiring, not specific, not time-bound)
-
-A useful sharpening from LeMay: an Objective is worth writing only if a reasonable person could have chosen a *different* direction for the same cycle. If no alternative direction was ever on the table, the Objective is describing inevitable work, not a strategic bet.
+Stretch belongs in Key Result targets. The Objective itself is a feasible next position.
 
 ---
 
-## 2. Writing a good Key Result
+## 2. Key Result tests
 
-A Key Result is a **measurable outcome that proves the Objective was reached**. Five tests, all must pass:
-
-| Test | What it means | Rejected example → repaired |
+| Test | What it means | Rejected → repaired |
 |---|---|---|
-| **Measurable** | Expressible as a number or a clean binary | "Improve satisfaction" → "CSAT from paying customers rises from 3.9 to 4.4" |
-| **Outcome-based** | Measures a change in customer/business *behavior*, not team activity | "Ship the connector" → "60% of new accounts connect a second source within 14 days" |
-| **Owned** | Exactly one accountable person/team | (unowned) → "Owner: The product owner" |
-| **Independently verifiable** | Checkable from data, without the team's self-assessment | "Team feels onboarding is smoother" → "Median setup time drops below 30 min (from telemetry)" |
-| **Not gameable** | Cannot be technically hit while the Objective's spirit is missed | "10 features shipped" → tie the count to the behavior those features were meant to produce |
+| **Outcome, not output** (Cagan) | Measures a behaviour change, never a delivery | "Ship the importer" → "Share of trial firms that see their own overdue clients on day one rises from 10% to 50%" |
+| **Measurable, with a number** (Doerr) | A Key Result with no number is not a Key Result | "Improve onboarding" → "Median setup time below 30 min" |
+| **Comparative** (Lean Analytics) | Read against a baseline, period or cohort | A bare total with no "from" |
+| **A ratio or rate** (Lean Analytics) | A denominator resists gaming | "Signups: 400" → "Trial-to-paid conversion from 8% to 14%" |
+| **Understandable** (Lean Analytics) | A non-analyst can remember it and argue about it | A composite score only its author can compute |
+| **Changes what you do** (Lean Analytics) | A different value would change a decision | A vanity count that only ever goes up |
+| **Independently verifiable** | Read from data, not self-assessment | "The team feels it went well" |
+| **Owned** | Exactly one accountable owner | Unowned |
+| **Paired** (Grove) | A volume or speed KR has a quality counter-KR or a health metric beside it | "Reminders sent" pushed up while complaints rise unseen |
 
-### The outcome-not-output test, stated as one question
+**The outcome test, as one question:** if the team delivered exactly what the KR names but nothing changed for the customer or the business, could the KR still be marked complete? If yes, it is an output. Rewrite it as the behaviour change it was meant to cause; the original wording becomes an Initiative. Doerr and Grove allowed milestone KRs; the plugin does not, following Cagan, and credits the rule to him.
 
-> *If the team delivered exactly what this KR names, but nothing changed for the customer or the business, could the KR still be marked complete?*
+**Hypothesis framing.** LeMay's "strong opinions, loosely held" stance treats every bet as something evidence could disprove; Rumelt treats the strategy itself the same way. The template's line "We believe [Initiative] will move [KR], and we will know when [signal]" is this plugin's phrasing of that stance, not a quotation.
 
-If **yes**, it is an **output** — reject it. Rewrite it as the behavior change the output was meant to cause, and demote the original wording to an **Initiative** (a bet on *how* to move the KR).
-
-Worked rejections:
-
-- ❌ "Launch the improved onboarding flow" — a wizard nobody finishes still counts as launched. → ✅ "80% of trial users reach their first compliance-gap discovery within 30 minutes of connecting a source."
-- ❌ "Ship the Google Drive connector" — shippable and ignorable. → ✅ "Median time from Google Drive connection to full sensitivity classification (estates ≤ 100k files) ≤ 30 minutes."
-- ❌ "Publish 12 blog posts" → ✅ "Organic trial signups rise from 20/week to 60/week."
-- ❌ "Number of features shipped: 10" — pure output count. → ✅ "Weekly active compliance officers rise from 40 to 120."
-
-This is the same rule `impact-mapping` applies at the deliverable level ("feature usage is not an impact") and that Cagan names as the difference between an empowered team (given a KR to move) and a feature factory (given a feature list to ship).
+**North Star vs One Metric That Matters.** The North Star Metric comes from the vision and stays fixed across cycles. Croll and Yoskovitz's One Metric That Matters rotates as the biggest open risk changes. Do not merge them; an OKR set uses the first and may focus a cycle on something like the second.
 
 ---
 
 ## 3. The honest-baseline rule
 
-Every KR needs a **baseline** — the current value of the metric before the cycle starts — not just a target. A target without a baseline is uninterpretable: "reach 70%" means nothing if today is 68% (trivial) or 10% (a moonshot).
-
-Rules for baselines:
-
-1. **Measure, don't guess.** Pull the baseline from real telemetry, analytics, or a prior period. If it genuinely cannot be measured yet (pre-launch), write `n/a (pre-launch)` explicitly rather than inventing a number.
-2. **A pre-launch KR is a first-run target, graded honestly.** For a brand-new metric, the "baseline" is 0 or unknown and the target is a first hypothesis. Grade it against the target you set, and treat a low grade as calibration data for next cycle, not as failure.
-3. **Never move the baseline mid-cycle to flatter the grade.** If the baseline was wrong, note the correction openly; do not silently re-anchor.
-4. **Direction must be explicit.** State whether higher or lower is better ("median setup time ≤ 30 min" vs "activation rate ≥ 80%") so the grade is unambiguous.
-
-Baseline + target + direction together make a KR *falsifiable* — LeMay's test that a Key Result is a real hypothesis, not a restatement of intent.
+1. **Measure, don't guess.** Take the baseline from telemetry, analytics or a prior period. If it cannot exist yet, write `n/a (pre-launch)`; never invent a number.
+2. **Live but not yet measured.** If the product is live and the metric simply has not been read yet, write `not yet measured — first reading by <date>` (a date before the first check-in), mark the target provisional, and confirm it once the reading lands. Never leave a bare placeholder, and never guess. Prefer a KR whose baseline already exists when one measures the same change.
+3. **A pre-launch target is a first hypothesis.** Grade it honestly; a low grade is calibration data for next cycle.
+4. **Never move a baseline mid-cycle** to flatter a grade. Correct a wrong baseline openly in the check-in log.
+5. **State the direction** (↑ or ↓) so the grade is unambiguous.
 
 ---
 
-## 4. Grading on the 0.0-1.0 scale
+## 4. Committed vs aspirational
 
-At the end of the cycle each KR is graded from **0.0 to 1.0** as its achievement against target, using linear interpolation between baseline and target:
-
-```
-grade = (final_value − baseline) / (target − baseline)   [clamped to 0.0-1.0]
-```
-
-The **Objective's grade is the simple average of its Key Results' grades.** (If some KRs matter more, a weighted average is acceptable, but keep the weighting decided *before* the cycle, never after the numbers land.)
-
-### What each band means
-
-| Band | Meaning | What to do about it |
+| | Committed | Aspirational |
 |---|---|---|
-| **0.7 – 1.0** (green) | On or near target. For an aspirational OKR, **0.7 is a win, not a shortfall.** | Bank the learning; if consistently 1.0, the targets were too safe — raise ambition next cycle. |
-| **0.4 – 0.6** (amber) | Real progress, target missed. The most *informative* band. | Diagnose: was the target wrong, the bet wrong, or the execution short? Feed the answer into next cycle. |
-| **0.0 – 0.3** (red) | Little to no movement. | Treat as a strong signal the assumption behind the KR was false — this is valuable, not shameful, if surfaced honestly. |
+| Expected grade | 1.0 | About 0.6–0.7 on average across the set |
+| Starting confidence | ≥ 90% | About 50% (Wodtke: 5 out of 10) |
+| Typical | Certification, contractual delivery date, regulatory deadline, a promise to customers | Adoption, retention, behaviour change not achieved before |
+| A grade below target | A failure: write what happened and a recovery plan with a date | Normal; read it for learning |
+| Grade consistently 1.0 | As expected | The targets were timid (sandbagging) |
 
-### The 0.7 aspirational sweet spot
+Certifications, contractual deliverables and compliance deadlines are **committed by default**. A pass/fail KR is usually a committed KR without the label: grade it 1.0 if achieved and 0.0 if not, no credit for effort. Where a "binary" hides a spectrum ("3 of 3 design partners live"), express it as a fraction instead.
 
-OKRs are deliberately set so that a strong team lands a **full set around 0.7 on average**. This is the calibration signal:
+Google's guidance also names **insufficient KRs for a committed Objective** as a mistake: if all the KRs of a committed Objective could land without the Objective being delivered, add the missing KR.
 
-- A team that consistently scores **1.0** is **sandbagging** — targets were guaranteed, so the OKRs did no work directing effort.
-- A team that consistently scores near **0.0** set **fantasy** targets disconnected from any plausible path.
-- A team landing around **0.7** calibrated its ambition correctly: genuine stretch, genuine reach.
-
-### Binary Key Results
-
-Some KRs are inherently pass/fail ("achieve SOC 2 Type II certification"). Grade these **1.0 if achieved, 0.0 if not** — no partial credit for effort. Use binary KRs sparingly; a set made entirely of binaries loses the calibration signal the continuous scale provides. Where a "binary" hides a spectrum ("3 of 3 design partners deployed without support contact"), express it as the fraction (2/3 = 0.67) instead.
+**Confidence is not the grade.** Confidence is the weekly forecast of hitting the target in full; the grade is the end-of-cycle measurement. A KR at 50% confidence is not "expected to grade 0.5": an aspirational target is set beyond the likely result, so partial progress usually grades well above 0.5.
 
 ---
 
-## 5. The sandbagging-vs-moonshot tension
+## 5. Grading on 0.0–1.0
 
-The hardest judgment in OKR authoring is calibrating ambition. Two failure modes pull in opposite directions:
+Each KR is graded at cycle end from 0.0 to 1.0; the Objective's grade is the average of its KRs (weights, if any, fixed before the cycle starts).
 
-| | **Sandbagging** | **Moonshot / fantasy** |
+| Band | Meaning for an aspirational KR | Meaning for a committed KR |
 |---|---|---|
-| **Symptom** | Targets you're ~100% sure to hit | Targets with no plausible path |
-| **Grade signature** | Clusters at 1.0 every cycle | Clusters near 0.0 every cycle |
-| **Root cause** | OKRs treated as commitments to be safely met (often when tied to reward) | Ambition performed for show; no theory of how to get there |
-| **Damage** | OKRs stop directing effort — everything was already going to happen | Team demoralized; grades become noise, ignored |
-| **Fix** | Set to ~70% confidence; a KR you're sure of is not a KR | Anchor every target to a baseline and a plausible mechanism (an Initiative that could move it) |
+| 0.7–1.0 green | Delivered; 0.7 is a win | Only 1.0 is delivered; 0.7–0.9 is a miss to explain |
+| 0.4–0.6 yellow | Real progress, short of target; the most informative band | A miss: explanation and recovery plan |
+| 0.0–0.3 red | The assumption behind the KR was probably wrong | A serious miss: escalate to the user |
 
-Resolving the tension: set each target at the level where your honest confidence of hitting it is about **70%**. Not 90% (sandbagged), not 20% (fantasy). The confidence figure is itself tracked (see cadence below) and is the earliest warning that a target was mis-calibrated.
+**Interpolation (this plugin's convention, not Doerr's).** Doerr presents grading as quick and judgement-based. For a continuous KR the plugin computes `grade = (final − baseline) / (target − baseline)`, clamped to 0.0–1.0, so two sessions grade the same KR the same way. Use judgement only where the metric has no baseline.
 
-**Decoupling from performance review.** Sandbagging is worst when OKR grades feed compensation or ratings — people rationally lowball. Keep OKR grading a *learning* instrument, explicitly separate from performance evaluation. In this repo's solo-operator context (the user grades their own OKRs) there is no reward-gaming incentive, so the discipline reduces to intellectual honesty: set targets you're genuinely ~70% confident of, and read a 0.5 as information, not as a bad mark.
+**Grading honestly as a solo product owner.** Doerr keeps OKR grades out of pay and ratings, because people lowball targets that feed rewards. A solo product owner has no bonus to game; the risk is self-flattery. Grade from the numbers before rereading the narrative, and write the "what we learned" line before discussing the grade.
 
 ---
 
-## 6. Cadence — quarterly set, weekly check-in
+## 6. Cadence and the check-in
 
 | Rhythm | What happens |
 |---|---|
-| **Quarterly (set)** | Author the OKR set for the cycle: ≤3 Objectives, 2-5 KRs each, baselines and ~70%-confidence targets, North Star Metric named, roadmap items linked. |
-| **Weekly (check-in)** | Lightweight — update each KR's running **confidence** (a % that moves week to week), flag blockers, note early metric movement. No re-writing of KRs. 15 minutes, not a status theatre. |
-| **Quarter-end (grade & retro)** | Grade every KR 0.0-1.0, average to the Objective, write a one-line "what we learned" per Objective, carry the learning into next quarter's set. |
+| **Annual (optional, standard and enterprise)** | One or two annual Objectives give the quarterly sets their context and give the roadmap's Next/Later columns something to link to |
+| **Quarterly (set)** | Write the set: Objectives from the kernel, typed; KRs with baselines, targets and starting confidence; health metrics; candidate Initiatives |
+| **Weekly (check-in)** | Wodtke's four-square: this week's priorities, each KR's confidence, the next few weeks, health metrics green / yellow / red. For a solo product owner, one dated log entry in the artifact: one line per KR (confidence and a note) plus any health metric not green |
+| **Quarter-end (grade and retro)** | Grade each KR, average per Objective, record the explanation and recovery plan for any committed miss, one learning line per Objective; revise the kernel first if its review trigger fired |
 
-**Confidence is the leading indicator; the grade is the lagging one.** A KR whose confidence has drifted from 70% to 30% by week 5 is telling you to act *now* — reallocate Initiatives, or accept and document the miss — long before the end-of-quarter grade confirms it.
-
-**Do not change Key Results mid-cycle** except when a foundational assumption is invalidated (e.g., the market moved, the metric was found to be measuring the wrong thing). Initiatives, by contrast, are *expected* to change as the team learns what actually moves a KR. Keeping the KR fixed while the Initiatives flex is what makes the KR a real target rather than a moving goalpost.
-
----
-
-## 7. Cascade and alignment
-
-- Every **product** OKR names the **company** Objective it serves. A product OKR that supports no company Objective is either misaligned or evidence the company OKRs are incomplete.
-- Alignment is by **reference, not literal copy** — a product KR need not restate a company KR; it must show how moving it advances a company Objective.
-- **Solo operator:** for the user as sole operator, product and company OKRs collapse into one set — document them once, and note explicitly that the two levels are unified so the "which company Objective?" check is satisfied by design.
+**Keep KRs fixed; let Initiatives move.** Change a KR mid-cycle only when a foundational assumption breaks, and record why in the log. Doerr allows an OKR to be updated or dropped when it stops making sense; that is a logged decision, not a quiet edit.
 
 ---
 
-## 8. Common failure modes (diagnostic table)
+## 7. Alignment, not cascade
+
+- **Alignment** (Doerr): higher-level OKRs are visible; each team writes its own Objectives and KRs and names the higher Objective each advances. Teams also align **sideways**: list the other teams a KR depends on, and confirm they hold a matching KR or Initiative.
+- **Cascade** (to avoid): every level copies and narrows the level above. The tell is a team KR that is the parent's KR with a smaller number. It cannot fail independently and teaches the team nothing about its own lever.
+- A large share of team OKRs should come from the teams themselves; Doerr suggests roughly half (treat the figure as approximate).
+- **Solo product owner:** product and company OKRs are one set. Say so once in the artifact.
+
+---
+
+## 8. Failure modes
 
 | Failure | Tell | Fix |
 |---|---|---|
-| KRs are tasks/outputs | "Launch X", "hire 2", "ship Y" | Rewrite as the outcome; demote wording to an Initiative |
-| Too many OKRs | 4+ Objectives, 20+ KRs | Cut to ≤3 / 2-5; unfocused OKRs move nothing |
-| Sandbagging | Grades cluster at 1.0 | Recalibrate to ~70% confidence |
-| Moonshot noise | Grades cluster at 0.0 | Anchor targets to baseline + a plausible mechanism |
-| Vanity KR | Looks impressive, tracks no real value | Tie to a customer/business behavior |
-| Missing baseline | Target with no "from" value | Measure the current value or mark `n/a (pre-launch)` |
-| No owner | KR with nobody accountable | Assign exactly one owner |
-| Set and forgotten | Written once, never reviewed | Weekly confidence check-in |
-| Roadmap-as-OKRs | A feature-and-date list relabeled "KRs" | Express each as an outcome to move (Cagan) |
+| Goals as strategy | No kernel above the set | Write the kernel first |
+| Dog's dinner | Objectives with no common policy, even three or fewer | Keep only those the one policy implies |
+| Blue-sky Objective | An end state with no next step | Next proximate objective |
+| Business as usual | Work that would happen anyway | Make it a health metric |
+| "Who cares?" | Nobody outside the team would notice | Rewrite around a customer change, or drop |
+| Unlabelled type | Committed promise graded like a stretch | Label; grade committed against 1.0 |
+| Insufficient KRs (committed) | KRs could all land without the Objective | Add the missing KR |
+| Timid aspirational | Aspirational grades cluster at 1.0 | Raise targets; start confidence near 50% |
+| Fantasy | Grades cluster near 0.0 | Anchor to a baseline and a plausible Initiative |
+| Output KR / roadmap as OKRs | "Launch X", feature-and-date list | Outcome to move; demote to an Initiative |
+| Vanity KR | Rises whatever happens | Ratio or rate that changes a decision |
+| Missing baseline | Target with no "from" | Measure it, or `n/a (pre-launch)` |
+| Cascade | Copied parent KRs | Align by reference |
+| Too many OKRs | More than the profile allows | Cut to the Scale table |
+| Set and forgotten | No check-in entries after week one | Weekly log |

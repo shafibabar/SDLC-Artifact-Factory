@@ -181,7 +181,8 @@ real_skills = L.manifest.load_skills()
 real_agents = L.manifest.load_agents()
 real = L.run_checks(real_skills, real_agents)
 
-check(f"real repo has 187 skills (got {len(real_skills)})", len(real_skills) == 187)
+FS_SKILLS = len(list((REPO_ROOT / "skills").glob("*/SKILL.md")))
+check(f"real repo skills match skills/*/SKILL.md on disk ({FS_SKILLS}; got {len(real_skills)})", len(real_skills) == FS_SKILLS)
 check(f"real repo has 13 agents (got {len(real_agents)})", len(real_agents) == 13)
 
 # The agent-skills contract IS clean on the real tree — assert it stays so.
