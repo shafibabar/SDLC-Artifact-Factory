@@ -2371,7 +2371,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.5"
+        "version": "1.10.6"
       },
       {
         "created": "2026-06-25",
@@ -2844,15 +2844,15 @@
         "created": "2026-07-20",
         "dir": "skills/acceptance-sign-off",
         "domain": "validation",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "acceptance-sign-off",
         "owner": "requirements-analyst",
         "phase": "customer-validation",
@@ -2860,20 +2860,36 @@
           "acceptance-sign-off-record"
         ],
         "related": [
+          "beta-program-design",
+          "canary-deployment",
+          "compliance-verification",
+          "feature-flag-design",
           "feedback-template",
-          "skill-authoring-standards",
-          "uat-plan"
+          "glossary-management",
+          "methodology-review",
+          "uat-plan",
+          "uat-scenario"
         ],
-        "sources": [],
+        "sources": [
+          "research/human-ai-collaboration/co-intelligence-mollick.md",
+          "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/explore-it-hendrickson.md",
+          "research/testing/user-acceptance-testing-hambling.md"
+        ],
         "status": "stable",
         "tags": [
+          "acceptance-decision",
           "canary",
           "customer-validation",
+          "defect-rule",
           "go-no-go",
           "release-gate",
-          "sign-off"
+          "residual-risk",
+          "sign-off",
+          "test-independence"
         ],
-        "version": "2.3.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -3247,7 +3263,7 @@
           "feature-flags",
           "rollout"
         ],
-        "version": "2.3.0"
+        "version": "2.4.0"
       },
       {
         "created": "2026-07-20",
@@ -10648,8 +10664,8 @@
     "edges_agent_produces": 72,
     "edges_agent_skills": 194,
     "edges_skill_produces": 193,
-    "edges_skill_related": 969,
-    "edges_skill_sources": 142,
+    "edges_skill_related": 975,
+    "edges_skill_sources": 147,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10661,20 +10677,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 51,
-    "skills_with_assets": 14,
-    "skills_with_contract_test": 164,
+    "research_files_cited": 52,
+    "skills_with_assets": 13,
+    "skills_with_contract_test": 163,
     "skills_with_domain": 189,
-    "skills_with_evals": 24,
-    "skills_with_examples": 24,
+    "skills_with_evals": 25,
+    "skills_with_examples": 25,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 23,
+    "skills_with_resources": 24,
     "skills_with_scripts": 24,
-    "skills_with_sources": 25,
+    "skills_with_sources": 26,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 23
+    "skills_with_templates": 24
   },
   "edges": {
     "agent_produces": [
@@ -12529,15 +12545,39 @@
         "skill": "acceptance-criteria"
       },
       {
+        "related": "beta-program-design",
+        "skill": "acceptance-sign-off"
+      },
+      {
+        "related": "canary-deployment",
+        "skill": "acceptance-sign-off"
+      },
+      {
+        "related": "compliance-verification",
+        "skill": "acceptance-sign-off"
+      },
+      {
+        "related": "feature-flag-design",
+        "skill": "acceptance-sign-off"
+      },
+      {
         "related": "feedback-template",
         "skill": "acceptance-sign-off"
       },
       {
-        "related": "skill-authoring-standards",
+        "related": "glossary-management",
+        "skill": "acceptance-sign-off"
+      },
+      {
+        "related": "methodology-review",
         "skill": "acceptance-sign-off"
       },
       {
         "related": "uat-plan",
+        "skill": "acceptance-sign-off"
+      },
+      {
+        "related": "uat-scenario",
         "skill": "acceptance-sign-off"
       },
       {
@@ -16398,6 +16438,26 @@
       }
     ],
     "skill_sources": [
+      {
+        "skill": "acceptance-sign-off",
+        "source": "research/human-ai-collaboration/co-intelligence-mollick.md"
+      },
+      {
+        "skill": "acceptance-sign-off",
+        "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
+      },
+      {
+        "skill": "acceptance-sign-off",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "acceptance-sign-off",
+        "source": "research/testing/explore-it-hendrickson.md"
+      },
+      {
+        "skill": "acceptance-sign-off",
+        "source": "research/testing/user-acceptance-testing-hambling.md"
+      },
       {
         "skill": "adr-authoring",
         "source": "research/software-architecture/api-first-transformation-lane.md"

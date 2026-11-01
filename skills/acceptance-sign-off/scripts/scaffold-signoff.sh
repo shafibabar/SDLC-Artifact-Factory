@@ -1,6 +1,6 @@
 #!/bin/bash
 # scripts/scaffold-signoff.sh — skill-owned script for skills/acceptance-sign-off.
-# Purpose: generate a new sign-off doc from assets/sign-off-template.md,
+# Purpose: generate a new sign-off doc from templates/acceptance-sign-off.md,
 #          pre-filled with release-slice metadata and the full Sign-Off
 #          Criteria Checklist copied in unchecked -- replaces hand-copying
 #          the template and hand-transcribing the checklist items.
@@ -16,7 +16,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(dirname "$SCRIPT_DIR")"
-TEMPLATE="$SKILL_DIR/assets/sign-off-template.md"
+TEMPLATE="$SKILL_DIR/templates/acceptance-sign-off.md"
 
 if [ $# -lt 2 ]; then
   echo "Usage: scaffold-signoff.sh <product> <release-slice>" >&2

@@ -17,7 +17,7 @@ description: >
   scripts/scaffold-beta-program-design.sh /
   scripts/validate-beta-program-design.sh. Used by the requirements-analyst
   during Customer Validation.
-version: 2.3.0
+version: 2.4.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -43,10 +43,10 @@ This skill's `phase: customer-validation` is not a coincidental name — it is S
 
 | Stage | Who's in it | Rollout mechanic | Entry criteria | Exit criteria |
 |---|---|---|---|---|
-| **Closed alpha** | 1 design-partner tenant, highest trust/tolerance | `canary-deployment` stage 1 (5%) within that tenant only; release flag `true` for that tenant only (`feature-flag-design`) | Quality-phase gates passed; UAT scenarios drafted | No Critical/High defects open; core Must Have flow completes end-to-end for the alpha tenant |
+| **Closed alpha** | 1 design-partner tenant, highest trust/tolerance | `canary-deployment` stage 1 (5%) within that tenant only; release flag `true` for that tenant only (`feature-flag-design`) | Quality-phase gates passed; UAT scenarios drafted | Open defects within the single defect rule in `acceptance-sign-off`; core Must Have flow completes end-to-end for the alpha tenant |
 | **Closed beta** | 3–5 design-partner tenants (`stakeholder-mapping`'s design-partner cohort) | Canary wave extends to the beta cohort's tenants; each runs its own in-cluster canary progression | Closed alpha exit criteria met; beta agreement signed by each participant | UAT exit criteria met (`uat-plan`) across the cohort; feedback triaged with no unaddressed blocking pattern (`feedback-template`) |
-| **Open beta** | Any interested prospect/customer who opts in | Canary continues fleet-wide per tenant wave; flag defaults `true` for opted-in tenants | Closed beta exit criteria met; `acceptance-sign-off` at least conditional | Sustained SLO adherence at scale beyond the design-partner cohort; no new Critical/High pattern emerges |
-| **GA** | Full fleet | Canary reaches 100% and terminates per `canary-deployment`; release flag deleted per its `removal_date` (`feature-flag-design`) | Open beta exit criteria met; full `acceptance-sign-off` | N/A — GA is the terminal state for this release |
+| **Open beta** | Any interested prospect/customer who opts in | Canary continues fleet-wide per tenant wave; flag defaults `true` for opted-in tenants | Closed beta exit criteria met; the release's one `acceptance-sign-off` (full or conditional) names this stage in its rollout path | Sustained SLO adherence at scale beyond the design-partner cohort; no new Critical/High pattern emerges (one re-opens Customer Validation) |
+| **GA** | Full fleet | Canary reaches 100% and terminates per `canary-deployment`; release flag deleted per its `removal_date` (`feature-flag-design`) | Open beta exit criteria met, recorded as a graduation record; any conditions on the sign-off closed or carried per its rollout action — no second sign-off | N/A — GA is the terminal state for this release |
 
 The program never skips a stage under schedule pressure. Each stage's evidence is what the next stage's entry criteria consume — an open beta launched without a clean closed beta is a fleet-wide bet with no design-partner-scale evidence behind it.
 

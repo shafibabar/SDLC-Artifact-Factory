@@ -41,10 +41,10 @@ else
 fi
 
 CHECKLIST_ITEMS="$(grep -cE '^\s*- \[ \]' "$OUT")"
-if [ "$CHECKLIST_ITEMS" -eq 8 ]; then
-  _pass "scaffold-signoff: full 8-item checklist copied in unchecked"
+if [ "$CHECKLIST_ITEMS" -eq 11 ]; then
+  _pass "scaffold-signoff: full 11-item checklist copied in unchecked"
 else
-  _fail "scaffold-signoff: full 8-item checklist copied in unchecked" "expected 8 unchecked items, found $CHECKLIST_ITEMS"
+  _fail "scaffold-signoff: full 11-item checklist copied in unchecked" "expected 11 unchecked items, found $CHECKLIST_ITEMS"
 fi
 
 # A release-slice containing a slash (sed-special) must not corrupt the output
