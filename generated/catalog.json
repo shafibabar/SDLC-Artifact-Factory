@@ -9934,34 +9934,52 @@
         "created": "2026-07-22",
         "dir": "skills/subdomain-distillation",
         "domain": "domain-modeling",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "subdomain-distillation",
         "owner": "domain-modeler",
         "phase": "design",
         "produces": [
           "subdomain-classification"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "access-control-model",
+          "aggregate-design",
+          "bounded-context-mapping",
+          "container-diagram",
+          "ddd-agent-handoff",
+          "event-storming-facilitation",
+          "strategy-kernel",
+          "ubiquitous-language",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/strategic-design-supplement.md",
+          "research/security/secure-by-design.md",
+          "research/software-architecture/building-microservices-newman.md"
+        ],
         "status": "stable",
         "tags": [
+          "build-vs-buy",
           "core-domain",
           "ddd",
           "design",
           "distillation",
+          "legacy",
           "security",
           "strategic-design",
           "subdomain"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10729,8 +10747,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 193,
-    "edges_skill_related": 1004,
-    "edges_skill_sources": 161,
+    "edges_skill_related": 1013,
+    "edges_skill_sources": 166,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10742,20 +10760,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 56,
-    "skills_with_assets": 12,
-    "skills_with_contract_test": 160,
+    "research_files_cited": 58,
+    "skills_with_assets": 11,
+    "skills_with_contract_test": 159,
     "skills_with_domain": 189,
-    "skills_with_evals": 28,
-    "skills_with_examples": 28,
+    "skills_with_evals": 29,
+    "skills_with_examples": 29,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 27,
+    "skills_with_resources": 28,
     "skills_with_scripts": 24,
-    "skills_with_sources": 29,
+    "skills_with_sources": 30,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 27
+    "skills_with_templates": 28
   },
   "edges": {
     "agent_produces": [
@@ -16130,6 +16148,42 @@
         "skill": "strategy-kernel"
       },
       {
+        "related": "access-control-model",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "aggregate-design",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "bounded-context-mapping",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "ddd-agent-handoff",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "ubiquitous-language",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "subdomain-distillation"
+      },
+      {
         "related": "component-diagram",
         "skill": "system-context-diagram"
       },
@@ -17146,6 +17200,26 @@
       {
         "skill": "strategy-kernel",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/security/secure-by-design.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/software-architecture/building-microservices-newman.md"
       },
       {
         "skill": "uat-plan",
