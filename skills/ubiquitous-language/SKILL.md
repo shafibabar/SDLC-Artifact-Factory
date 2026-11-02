@@ -1,145 +1,147 @@
 ---
 name: ubiquitous-language
 description: >
-  Build and enforce the Ubiquitous Language of a Bounded Context — the single
-  shared vocabulary used identically in conversation, Go type and method names,
-  Gherkin scenarios, API fields, and docs. Covers term discovery from domain
-  experts, Event Storming cards, and Domain Storytelling; the same-language-in-code
-  rule (class/method names ARE the language, per Evans' Intention-Revealing
-  Interfaces and Model-Driven Design); one-language-per-Bounded-Context and what
-  happens at context boundaries (translation, Anti-Corruption Layer); homonyms
-  vs synonyms; terminology drift (code names diverging from spoken names) and its
-  correction. Distinct from glossary-management: this is the modeling PRACTICE,
-  the glossary is the artifact. Used by domain-modeler at the start of every
-  Design-phase domain session.
-version: 2.1.0
+  Build and keep the Ubiquitous Language of each Bounded Context in a
+  product: one vocabulary used the same way in conversation, the model, code
+  identifiers, API fields, Domain Events and Gherkin scenarios. Covers
+  finding terms from domain experts, Event Storming and Domain Storytelling,
+  or in agent-run mode from named Ideate artifacts with assumed terms
+  labelled and open questions sent to the product owner; testing a term by
+  saying it in sentences; one language per Bounded Context, homonyms at a
+  boundary and the translation that crosses it, versus synonyms to ban;
+  finishing a rename across code, API fields, events and tests; and
+  terminology drift. Use when defining a context's terms, settling a naming
+  dispute between teams, deciding whether two words name one concept or
+  two, or checking whether a rename is done. The product's language lives in
+  design/<context>/ubiquitous-language.md; glossary-management stays the
+  plugin's own vocabulary. Used by domain-modeler after Event Storming and
+  subdomain classification.
+version: 3.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: [design, domain-modeling, ubiquitous-language, ddd, glossary, terminology-drift]
+tags: [design, domain-modeling, ubiquitous-language, ddd, bounded-context, homonym, synonym, terminology-drift, agent-run]
 produces: ubiquitous-language
 domain: domain-modeling
 status: stable
-related: [glossary-management, aggregate-design, bounded-context-mapping, context-map-patterns, event-storming-facilitation, domain-storytelling]
+related: [glossary-management, aggregate-design, bounded-context-mapping, context-map-patterns, event-storming-facilitation, domain-storytelling, subdomain-distillation, event-schema-design, api-contract-design, bdd-feature-file]
+sources:
+  - research/domain-driven-design/strategic-design-supplement.md
+  - research/domain-driven-design/domain-driven-design-evans.md
+  - research/domain-driven-design/learning-ddd-khononov.md
+  - research/domain-driven-design/introducing-eventstorming-brandolini.md
+  - research/domain-driven-design/domain-storytelling-hofer-schwentner.md
 ---
 
 # Ubiquitous Language
 
 ## Purpose
 
-Ubiquitous Language (Eric Evans, *Domain-Driven Design*) is the shared, precise vocabulary used by everyone working in a Bounded Context — engineers, product managers, and domain experts — in **all** communication: conversations, code, tests, documentation, and APIs.
+The Ubiquitous Language (Evans, *Domain-Driven Design*, Ch. 2) is the one vocabulary a team uses inside a Bounded Context: in speech, in writing, in diagrams and in the code. Evans's claim is stronger than "agree on words": a change in the language *is* a change to the model. Khononov (*Learning Domain-Driven Design*, Ch. 2) adds that the language belongs to the business, so it has no technical jargon, no ambiguous terms and no synonyms.
 
-"Ubiquitous" means the language is used everywhere, **without translation**. A term used differently in code than in conversation, or differently between two engineers, is a defect in the language — not a stylistic difference. Every boundary crossing (engineer ↔ domain expert, service ↔ service, spec ↔ test) that requires translation introduces cost and the opportunity for subtle semantic errors that ship as bugs.
+Three things are easy to confuse. Keep them apart:
 
-This skill is the **practice** of building and keeping that language alive. It is distinct from `glossary-management`, which owns the **artifact** — the written glossary file, its frontmatter, its versioning. This skill decides what the words are and enforces their use in code; that skill records and publishes them. Do not conflate the two: a glossary with no living practice behind it is shelfware; a practice with no recorded glossary is un-reviewable.
-
----
-
-## The Language Lives in the Code
-
-Evans' sharpest, most-missed claim: the Ubiquitous Language is not documentation *about* the model — the code **is** the model (Model-Driven Design). A class named `DataAsset`, a method named `Classify(level, classifiedBy)`, a Gherkin step "Given a Restricted DataAsset" — these are not translations of the language, they *are* the language in another medium.
-
-The corollary rule: **the canonical term appears verbatim** in Go type names, struct field names, table names, API field names, and Gherkin scenario text. When code says `FileRecord` but the team says "DataAsset", the translation layer lives in engineers' heads and re-introduces drift at every hand-off. This is Evans' **Intention-Revealing Interface** discipline: a domain expert should predict what `Classify(...)` does from its name alone, with zero knowledge of the implementation. If they cannot, rename before implementing — not after.
-
-Consequence for review: renaming a term is not "just" a glossary edit. A synonym ban is complete only when code, tests, APIs, and docs are all renamed. Until then the codebase and the glossary disagree, and the codebase wins.
-
----
-
-## One Language Per Bounded Context
-
-The Ubiquitous Language is **scoped to a single Bounded Context**. The same word can legitimately mean different things in different contexts — this is intentional DDD design, not a defect:
-
-| Term | In Data Discovery context | In Compliance/Audit context |
+| Thing | What it is | Where it lives |
 |---|---|---|
-| `File` | a document in the customer's storage estate — has a path, type, sensitivity | a compliance evidence file submitted to an auditor |
-| `User` | a person who logs into the platform | a data subject whose personal data was discovered |
+| **The language** | How the team and the model actually speak about one Bounded Context | The model, the code, the scenarios, the conversations |
+| **The product's language document** | A record of that language, one per Bounded Context | `artifacts/<product>/design/<context>/ubiquitous-language.md` (this skill's artifact) |
+| **The plugin glossary** | This plugin's own vocabulary (Aggregate, Transactional Outbox, …) | `glossary-management`; never edited for one product (D047-9) |
 
-A Bounded Context boundary is *precisely where the meaning changes*. Khononov's framing sharpens why: a Bounded Context boundary is a **linguistic/model-consistency** boundary (it exists where a term's meaning changes), which is a *different force* from an Aggregate boundary (transactional consistency). When the same word crosses a context boundary with a different meaning, the crossing is handled by **translation** — a Context Map relationship, typically an Anti-Corruption Layer. The defect is using both meanings *inside the same context* without distinguishing them.
+A document is a record of the language, not the language (Khononov Ch. 2; Evans Ch. 2). One that stops matching the code is worse than none.
 
-Full one-language-per-context rules, the term-definition format, the per-source discovery procedure, and the term lifecycle (how a term enters, changes, and retires) are in **`references/ul-discovery-and-curation.md`**.
+## 1. The Language Lives in the Model and the Code
 
----
+Evans's Model-Driven Design (Ch. 3–4): the code *is* the model, not a translation of it. So the canonical term appears verbatim in type names, field names, table names, API fields, Domain Event names and Gherkin steps. When the team says "Shift Swap" and the code says `TradeRequest`, the translation lives in people's heads and is redone, and sometimes got wrong, at every hand-off.
 
-## Discovering Terms
+Names reveal intention (Evans Ch. 10, Intention-Revealing Interfaces): a domain expert should be able to predict what an operation does from its name alone. If they can't, rename it before it is built. This skill stays stack-neutral (D047-10); how a term becomes a type in a given language is the `go-*` and frontend skills' job.
 
-Terms are discovered, not invented. They surface most reliably from three sources:
+## 2. One Language per Bounded Context
 
-| Source | What it surfaces |
+A term is defined only inside its Bounded Context. Khononov (Ch. 3) is precise about the force: a Bounded Context boundary is a **linguistic and model-consistency** boundary. It sits where a term's meaning changes, which is a different force from an Aggregate's transactional boundary. Two failure shapes, with opposite fixes:
+
+- **Synonyms:** two words, one meaning, in one context ("swap", "trade", "cover request"). Pick one canonical term, record the others as banned, and rename everywhere (§ 5).
+- **Homonyms:** one word, two meanings, in two contexts ("Appointment" as a booked time slot in Scheduling and as a billable encounter in Billing). Not an error: it is the boundary showing itself. Each context keeps the word with its own meaning, in its own document, and records the other context's meaning as a homonym. Name the translation that crosses the boundary, a Context Map relationship such as an Anti-Corruption Layer (`context-map-patterns`).
+
+Before banning a word, ask whether the two sides mean the same thing. If they don't, it's a homonym: **neither context is told to stop using its word**, and no single "winning" or broader definition is written. A homonym isn't settled by renaming one side and banning the word there; an argument between teams over a homonym ends when both see that the word means two things, because there are two contexts. (If a context's own people already use a different word, that word may become its term, but as their choice, recorded, not as a fix for the argument.) If one word starts meaning two things *inside* one context, that is a Bounded Context signal: qualify it, or take the split to `bounded-context-mapping`. Once a term must mean two things, the fix is two contexts, not a broader definition (Evans Ch. 14; Khononov Ch. 3). A meaning change in different parts of the *model* is the signal; "subdomain" is the problem-space word and isn't the test.
+
+## 3. Finding Terms
+
+Terms are found, not invented at a desk. Sources, in order of strength:
+
+| Source | What it yields |
 |---|---|
-| **Direct conversation with domain experts** | The natural words experts already use — the primary well; every other source is a structured way to fish it |
-| **Event Storming** | Orange cards (Domain Events) → verbs/nouns for what happens; blue cards (Commands) → action verbs; yellow cards (Aggregates) → the nouns that receive commands and emit events |
-| **Domain Storytelling** | The natural-language narration experts give when walking through a workflow — reveals connective terms and roles the card exercise misses |
+| **Domain experts** (the product owner, interviews, a human workshop) | The words people already use. The strongest source; every other one is a way of fishing it |
+| **Event Storming** (`event-storming-facilitation`) | Domain Events → outcomes in the past tense; Commands → action verbs; actors → role names; Read Models → information names; policies → "whenever" rules; hotspots that dispute a word → open language questions, not noise. Aggregate names appear only at Software Design level (Brandolini) |
+| **Domain Storytelling** (`domain-storytelling`) | Actors, work objects and the verbs between them, in the storytellers' words. Retelling a story with a proposed term tests it (Hofer & Schwentner) |
+| **Ideate artifacts** (vision, personas, job stories, acceptance criteria) | Words the user and customers already use; edge cases in acceptance criteria often show a concept with no name yet |
 
-User stories, job stories, and acceptance criteria are secondary sources — edge-case terms in acceptance criteria often reveal a domain concept the language has no word for yet. When an unnamed concept keeps recurring as scattered conditional logic or a repeated parameter combination, that is Evans' "make implicit concepts explicit" signal: name it, add it, align the team *before* it appears in code.
+**Agent-run mode (D047-8).** The domain-modeler usually builds the language with no domain expert in the room. It then drafts terms from named artifacts and must not present them as expert language:
 
-The step-by-step procedure for harvesting terms from each source — and the exact term-definition format (Term / Definition / Type / Synonyms / Homonyms / Invariants / Example) — is in **`references/ul-discovery-and-curation.md`**.
+1. Every term's Source cites the artifact it came from (`ideate/personas.md`, the Event Storming wall), or says **assumed**.
+2. A definition nobody has confirmed is marked *assumed* in the document.
+3. Disputed or unclear words become **open questions for the product owner**, presented at the domain-modeler's review gate. The answers replace the assumptions. This includes words the sources use interchangeably ("parcel", "hamper", "box"): whether they name one concept or several is the product owner's call. List them as candidate synonyms with the meaning assumed meanwhile, and add a ban to the Banned Synonyms table only once it is confirmed. A drafted ban picks a winner on a guess, and the drift hook would start enforcing it.
+4. Give the product owner (or someone they name) a **check to run with a person**: a handful of sentences using the drafted terms to read aloud (below), or a short story told back in the new terms (Hofer & Schwentner's retelling). Each sentence that sounds wrong to them, and each correction, is a finding.
 
----
+A human session stays optional. When held, its words replace the drafted ones.
 
-## Homonyms and Synonyms
+**Test by saying it.** Evans's "modeling out loud" (Ch. 2): say candidate sentences with the terms ("the coordinator approves the Shift Swap, then the rota updates"). A sentence that sounds wrong or clumsy means the model is wrong, not only the word. Evans's "make implicit concepts explicit" (Ch. 9) is the same signal from the other side: a rule that keeps reappearing with no name, as scattered conditions or a repeated combination of values, is a missing term. Name it before it reaches the code.
 
-Two failure shapes, opposite corrections:
+The full procedure for each source, agent-run mode and the sentence test is in `./references/discovery-and-lifecycle.md` § 1–3.
 
-- **Synonyms** (two words, one meaning — "file", "document", "record" all meaning `DataAsset`) are the most common source of drift. Two engineers using two words for one concept have two mental models that will diverge in code. **Correction:** choose one canonical term, document the rest as *banned*, enforce the canonical term everywhere.
-- **Homonyms** (one word, two meanings in two contexts — `asset` meaning a discovered file here, a compliance evidence item there) are *not* errors; they are boundaries. **Correction:** document them explicitly with each context's meaning and the Anti-Corruption Layer that handles the crossing. A homonym flattened into a single "global" definition produces a vague lowest-common-denominator term that fits nobody.
+## 4. Writing a Term Down
 
----
+Each term records: the term, its DDD type (Entity, Value Object, Aggregate Root, Domain Event, Command, Read Model, Policy or Concept), its meaning *in this context* in domain words (never "a row in table X"), the rules that always hold, where its behaviour lives, and its source.
 
-## Detecting and Correcting Drift
+A word list is not the language: a glossary captures the nouns, and the behaviour (what happens, in what order, under which rules) lives in scenarios, the model and the code (Khononov Ch. 2). So the Behaviour column points to the Domain Event, Command or scenario that shows the term in action, and **every key term (each Aggregate Root and Policy) gets at least one short Given/When/Then scenario** in the document's Key Scenarios section, at every profile, lean included. The scenarios later seed `bdd-feature-file`. The copy-ready document is `./templates/ubiquitous-language.md`: context boundary, terms, key scenarios, banned synonyms with their rename status, homonyms with their translation, open questions and retired terms.
 
-A Ubiquitous Language decays the moment it stops being enforced. **Drift** is the gap between the words the team speaks and the words the code, tests, and docs actually use — most often a synonym creeping into a field name, or a code identifier silently diverging from the spoken term.
+## 5. Changing, Renaming and Retiring a Term
 
-Enforcement is wired into the delivery flow, not left to goodwill:
+The language changes as understanding deepens. Evans calls the big shifts breakthroughs (Ch. 8). Every change is a change to the model, so:
 
-- **Code review** — any synonym in a type, field, or variable name is a rejection reason.
-- **API contract review** — OpenAPI field names must use the canonical term.
-- **Gherkin review** — scenario text must use the canonical term.
-- **The `terminology-drift-detector` hook** — flags synonyms and unknown terms in artifact prose automatically.
+- **A rename is finished only when every medium uses the new word:** code identifiers, table and column names, API fields, Domain Event names and payload keys, Gherkin scenarios and docs. Until then the document and the code disagree, and the code wins. The Banned Synonyms table tracks rename status per medium, so "is it done?" has a checkable answer. While a rename is outstanding in code, an API or scenarios that already exist, the language work is **not done**: report it as in progress with the open renames listed, never as complete, and don't present the context as ready to leave Design on the strength of the document alone.
+- **A published Domain Event or API field can't simply be renamed.** Consumers have copied the old word. For an event, a breaking change is a new event type, never a `.v2` suffix, with the old one deprecated (`event-schema-design`, D047-1). For an API, follow `api-contract-design`'s deprecation.
+- **No version-suffixed names** (`AppointmentV2`, `RealPolicy`). A suffix means two models are competing in one context. Evolve the one definition, or split the context.
+- **Retire, don't delete.** A term that leaves the domain moves to Retired Terms with its reason and any successor, so nobody brings it back unknowingly.
 
-How drift actually appears (the specific patterns), how to detect it across code/specs/docs, and the full correction workflow — including the loop back to `glossary-management` and the `terminology-drift-detector` hook — are in **`references/drift-detection.md`**.
+The enter / change / rename / retire procedure is in `./references/discovery-and-lifecycle.md` § 5.
 
----
+## 6. Drift
 
-## Language Evolution
+Drift is the gap between the words the team speaks and the words the code, tests and documents use. It's usually a synonym creeping into a field name, or an identifier quietly moving away from the spoken term. Enforcement:
 
-The language is never static; it evolves as domain understanding deepens. Common triggers and their actions:
+- **The `terminology-drift-detector` hook** reads both vocabularies (D047-9): it warns, without blocking, when a file under `artifacts/` uses a plugin-glossary drift form, or a synonym the product's own language documents ban. Product bans therefore go in the product's document, never in the plugin glossary, where they would hit every other product. A word that is banned in one context but canonical in another isn't flagged outside the banning context, because homonyms are legitimate. It reads the Banned Synonyms table, so a ban that isn't in the table isn't enforced.
+- **The hook doesn't see the product's source code, API schemas or feature files.** Review covers them, along with a search for each banned word when a rename is claimed done.
 
-| Trigger | Action |
+Drift patterns, detection in each medium, the correction loop and severity are in `./references/drift-detection.md`.
+
+## Scale
+
+| Profile | The language document |
 |---|---|
-| Expert uses a term the team hasn't defined | Add it via the discovery process |
-| A definition is consistently misunderstood | Rewrite it; validate with a Domain Storytelling session |
-| Two terms turn out to mean the same thing | Choose one; ban the other; rename in code |
-| A term means different things in different sub-domains | Consider a Bounded Context split, or add a qualifier |
-| A concept keeps appearing with no name | Name it; add it; align the team before it reaches code |
+| `lean` | Usually one or two Bounded Contexts. One short document each: the terms table (about 8–15 terms), banned synonyms and open questions. Agent-run mode is the norm |
+| `standard` | One document per context. Homonyms at each boundary named with their translation. Key Aggregate Roots get an example and a counter-example |
+| `enterprise` | As standard, plus rename status tracked per medium for every ban, and retired terms kept. Expect several homonyms across contexts and renames that reach published events |
 
-Version-suffixed dodges (`DataAssetV2`, `RealDataAsset`) are never the answer — they mean two models are competing inside one context. Resolve the conflict by evolving the single definition or splitting the context.
+The methodology isn't skipped at lean: the document is shorter, and the rules are the same.
 
----
+## Producing the Document
 
-## Quality Criteria
+1. Read the Event Storming output, the `subdomain-classification` and the Ideate artifacts. Find the candidate Bounded Contexts.
+2. For each context, draft the terms (§ 3), test them in sentences, and fill `./templates/ubiquitous-language.md`.
+3. Check each word that appears in two contexts: same meaning (one term, possibly shared) or different meanings (homonym, translation named)?
+4. List every assumption and open question for the product owner.
+5. Check the document against `./resources/ul-checklist.md` before the review gate.
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| One term, one meaning | Exactly one definition per Bounded Context | Multiple definitions, or hedged ones ("usually", "generally") |
-| No synonyms in use | Synonyms documented as banned; code/docs use only the canonical term | Any synonym in code, API names, or docs |
-| Language in the code | Canonical term appears verbatim in types, tables, API fields, Gherkin | Code dialect differs from spoken language |
-| Type assigned | Every term has a DDD type (Entity, Value Object, Aggregate Root, Event, Command…) | Untyped terms — underspecified |
-| Context-scoped | Language explicitly linked to a named Bounded Context | A "global" glossary with no boundaries |
-
----
+Worked cases, from simplest to hardest: `./examples/01-lean-shift-swap-agent-run.md` (one context, agent-run, one synonym ban), `./examples/02-standard-clinic-booking-homonym.md` (a homonym that must not be "fixed" with one global term), `./examples/03-enterprise-insurer-policy-rename.md` (four contexts, and a rename that reaches a published event).
 
 ## Anti-Patterns
 
 | Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| **Global glossary** — one enterprise vocabulary forced on every context | Flattens legitimate homonyms into vague definitions that fit nobody | One language per Bounded Context; document homonyms + their boundary mechanisms |
-| **Developer dialect** — code says `FileRecord`, people say "DataAsset" | Translation lives in engineers' heads; every hand-off re-drifts | Canonical term verbatim in types, tables, API fields, Gherkin |
-| **Definition by implementation** — "a DataAsset is a row in `data_assets`" | Ties the concept to today's storage; says nothing about meaning or rules | Define in domain terms with invariants; the table is a consequence |
-| **Glossary shelfware** — terms defined once, never enforced | The language decays; six months on the glossary describes a dead system | Wire enforcement into code/API/Gherkin review and the drift-detector hook |
-| **Banning synonyms without renaming code** — glossary bans "file" while `File` types remain | Glossary and codebase disagree; the codebase wins | A synonym ban is complete only when code, tests, APIs, docs are all renamed |
-
----
-
-## Output Format
-
-Produce a per-Bounded-Context Ubiquitous Language document. The full copy-ready template — frontmatter, context-boundary paragraph, per-term table, banned-synonyms reference, and homonym map — is in **`references/ul-discovery-and-curation.md`**.
+| **One global term** for a word two contexts use differently | A vague definition that fits neither; the boundary is lost | Homonym: each context keeps its meaning; name the translation |
+| **Product terms in the plugin glossary** | `glossary-management` is the plugin's vocabulary; product terms leak into every other product | The product's `design/<context>/ubiquitous-language.md` (D047-9) |
+| **Developer dialect:** code says one word, people say another | Translation in people's heads at every hand-off | Canonical term verbatim in code, API, events, scenarios |
+| **"Banned" while the code still uses it** | The document and the code disagree; the code wins | Rename every medium; track status in the Banned Synonyms table |
+| **Drafted terms presented as expert language** | Assumptions pass the review gate unseen | Source per term; *assumed* marked; open questions to the product owner |
+| **A word list as the language** | Nouns without behaviour; rules end up nowhere | Behaviour column pointing to events, commands and scenarios |
+| **Definition by implementation** ("a row in `bookings`") | Ties the meaning to today's storage | Domain words and rules; the table is a consequence |
