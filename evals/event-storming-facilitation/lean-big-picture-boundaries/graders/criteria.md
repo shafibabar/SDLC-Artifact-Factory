@@ -1,0 +1,11 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It does not skip boundaries at lean. It says a Big Picture on its own gives boundary hints, and it draws at least one candidate boundary from this wall using that evidence: the pivotal event where the phase changes (around "Kiln Load Packed" or a firing event), the change of actor from members to the studio manager, and the word "piece" meaning different things on either side (Brandolini research, Core Concepts: "Big Picture output suggests boundaries but doesn't draw them. Pivotal events, swimlanes, a change of actors, and places where the same word starts to mean something else all hint where Bounded Contexts and subdomains may lie"; Applies To, row on Bounded Context candidates and the lean note; Wave 2 findings, event-storming-facilitation eval idea (b)).
+2. It records each boundary as a candidate with its evidence, not as a decision: the write-up names the pivotal event, actor change or word whose meaning shifts behind each candidate, and says boundaries are confirmed later (in later modelling or context-mapping work), not settled by this wall (Brandolini research, Actionable Techniques: "Record boundary hints with their evidence ... Mark it a candidate"; Core Concepts: "Boundaries are confirmed in Process Modelling, Software Design and the later context-mapping work").
+3. It refuses to drop the pink notes. It treats them as hotspots, a main output of the Big Picture: it keeps all three, ranks them or says how to rank them (for example a quick vote by the people who were there), and passes them on as open questions or as the pick for what to work on next, rather than calling them clutter (Brandolini research, Core Concepts: "Hotspots are a main output, not something to tidy away ... The ranked hotspot list is often the most useful thing a Big Picture produces"; the "Picking the problem" phase).
+4. For what comes next, it names subdomain classification as the step that runs on this Big Picture output (the capabilities and candidate boundaries feed it), kept short at lean rather than skipped (decision D047-14; Brandolini research, Actionable Techniques: "Subdomain classification comes next (D047-14)").
+Fail if any of the 4 is missing.
