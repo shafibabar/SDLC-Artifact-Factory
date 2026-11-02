@@ -364,6 +364,19 @@
         "note": "lean: big-picture only, timeboxed; it still identifies the Bounded Contexts (Event Storming stays mandatory at every profile)."
       },
       {
+        "artifact": "subdomain-classification",
+        "paths": [
+          "design/subdomain-classification.md"
+        ],
+        "agent": "domain-modeler",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "Core / Supporting / Generic from the Event Storming Big Picture (subdomain-distillation); lean: a short table (D047-14)."
+      },
+      {
         "artifact": "event-storming-process",
         "paths": [
           "design/event-storming/process-*.md"
@@ -423,7 +436,7 @@
           "standard": "skip",
           "enterprise": "skip"
         },
-        "note": "lean only: one document covering the Aggregates, Domain Events, Commands and Read Models of every Bounded Context (the standard/enterprise per-context catalogs replace it)."
+        "note": "lean only: one document covering the Aggregates, Domain Events, Commands and Read Models of every Bounded Context, produced with aggregate-design (the standard/enterprise per-context catalogs replace it)."
       },
       {
         "artifact": "aggregate-design",
@@ -464,6 +477,19 @@
         }
       },
       {
+        "artifact": "cqrs-design",
+        "paths": [
+          "design/architecture/cqrs-decisions.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "lean": "skip",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "The read-side decision per Bounded Context (cqrs-pattern), made before the domain-modeler designs Read Models (D047-4)."
+      },
+      {
         "artifact": "read-model-design",
         "paths": [
           "design/*/read-models.md"
@@ -473,7 +499,8 @@
           "lean": "skip",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Only for Bounded Contexts whose read-side decision (cqrs-design) calls for a Read Model."
       },
       {
         "artifact": "system-context-diagram",
@@ -497,7 +524,8 @@
           "lean": "required",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "Includes service decomposition (lean: a modular monolith), gateway placement and a deployment-view section (D047-6, D047-13)."
       },
       {
         "artifact": "component-diagram",
@@ -507,10 +535,10 @@
         "agent": "enterprise-architect",
         "profiles": {
           "lean": "skip",
-          "standard": "required",
-          "enterprise": "required"
+          "standard": "optional",
+          "enterprise": "optional"
         },
-        "note": "One per service."
+        "note": "Only for services that differ from the default skeleton (D047-13)."
       },
       {
         "artifact": "architecture-decision-record",
@@ -575,6 +603,45 @@
         }
       },
       {
+        "artifact": "workflow-orchestration-design",
+        "paths": [
+          "design/architecture/workflow-orchestration.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "lean": "skip",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "When a flow is orchestrated rather than choreographed (workflow-orchestration; D047-3)."
+      },
+      {
+        "artifact": "broker-selection-rationale",
+        "paths": [
+          "design/architecture/broker-selection.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "lean": "skip",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "When a message broker is chosen, or the default broker is questioned (message-broker-selection; D047-11)."
+      },
+      {
+        "artifact": "grpc-service-contract",
+        "paths": [
+          "design/*/*.proto"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "lean": "optional",
+          "standard": "optional",
+          "enterprise": "optional"
+        },
+        "note": "When a service exposes gRPC (grpc-contract-design; D047-11)."
+      },
+      {
         "artifact": "multi-tenancy-design",
         "paths": [
           "design/architecture/multi-tenancy-design.md"
@@ -585,7 +652,20 @@
           "standard": "optional",
           "enterprise": "optional"
         },
-        "note": "Only for a multi-tenant product."
+        "note": "Only for a multi-tenant product. The isolation model is chosen from the NFRs and compliance input; there is no plugin default. Decided before the Container Diagram's deployment view (D047-7)."
+      },
+      {
+        "artifact": "architecture-evaluation",
+        "paths": [
+          "design/architecture/architecture-evaluation.md"
+        ],
+        "agent": "enterprise-architect",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "The design checked against the NFR scenarios after the ADRs (architecture-evaluation). lean: a tactics questionnaire on the top 2-3 scenarios; standard: the record; enterprise: a lightweight evaluation with risk themes."
       },
       {
         "artifact": "architecture-summary",
@@ -895,21 +975,21 @@
     "lean": {
       "approval_mode": "batch",
       "approval_mode_note": "Produce the phase's artifacts together, then present one summary table for a single review.",
-      "implement": "One deployable service unless the domain clearly needs more; TDD and SOLID unchanged.",
+      "implement": "One deployable service (a modular monolith) unless the domain clearly needs more; TDD and SOLID unchanged.",
       "deploy": "Single region, no service mesh, no chaos testing; a simple managed or single-cluster setup.",
       "quality": "End-to-end tests for the Must Have journeys; performance and load checks only against stated NFRs; no chaos or mutation runs."
     },
     "standard": {
       "approval_mode": "key-decisions",
       "approval_mode_note": "Stop for approval only at the artifacts that change direction (e.g. vision, Context Map, Container Diagram); batch the rest into one review per phase.",
-      "implement": "A few services along Bounded Context lines.",
+      "implement": "A few services from the Container Diagram's decomposition, never splitting a Bounded Context.",
       "deploy": "One region; service mesh optional; canary releases.",
       "quality": "Full Test Pyramid; mutation testing on critical packages; chaos testing optional."
     },
     "enterprise": {
       "approval_mode": "per-artifact",
       "approval_mode_note": "Stop for approval after every artifact (today's behaviour).",
-      "implement": "Services per Bounded Context; tenancy isolation per the multi-tenancy design.",
+      "implement": "Services as the Container Diagram decomposes them (granularity checklists); tenancy isolation per the multi-tenancy design.",
       "deploy": "Multi-region / high availability per the NFRs; service mesh (mTLS); canary and blue-green; DR drills.",
       "quality": "Full Test Pyramid plus performance, load, chaos and mutation testing; compliance verification."
     }

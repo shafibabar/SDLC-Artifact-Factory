@@ -39,7 +39,9 @@
       ]
     },
     "api-gateway-design": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "api-gateway-design"
       ]
@@ -1634,6 +1636,7 @@
       ],
       "artifacts": [
         "alerting-rules-design-document",
+        "api-gateway-design",
         "blameless-postmortem",
         "canary-rollout-plan",
         "cd-pipeline-config",
@@ -2070,7 +2073,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.4.0"
+        "version": "1.5.0"
       },
       {
         "created": "2026-06-25",
@@ -2091,11 +2094,14 @@
           "ddd-agent-handoff",
           "event-driven-patterns",
           "glossary-management",
+          "grpc-contract-design",
           "integration-design",
           "memory-recall",
+          "message-broker-selection",
           "methodology-review",
           "multi-tenancy-design",
-          "system-context-diagram"
+          "system-context-diagram",
+          "workflow-orchestration"
         ],
         "status": null,
         "tags": [
@@ -2116,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.6.0"
+        "version": "1.7.0"
       },
       {
         "created": "2026-06-25",
@@ -2197,6 +2203,7 @@
         "phase": "deploy",
         "produces": [
           "alerting-rules-design-document",
+          "api-gateway-design",
           "canary-rollout-plan",
           "cd-pipeline-config",
           "ci-pipeline-workflow",
@@ -2218,6 +2225,7 @@
         "role": "Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks",
         "skills": [
           "alerting-rules-design",
+          "api-gateway-design",
           "blue-green-deployment",
           "canary-deployment",
           "cd-pipeline",
@@ -2261,7 +2269,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.3.0"
+        "version": "2.4.0"
       },
       {
         "created": "2026-06-24",
@@ -3197,7 +3205,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.6.0"
+        "version": "2.7.0"
       },
       {
         "created": "2026-06-25",
@@ -10705,8 +10713,8 @@
     "artifacts": 186,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 72,
-    "edges_agent_skills": 194,
+    "edges_agent_produces": 73,
+    "edges_agent_skills": 198,
     "edges_skill_produces": 193,
     "edges_skill_related": 1000,
     "edges_skill_sources": 156,
@@ -10921,6 +10929,10 @@
       {
         "agent": "platform-engineer",
         "artifact": "alerting-rules-design-document"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "api-gateway-design"
       },
       {
         "agent": "platform-engineer",
@@ -11314,11 +11326,19 @@
       },
       {
         "agent": "enterprise-architect",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "agent": "enterprise-architect",
         "skill": "integration-design"
       },
       {
         "agent": "enterprise-architect",
         "skill": "memory-recall"
+      },
+      {
+        "agent": "enterprise-architect",
+        "skill": "message-broker-selection"
       },
       {
         "agent": "enterprise-architect",
@@ -11331,6 +11351,10 @@
       {
         "agent": "enterprise-architect",
         "skill": "system-context-diagram"
+      },
+      {
+        "agent": "enterprise-architect",
+        "skill": "workflow-orchestration"
       },
       {
         "agent": "frontend-engineer",
@@ -11415,6 +11439,10 @@
       {
         "agent": "platform-engineer",
         "skill": "alerting-rules-design"
+      },
+      {
+        "agent": "platform-engineer",
+        "skill": "api-gateway-design"
       },
       {
         "agent": "platform-engineer",
