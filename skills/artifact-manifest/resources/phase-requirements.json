@@ -411,7 +411,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "One per Bounded Context."
+        "note": "One per Bounded Context. Lean: the terms table, banned synonyms and open questions only."
       },
       {
         "artifact": "context-map",

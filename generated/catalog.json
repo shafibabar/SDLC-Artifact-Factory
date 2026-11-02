@@ -3205,7 +3205,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.7.0"
+        "version": "2.7.1"
       },
       {
         "created": "2026-06-25",
@@ -5065,7 +5065,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.19.0"
+        "version": "1.20.0"
       },
       {
         "created": "2026-07-31",
@@ -10295,14 +10295,14 @@
         "dir": "skills/ubiquitous-language",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": false,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "ubiquitous-language",
         "owner": "domain-modeler",
         "phase": "design",
@@ -10311,23 +10311,36 @@
         ],
         "related": [
           "aggregate-design",
+          "api-contract-design",
+          "bdd-feature-file",
           "bounded-context-mapping",
           "context-map-patterns",
           "domain-storytelling",
+          "event-schema-design",
           "event-storming-facilitation",
-          "glossary-management"
+          "glossary-management",
+          "subdomain-distillation"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/domain-storytelling-hofer-schwentner.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/strategic-design-supplement.md"
+        ],
         "status": "stable",
         "tags": [
+          "agent-run",
+          "bounded-context",
           "ddd",
           "design",
           "domain-modeling",
-          "glossary",
+          "homonym",
+          "synonym",
           "terminology-drift",
           "ubiquitous-language"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10716,8 +10729,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 193,
-    "edges_skill_related": 1000,
-    "edges_skill_sources": 156,
+    "edges_skill_related": 1004,
+    "edges_skill_sources": 161,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10729,20 +10742,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 52,
+    "research_files_cited": 56,
     "skills_with_assets": 12,
-    "skills_with_contract_test": 161,
+    "skills_with_contract_test": 160,
     "skills_with_domain": 189,
-    "skills_with_evals": 27,
-    "skills_with_examples": 27,
+    "skills_with_evals": 28,
+    "skills_with_examples": 28,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 26,
+    "skills_with_resources": 27,
     "skills_with_scripts": 24,
-    "skills_with_sources": 28,
+    "skills_with_sources": 29,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 26
+    "skills_with_templates": 27
   },
   "edges": {
     "agent_produces": [
@@ -16393,6 +16406,14 @@
         "skill": "ubiquitous-language"
       },
       {
+        "related": "api-contract-design",
+        "skill": "ubiquitous-language"
+      },
+      {
+        "related": "bdd-feature-file",
+        "skill": "ubiquitous-language"
+      },
+      {
         "related": "bounded-context-mapping",
         "skill": "ubiquitous-language"
       },
@@ -16405,11 +16426,19 @@
         "skill": "ubiquitous-language"
       },
       {
+        "related": "event-schema-design",
+        "skill": "ubiquitous-language"
+      },
+      {
         "related": "event-storming-facilitation",
         "skill": "ubiquitous-language"
       },
       {
         "related": "glossary-management",
+        "skill": "ubiquitous-language"
+      },
+      {
+        "related": "subdomain-distillation",
         "skill": "ubiquitous-language"
       },
       {
@@ -17161,6 +17190,26 @@
       {
         "skill": "uat-scenario",
         "source": "research/testing/user-acceptance-testing-hambling.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/domain-storytelling-hofer-schwentner.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
       },
       {
         "skill": "user-persona",
