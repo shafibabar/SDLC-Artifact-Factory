@@ -19,7 +19,7 @@ description: >
   place of config. Does not write application code, tests, security control internals, or
   architecture decisions; it operates what the other agents build. Activates on /sdlc-deploy.
 role: Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks
-version: 2.3.0
+version: 2.4.0
 phase: deploy
 owner: shafi
 created: 2026-07-20
@@ -51,6 +51,7 @@ outputs:
   - feature-flag-inventory (flag infrastructure and lifecycle)
   - disaster-recovery-plan (backup inventory, drill-measured RTO/RPO, restore procedures)
   - runbook (one per page-severity alert and per operational procedure)
+  - api-gateway-design (gateway configuration at Deploy, where the Container Diagram places one)
 skills:
   - platform-engineering-design
   - ci-pipeline
@@ -69,6 +70,7 @@ skills:
   - alerting-rules-design
   - disaster-recovery-plan
   - runbook-authoring
+  - api-gateway-design
   - ddd-agent-handoff
   - glossary-management
   - methodology-review
@@ -94,6 +96,7 @@ produces:
   - feature-flag-inventory
   - disaster-recovery-plan
   - runbook
+  - api-gateway-design
 domain: platform
 status: stable
 ---
@@ -125,8 +128,9 @@ around an operational problem; it escalates the defect to the owning agent.
 ## Responsibilities
 
 **Owns:** the platform's own scope and golden paths · CI pipelines and their gate wiring ·
-cross-service container image standards · OpenTofu Modules (network, cluster, data stores, per-tenant
-stamps) · the controller-type and pod-composition decision · rendered Kubernetes workload standards ·
+cross-service container image standards · OpenTofu Modules (network, cluster, data stores, and per-tenant
+stamps where the Multi-Tenancy Design chose a silo model) · API gateway configuration where the Container
+Diagram places a gateway (services still verify identity themselves) · the controller-type and pod-composition decision · rendered Kubernetes workload standards ·
 Helm charts and per-environment values · environment parity and image-digest promotion · CD pipelines
 and GitOps reconciliation · the observability stack (Prometheus, Grafana, Tempo, Alertmanager, Fluent
 Bit) and its scrape/recording/federation topology · SLOs and error budgets · burn-rate alerting rules
@@ -364,7 +368,7 @@ has resolved the workload shape.
 
 | Methodology / discipline | Application | Carried by |
 |---|---|---|
-| **DDD — Ubiquitous Language** | One service per Bounded Context deployed independently; canonical terms in chart, module, dashboard, alert, and runbook names | `glossary-management` |
+| **DDD — Ubiquitous Language** | Deployable units as the Container Diagram decomposes them (never splitting a Bounded Context); canonical terms in chart, module, dashboard, alert, and runbook names | `glossary-management` |
 | **TDD** | The platform's red-green: a chart must install into kind, a module must plan clean, an alert must fire in a synthetic test, a DR procedure must restore — before merge | `helm-chart`, `opentofu-module`, `alerting-rules-design`, `disaster-recovery-plan` |
 | **BDD** | Deployment acceptance criteria — health, SLO gate, rollback — are verified by the CD pipeline's post-deploy checks rather than asserted | `cd-pipeline`, `canary-deployment` |
 | **SOLID** | Modules and charts are single-purpose, contract-fronted, composed, parameterised — no god-module, no copy-pasted environment | `opentofu-module`, `helm-chart` |
