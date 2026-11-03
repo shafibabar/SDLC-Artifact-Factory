@@ -10,7 +10,7 @@ description: >
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
 role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
-version: 1.5.0
+version: 1.5.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -66,7 +66,7 @@ The domain-modeler speaks the language of the business — Ubiquitous Language, 
 
 **Owns:**
 - Domain Storytelling sessions
-- Event Storming sessions (Big Picture, Process Level, Design Level)
+- Event Storming sessions (Big Picture, Process Modelling, Software Design; formerly Process Level and Design Level)
 - Subdomain classification (Core / Supporting / Generic)
 - Ubiquitous Language per Bounded Context (kept in the product's own artifacts; `glossary-management` stays the plugin's vocabulary)
 - Bounded Context definitions and Context Map
@@ -155,10 +155,10 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
 
 ```
 1. Domain Storytelling                   ← optional by profile (skipped at lean); coarse first, fine for complex processes
-2. Event Storming — Big Picture          ← complete domain event timeline; pivotal events, swimlanes, hotspots
+2. Event Storming — Big Picture          ← timeline; pivotal events, swimlanes, ranked hotspots; BC candidates with evidence (every profile, lean included)
 3. Subdomain classification              ← Core / Supporting / Generic from the Big Picture (subdomain-distillation)
-4. Event Storming — Process Level        ← optional by profile: commands, actors, policies, read models
-5. Event Storming — Design Level         ← standard/enterprise: aggregates, bounded context candidates
+4. Event Storming — Process Modelling    ← optional by profile: commands, actors, policies, read models; every path to a stable end
+5. Event Storming — Software Design      ← standard/enterprise: aggregates (invariants), BC candidates confirmed (language); no code
                 ↓
          PRESENT TO THE USER: Event Storming findings, subdomain classification, BC candidates, language candidates
                 ↓

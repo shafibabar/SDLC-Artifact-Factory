@@ -144,6 +144,25 @@ assert_output_contains "reports file not found" "file not found" "$SCRIPT" "/non
 # ── 10. No argument — exits 1 ────────────────────────────────────────────────
 assert_exit1 "exits 1 when no argument provided" "$SCRIPT"
 
+# ── Gotchas warning on rebuilt skills (skill-authoring-standards Q17) ─────────
+EV="$SCRATCH/evals-root"; mkdir -p "$EV/gotcha-skill"
+D="$SCRATCH/gotcha-skill"
+make_skill "$D" "$GOOD_FM" "## Purpose
+
+Body content."
+out="$(SKILL_EVALS_DIR="$EV" bash "$SCRIPT" "$D/SKILL.md" 2>&1)"; rc=$?
+if echo "$out" | grep -q "WARN: rebuilt skill (has evals) has no ## Gotchas"; then pass "warns when a skill with evals has no ## Gotchas"; else fail "warns when a skill with evals has no ## Gotchas"; fi
+if [[ $rc -eq 0 ]]; then pass "the Gotchas warning does not fail the check"; else fail "the Gotchas warning does not fail the check"; fi
+make_skill "$D" "$GOOD_FM" "## Gotchas
+
+- **A trap.** Why. Instead."
+out="$(SKILL_EVALS_DIR="$EV" bash "$SCRIPT" "$D/SKILL.md" 2>&1)"
+if echo "$out" | grep -q "carries a ## Gotchas section"; then pass "passes when a skill with evals has ## Gotchas"; else fail "passes when a skill with evals has ## Gotchas"; fi
+D2="$SCRATCH/no-evals-skill"
+make_skill "$D2" "$GOOD_FM" "Body content."
+out="$(SKILL_EVALS_DIR="$EV" bash "$SCRIPT" "$D2/SKILL.md" 2>&1)"
+if echo "$out" | grep -q "Gotchas"; then fail "skips the Gotchas check for a skill with no evals"; else pass "skips the Gotchas check for a skill with no evals"; fi
+
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 rm -rf "$SCRATCH"
 
