@@ -16,7 +16,7 @@ description: >
   design/<context>/ubiquitous-language.md; glossary-management stays the
   plugin's own vocabulary. Used by domain-modeler after Event Storming and
   subdomain classification.
-version: 3.0.0
+version: 3.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
@@ -126,13 +126,32 @@ The methodology isn't skipped at lean: the document is shorter, and the rules ar
 
 ## Producing the Document
 
-1. Read the Event Storming output, the `subdomain-classification` and the Ideate artifacts. Find the candidate Bounded Contexts.
-2. For each context, draft the terms (§ 3), test them in sentences, and fill `./templates/ubiquitous-language.md`.
-3. Check each word that appears in two contexts: same meaning (one term, possibly shared) or different meanings (homonym, translation named)?
-4. List every assumption and open question for the product owner.
-5. Check the document against `./resources/ul-checklist.md` before the review gate.
+Copy `./resources/ul-checklist.md` and tick it as you go.
 
-Worked cases, from simplest to hardest: `./examples/01-lean-shift-swap-agent-run.md` (one context, agent-run, one synonym ban), `./examples/02-standard-clinic-booking-homonym.md` (a homonym that must not be "fixed" with one global term), `./examples/03-enterprise-insurer-policy-rename.md` (four contexts, and a rename that reaches a published event).
+1. **Read** the Event Storming output (its words and disputed words), the `subdomain-classification` and the Ideate artifacts. List the candidate Bounded Contexts.
+2. **Draft** each context's terms from the sources in § 3, citing a source per term or marking it *assumed*. Test them by saying sentences (§ 3).
+3. **Check shared words** across contexts: same meaning (one owner, or a deliberate Shared Kernel) or a homonym (each keeps its word, translation named). Never settle a homonym with a ban.
+4. **Write** the document from `./templates/ubiquitous-language.md` to `design/<context>/ubiquitous-language.md`: a scenario for each key term, bans only for confirmed synonyms, open questions with the assumption in use, and sentences for the product owner to read aloud.
+5. **Validate, then loop.** Run `./scripts/validate-ubiquitous-language.sh design/<context>/ubiquitous-language.md`. Fix every FAIL and run it again until it exits clean. Then go through the checklist items the script can't judge.
+6. **Present** at the domain-modeler's review gate: the open questions and the read-aloud check, not only the path.
+
+**A rename, once the language is in use: plan, validate, execute.** A rename across media is costly to undo, so:
+1. **Plan:** list every place the old word lives (code identifiers, tables, API fields, event names, scenarios, docs), and for each the change, or the deprecation route for a published API field or event.
+2. **Validate the plan:** search the code, schemas and feature files for the old word and compare the hits with the list; anything found and not listed goes on it. Check that published events get a new event type, never a `.v2`.
+3. **Execute,** then record status in the Banned Synonyms table's "Renamed in" column. It is done only when every medium is ✔, the search returns nothing, and the drift hook is quiet.
+
+Full rename procedure: `./references/discovery-and-lifecycle.md` § 5.3.
+
+Worked cases, simplest to hardest: `./examples/01-lean-shift-swap-agent-run.md` (one context, agent-run, a candidate ban waiting on the product owner), `./examples/02-standard-clinic-booking-homonym.md` (a homonym that must not be "fixed" with one global term), `./examples/03-enterprise-insurer-policy-rename.md` (four contexts, and a rename that reaches a published event).
+
+## Gotchas
+
+- **"Pick one definition for the whole product and ban the other."** Say why that's wrong, not only that it is. A ban is for **synonyms**: two words for one meaning *inside one context*. Here it's the reverse, a **homonym**: one word, two meanings, in two contexts, which is the boundary showing itself. Neither context is told to stop using the word, and renaming one side to end an argument is still a ban in disguise. Write each meaning in its own context's document (the product's `design/<context>/ubiquitous-language.md`, not the plugin glossary), note the other meaning as a homonym in each, and name the translation on the Context Map.
+- **Banning words the sources merely use interchangeably.** "Parcel", "hamper" and "box" may or may not be one concept; that's the product owner's call. List them as candidate synonyms under Open Questions. A ban in the table is enforced by the drift hook at once.
+- **A word list with no behaviour.** Even at lean, each Aggregate Root and Policy gets a Given/When/Then in Key Scenarios.
+- **"Mark them confirmed by domain experts" when nobody confirmed them.** Keep *assumed*, cite the source, and give the product owner sentences to read aloud as the cheap check.
+- **"The ban is in the document, so we're done."** Not while the code, an API field, an event or a scenario still uses the old word. Report it as in progress with the open renames.
+- **Putting a product's ban in the plugin glossary.** It would hit every other product. It goes in the product's own Banned Synonyms table, which the drift hook reads.
 
 ## Anti-Patterns
 

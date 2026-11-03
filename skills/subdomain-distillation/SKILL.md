@@ -15,7 +15,7 @@ description: >
   Storming Big Picture, deciding build versus buy, asking whether something
   is Core, or prioritising a legacy modernisation. Used by domain-modeler;
   produces the subdomain-classification artifact.
-version: 3.0.0
+version: 3.1.0
 phase: design
 owner: domain-modeler
 created: 2026-07-22
@@ -115,12 +115,30 @@ For a system that already exists, the classification also decides **order**: whi
 
 ## Producing the Artifact
 
-1. Read the Event Storming Big Picture, the vision and the strategy kernel.
-2. Split coarse to fine (§ 1); classify each piece on the three tests (§ 2); rate the security axis (§ 4).
-3. Fill `./templates/subdomain-classification.md`.
-4. Check it against `./resources/classification-checklist.md`, then present it at the review gate with the Event Storming findings.
+Copy `./resources/classification-checklist.md` and tick it as you go.
+
+1. **Read** the Event Storming Big Picture (`design/event-storming/big-picture.md`), the vision and the strategy kernel. No Big Picture yet: run it first (agent-run needs no workshop), or mark every label provisional.
+2. **Split** the Big Picture's capabilities coarse to fine (§ 1), stopping where the parts share one type. Same-type siblings stay one row.
+3. **Classify** each piece on all three tests with evidence (§ 2); set sourcing and modelling from the type; run the security checklist (§ 4); add a revisit trigger and the date (§ 5).
+4. **Write** `design/subdomain-classification.md` from `./templates/subdomain-classification.md`. At standard and enterprise, add the Domain Vision Statement and Highlighted Core (§ 6).
+5. **Validate, then loop.** Run `./scripts/validate-subdomain-classification.sh design/subdomain-classification.md`. Fix every FAIL, read every WARN (more than two Core, or none), and run it again until it exits clean. Then go through the checklist items the script can't judge.
+6. **Present** at the review gate with the Event Storming findings, disputed labels as open questions.
+
+**An existing system's transformation order: plan, validate, execute.** Starting the wrong piece first is costly to undo, so:
+1. **Plan:** fill the Transformation Order table (`./references/legacy-transformation-guidance.md` § 4), citing the sequencing rule behind each position.
+2. **Validate the plan:** the first piece is Core with bounded risk; every Generic subdomain is marked Replace or has a stated reason not to be; a tangled Core has Segregated Core as its first step; each move names its Strangler Fig mechanic. Present disputed positions to the product owner, a business-priority call.
+3. **Execute** only the first piece, then re-run the plan with what was learned. The order is revisited after each move, not fixed up front.
 
 Worked cases, simplest to hardest: `./examples/01-lean-volunteer-rota.md` (one Core, the rest bought), `./examples/02-standard-route-planning.md` ("the hardest code is Core" corrected, and a simple feature that isn't Core), `./examples/03-enterprise-loan-origination-legacy.md` (an existing system, a security slice inside Generic identity, transformation order).
+
+## Gotchas
+
+- **Classifying from a feature list "to save time".** The step runs on the Big Picture. Run it first (agent-run needs no workshop) or mark every label provisional. Feature headings are a menu, not subdomains.
+- **One row per feature.** Splitting goes only as far as types differ; "membership records, inspections and the treasurer's report" is one Supporting row.
+- **One-line reasons.** Even at lean, each row answers all three tests briefly. A bare "simple record keeping" is a conclusion, not evidence.
+- **Saying where effort goes but not how it is built.** Each row states the modelling: a Domain Model for Core, Transaction Script or Active Record for Supporting, a thin integration for Generic.
+- **"It's outsourced, so it's Generic."** Outsourcing the build fits Supporting. Generic means something already exists to buy or adopt.
+- **"Lock the classification for good."** It has a date and a revisit trigger, because types move as markets do.
 
 ## Anti-Patterns
 

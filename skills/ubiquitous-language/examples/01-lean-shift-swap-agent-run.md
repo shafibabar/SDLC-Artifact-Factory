@@ -45,7 +45,7 @@ Rota decides who works which shift at Elmbrook House and handles changes between
 | Term | Type | Meaning in this context | Rules that always hold | Behaviour | Source |
 |---|---|---|---|---|---|
 | Shift | Entity | A fixed block of work on one ward, with a start, an end and one assigned Carer | Exactly one Carer at a time | `ShiftAssigned` | ideate/vision.md |
-| Carer | Entity | A member of care staff who can be given Shifts | — | — | ideate/vision.md |
+| Carer | Entity | A member of care staff who can be given Shifts | Holds at most one Shift at any moment | `ShiftAssigned` | ideate/vision.md |
 | Coordinator | Concept (role) | The person who approves changes to the Rota | — | `ShiftSwapApproved` | design/event-storming-big-picture.md |
 | Rota | Read Model | Who works which Shift over the next four weeks | — | — | ideate/job-stories.md |
 | Shift Swap | Aggregate Root | Two Carers exchanging one Shift each | Both Shifts change hands together or not at all; needs Coordinator approval | `ShiftSwapRequested`, `ShiftSwapApproved`, `ShiftSwapDeclined` | ideate/job-stories.md |
@@ -59,6 +59,11 @@ Rota decides who works which shift at Elmbrook House and handles changes between
       Given Ana holds Tuesday late and Sam holds Thursday early
       When the Coordinator approves their Shift Swap
       Then Ana holds Thursday early and Sam holds Tuesday late
+
+    Scenario: A Shift Cover leaves nothing to give back (assumed, see question 2)
+      Given Ben holds Friday night and Priya holds nothing on Friday
+      When the Coordinator approves Priya's Shift Cover of Friday night
+      Then Priya holds Friday night and Ben holds no Shift on Friday
 
     Scenario: A Short Notice change also goes to the Coordinator by phone
       Given Ana's Shift starts in 8 hours

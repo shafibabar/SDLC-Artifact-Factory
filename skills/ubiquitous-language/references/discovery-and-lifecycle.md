@@ -100,7 +100,7 @@ When a word is about to enter one context's document, check:
 
 ### 5.3 Renaming
 
-A rename is a change to the model, carried out in every medium:
+A rename is a change to the model, carried out in every medium. Plan it as a list of every place the old word lives, validate the list against a search of the code, schemas and feature files, and only then execute (`SKILL.md`, Producing the Document):
 
 | Medium | What to rename |
 |---|---|

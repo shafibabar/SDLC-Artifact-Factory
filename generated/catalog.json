@@ -9949,7 +9949,7 @@
         "has_examples": true,
         "has_references": true,
         "has_resources": true,
-        "has_scripts": false,
+        "has_scripts": true,
         "has_steps": false,
         "has_templates": true,
         "name": "subdomain-distillation",
@@ -9988,7 +9988,7 @@
           "strategic-design",
           "subdomain"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -10327,7 +10327,7 @@
         "has_examples": true,
         "has_references": true,
         "has_resources": true,
-        "has_scripts": false,
+        "has_scripts": true,
         "has_steps": false,
         "has_templates": true,
         "name": "ubiquitous-language",
@@ -10367,7 +10367,7 @@
           "terminology-drift",
           "ubiquitous-language"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -10778,7 +10778,7 @@
     "skills_with_produces": 189,
     "skills_with_references": 184,
     "skills_with_resources": 29,
-    "skills_with_scripts": 25,
+    "skills_with_scripts": 27,
     "skills_with_sources": 31,
     "skills_with_status": 189,
     "skills_with_steps": 0,
