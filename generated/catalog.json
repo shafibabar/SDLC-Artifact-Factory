@@ -2033,7 +2033,7 @@
         "created": "2026-06-25",
         "domain": null,
         "file": "agents/domain-modeler.md",
-        "has_acceptance_test": false,
+        "has_acceptance_test": true,
         "name": "domain-modeler",
         "phase": "design",
         "produces": [],
@@ -2073,7 +2073,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.5.0"
+        "version": "1.5.1"
       },
       {
         "created": "2026-06-25",
@@ -4829,14 +4829,14 @@
         "dir": "skills/event-storming-facilitation",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "event-storming-facilitation",
         "owner": "domain-modeler",
         "phase": "design",
@@ -4848,22 +4848,31 @@
           "bounded-context-mapping",
           "command-catalog",
           "domain-event-catalog",
+          "domain-storytelling",
           "read-model-design",
           "subdomain-distillation",
           "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/strategic-design-supplement.md"
+        ],
         "status": "stable",
         "tags": [
-          "bounded-context",
+          "agent-run",
+          "big-picture",
           "brandolini",
           "design",
-          "domain-events",
           "domain-modeling",
           "event-storming",
-          "facilitation"
+          "facilitation",
+          "hotspot",
+          "process-modelling",
+          "software-design"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -9705,7 +9714,7 @@
           "progressive-disclosure",
           "skill-authoring"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-07-20",
@@ -10747,33 +10756,33 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 193,
-    "edges_skill_related": 1013,
-    "edges_skill_sources": 166,
+    "edges_skill_related": 1014,
+    "edges_skill_sources": 170,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
     "unresolved_skill_related": 0
   },
   "coverage": {
-    "agents_with_acceptance_test": 5,
+    "agents_with_acceptance_test": 6,
     "agents_with_domain": 5,
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 58,
+    "research_files_cited": 59,
     "skills_with_assets": 11,
-    "skills_with_contract_test": 159,
+    "skills_with_contract_test": 158,
     "skills_with_domain": 189,
-    "skills_with_evals": 29,
-    "skills_with_examples": 29,
+    "skills_with_evals": 30,
+    "skills_with_examples": 30,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 28,
-    "skills_with_scripts": 24,
-    "skills_with_sources": 30,
+    "skills_with_resources": 29,
+    "skills_with_scripts": 25,
+    "skills_with_sources": 31,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 28
+    "skills_with_templates": 29
   },
   "edges": {
     "agent_produces": [
@@ -13653,6 +13662,10 @@
       },
       {
         "related": "domain-event-catalog",
+        "skill": "event-storming-facilitation"
+      },
+      {
+        "related": "domain-storytelling",
         "skill": "event-storming-facilitation"
       },
       {
@@ -16820,6 +16833,22 @@
       {
         "skill": "epic-definition",
         "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
       },
       {
         "skill": "feedback-template",

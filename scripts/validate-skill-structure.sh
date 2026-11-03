@@ -115,6 +115,20 @@ else
   [[ $layout_rc -eq 2 ]] && fail "folder spec: lint-skill-layout could not run ($layout_out)"
 fi
 
+# ── 3c. Gotchas section on rebuilt skills (advisory) ─────────────────────────
+# skill-authoring-standards 2.2.0 (rubric Q17): a skill rebuilt under the Fresh-Eyes
+# recipe — one with an eval suite — carries a `## Gotchas` section fed by its failing
+# eval replies. A WARN, never a failure: the Wave 1 skills predate the rule and are
+# retrofitted after the remaining waves. SKILL_EVALS_DIR overrides the evals root (tests).
+EVALS_ROOT="${SKILL_EVALS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/evals}"
+if [[ -d "$EVALS_ROOT/$(basename "$SKILL_DIR")" ]]; then
+  if grep -q '^## Gotchas' "$SKILL_FILE"; then
+    pass "rebuilt skill (has evals) carries a ## Gotchas section"
+  else
+    echo "WARN: rebuilt skill (has evals) has no ## Gotchas section (skill-authoring-standards Q17)"
+  fi
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 echo ""
 if [[ "$ERRORS" -eq 0 ]]; then

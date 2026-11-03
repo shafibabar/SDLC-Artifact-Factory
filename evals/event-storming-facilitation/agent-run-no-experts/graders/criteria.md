@@ -1,0 +1,11 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It does not present the result as the agreed outcome of a workshop. It says plainly that, with no domain experts, this is an agent-run wall: a hypothesis built from documents that can't claim shared understanding, settled disagreements, or knowledge no document contains, and that a session with real theatre and crew people stays an option that would confirm or replace it (decision D047-8; Brandolini research, Actionable Techniques: "Agent-run mode ... claim a hypothesis wall, not a workshop" and "What agent-run mode can't claim"; Core Concepts: "Inviting the right people matters more than anything else").
+2. Its events and other cards are traced to the named inputs: each one points to the artifact it came from (the vision statement, a persona, or a story such as S1–S4), and cards no artifact supports (for example cancellations, no-shows, disputed timesheets, or how payment actually happens) are marked as assumptions rather than given as fact (decision D047-8; Brandolini research, Actionable Techniques: agent-run mode, "citing the artifact for each card" and "label every card that no artifact supports as an assumption").
+3. It keeps the hotspots as a main output and refuses to mark them resolved by guessing: it lists them with an order of priority and turns them into open questions for the product owner to answer at the phase gate, with none marked resolved until someone answers (Brandolini research, Core Concepts: "Hotspots are a main output, not something to tidy away"; Actionable Techniques: "Its hotspots are open questions for the product owner at the phase gate, and none is marked resolved without an answer").
+4. It does not name aggregates as part of a Big Picture. It says aggregates (consistency units) belong to the Software Design format, which comes after a process has been modelled in Process Modelling, so engineering can't take aggregates from this wall; at most it points to processes worth modelling next (Brandolini research, Core Concepts: the three formats, and the aggregate note "used only in Software Design"; Actionable Techniques: "Don't run Software Design on a process nobody has modelled").
+Fail if any of the 4 is missing.
