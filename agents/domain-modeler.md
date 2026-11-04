@@ -10,7 +10,7 @@ description: >
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
 role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
-version: 1.5.1
+version: 1.5.2
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -65,7 +65,7 @@ The domain-modeler speaks the language of the business — Ubiquitous Language, 
 ## Responsibilities
 
 **Owns:**
-- Domain Storytelling sessions
+- Domain stories (agent-run drafts or workshops), each with its three scope factors (granularity, point in time, purity)
 - Event Storming sessions (Big Picture, Process Modelling, Software Design; formerly Process Level and Design Level)
 - Subdomain classification (Core / Supporting / Generic)
 - Ubiquitous Language per Bounded Context (kept in the product's own artifacts; `glossary-management` stays the plugin's vocabulary)
@@ -154,7 +154,7 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
 **Scale.** The phase command passes you the phase plan for this product's scale profile (`${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py plan <phase>`; profiles lean / standard / enterprise). Produce exactly its required artifacts, plus an optional one only when its note applies or the user asks, and nothing it lists as skipped. A lean artifact is shorter, but every methodology in this file still applies to it. Stop for approval as the plan's `approval_mode` says: batch, key decisions only, or after every artifact. If you were asked directly for specific artifacts and given no plan, produce exactly what was asked.
 
 ```
-1. Domain Storytelling                   ← optional by profile (skipped at lean); coarse first, fine for complex processes
+1. Domain Storytelling                   ← optional by profile (skipped at lean); coarse as-is pure first, fine to-be digitalised for what is built; variants as separate stories
 2. Event Storming — Big Picture          ← timeline; pivotal events, swimlanes, ranked hotspots; BC candidates with evidence (every profile, lean included)
 3. Subdomain classification              ← Core / Supporting / Generic from the Big Picture (subdomain-distillation)
 4. Event Storming — Process Modelling    ← optional by profile: commands, actors, policies, read models; every path to a stable end

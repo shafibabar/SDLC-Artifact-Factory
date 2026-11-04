@@ -2073,7 +2073,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.5.1"
+        "version": "1.5.2"
       },
       {
         "created": "2026-06-25",
@@ -4580,14 +4580,14 @@
         "dir": "skills/domain-storytelling",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "domain-storytelling",
         "owner": "domain-modeler",
         "phase": "design",
@@ -4598,20 +4598,27 @@
           "acceptance-criteria",
           "bounded-context-mapping",
           "event-storming-facilitation",
-          "ubiquitous-language"
+          "subdomain-distillation",
+          "ubiquitous-language",
+          "user-journey-mapping"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/domain-storytelling-hofer-schwentner.md",
+          "research/domain-driven-design/strategic-design-supplement.md"
+        ],
         "status": "stable",
         "tags": [
           "actor",
+          "agent-run",
           "design",
           "domain-modeling",
           "domain-storytelling",
-          "facilitation",
-          "ubiquitous-language",
+          "hofer-schwentner",
+          "scope-factors",
           "work-object"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-31",
@@ -10756,8 +10763,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 193,
-    "edges_skill_related": 1014,
-    "edges_skill_sources": 170,
+    "edges_skill_related": 1016,
+    "edges_skill_sources": 173,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10771,18 +10778,18 @@
     "commands_with_test": 15,
     "research_files_cited": 59,
     "skills_with_assets": 11,
-    "skills_with_contract_test": 158,
+    "skills_with_contract_test": 157,
     "skills_with_domain": 189,
-    "skills_with_evals": 30,
-    "skills_with_examples": 30,
+    "skills_with_evals": 31,
+    "skills_with_examples": 31,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 29,
-    "skills_with_scripts": 27,
-    "skills_with_sources": 31,
+    "skills_with_resources": 30,
+    "skills_with_scripts": 28,
+    "skills_with_sources": 32,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 29
+    "skills_with_templates": 30
   },
   "edges": {
     "agent_produces": [
@@ -13521,7 +13528,15 @@
         "skill": "domain-storytelling"
       },
       {
+        "related": "subdomain-distillation",
+        "skill": "domain-storytelling"
+      },
+      {
         "related": "ubiquitous-language",
+        "skill": "domain-storytelling"
+      },
+      {
+        "related": "user-journey-mapping",
         "skill": "domain-storytelling"
       },
       {
@@ -16813,6 +16828,18 @@
       {
         "skill": "competitive-analysis",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "domain-storytelling",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "domain-storytelling",
+        "source": "research/domain-driven-design/domain-storytelling-hofer-schwentner.md"
+      },
+      {
+        "skill": "domain-storytelling",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
       },
       {
         "skill": "epic-definition",
