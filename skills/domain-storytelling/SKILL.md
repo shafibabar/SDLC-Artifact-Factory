@@ -1,210 +1,141 @@
 ---
 name: domain-storytelling
 description: >
-  Teaches the domain-modeler to facilitate Domain Storytelling sessions — a collaborative
-  modelling method where domain experts narrate how they work, using subject-verb-object
-  sentences that the facilitator captures as pictographic models (actors, work objects,
-  activities, arrows, annotations). Covers the pure vs. annotated storytelling modes,
-  when to use each granularity level (coarse-grained for BC discovery, fine-grained for
-  Aggregate design), the pictogram notation rules, the story collection facilitation
-  procedure, and how Domain Stories feed into Event Storming and Ubiquitous Language
-  extraction. Used during Design before Event Storming when the domain experts' workflow
-  is not yet understood.
-version: 2.1.0
+  Tell or draft domain stories to understand how work is done before
+  modelling it: one concrete scenario per story, told as numbered actor –
+  activity – work object sentences, often with a recipient, in the
+  storytellers' words. Covers choosing the three scope factors (coarse- or
+  fine-grained; as-is or to-be; pure or digitalised), the pictographic
+  elements (actors, work objects, activities, sequence numbers, annotations,
+  groups), the storyteller, moderator and modeller roles and the retelling
+  check, telling variants as separate stories instead of branches, groups as
+  Bounded Context hints, and feeding the Ubiquitous Language, boundaries and
+  acceptance criteria. Includes agent-run mode: drafting stories from named
+  artifacts with every sentence cited or labelled an assumption and open
+  questions sent to the product owner. Use when asked to "draft domain
+  stories from these artifacts", run a Domain Storytelling workshop, or
+  understand who does what with what before Event Storming. Used by
+  domain-modeler at standard and enterprise.
+version: 3.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: ["design","domain-modeling","domain-storytelling","facilitation","actor","work-object","ubiquitous-language"]
+tags: [design, domain-modeling, domain-storytelling, actor, work-object, scope-factors, agent-run, hofer-schwentner]
 produces: domain-story
 domain: domain-modeling
 status: stable
-related:
-  - event-storming-facilitation
-  - ubiquitous-language
-  - bounded-context-mapping
-  - acceptance-criteria
+related: [event-storming-facilitation, ubiquitous-language, bounded-context-mapping, acceptance-criteria, user-journey-mapping, subdomain-distillation]
+sources:
+  - research/domain-driven-design/domain-storytelling-hofer-schwentner.md
+  - research/domain-driven-design/strategic-design-supplement.md
+  - research/domain-driven-design/domain-driven-design-evans.md
 ---
 
 # Domain Storytelling
 
-## What It Is
+## Purpose
 
-Domain Storytelling (Stefan Hofer & Henning Schwentner) is a collaborative modelling
-method where a domain expert narrates how they work while a facilitator draws the story
-as a pictographic model. Every sentence in a Domain Story has exactly three parts:
+Domain Storytelling (Stefan Hofer and Henning Schwentner, *Domain Storytelling*) is told by the people who do the work and drawn while they tell it. Each sentence is drawn with a few icons, so the tellers see the picture grow and correct it. The picture records a conversation; the conversation is the point. Where Event Storming asks *what happened?*, a domain story asks *who does what with what, for whom, in what order?* It differs from a user journey map (`user-journey-mapping`), which follows one customer's experience; a domain story follows the work, across everyone who does it.
 
-| Component | Role | Examples from this repo's domain |
+**When it runs:** at standard and enterprise, optional, where the work has clear hand-overs between people. It is skipped at lean (`phase-requirements.json`). The plugin runs it before Event Storming when the plan includes it. The book gives no fixed order; the two methods complement each other.
+
+## 1. Agent-Run Mode First (D047-8)
+
+The domain-modeler usually has no storyteller. The book makes the storyteller a domain expert telling their own work, and treats the retelling to that person as the check. An agent-run story is therefore a **draft to be confirmed**, never presented as a told story:
+
+1. **Every sentence cites its source:** the artifact it came from (a persona, a job story, a journey map, the problem statement), or it is labelled **assumed**.
+2. **State the scope factors** (§ 2) in the story's frontmatter.
+3. **Pose the variants:** a variant story per persona or failure case worth telling.
+4. **Open questions go to the product owner** at the review gate, for example "who actually does step 4?", each with the assumption used meanwhile.
+5. **Give the product owner the retelling to check:** the story read back as numbered sentences, for them or a person who does the work to correct.
+
+**What it can't claim:** the storytellers' own words, a validated sequence, or knowledge no document holds. Its terms are terms found in documents, not expert language. A real session stays optional; its validated stories replace the drafts they confirm. Procedure in full: `./references/agent-run-mode.md`.
+
+## 2. Pick the Scope: Three Factors
+
+Every story is described by three factors (Hofer & Schwentner), recorded together:
+
+| Factor | Values | Means |
 |---|---|---|
-| **Actor** | Subject — the person, system, or role doing the work | Compliance Officer, Storage Connector, Google Drive |
-| **Activity** | Verb — the action the Actor performs | classifies, reviews, requests, sends |
-| **Work Object** | Object — the thing the Actor works with or produces | DataAsset, Classification Alert, Audit Record |
+| **Granularity** | coarse-grained · fine-grained | Detail per sentence. Coarse: a whole process or value chain, each sentence covering a lot. Fine: one part, step by step. It is not a step count |
+| **Point in time** | as-is · to-be | Today's work, or the intended future work |
+| **Domain purity** | pure · digitalised | Without software, or with software systems as actors and electronic artefacts as work objects |
 
-Each sentence is drawn as a numbered arrow: Actor → (numbered, activity-labelled arrow) →
-Work Object. The numbers create a readable left-to-right sequence. The model IS the
-sentence — nothing more, nothing less.
+Pick the combination from the question:
 
-Where Event Storming asks "what happened?", Domain Storytelling asks "who does what
-with what?" The two are complementary: Domain Storytelling establishes the human workflow
-narrative first; Event Storming then lays the event-and-command layer on top.
-
----
-
-## Two Storytelling Modes
-
-| Mode | When to use | Language rule |
-|---|---|---|
-| **Pure** | First pass — while the workflow is being discovered | Domain-expert language only; no software concepts, no "the system" as actor |
-| **Annotated** | After the pure story is validated | Software labels added to actors and work objects to bridge from domain to design |
-
-Always start pure. Only transition to annotated after the domain expert has confirmed
-the pure story is an accurate picture of how they actually work.
-
----
-
-## Granularity Levels
-
-| Level | Typical story length | Primary purpose |
-|---|---|---|
-| **Coarse-grained** | 5–10 steps | Bounded Context discovery — understand the big-picture workflow before Event Storming |
-| **Fine-grained** | 15–30 steps | Aggregate design — expose business rules, approval flows, and exception paths not visible at coarse level |
-
-Start coarse-grained. After Bounded Context candidates emerge, zoom into fine-grained
-for each complex or contested workflow. Fine-grained stories are where Aggregate
-operations and invariant candidates first become visible in a domain expert's own words.
-
----
-
-## Sequencing with Event Storming
-
-Use Domain Storytelling **before** Event Storming when:
-- The domain experts' workflow is unfamiliar and needs narration before events can be named
-- Bounded Context boundaries are unclear — Domain Stories surface handoff points
-- Ubiquitous Language candidates are needed before placing Event Storming sticky notes
-
-Use Event Storming **after** Domain Storytelling to:
-- Add the command and Domain Event layer on top of the validated workflow narrative
-- Surface domain policies that the storytelling sessions revealed but did not fully define
-- Verify that the Domain Events on the board match the activities from the Domain Stories
-
----
-
-## Outputs
-
-A Domain Storytelling session produces three categories of downstream material:
-
-| Output | Feeds downstream |
+| Question | Scope |
 |---|---|
-| Named Actors and Work Objects | Ubiquitous Language candidates → `ubiquitous-language` skill |
-| Numbered Activity sequence | Event Storming command/event flow — confirms or challenges sticky-note order |
-| Boundary markers (handoffs between teams or external systems) | Bounded Context boundary candidates → `bounded-context-mapping` skill |
+| Orientation; where the boundaries might be | coarse-grained / as-is / pure |
+| Requirements for the new system | fine-grained / to-be / digitalised |
+| Where today's tools hurt, including spreadsheets and email doing real work | fine-grained / as-is / digitalised |
 
-Every story ends with a completed "Feeds Forward To" table naming the artifact each
-discovery feeds. A Domain Story that produces no downstream references is shelfware.
+A common path is coarse as-is pure first, then fine to-be digitalised for the parts being built. Software is never added to a pure story as an overlay; a digitalised view is its own story.
 
----
+## 3. The Sentence and the Elements
 
-## Signals to Watch For
+Every sentence reads **actor – activity – work object**, often with a recipient: "The customer sends the claim form *to* the clerk." Arrows go actor → work object → actor. One verb per sentence; "checks and files" is two sentences.
 
-While drawing, actively watch for these domain signals:
-
-| Signal | Implication |
+| Element | Is |
 |---|---|
-| Expert uses an unfamiliar term | New Ubiquitous Language candidate — record the exact word they used |
-| Same work object called two names | Synonym conflict — ask which is canonical; feed to `ubiquitous-language` |
-| Expert says "then IT does something" | System or team boundary — Bounded Context candidate |
-| Story stops at "it depends..." | Policy or business rule — run a variation scenario |
-| Activity crosses to an external system | Context boundary; model the integration pattern |
-| Expert corrects the drawing | The model was wrong — update it; draw what was said, not what was intended |
+| **Actor** | A person, group or software system that does something; a role name ("Pharmacist"), never a personal name, and never "the system" |
+| **Work object** | What actors create, use, pass on or talk about: a form, a phone call, an email, money |
+| **Activity** | The labelled arrow, the storyteller's own verb |
+| **Sequence number** | The order told. Actors and work objects are drawn once and reused |
+| **Annotation** | Free text for conditions, minor variants, example data |
+| **Group** | A labelled outline around part of the story: an organisation, a place, a candidate boundary |
 
----
+**One diagram, one concrete scenario.** No branches, loops or "if". The usual case comes first; an important variant or error case is its own story, cross-referenced; a minor one is an annotation. Branches belong to flowcharts and BPMN, which the authors keep apart. The icon set is open, chosen per domain. Egon.io, the authors' free browser modeller, is the reference tool; any canvas works. Notation in depth: `./references/notation-guide.md`.
 
-## References
+## 4. Telling a Story with People
 
-Detailed content for facilitation, notation, and worked examples lives in `references/`.
-Read the relevant file when facilitating a session, reviewing notation, or studying a
-fully worked story:
+The book's roles: **storytellers** (domain experts, possibly several, each telling the part they do), the **moderator** (runs the session, asks questions), the **modeller** (draws, ideally on a shared screen; may be the moderator) and **listeners** (developers, product people). Start from a concrete case ("tell me about the last time a repeat prescription was late"), not "how does the process work?". **The retelling is the main quality check:** the modeller reads the picture back sentence by sentence, during the session and at the end, and every correction is a vocabulary or ordering finding. Procedure: `./references/facilitation-guide.md`.
 
-- **`references/notation-guide.md`** — complete pictogram specification: Actor shapes
-  (human, system, external), Work Object shapes, Activity (labelled arrow), Annotation,
-  Sequence number placement, concurrent activities, the one-sentence-per-arrow rule,
-  anti-patterns (flowchart shapes, decision diamonds, swim lanes), Miro element mapping.
+## 5. Groups as Boundary Hints
 
-- **`references/facilitation-guide.md`** — full session facilitation procedure:
-  pre-session setup, participant count and roles, session opening script with example
-  prompts, story collection protocol, validation pass, pure-to-annotated transition,
-  variation scenario procedure, and common failure modes.
+On a coarse-grained story, draw groups around sentences that belong together, and record the hint behind each: a work object changes name or meaning; a different department or role takes over; part of the story runs at a different pace or on a different trigger; a hand-over to another actor. A group is a **candidate** boundary to test, sent on as evidence to `bounded-context-mapping`, not a decision.
 
-- **`references/worked-examples.md`** — two fully worked Domain Stories from this
-  repo's data-estate/compliance domain: (1) a coarse-grained story for DataAsset BC
-  discovery, (2) a fine-grained story exposing Aggregate operations in the classification
-  workflow, each with Ubiquitous Language extractions, BC boundary markers, and Aggregate
-  operation candidates in Go method form.
+## 6. What Stories Feed
 
----
+| Output | Feeds |
+|---|---|
+| Actors, work objects and verbs, in the tellers' words (or labelled document terms) | `ubiquitous-language`; retelling with a proposed term tests it |
+| Groups with their hints | `bounded-context-mapping`, alongside the Event Storming boundary hints |
+| Person-and-software sentences in to-be digitalised stories | Candidate user stories |
+| Variant stories | Candidate acceptance criteria and Gherkin scenarios (`acceptance-criteria`) |
+| Work objects and activities | Candidate model elements for `aggregate-design`. No code here (D047-10) |
 
-## Quality Criteria
+## Producing the Stories
 
-| Criterion | Pass | Fail |
+Copy `./resources/story-checklist.md` and tick it as you go.
+
+1. **Plan.** Check the profile (skip at lean). List the input artifacts and the scenarios worth telling; give each its three scope factors (§ 2).
+2. **Draft or tell** the usual case first: numbered sentences with sources (§ 1) or from a session (§ 4).
+3. **Variants** as separate stories, cross-referenced; minor ones as annotations.
+4. **Groups** with their hints (§ 5) on coarse-grained stories.
+5. **Write** each story from `./templates/domain-story.md` to `design/domain-stories/coarse-<name>.md` or `fine-<name>.md`.
+6. **Validate, then loop.** Run `./scripts/validate-domain-story.sh <file>`. Fix every FAIL and run it again until it exits clean, then go through the checklist items the script can't judge.
+7. **Present** at the review gate: the run (agent-run or workshop), the open questions and the retelling for the product owner to check. For an agent-run draft, also say that a real session with the people who do the work stays optional, and that if one is held, its told stories replace the draft sentences they confirm.
+
+Worked cases, simplest to hardest: `./examples/01-standard-library-reservation-coarse.md` (coarse as-is pure, agent-run, groups as hints), `./examples/02-standard-pharmacy-repeat-prescription-fine.md` (fine to-be digitalised, a variant told as its own story), `./examples/03-enterprise-customs-clearance.md` (several organisations, a group per party, a story per party's part).
+
+## Gotchas
+
+- **"Draw it with a decision diamond for the approval."** Say why not: a domain story tells one concrete case, and branches, loops and yes/no paths belong to flowcharts and BPMN, which the authors keep apart from Domain Storytelling. Tell the approved case and the rejected case as two stories, cross-referenced; a minor case is an annotation. No 5a/5b numbering either.
+- **Presenting a drafted story as told by experts.** Nobody told it. Mark it agent-run, cite each sentence or label it *assumed*, and give the product owner the retelling to check. Also say that a real session with the people who do the work stays optional, and that its told stories would replace the draft sentences they confirm; the emailed retelling is the cheap check, not a substitute for that choice.
+- **"Pure vs annotated".** Those aren't the book's terms. Use the three scope factors; a story with software in it is a separate digitalised story, not an annotated pure one.
+- **Describing the scope only in plain words** ("today's work, no software"). Name all three factors for every story, then gloss them: *coarse-grained / as-is / pure (today's whole process, no software)*. The names are what the template, the validator and later skills read.
+- **Dropping the recipient** to force three parts. "The customer sends the form to the clerk" keeps the clerk.
+- **"The system" as an actor.** Name which system, or in a pure story, which person.
+- **Groups treated as decided Bounded Contexts.** They are candidates with evidence.
+- **Mixing as-is and to-be in one story** without saying so. Each story has one point in time.
+
+## Anti-Patterns
+
+| Anti-pattern | Why it fails | Correction |
 |---|---|---|
-| Concrete scenario | A specific, remembered occasion with real roles and real objects | General description ("usually what happens is...") |
-| Story read back | Facilitator reads the model back; domain expert corrects it | Story drawn but never validated with the expert |
-| New terms captured | All Ubiquitous Language candidates noted verbatim in the expert's words | Terms used by the expert but not recorded |
-| Variation scenarios | At least one exception or alternate flow explored after the primary story | Happy path only |
-| Boundary markers | Handoffs between teams or external systems are marked on the drawing | All activities treated as within one boundary |
-| Feeds forward | Session output explicitly maps to downstream artifacts | Domain Story filed and unreferenced by any later artifact |
-
----
-
-## Output Format
-
-```markdown
----
-name: domain-story
-product: [product name]
-domain: [domain or subdomain name]
-scenario: [one-line description of the story]
-scope: [coarse-grained | fine-grained]
-mode: [pure | annotated]
-version: 1.0.0
-phase: design
-created: [date]
-summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
-owner: domain-modeler
----
-
-# Domain Story: [Scenario Name]
-
-## Participants
-- **Domain expert:** [role]
-- **Facilitator:** domain-modeler agent
-- **Observers:** [roles]
-
-## The Story (narrative)
-[Written narrative of the story as told by the domain expert — in their language]
-
-## Story Steps (structured)
-
-| Step | Actor | Activity | Work Object | Annotation |
-|---|---|---|---|---|
-| 1 | [Actor] | [Action] | [Work Object] | [Condition / context] |
-
-## Boundary Markers
-[Where did the story cross a team or system boundary? What was on each side?]
-
-## Variation Scenarios
-### Variation 1: [Scenario name]
-[Steps for the variation]
-
-## Terms Discovered
-| Term as used | Type (Actor / Work Object / Activity) | Canonical? | Action |
-|---|---|---|---|
-
-## Synonym Conflicts
-| Term A | Term B | Context | Resolution |
-|---|---|---|---|
-
-## Feeds Forward To
-| Output | Target artifact |
-|---|---|
-| [Named element] | [Downstream artifact] |
-```
+| **A general process description** ("usually…") | Hides the exceptions and the real words | One concrete case, told as it happened |
+| **Designing while drawing** | Draws the system intended, not the work told | Draw what was said, in the teller's words |
+| **Translating on the fly** | Replaces the teller's words with technical terms | Record the exact word; reconcile in `ubiquitous-language` |
+| **Variants as numbered sub-steps** (4a, 4b) | A branch in disguise | A separate story per important variant |
+| **Never retold** | No check that the picture matches the work | Read it back sentence by sentence; record each correction |
+| **Shelfware story** | Nothing downstream uses it | Fill the Feeds Forward table (§ 6) |
