@@ -9,7 +9,7 @@ description: >
   notation, technology-choice annotation, the Clements component-and-connector vs.
   allocation viewtype distinction, and the diagram template. Used during Design
   after the System Context view is fixed.
-version: 2.1.0
+version: 2.1.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -102,6 +102,8 @@ Full notation catalogue — box anatomy, arrow semantics, boundary and external-
 
 Container boundaries follow Bounded Context boundaries from the domain model. Split further only
 when a concern genuinely demands an independently deployable unit:
+
+How Bounded Contexts become deployable units (merge and split rules, one write authority per Aggregate), moved here from `bounded-context-mapping` under D047-6: `./references/service-decomposition.md`. Its one-context-one-service default is superseded; the full rework is #1401.
 
 | Driver | Effect |
 |---|---|
