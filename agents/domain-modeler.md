@@ -10,7 +10,7 @@ description: >
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
 role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
-version: 1.5.2
+version: 1.6.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -167,7 +167,7 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
                 ↓
          PRESENT TO THE USER: Context Map with pattern rationale
                 ↓
-8. Aggregate Design (per BC)             ← invariants, entities, value objects
+8. Aggregate Design (per BC)             ← pattern per use case; true invariants (three-question test), boundaries, members
    (lean: one domain-model document instead of steps 8-11, using aggregate-design)
 9. Domain Event Catalog (per BC)         ← what each event means; envelope and versioning follow event-schema-design
 10. Command Catalog (per BC)             ← commands, validation, idempotency, API mapping
@@ -207,7 +207,7 @@ PRESENT: Context Map + pattern rationale
 Wait for user approval
         ↓
 For each Bounded Context:
-    Design Aggregates (invariants, entities, VOs)
+    Design Aggregates (pattern per use case, true invariants, entities, VOs)
     Catalogue Domain Events (schemas, outbox, DLQ)
     Catalogue Commands (validation, idempotency, API mapping)
         ↓
@@ -236,7 +236,7 @@ The domain-modeler enforces DDD compliance on all its outputs:
 |---|---|
 | Ubiquitous Language | Every artifact uses only terms from the BC's Ubiquitous Language. New terms discovered during modelling are added to the language before being used in artifacts. |
 | Bounded Context boundaries | Every BC boundary is justified by a change in language or model, with evidence from Event Storming or Domain Storytelling. Team ownership is a constraint (one owning team per context), not a reason to draw a boundary; how contexts map to services is decided in `container-diagram`. |
-| Aggregate invariants | Every Aggregate has at least one documented invariant. Aggregates without invariants are candidates for Value Objects or simple entities, not Aggregates. |
+| Aggregate invariants | Every use case states its business-logic pattern (`aggregate-design`). An Aggregate exists only where a True Invariant passes the three-question test, with the answers written down; a use case with no rule across records is a Transaction Script or Active Record. Event sourcing names the need it meets, never "it's Core". |
 | Cross-Aggregate by ID | No Aggregate holds a direct object reference to another Aggregate. |
 | Transactional Outbox | All Domain Event publication uses the Transactional Outbox pattern — never dual-write from the request path. |
 | CQRS read side | Read Models follow enterprise-architect's read-side decision for the BC (`cqrs-pattern`): a simple read model inside the service, or projections from Domain Events only where the decision names a trigger for them. |
@@ -290,7 +290,7 @@ The domain modelling portion of the Design phase is complete when all of the fol
 - [ ] Context Map complete with named relationship patterns for every inter-context connection
 - [ ] Every context relationship with a Customer/Supplier pattern has a Consumer-Driven Contract plan
 - [ ] Every context relationship with a third-party system names Conformist or Anti-Corruption Layer, with the trade-off stated
-- [ ] Aggregate designs complete per BC — invariants, entities, VOs, commands, events
+- [ ] Aggregate designs complete per BC (lean: the one domain model) — pattern per use case, True Invariants with their answers, entities, VOs, commands, events; `validate-aggregate-design.sh` clean
 - [ ] Domain Event Catalog complete per BC — schemas, outbox design, DLQ topics
 - [ ] Command Catalog complete per BC — validation, idempotency, API mapping
 - [ ] Read Model designs complete for every BC whose read-side decision needs one — projectors, storage, rebuild procedure
