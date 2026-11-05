@@ -1,185 +1,117 @@
 ---
 name: aggregate-design
 description: >
-  Teaches how to design Aggregates in Domain-Driven Design — grounded in
-  Eric Evans' foundational tactical patterns, Vaughn Vernon's four
-  prescriptive Effective Aggregate Design rules, and Vlad Khononov's
-  modern Business Logic Design Pattern catalog and event-sourcing
-  guidance. Covers: the prior gate of whether an Aggregate is even the
-  right pattern (Transaction Script / Active Record / Domain Model /
-  Event-Sourced Domain Model), Aggregate boundary rules and their
-  explicit, documented exceptions, Entity/Value Object/Factory/
-  Specification/Repository patterns, sizing under contention, identity
-  generation and concurrency strategy, cross-Aggregate coordination via
-  Domain Events and Sagas, and event-sourced Aggregate design. Includes
-  scripts/scaffold-aggregate-design.sh and
-  scripts/validate-aggregate-design.sh. Split across seven references/
-  files with explicit branching decision trees, not flat prose. Used by
-  the domain-modeler agent after Event Storming and Bounded Context
-  mapping.
-version: 2.1.1
+  Design the Aggregates of a Bounded Context, or a lean product's single
+  domain model: decide whether a use case needs a Domain Model at all or
+  only a Transaction Script or Active Record, whether a business rule is a
+  true invariant (the three-question test), where the consistency boundary
+  goes, one Aggregate or two (has-a versus must-be-atomic), Entity or Value
+  Object, reference by ID, identity and concurrency strategy, write skew,
+  and whether event sourcing is justified. Use when drawing, sizing,
+  splitting or reviewing an Aggregate, when an Aggregate is too large or
+  contended, when one use case changes several Aggregates, when deciding
+  whether a cross-Aggregate process is a Saga, or when someone proposes
+  event sourcing or a Domain Model because a subdomain is Core. Writing the
+  Aggregate in code is go-domain-model; persistence is go-repository-pattern.
+  Used by domain-modeler.
+version: 3.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: [design, ddd, aggregate, entity, value-object, invariants, event-sourcing, go]
-produces: aggregate-design
+tags: [design, domain-modeling, ddd, aggregate, invariants, entity, value-object, event-sourcing, concurrency, consistency-boundary]
+produces: [aggregate-design, domain-model]
 domain: domain-modeling
 status: stable
-related: [skill-authoring-standards, subdomain-distillation, bounded-context-mapping, cqrs-pattern, domain-event-catalog, go-domain-model, go-repository-pattern, access-control-model]
+related: [subdomain-distillation, bounded-context-mapping, ubiquitous-language, event-storming-facilitation, domain-event-catalog, command-catalog, read-model-design, cqrs-pattern, event-driven-patterns, go-domain-model, go-repository-pattern, access-control-model]
+sources:
+  - research/domain-driven-design/domain-driven-design-evans.md
+  - research/domain-driven-design/implementing-ddd-vernon.md
+  - research/domain-driven-design/learning-ddd-khononov.md
+  - research/security/secure-by-design.md
+  - research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md
+  - research/software-architecture/microservices-patterns-richardson.md
 ---
 
 # Aggregate Design
 
 ## Purpose
 
-An Aggregate is a cluster of Domain Objects (Entities and Value Objects) treated as a single unit for data changes. It exists to solve one specific problem: how does a business rule spanning several objects stay true after every transaction, without distributed locking? The answer — per Eric Evans, the pattern's originator — is to draw a boundary around exactly the objects that participate in the rule, appoint one of them the Aggregate Root, and forbid any single transaction from touching more than one such cluster at a time. Every rule below exists to serve that one purpose; none of them is a goal in itself.
+An Aggregate answers one question (Evans): how does a business rule that spans several objects stay true after every transaction, without locking across the system? Draw a boundary around exactly the objects the rule involves, make one of them the root, and let one transaction change one such cluster. Everything below serves that purpose. Getting the boundary wrong costs in both directions: too wide and writers contend; too narrow and a rule can't be enforced. Vernon finds the wide mistake far more common, and seductive, because clustering *feels* safer.
 
-Getting Aggregate boundaries right is one of the hardest and most consequential decisions in DDD. Too wide causes contention and poor performance. Too narrow scatters invariants across multiple Aggregates, making them impossible to enforce without distributed coordination. Vaughn Vernon, whose four rules this skill is built around, is explicit that oversized Aggregates — not undersized ones — are the single most common mistake he has seen across DDD engagements, and that the mistake is *seductive*: it comes from a well-intentioned but wrong belief that clustering more together is "safer."
+## 1. First: Does This Use Case Need an Aggregate?
 
----
+Khononov names four business-logic patterns, rising in cost: **Transaction Script** (one procedure, no object model), **Active Record** (one object per row, simple single-record behaviour), **Domain Model** (Aggregates with invariants enforced by the root) and **Event-Sourced Domain Model** (a Domain Model whose state is replayed from its events). Choose **per use case or per Aggregate**, never once for a context: a Core context routinely holds use cases too simple for a Domain Model.
 
-## Before You Reach for an Aggregate at All
+The deciding question is not the subdomain type but: **is there a rule across more than one record that must hold at every instant?** If not, it's a Transaction Script or an Active Record. A single-record rule ("a plot has one tenant") is a constraint on that record, not a reason for an Aggregate. Use `subdomain-distillation`'s Modelling column as a cross-check. Decision path and fit criteria: `./references/business-logic-patterns.md`.
 
-Not every use case needs the Domain Model pattern. Per Vlad Khononov, a subdomain's classification (`subdomain-distillation`'s Core/Supporting/Generic) is a *necessary* gate but not a *sufficient* one — even a Core-classified Bounded Context routinely contains individual use cases too simple to warrant full Aggregate machinery. Four Business Logic Design Patterns exist, escalating in cost and rigor: **Transaction Script** (a single procedure, no object model, no enforced invariant), **Active Record** (an object per row, CRUD-shaped, no cross-object invariant), **Domain Model** (the full Aggregate/Entity/Value-Object pattern this skill teaches), and **Event-Sourced Domain Model** (Domain Model plus deriving state from an event stream instead of a current-state row). Pick per Aggregate or per use case, not once for a whole Bounded Context. Full decision tree, fit criteria, and worked Go-adjacent guidance: `references/decision-trees-and-worksheets.md`.
+## 2. Is It a True Invariant?
 
-The rest of this skill assumes that gate has already pointed to Domain Model (or its event-sourced escalation).
+Vernon's three questions, answered **in writing against one sentence stating the rule**:
 
----
+1. **Real harm:** would a momentary violation cause real business harm if left uncorrected?
+2. **Fixable later:** can a reasonable compensating action (a reconciliation, a human fix, a refund) correct it with no lasting harm?
+3. **Enforced elsewhere:** does something else already enforce it?
 
-## The Rules of Aggregates
+Only **yes / no / no** puts the rule inside a consistency boundary. Anything else is handled outside: a Domain Event and an idempotent reaction, a query, a Read Model, or the system that already enforces it. Derived values (counts, totals, balances kept in lockstep) are the commonest false invariant. Record rejected candidates with their answers. The boundary must coincide with one transaction: "check the other Aggregate first, then write mine" does not enforce a rule spanning two (write skew). Worked pairs, the transaction link and Assertions: `./references/invariants-and-boundaries.md`.
 
-These rules are the working default, not universal laws with no exceptions — Vernon himself states this directly, and this skill follows his framing rather than a harder-than-the-source absolutism. A documented, deliberate exception is legitimate; an undocumented one is not. See `references/invariants-and-consistency-boundaries.md`'s "When It's OK to Break These Rules" section before treating any exception as settled.
+## 3. Drawing the Boundary
 
-### Rule 1: Enforce True Invariants Within the Consistency Boundary
+- **Has-a is not must-be-atomic.** For every candidate relationship, answer both separately: does the language say one *has* the other, and is there a True Invariant needing them changed together? "Has-a yes, atomic no" is Vernon's root cause of oversized Aggregates: keep them separate.
+- **Rule 1: true invariants inside the boundary.** **Rule 2: small Aggregates**, checked from three separate angles (performance, scalability, collaboration). **Rule 3: other Aggregates by ID only**, including inside nested Value Objects. **Rule 4: eventual consistency outside the boundary**: one use case changes one Aggregate instance in its transaction.
+- **Prefer Value Objects.** An Entity pays for identity, equality, concurrency and lifecycle; a Value Object pays for none. Entity or Value Object is decided per context (does continuity of identity matter *here*?). Make Value Objects self-validating Domain Primitives (*Secure by Design*). A child Entity has local identity and no Repository; anything looked up from outside on its own is its own Aggregate.
+- **The rules are defaults, not laws** (Vernon). Two documented exceptions only: a genuine cross-object invariant such as a debit and its credit (accept a wider Aggregate), and a *measured* read bottleneck (a read-only copy, never authoritative).
 
-A **True Invariant** is a rule that must hold at every instant, has no acceptable after-the-fact compensating fix, and isn't already enforced by an external system. Only a rule that clears all three bars earns a place inside a single Aggregate's transaction. The hard part is not applying this rule — it's telling a True Invariant apart from a business rule that merely *looks* urgent but can tolerate a moment of staleness. Full three-question test, a worked true-invariant example, and — critically — a worked *counter*-example most teams get wrong: `references/invariants-and-consistency-boundaries.md`.
+Building blocks (Factories, Specifications, closure of operations): `./references/building-blocks.md`. Sizing and the two exceptions: `./references/invariants-and-boundaries.md` § 3–4.
 
-### Rule 2: Design Small Aggregates
+## 4. Identity and Concurrency, Stated per Aggregate
 
-Every Aggregate pays a cost proportional to its size, argued from three genuinely separate angles: performance (loading the whole object graph every time), scalability (contention is measured per instance — a big Aggregate concentrates write traffic), and collaboration (legitimate, unrelated user actions collide artificially when they shouldn't need to). Full sizing methodology, the coupling/cohesion trade-off framing, and contention analysis: `references/sizing-contention-and-concurrency.md`.
+- **Identity:** client-generated by default, so a valid instance and its creation event exist before storage. A business identifier (a case number) is reserved through the Repository. Storage-generated identity needs a written reason.
+- **Concurrency:** optimistic by default (a version check, a bounded retry, then the conflict is shown). Pessimistic only for a named condition (a hot instance, a costly retry, a sequential batch job). A version check on one row cannot catch a rule spanning two Aggregates' rows (Kleppmann's write skew): redraw the boundary, use a database constraint or serialisable isolation scoped to that rule, or accept eventual consistency. Routine conflicts mean the boundary is wrong, not the retry budget.
 
-### Rule 3: Reference Other Aggregates by Identity Only
+Decision tree, write-skew timeline, unbounded collections: `./references/sizing-and-concurrency.md`.
 
-Store another Aggregate's ID, never a live object reference — and this extends one level deeper than the root's own fields: a Value Object nested inside the Aggregate that embeds a reference to another Aggregate's Entity is the same violation wearing different syntax. The diagnostic that catches most boundary mistakes: separate "does the Ubiquitous Language say this object *has* these others" from "must this object be *atomically consistent* with those others" — a domain expert saying "has" is not evidence the two need to be in the same transaction. Full diagnostic and Go patterns: `references/entities-value-objects-and-domain-primitives.md`.
+## 5. Coordination Between Aggregates
 
-```go
-// Correct: reference by ID
-type DataAsset struct {
-    id              DataAssetID
-    storageSourceID StorageSourceID   // ID only — not *StorageSource
-}
+A consequence in another Aggregate travels as a Domain Event, recorded in the same transaction and published after commit (`event-driven-patterns`), consumed idempotently. The user sees a pending state meanwhile. A Saga is only for a named multi-step process where a later step can fail after earlier ones committed. A rule with zero tolerance for an in-between state is never a Saga: redraw the boundary. Each Saga step is a one-Aggregate transaction, and each compensation is a real Command on the root. Decision tree and step rules: `./references/coordination-and-sagas.md`.
 
-// Wrong: reference by object
-type DataAsset struct {
-    id            DataAssetID
-    storageSource *StorageSource      // Direct reference — violates the boundary
-}
-```
+## 6. Event Sourcing: Justified, Never Defaulted
 
-### Rule 4: Use Eventual Consistency Outside the Boundary
+Adopt it for an Aggregate only when at least one need applies to *that Aggregate* (Khononov): **temporal query** (its state as of a past moment), **retroactive projection** (new Read Models from history already lived), or **audit-as-record** (the stream itself must be the authoritative record). "The subdomain is Core" is not a need, and neither is "we need an audit trail": events in an audit store usually meet that. When adopted, name the costs (upcasting kept forever, snapshots, event-sequence tests), and publish coarser translated events, not the internal stream. Detail: `./references/business-logic-patterns.md`.
 
-A single use case should, ideally, modify exactly one Aggregate instance inside its own transaction. Anything else that logically needs to change as a consequence is updated via eventual consistency — a Domain Event, published reliably, consumed idempotently — never folded into the same atomic unit of work. This is the direct payoff of Rules 1–3, not a compromise: everything correctly pushed outside the boundary is exactly the set of things that never belonged inside it. Full coordination mechanics, Saga pattern, choreography-vs-orchestration trade-offs: `references/cross-aggregate-coordination-and-sagas.md`.
+## Producing the Design
 
----
+Standard and enterprise: one `design/<context>/aggregates.md` per Bounded Context (`./templates/aggregates.md`). Lean: one `design/domain-model.md` for every context, also covering Domain Events, Commands and Read Models (`./templates/domain-model.md`). No code (D047-10).
 
-## Entities vs Value Objects
+1. **Read** the context's language (`design/<context>/ubiquitous-language.md`), the Software Design Event Storming output where it exists (Aggregate candidates, Commands, events, hotspots), the subdomain classification and the context map. At lean, read the Big Picture and context map.
+2. **For each use case,** write the candidate rules as single sentences and run § 2's test. Decide the pattern (§ 1): a Transaction Script or Active Record becomes a `## Use case:` block, a Domain Model a `## Aggregate:` block.
+3. **For each Aggregate,** draw the boundary (§ 3): has-a vs must-be-atomic for each relationship; members as Entities or Value Objects; Commands with their guard and guarantee and the event they record. Then identity, concurrency and contention (§ 4), coordination (§ 5) and event sourcing (§ 6). Plan → validate → execute: a boundary that moves after `domain-event-catalog` or code exists is costly, so check the boundaries against the checklist before writing the catalogues.
+4. **Agent-run:** mark a verdict that rests on an assumption about business tolerance (is a minute of staleness acceptable?) as *assumed*, with an open question for the product owner.
+5. **Validate, then loop.** Run `./scripts/validate-aggregate-design.sh <file>`. Fix every FAIL and run it again until it exits clean, then go through `./resources/aggregate-checklist.md` for what the script can't judge.
+6. **Present** each Aggregate with its invariants, the rules rejected and why, any exception or event sourcing with its justification, and, for every request you declined, its reason in full (§ Gotchas).
 
-The identity-vs-attribute-equality distinction is a **per-Bounded-Context modeling decision**, not an intrinsic property of a concept — the same real-world thing (a `User`) can be an Entity in one context and a Value Object snapshot in another.
+Examples: `./examples/01-lean-allotment-waiting-list.md` (no Aggregate needed), `./examples/02-standard-hotel-bookings.md` (the has-a trap and a rule spanning Bookings), `./examples/03-enterprise-marketplace-ledger.md` (a balanced entry, write skew, a Saga and justified event sourcing).
 
-| | Entity | Value Object |
-|---|---|---|
-| **Identity** | Has a unique identity (ID) that persists across changes | No identity — defined entirely by its attributes |
-| **Mutability** | Mutable — state changes over its lifetime | Immutable — replacement, not mutation |
-| **Equality** | Equal when IDs are equal, regardless of other attributes | Equal when all attributes are equal |
-| **Identity scope** | Global (findable from anywhere) if it's an Aggregate Root; local (found only by traversing the root) if it's a child Entity inside one | N/A — no identity to scope |
-| **Go representation** | Struct with an ID field | Struct with no ID field; all fields unexported; equality by value |
+## Gotchas
 
-**Prefer Value Objects.** Every Entity carries ongoing identity-management cost (equality by ID, concurrent-modification handling, lifecycle tracking) a Value Object never incurs — this is the reason for the preference, not just the rule. Full identity/equality reasoning, the Domain Primitive tie-in (the same self-validating-construction discipline `access-control-model` already applies to ABAC attributes, applied here to Aggregate-internal types), Factory and Specification patterns, and Closure of Operations: `references/entities-value-objects-and-domain-primitives.md`.
+Each trap comes with the reason to give in full.
 
----
+- **"The Room has its Bookings, so one Aggregate keeps them consistent."** *Reason:* conceptual ownership is not a transactional need; Vernon names this has-a trap as the root cause of oversized Aggregates, which contend per instance and load unbounded collections. *Instead:* answer has-a and must-be-atomic separately for each relationship; keep them separate unless a True Invariant needs both in one transaction.
+- **"It's Core, so model it as a full Domain Model" (or "so event-source it").** *Reason:* Khononov chooses the pattern per use case from its rules, not its subdomain; a Domain Model needs a rule across records that must hold at every instant, and event sourcing needs temporal query, retroactive projection or audit-as-record for *this* Aggregate. Both carry real ongoing cost. *Instead:* run § 1's question and § 6's three needs; accept a Transaction Script, an Active Record or current-state persistence where they fit.
+- **"Keep the total/count field always in step with the lines."** *Reason:* a derived value fails the three-question test (it can be recomputed or projected, Q2/Q3), and keeping it in lockstep widens the boundary and its contention. *Instead:* compute at query time or project into a Read Model; record it as a rejected candidate.
+- **"Check the other Aggregate first, then save ours — that enforces it."** *Reason:* the other Aggregate can change between the read and the commit; each version check guards only its own row, so the rule breaks under write skew (Kleppmann). *Instead:* redraw the boundary around the rule, express it as a database constraint, scope serialisable isolation to it, or accept eventual consistency with a compensating action, and say which.
+- **"Small Aggregates is the rule, so split the debit from the credit."** *Reason:* Vernon is not absolutist; a genuine cross-object invariant such as a balanced entry is Exception 1, and splitting it creates accounting errors. *Instead:* make the entry that holds both postings the Aggregate, so the rule sits inside one boundary; if the rule really spans two existing Aggregates, take Exception 1 and document it.
+- **"Conflicts are frequent; raise the retry limit."** *Reason:* routine conflicts on ordinary traffic are the collaboration angle showing that unrelated actions share one Aggregate. *Instead:* re-size the boundary; keep retries small and bounded.
+- **"This multi-Aggregate step needs a Saga."** *Reason:* a Saga is for a named process whose later step can fail after earlier ones committed; a rule that can't tolerate an in-between state is a boundary drawn in the wrong place. *Instead:* run the smell-or-Saga tree; each step changes one Aggregate, each compensation is a Command on its root.
+- **"Publish every event from the event-sourced stream."** *Reason:* internal events mirror how the Aggregate stores itself, so publishing them couples other contexts to that storage choice (Khononov). *Instead:* translate to coarser, business-meaningful events; keep some internal only.
+- **Writing structs or classes in the design.** *Reason:* design skills are stack-neutral (D047-10). *Instead:* name members, rules, Commands and events; the code is `go-domain-model`.
 
-## Identifying Aggregate Boundaries
+## References
 
-From Event Storming output:
-
-1. **Invariant clustering:** Group Domain Objects that participate in the same True Invariant. That group is a candidate Aggregate.
-2. **Transaction boundary:** Which objects must be consistent at the end of a single Command? They belong together.
-3. **Event emission:** Which Domain Objects combine to produce a single Domain Event? They likely belong together.
-4. **Contention check:** How many concurrent users will modify this Aggregate simultaneously? High → split. Low → aggregating is safe.
-5. **Has-a vs. must-be-atomic-with:** For every candidate relationship, answer both questions separately and in writing. A "has-a: yes, must-be-atomic-with: no" mismatch is the single most common signal of an oversized candidate.
-
-Full worksheet, worked walkthroughs (including a full "one big Aggregate, then correctly split it" narrative), and the complete decision trees: `references/decision-trees-and-worksheets.md` and `references/worked-examples.md`.
-
----
-
-## Identity Generation and Concurrency Strategy
-
-Prefer **client-generated identity** (a UUID assigned at construction) over persistence-generated (database-surrogate) identity — a fully valid instance, ID included, should exist before the first database write, so a creation-time Domain Event can correctly carry the new Aggregate's ID and a unit test needs zero database dependency. Default to **optimistic concurrency** (a version-field compare-and-swap); pessimistic locking is a narrow, justified exception, never a default reached for out of unfamiliarity with retry handling. Full guidance, Go patterns, and the event-sourced equivalent (conditional append instead of compare-and-swap): `references/go-implementation-patterns.md`.
-
----
-
-## Scripts
-
-Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides whether a design is *correct*, only whether the design document is structurally complete.
-
-| Script | Does | Run when |
-|---|---|---|
-| `scripts/scaffold-aggregate-design.sh <product> <bounded-context>` | Copies `assets/aggregate-design-template.md`, fills in product/context metadata, writes a new design doc under `artifacts/[product]/design/[bounded-context]/` | Starting Aggregate design for a Bounded Context |
-| `scripts/validate-aggregate-design.sh <path>` | Checks required frontmatter, that at least one Aggregate has a named Root Entity and at least one Invariant, that Entities/Value Objects tables have data, and that Cross-Aggregate References are by ID | Before treating the design as ready for the Component Diagram gate |
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Business Logic Pattern chosen deliberately | Every Aggregate/use case states which of the four patterns it uses and why | Domain Model applied by default with no consideration of Transaction Script/Active Record |
-| True Invariant, not just a rule | Every named invariant passes the three-question test | A "rule" that's really a business process tolerating staleness, forced into the boundary |
-| Small Aggregates | Sized to the invariant, not to "everything that seems related" | God Aggregate absorbing unrelated state |
-| Cross-references by ID | Other Aggregates — and nested Value Objects referencing them — are by ID only | Direct object references, at the root or nested one level deeper |
-| Single-transaction scope | Each Aggregate loads and modifies in one transaction | Requires joining another Aggregate to enforce an invariant |
-| Root controls mutations | All mutations go through root methods enforcing invariants | Direct field access bypassing the root |
-| Identity generation stated | Client-generated (default) or persistence-generated, with reasoning | Left as an accidental implementation detail |
-| Concurrency strategy stated | Optimistic (default) or pessimistic, with the narrow justifying condition named | Assumed rather than chosen |
-| Domain events collected, not published early | Collected internally; published after commit via the outbox | Published inside the transaction, before commit |
-| Value Objects immutable | All Value Objects are immutable | Value Objects with setters or mutable fields |
-| Event Sourcing justified, not defaulted | Adopted only against Khononov's three-question test (temporal query / retroactive projection / audit-as-record) | Adopted because the subdomain is Core Domain, with no specific justifying need |
-| Exceptions documented | Any rule-break is deliberate, documented, and matches a named exception criterion | Undocumented exception, or one reached for out of convenience |
-
----
-
-## Anti-Patterns
-
-| Anti-pattern | Why it fails | Correction |
-|---|---|---|
-| **Anemic Aggregate** — exported fields or getter/setter pairs, invariants enforced in an application service | Invariant enforcement scatters across every caller; nothing guarantees it runs | All mutation goes through root methods that enforce invariants before applying change |
-| **God Aggregate** — one Aggregate absorbs every related concept "to be safe" | Every write serialises on one instance; the mistake is seductive precisely because it *feels* safer, not because anyone intends harm | Keep only invariant-participating state; split the rest into separate Aggregates linked by ID — see the full worked SaaSOvation-style narrative in `references/worked-examples.md` |
-| **Repository per Entity** — a repository for each Entity inside the Aggregate | Callers load and mutate internals without the root, bypassing invariants — repositories query by identity, and only roots have queryable identity | One repository per Aggregate, keyed by the root's ID |
-| **Cross-Aggregate transaction** — one transaction saves two Aggregates | Couples their locks and availability; violates Rule 4 | Emit a Domain Event from the first; update the second eventually, or coordinate with a Saga |
-| **Leaking internal collections** — a getter returns the root's internal slice | A reference is a capability; handing one out bypasses the root exactly as a direct field write would | Return copies or read-only views; expose behaviour, not structure |
-| **The has-a trap** — the domain language says one object "has" another, so the modeler clusters them into one Aggregate | Conceptual ownership is a much weaker, more common relationship than transactional-consistency need; conflating them is Vernon's named root cause of oversized Aggregates | Ask both questions separately, in writing, every time |
-| **Premature Event Sourcing** — adopting event-sourced persistence because a subdomain is Core Domain and "deserves the best patterns" | Pays real, ongoing costs (upcasting discipline, snapshotting infrastructure, replay-based testing) with no corresponding benefit if none of the three justifying needs actually apply | Require an explicit answer to the temporal-query / retroactive-projection / audit-as-record test before adopting; default to current-state persistence otherwise |
-| **Publishing Domain Events before commit** | Consumers act on state that may roll back | Collect events on the root; publish via the Transactional Outbox after commit |
-| **Conflating internal and integration events** — publishing every internal event-sourcing state transition as an external contract | Couples other Bounded Contexts to this Aggregate's storage implementation detail | Maintain a deliberate translation step; publish only the coarser, business-meaningful event externally |
-
-Full anti-pattern depth, including why each mistake is seductive rather than merely wrong: `references/invariants-and-consistency-boundaries.md`, `references/sizing-contention-and-concurrency.md`, and `references/worked-examples.md`.
-
----
-
-## Output Format
-
-Fill-in-and-go: `assets/aggregate-design-template.md` (or generate it directly via `scripts/scaffold-aggregate-design.sh`). Mechanical completeness check: `scripts/validate-aggregate-design.sh`.
-
----
-
-## References — Which File Do You Need?
-
-| If you're asking... | Go to |
+| Question | File |
 |---|---|
-| "Is this actually a True Invariant, or a rule that can tolerate staleness?" / "When is it OK to break these rules?" | `references/invariants-and-consistency-boundaries.md` |
-| "How big is too big?" / "Optimistic or pessimistic concurrency?" / "What does write skew have to do with this?" | `references/sizing-contention-and-concurrency.md` |
-| "How do two Aggregates coordinate?" / "Saga, choreography, or orchestration?" | `references/cross-aggregate-coordination-and-sagas.md` |
-| "Entity or Value Object?" / "Do I need a Factory?" / "What's a Specification?" / "How does this relate to Domain Primitives?" | `references/entities-value-objects-and-domain-primitives.md` |
-| "What does the Go code actually look like?" / "Client- or persistence-generated ID?" / "How do I implement an event-sourced Aggregate?" | `references/go-implementation-patterns.md` |
-| "Show me a complete, worked Aggregate design, start to finish." | `references/worked-examples.md` |
-| "Walk me through the decision, step by step." / "Give me the fill-in worksheet." | `references/decision-trees-and-worksheets.md` |
+| Which pattern? Is event sourcing justified? Internal vs published events? | `./references/business-logic-patterns.md` |
+| True Invariant? One Aggregate or two? The exceptions? Assertions? | `./references/invariants-and-boundaries.md` |
+| How big? Optimistic or pessimistic? Write skew? Identity? | `./references/sizing-and-concurrency.md` |
+| Entity or Value Object? Local identity? Factory, Specification? | `./references/building-blocks.md` |
+| Event, choreography or Saga? Compensations? | `./references/coordination-and-sagas.md` |
+| Checking before hand-off | `./resources/aggregate-checklist.md` |

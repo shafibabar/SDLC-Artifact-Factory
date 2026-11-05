@@ -1,10 +1,10 @@
-# Go Implementation Patterns
+# Aggregate Implementation Patterns in Go
 
-Self-contained — loadable without reading `SKILL.md` first.
+Self-contained. **Moved here from `aggregate-design` in #1393 (D047-10: design skills are stack-neutral; Go code lives in the go-* skills).** Its content is carried over unchanged apart from pointers, and still uses the first product's `DataAsset` / `ComplianceGap` examples; it will be reworked when `go-domain-model` is rebuilt. The design decisions these patterns implement (pattern choice, invariants, identity, concurrency, event sourcing) are `aggregate-design`'s.
 
-This file is the full Go depth behind `SKILL.md`'s Identity Generation and Concurrency Strategy section: what the code actually looks like for both the current-state Aggregate this repo already implements (`go-domain-model`, `go-repository-pattern`) and the event-sourced alternative Khononov's research identified as the single largest concrete gap in this repo's Go skill set — nothing here contradicts those two skills; every pattern below either deepens code they already show or fills in a shape they don't cover at all. Grounded in `research/domain-driven-design/implementing-ddd-vernon.md` (identity generation, concurrency strategy) and `research/domain-driven-design/learning-ddd-khononov.md` (the event-sourced Aggregate shape, snapshotting, upcasting).
+This file is the full Go depth behind `aggregate-design`'s Identity Generation and Concurrency Strategy section: what the code actually looks like for both the current-state Aggregate this repo already implements (`go-domain-model`, `go-repository-pattern`) and the event-sourced alternative Khononov's research identified as the single largest concrete gap in this repo's Go skill set — nothing here contradicts those two skills; every pattern below either deepens code they already show or fills in a shape they don't cover at all. Grounded in `research/domain-driven-design/implementing-ddd-vernon.md` (identity generation, concurrency strategy) and `research/domain-driven-design/learning-ddd-khononov.md` (the event-sourced Aggregate shape, snapshotting, upcasting).
 
-**A naming note before the code:** `go-domain-model`'s actual `DataAsset` struct uses plain `uuid.UUID` fields (`id uuid.UUID`, `sourceID uuid.UUID`) — no typed ID wrappers. `SKILL.md`'s own illustrative Rule 3 sketch and `references/entities-value-objects-and-domain-primitives.md`'s Rule-3-one-level-deeper example both write `DataAssetID`/`StorageSourceID` as if they were distinct types. This file resolves the tension rather than silently picking one: it uses plain `uuid.UUID` throughout, matching the actual implemented code in `go-domain-model`, because that is what exists today and this file's job is to deepen it, not redesign it. A typed-ID wrapper (`type DataAssetID uuid.UUID`) is a legitimate, compatible refinement — genuinely a Domain Primitive in the sense `references/entities-value-objects-and-domain-primitives.md` describes, since it prevents a `StorageSourceID` being passed where a `DataAssetID` is expected — worth adopting once a service has enough distinct Aggregate types in play that ID mix-ups become a real risk. It is not adopted here so this file's code samples paste directly into the existing `internal/domain` package without a rename.
+**A naming note before the code:** `go-domain-model`'s actual `DataAsset` struct uses plain `uuid.UUID` fields (`id uuid.UUID`, `sourceID uuid.UUID`) — no typed ID wrappers. `aggregate-design`'s own illustrative Rule 3 sketch and `aggregate-design`'s building-blocks reference's Rule-3-one-level-deeper example both write `DataAssetID`/`StorageSourceID` as if they were distinct types. This file resolves the tension rather than silently picking one: it uses plain `uuid.UUID` throughout, matching the actual implemented code in `go-domain-model`, because that is what exists today and this file's job is to deepen it, not redesign it. A typed-ID wrapper (`type DataAssetID uuid.UUID`) is a legitimate, compatible refinement — genuinely a Domain Primitive in the sense `aggregate-design`'s building-blocks reference describes, since it prevents a `StorageSourceID` being passed where a `DataAssetID` is expected — worth adopting once a service has enough distinct Aggregate types in play that ID mix-ups become a real risk. It is not adopted here so this file's code samples paste directly into the existing `internal/domain` package without a rename.
 
 ---
 
@@ -30,7 +30,7 @@ type DataAsset struct {
     tenantID     uuid.UUID
     sourceID     uuid.UUID          // reference to StorageSource — ID only (Rule 3)
     ruleID       uuid.UUID          // reference to ClassificationRule — ID only; see
-                                    // references/worked-examples.md's Worked Example 3
+                                    // aggregate-design's examples's Worked Example 3
                                     // for why this is a separate Aggregate, not embedded
     sensitivity  SensitivityLevel   // Value Object; zero value = "unclassified"
     classifiedBy uuid.UUID
@@ -48,7 +48,7 @@ type DataAsset struct {
 
 // Classify enforces the invariant and records the event — the only way to
 // set sensitivity. Precondition/postcondition pair (an Assertion, per
-// references/invariants-and-consistency-boundaries.md): before this runs,
+// aggregate-design's invariants reference): before this runs,
 // level must be valid and must not silently downgrade; after it returns
 // without error, a.Sensitivity() == level and exactly one DataAssetClassified
 // event is recorded.
@@ -103,7 +103,7 @@ func (a *DataAsset) PullPendingEntities() []ExtractedEntity {
 }
 
 // Accessors expose state read-only, by value — never a pointer, never the
-// live events/pendingEntities slices themselves (per SKILL.md's "Leaking
+// live events/pendingEntities slices themselves (per aggregate-design's "Leaking
 // internal collections" anti-pattern).
 func (a *DataAsset) ID() uuid.UUID               { return a.id }
 func (a *DataAsset) TenantID() uuid.UUID         { return a.tenantID }
@@ -192,7 +192,7 @@ This repo has no current Aggregate that needs this — every existing Aggregate 
 
 ## Concurrency Strategy in Go
 
-**Default — optimistic concurrency, compare-and-swap on `version`.** Already fully implemented in `go-repository-pattern`'s `Save` (`UPDATE ... WHERE id = $N AND tenant_id = $M AND version = $K`, `0` rows affected → `ErrConcurrentModification`) — not re-derived here. Use it for every interactive, user-facing write path where per-instance contention is low and a retry is cheap, per `references/sizing-contention-and-concurrency.md`'s full decision tree.
+**Default — optimistic concurrency, compare-and-swap on `version`.** Already fully implemented in `go-repository-pattern`'s `Save` (`UPDATE ... WHERE id = $N AND tenant_id = $M AND version = $K`, `0` rows affected → `ErrConcurrentModification`) — not re-derived here. Use it for every interactive, user-facing write path where per-instance contention is low and a retry is cheap, per `aggregate-design`'s sizing and concurrency reference's full decision tree.
 
 **The narrow, documented exception — pessimistic locking with `SELECT ... FOR UPDATE`.** Reserved for the two conditions Vernon names: a batch/administrative job processing rows sequentially with no interactive user waiting, or an interactive path where a failed optimistic attempt is unacceptably costly to redo. A concrete worked case for the first condition — a nightly reclassification sweep that must re-evaluate every `DataAsset` under a newly-published `ClassificationRule`, one row at a time, with no concurrent interactive writer expected to be racing it:
 
@@ -203,7 +203,7 @@ This repo has no current Aggregate that needs this — every existing Aggregate 
 // not the request path) — this is the documented exception, not a second
 // default. Holding a short row lock here is simpler and safer than designing
 // a retry loop for a process that isn't latency-sensitive and processes rows
-// one at a time, per references/sizing-contention-and-concurrency.md's
+// one at a time, per aggregate-design's sizing and concurrency reference's
 // Decision Tree.
 func (r *DataAssetRepo) ReclassifySweepBatch(ctx context.Context, ruleID uuid.UUID, limit int) error {
     tx, err := r.pool.Begin(ctx)
@@ -263,7 +263,7 @@ func (r *DataAssetRepo) ReclassifySweepBatch(ctx context.Context, ruleID uuid.UU
 
 ## Factory Methods and the Construction/Reconstitution Split
 
-`go-domain-model`'s `NewDataAsset`/`Reconstitute` pair, deepened with the reasoning `references/entities-value-objects-and-domain-primitives.md` already names as an unlabeled Factory-method pair satisfying Evans' third Factory criterion (a materially different path for reconstitution vs. creation):
+`go-domain-model`'s `NewDataAsset`/`Reconstitute` pair, deepened with the reasoning `aggregate-design`'s building-blocks reference already names as an unlabeled Factory-method pair satisfying Evans' third Factory criterion (a materially different path for reconstitution vs. creation):
 
 ```go
 // NewDataAsset — construction. A real domain event: this asset came into
@@ -285,13 +285,13 @@ func Reconstitute(id, tenantID, sourceID uuid.UUID, level SensitivityLevel, vers
 }
 ```
 
-**A genuinely complex Factory case, escalating past a plain constructor function** — illustrative, no such requirement is currently specified elsewhere in this repo, but a plausible shape given this domain: registering a `DataAsset` must, based on the file's detected MIME type, construct one of two different concrete Aggregate Root shapes (`StructuredDataAsset` carrying a `SchemaID`, or `UnstructuredDataAsset` carrying only asset-level classification) — and must simultaneously confirm the referenced `StorageSource` is active before either concrete type is allowed to exist at all. This is the same worked case `references/entities-value-objects-and-domain-primitives.md` already introduces (satisfying Evans' criteria 1 and 2 together — a cross-object invariant at construction time, plus choosing among concrete implementations); reproduced here with the piece that file didn't need to show: how the Factory's read-only lookup fits into the surrounding transaction boundary.
+**A genuinely complex Factory case, escalating past a plain constructor function** — illustrative, no such requirement is currently specified elsewhere in this repo, but a plausible shape given this domain: registering a `DataAsset` must, based on the file's detected MIME type, construct one of two different concrete Aggregate Root shapes (`StructuredDataAsset` carrying a `SchemaID`, or `UnstructuredDataAsset` carrying only asset-level classification) — and must simultaneously confirm the referenced `StorageSource` is active before either concrete type is allowed to exist at all. This is the same worked case `aggregate-design`'s building-blocks reference already introduces (satisfying Evans' criteria 1 and 2 together — a cross-object invariant at construction time, plus choosing among concrete implementations); reproduced here with the piece that file didn't need to show: how the Factory's read-only lookup fits into the surrounding transaction boundary.
 
 ```go
 type DataAssetFactory struct {
     sourceRepo StorageSourceRepository // read-only; the SAME pre-transaction
-                                       // read pattern references/invariants-and-
-                                       // consistency-boundaries.md describes for
+                                       // read pattern in aggregate-design's
+                                       // invariants reference describes for
                                        // the Classify() Restricted-check — this
                                        // Factory's lookup happens BEFORE the new
                                        // DataAsset's own Save transaction begins,
@@ -321,11 +321,11 @@ The escalation rule stated plainly: a plain constructor function (`NewDataAsset`
 
 ## A Worked Child Entity Example
 
-**The decision, stated first:** `ExtractedEntity` is a **locally-identified child Entity of `DataAsset`** — not its own Aggregate. This resolves the question `references/entities-value-objects-and-domain-primitives.md` deliberately left open, using that file's own test.
+**The decision, stated first:** `ExtractedEntity` is a **locally-identified child Entity of `DataAsset`** — not its own Aggregate. This resolves the question `aggregate-design`'s building-blocks reference deliberately left open, using that file's own test.
 
-**Applying the test:** would any code outside `DataAsset` ever legitimately need to fetch one specific `ExtractedEntity` directly, by its own ID, independent of loading the `DataAsset` that produced it first? Working through this repo's actual domain rather than a hypothetical: a compliance reviewer's question is always "what did this asset extract, and how sensitive is it" — a question that starts at the asset. There is no plausible UI deep-link to "extraction result #4821" independent of the asset it belongs to; no downstream Bounded Context in this repo's domain (Compliance Intelligence, the Graph Context, per `domain-event-catalog`'s worked example) reacts to an individual `ExtractedEntity` as its own unit of integration — they react to `DataAssetClassified`, a fact about the asset as a whole. Contrast this with why `StorageSource` and `ClassificationRule` (`references/worked-examples.md`'s Worked Example 3) *do* need global identity: both are independently administered, independently referenced from multiple `DataAsset`s, and independently queryable ("show me every asset connected to this source," "show me every asset classified under this rule") — exactly the shape of a "yes" answer the test is built to catch. Nothing about `ExtractedEntity` matches that shape. The answer is **no**, and per the test, that settles it: a locally-identified child Entity, unique within its parent `DataAsset`, found only by loading the asset and looking inside.
+**Applying the test:** would any code outside `DataAsset` ever legitimately need to fetch one specific `ExtractedEntity` directly, by its own ID, independent of loading the `DataAsset` that produced it first? Working through this repo's actual domain rather than a hypothetical: a compliance reviewer's question is always "what did this asset extract, and how sensitive is it" — a question that starts at the asset. There is no plausible UI deep-link to "extraction result #4821" independent of the asset it belongs to; no downstream Bounded Context in this repo's domain (Compliance Intelligence, the Graph Context, per `domain-event-catalog`'s worked example) reacts to an individual `ExtractedEntity` as its own unit of integration — they react to `DataAssetClassified`, a fact about the asset as a whole. Contrast this with why `StorageSource` and `ClassificationRule` (`aggregate-design`'s examples's Worked Example 3) *do* need global identity: both are independently administered, independently referenced from multiple `DataAsset`s, and independently queryable ("show me every asset connected to this source," "show me every asset classified under this rule") — exactly the shape of a "yes" answer the test is built to catch. Nothing about `ExtractedEntity` matches that shape. The answer is **no**, and per the test, that settles it: a locally-identified child Entity, unique within its parent `DataAsset`, found only by loading the asset and looking inside.
 
-**What this buys, concretely, tying together two other files' open threads:** because `ExtractedEntity` is local, `DataAsset` never needs its own Repository for it (`SKILL.md`'s "Repository per Entity" anti-pattern stays avoided by construction, not by discipline) and the entity-count question `references/invariants-and-consistency-boundaries.md`'s worked counter-example already resolved (never a root field kept in lockstep) applies unmodified. The one thing local identity does **not** grant permission to do is eagerly load the full collection — that's `references/sizing-contention-and-concurrency.md`'s Eager-Loading Trap, and the `pendingEntities` field shown above in this file's first section is the resolution: `DataAsset` only ever holds *newly recorded, not-yet-persisted* entities in memory, drained on save exactly like Domain Events, never the historical collection.
+**What this buys, concretely, tying together two other files' open threads:** because `ExtractedEntity` is local, `DataAsset` never needs its own Repository for it (`aggregate-design`'s "Repository per Entity" anti-pattern stays avoided by construction, not by discipline) and the entity-count question `aggregate-design`'s invariants reference's worked counter-example already resolved (never a root field kept in lockstep) applies unmodified. The one thing local identity does **not** grant permission to do is eagerly load the full collection — that's `aggregate-design`'s sizing and concurrency reference's Eager-Loading Trap, and the `pendingEntities` field shown above in this file's first section is the resolution: `DataAsset` only ever holds *newly recorded, not-yet-persisted* entities in memory, drained on save exactly like Domain Events, never the historical collection.
 
 ```go
 // internal/domain/extractedentity.go
@@ -351,7 +351,7 @@ type ExtractedEntity struct {
 // RecordExtractedEntity is DataAsset's own method — the ONLY way an
 // ExtractedEntity comes into existence. There is no NewExtractedEntity
 // exported from this package for external callers to construct directly;
-// construction is entirely owned by the root, per SKILL.md's "Root controls
+// construction is entirely owned by the root, per aggregate-design's "Root controls
 // mutations" criterion applied to a child Entity, not just the root's own fields.
 func (a *DataAsset) RecordExtractedEntity(entityType EntityType, confidence float64, span TextSpan, now time.Time) error {
     if a.archivedAt != nil {
@@ -379,7 +379,7 @@ The repository's job for this shape: `PullPendingEntities()` inserts new rows in
 
 ## Event-Sourced Aggregates in Go
 
-The alternative persistence shape — genuinely new to this repo's Go skill set, per Khononov's research finding. Worked here against `ComplianceGap`, the candidate `references/worked-examples.md`'s Worked Example 4 justifies in full against Khononov's audit-as-record test; this section shows only the Go pattern, not the justification (that belongs in the worked example).
+The alternative persistence shape — genuinely new to this repo's Go skill set, per Khononov's research finding. Worked here against `ComplianceGap`, the candidate `aggregate-design`'s examples's Worked Example 4 justifies in full against Khononov's audit-as-record test; this section shows only the Go pattern, not the justification (that belongs in the worked example).
 
 **The core idea, stated precisely:** an event-sourced Aggregate's fields are never set directly by a command handler — they are always *derived* by folding every event in the Aggregate's own history through an `Apply` method, one per event type. The exact same `Apply` method runs whether the Aggregate is being rebuilt from storage (replay the whole stream) or updated in memory immediately after a new command succeeds (apply the one new event so the in-memory instance reflects it without a second read).
 
