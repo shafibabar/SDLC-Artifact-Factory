@@ -1,9 +1,9 @@
 # Service Decomposition
 ## How Bounded Context Boundaries Translate to Service Boundaries
 
-Self-contained reference for the `bounded-context-mapping` skill. Use this after the Context Map
-is agreed and BC definition artifacts are complete, to produce the service inventory for this
-platform.
+> **Moved from `bounded-context-mapping` (#1391, D047-5/6); rework pending in #1401.** Service decomposition now belongs to `container-diagram`. Two things below are **superseded** and must not be applied: the "one Bounded Context = one deployable service" default (D047-6: lean defaults to a modular monolith; standard and enterprise use granularity checklists; a Bounded Context need not be a microservice), and the first-product service inventory. The merge and split rules, the single-write-authority constraint and the anti-patterns remain sound.
+
+Self-contained reference for `container-diagram`. Use it after the Context Map is agreed, to decide how Bounded Contexts become deployable units.
 
 ---
 
@@ -23,7 +23,7 @@ This default derives from three reinforcing principles:
 
 3. **Data ownership clarity** — each service owns its own PostgreSQL schema. No service reads
    or writes another service's database directly. This is an operational enforcement of the
-   data-ownership discovery signal from `references/bc-discovery-guide.md`.
+   record-ownership pass in `bounded-context-mapping`.
 
 Newman (*Building Microservices*) articulates the same principle from the team-ownership angle:
 size a service around what one team can own end-to-end. Since team ownership is one of the four
@@ -51,7 +51,7 @@ a larger service rather than a standalone deployment unit.
 ## Service Inventory for the Data Estate Platform
 
 The following service inventory derives directly from the Context Map in
-`references/context-map-template.md`.
+the Context Map (`bounded-context-mapping`).
 
 | Service name | BC name | Classification | Owns | Exposed interface |
 |---|---|---|---|---|
