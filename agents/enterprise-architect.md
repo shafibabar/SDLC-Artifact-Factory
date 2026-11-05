@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.7.0
+version: 1.7.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -197,7 +197,7 @@ Write an ADR whenever any of the following occur:
 |---|---|
 | Technology choice that deviates from the tech-stack defaults (`sdlc-config-management`) | "ADR-001: Use Apache AGE instead of Neo4j for graph storage" |
 | Service boundary decision that is non-obvious | "ADR-002: Graph Service is a separate container from Classification Service" |
-| Context Map pattern selection | "ADR-003: Anti-Corruption Layer pattern for Google Drive integration" |
+| Context Map pattern selection | "ADR-003: Anticorruption Layer for the legacy stock feed (Core downstream, churning upstream; Conformist rejected)" |
 | Multi-tenancy isolation model | "ADR-004: Pooled tenancy with row-level security; silo only for the regulated tier" |
 | Integration pattern selection | "ADR-005: Choreography-based event flow for classification pipeline" |
 | API versioning decision | "ADR-006: URL-based versioning with /v1/ prefix" |

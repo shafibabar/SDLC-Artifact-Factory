@@ -86,10 +86,10 @@ traces-to: [design/subdomain-classification.md, design/event-storming/big-pictur
 
 ## Relationships
 
-| Upstream | Downstream | Pattern | Reason |
-|---|---|---|---|
-| Payment Provider | Workshops | Conformist | The provider's payment model is good enough to adopt and Workshops isn't affected by its shape |
-| Workshops | Email Service | Conformist | Workshops sends in the email service's format; nothing in the model depends on it |
+| Upstream | Downstream | Pattern | Reason | Contract |
+|---|---|---|---|---|
+| Payment Provider | Workshops | Conformist | The provider's payment model is good enough to adopt and payments aren't Core; an Anticorruption Layer was rejected because there is nothing to translate | None; note the provider's API version and release pace |
+| Workshops | Email Service | Conformist | Workshops sends in the email service's format; nothing in the model depends on it. A translation layer was rejected: no meaning differs | None |
 ````
 
 ## Why this is right

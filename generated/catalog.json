@@ -171,7 +171,8 @@
     "context-map": {
       "agents": [],
       "skills": [
-        "bounded-context-mapping"
+        "bounded-context-mapping",
+        "context-map-patterns"
       ]
     },
     "cqrs-design": {
@@ -746,12 +747,6 @@
       "agents": [],
       "skills": [
         "opportunity-solution-tree"
-      ]
-    },
-    "pattern-selection-rationale": {
-      "agents": [],
-      "skills": [
-        "context-map-patterns"
       ]
     },
     "performance-regression-gate": {
@@ -1498,7 +1493,6 @@
         "event-schema",
         "event-storming-session",
         "handoff-record",
-        "pattern-selection-rationale",
         "read-model",
         "subdomain-classification",
         "ubiquitous-language"
@@ -2122,7 +2116,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.7.0"
+        "version": "1.7.1"
       },
       {
         "created": "2026-06-25",
@@ -3386,7 +3380,7 @@
           "design",
           "domain-modeling"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-24",
@@ -3892,39 +3886,48 @@
         "dir": "skills/context-map-patterns",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
         "has_templates": false,
         "name": "context-map-patterns",
         "owner": "domain-modeler",
         "phase": "design",
         "produces": [
-          "pattern-selection-rationale"
+          "context-map"
         ],
         "related": [
+          "api-contract-design",
           "bounded-context-mapping",
-          "event-driven-patterns",
+          "event-schema-design",
           "go-contract-test",
-          "integration-design"
+          "integration-design",
+          "subdomain-distillation",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/strategic-design-supplement.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/testing/contract-testing-in-action-cruz-prescott.md"
+        ],
         "status": "stable",
         "tags": [
-          "acl",
+          "anticorruption-layer",
           "conformist",
           "context-map",
+          "contract-tests",
           "design",
           "domain-modeling",
-          "integration-patterns",
           "open-host-service",
-          "partnership"
+          "relationship-patterns",
+          "shared-kernel"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10766,14 +10769,14 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 186,
+    "artifacts": 185,
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 193,
-    "edges_skill_related": 1018,
-    "edges_skill_sources": 179,
+    "edges_skill_related": 1021,
+    "edges_skill_sources": 183,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10785,17 +10788,17 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 59,
+    "research_files_cited": 61,
     "skills_with_assets": 11,
-    "skills_with_contract_test": 156,
+    "skills_with_contract_test": 155,
     "skills_with_domain": 189,
-    "skills_with_evals": 32,
-    "skills_with_examples": 32,
+    "skills_with_evals": 33,
+    "skills_with_examples": 33,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 31,
-    "skills_with_scripts": 29,
-    "skills_with_sources": 33,
+    "skills_with_resources": 32,
+    "skills_with_scripts": 30,
+    "skills_with_sources": 34,
     "skills_with_status": 189,
     "skills_with_steps": 0,
     "skills_with_templates": 31
@@ -11995,7 +11998,7 @@
         "skill": "container-diagram"
       },
       {
-        "artifact": "pattern-selection-rationale",
+        "artifact": "context-map",
         "skill": "context-map-patterns"
       },
       {
@@ -13209,11 +13212,15 @@
         "skill": "container-diagram"
       },
       {
+        "related": "api-contract-design",
+        "skill": "context-map-patterns"
+      },
+      {
         "related": "bounded-context-mapping",
         "skill": "context-map-patterns"
       },
       {
-        "related": "event-driven-patterns",
+        "related": "event-schema-design",
         "skill": "context-map-patterns"
       },
       {
@@ -13222,6 +13229,14 @@
       },
       {
         "related": "integration-design",
+        "skill": "context-map-patterns"
+      },
+      {
+        "related": "subdomain-distillation",
+        "skill": "context-map-patterns"
+      },
+      {
+        "related": "ubiquitous-language",
         "skill": "context-map-patterns"
       },
       {
@@ -16869,6 +16884,22 @@
       {
         "skill": "competitive-analysis",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
       },
       {
         "skill": "domain-storytelling",

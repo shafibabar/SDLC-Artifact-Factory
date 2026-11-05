@@ -108,11 +108,11 @@ traces-to: [design/subdomain-classification.md, design/event-storming/big-pictur
 
 ## Relationships
 
-| Upstream | Downstream | Pattern | Reason |
-|---|---|---|---|
-| Catalogue | Enrolment | Customer/Supplier | Enrolment needs listing facts on its own terms; Catalogue is built to serve it |
-| Enrolment | Certification | Anticorruption Layer | Certification is Core; it translates "cohort" and "seat" into its own candidate model |
-| Payment Provider | Enrolment | Conformist | The provider's model is adequate and Enrolment isn't Core |
+| Upstream | Downstream | Pattern | Reason | Contract |
+|---|---|---|---|---|
+| Catalogue | Enrolment | Customer/Supplier | Enrolment needs listing facts on its own terms and Catalogue is built to serve it; Conformist rejected because Enrolment's needs shape what Catalogue publishes | Consumer-driven contract tests from Enrolment, run in Catalogue's pipeline |
+| Enrolment | Certification | Anticorruption Layer | Certification is Core; it translates "cohort" and "seat" into its own candidate model. Conformist rejected: the meanings differ | None beyond Enrolment's published events; Certification owns its translation |
+| Payment Provider | Enrolment | Conformist | The provider's model is adequate and Enrolment isn't Core; a translation layer rejected as cost without benefit | None; note the provider's version |
 ````
 
 ## Why this is right

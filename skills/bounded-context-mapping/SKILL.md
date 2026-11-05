@@ -15,7 +15,7 @@ description: >
   relationship pattern on each line is context-map-patterns; turning
   contexts into deployable services is container-diagram. Used by
   domain-modeler after subdomain classification and Ubiquitous Language.
-version: 3.0.0
+version: 3.1.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
