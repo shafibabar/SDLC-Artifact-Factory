@@ -52,11 +52,11 @@ Version rule: MINOR when a context gains an Aggregate, an event or a term; MAJOR
 
 ## Relationships
 
-One row per line on the target map. Pattern and reason are filled by `context-map-patterns`.
+One row per line on the target map. Pattern, reason (naming the pattern considered and rejected) and contract are filled by `context-map-patterns`.
 
-| Upstream | Downstream | Pattern | Reason |
-|---|---|---|---|
-| [context] | [context] | [ ? ] | [ ? ] |
+| Upstream | Downstream | Pattern | Reason | Contract |
+|---|---|---|---|---|
+| [context] | [context] | [ ? ] | [ ? ] | [ ? ] |
 
 ## Open Questions for the Product Owner
 
