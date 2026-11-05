@@ -15,7 +15,7 @@ The detail behind `SKILL.md` § 2: classifying a change, making additive changes
 | Remove a field a consumer may read | breaking | new type |
 | The meaning changed: a different thing happened in the business | **a different event** | a new event with a new business name; no converter exists (Young) |
 
-Young's rule: if every field of the new shape can be derived from the old one, it is a new *version* of the same fact; if the meaning changed, it is a new *event*. For **published** events this plugin is stricter than Young on the first case: a convertible but breaking change still gets a new, descriptive type, not a `_v2` (D047-1).
+Young's rule classifies by **meaning**: the same business fact in a new shape is a new *version* (convertible from the old one); a fact whose meaning changed is a new *event*, and no converter exists. Lossy is not the same as changed meaning. Splitting a stored free-text `deliveryAddress` into `street`, `town` and `postcode` is the same fact; where an old address can't be parsed faithfully, the converter keeps the original text and leaves the parts unknown, rather than guessing or giving up on converting. For **published** events this plugin is stricter than Young on the first case: a convertible but breaking change still gets a new, descriptive type, not a `_v2` (D047-1).
 
 **Defaults must tell the truth about history.** A new field's default is what old events will be read as. "Zero" for an unknown amount, or `false` for "was it express?" when old events never recorded it, silently rewrites history. Prefer an explicit "unknown" (an absent optional field, or an `UNKNOWN` enum value).
 
@@ -52,7 +52,7 @@ The CloudEvents Primer's advice matches: a compatible change shows as a new `dat
 An event-sourced Aggregate's own events are its record and must stay readable forever. There is no retiring them, so the published-event protocol doesn't apply:
 
 - **Additive:** weak schema, as above.
-- **Convertible shape change:** **upcasting**, a small chain of converters (v1 → v2 → v3) run when events are read. The stored bytes never change. Keep sample events of every historical shape as test fixtures.
+- **New shape, same fact:** **upcasting**, a small chain of converters (v1 → v2 → v3) run when events are read. The stored bytes never change. A value the old shape can't supply is an honest unknown, never a guess. Keep sample events of every historical shape as test fixtures, and test each converter on them.
 - **Wrong stream structure** (split, merge, too many old versions): **copy-and-replace**. Write a transformed new stream, switch readers, and leave the old one untouched. Record the decision in an ADR.
 - **Never edit stored events in place.** That destroys the audit trail and can't be undone. A wrongly recorded fact is fixed with a **correcting event**, as an accountant posts a correcting entry.
 

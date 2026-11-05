@@ -52,7 +52,9 @@ Attribute table, naming, extensions, bindings, a worked event in both modes: `./
 
 ## 2. Evolving a Schema
 
-**Classify the change first** (Young): if every field of the new shape can be derived from the old one, it is the same fact in a new shape; if the meaning changed, it is a different event with a new business name.
+**The general rule (Young's weak schema; Kleppmann): a published schema evolves add-only.** Add optional fields whose default is true for old events; never rename a field, change its type, unit or meaning, or remove it in place. Say this rule when judging a change, then say which part of it the change breaks.
+
+**Classify the change by meaning** (Young): the same business fact in a new shape is a new *version* of that event, converted from the old one; a fact whose meaning changed is a *different event* with a new business name. A value the old shape can't supply faithfully doesn't change the class: the converter fills it with an honest unknown (absent, or an `UNKNOWN` value) and keeps the original, and the change is still a version.
 
 | Change | Class | Action |
 |---|---|---|
@@ -63,7 +65,7 @@ Attribute table, naming, extensions, bindings, a worked event in both modes: `./
 
 **The breaking-change protocol (published events):** name a new type that says what differs (`charge.captured-in-minor-units`), never `.v2`. Register its schema first. Publish both from the same transaction. Set a deprecation date. Retire the old type only when telemetry shows no consumer group reads it. Keep its schema registered forever. A `.vN` suffix makes every consumer enumerate versions and says nothing about what changed.
 
-**Stored events are different.** An event-sourced Aggregate's own events can't be retired. Change them by weak schema for additions, **upcasting** on read for convertible changes, and copy-and-replace for a stream's structure. Never edit them in place: correct a wrong fact with a correcting event. Upcasting is never used for published events, because it hides the contract change from consumers. Detail and Young's rules for defaults: `./references/evolution.md`.
+**Stored events are different.** An event-sourced Aggregate's own events can't be retired. Change them by weak schema for additions, **upcasting** on read for a new shape of the same fact (a converter tested on real old events, marking what it can't derive as unknown), and copy-and-replace for a stream's structure. Never edit them in place: correct a wrong fact with a correcting event. Upcasting is never used for published events, because it hides the contract change from consumers. Detail and Young's rules for defaults: `./references/evolution.md`.
 
 ## 3. Registry, Compatibility, Gate
 
@@ -82,7 +84,7 @@ Standard and enterprise: `design/data/event-schemas.md` (`./templates/event-sche
 3. **Per event,** write its type, source, subject and versioned `dataschema`. Mark it published or stored. List its payload fields with type, required or not, the default for old events, and why each is there. List what was deliberately left out.
 4. **For a change to an existing event,** classify it (§ 2) and record it in the change log with its action. Plan → validate → execute: a published contract is costly to undo, so validate the plan (new type, dual-publish window, retirement condition, named consumers told) before anything is published.
 5. **Validate, then loop.** Run `./scripts/validate-event-schemas.sh design/data/event-schemas.md`. Fix every FAIL and run it again until it exits clean, then go through `./resources/schema-checklist.md`.
-6. **Present** the conventions and each change with its class and action, and for every request you declined, its reason in full (§ Gotchas).
+6. **Present** the conventions and each change with the rule it meets or breaks, its class and its action, and for every request you declined, its reason in full (§ Gotchas).
 
 Examples: `./examples/01-lean-json-contract-tests.md`, `./examples/02-standard-add-and-rename.md`, `./examples/03-enterprise-protobuf-registry.md`.
 
@@ -93,6 +95,7 @@ Each trap comes with the reason to give in full.
 - **"The five required CloudEvents attributes, including `datacontenttype`."** *Reason:* the spec requires four: `specversion`, `id`, `source`, `type`. `datacontenttype` is optional (absent means the format's own encoding). This plugin always sets it, but that is a house rule. *Instead:* list the four as spec-required and the house set separately.
 - **"Bump it to `.v2`."** *Reason:* a version suffix makes every consumer enumerate versions and change code even when its fields are untouched, drifts from the registry's own version count, and says nothing about what changed (D047-1; the CloudEvents Primer puts an incompatible change in a new `type`). *Instead:* a new, descriptive type published alongside the old one, retired on telemetry.
 - **"It's only a rename; keep the old name as an alias."** *Reason:* a reader of the old name silently gets nothing; renames, type and unit changes, and removals are always breaking. *Instead:* the breaking-change protocol.
+- **"The old field can't be split reliably, so there's no converter" (or "so it's a new event").** *Reason:* Young classifies a change by its meaning, not by whether every value is derivable; the same fact in a new shape is a version, and a converter that can't derive a value records an honest unknown and keeps the original. Dropping the converter leaves old events unreadable in the new shape. *Instead:* a new version with an upcaster (stored events) that maps what it can, marks the rest unknown, and is tested on real old events.
 - **"Old events default `isExpress` to false."** *Reason:* a default is how old events will be read; a default that misstates history is a silent data error (Young). *Instead:* an explicit unknown (an absent optional field or an `UNKNOWN` value).
 - **"Put `eventId`, `occurredAt`, `tenantId` and `version` in the payload."** *Reason:* those are envelope attributes (`id`, `time`, the `tenantid` extension, `dataschema`); duplicating them creates two answers that drift. *Instead:* keep `data` for the fact itself.
 - **"Upcast the published event so consumers needn't change."** *Reason:* upcasting is a read-time translation for an event-sourced Aggregate's own stored events, which can't be retired; on a published event it hides a contract change consumers can't see (Khononov, Young). *Instead:* a new type for published events; upcasting only inside the store.
