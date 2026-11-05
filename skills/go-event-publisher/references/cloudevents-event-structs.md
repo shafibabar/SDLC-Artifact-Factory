@@ -1,4 +1,6 @@
-# Go Event Struct Conventions Reference
+# CloudEvents Event Structs in Go
+
+**Moved here from `event-schema-design` in #1394 (D047-10: design skills are stack-neutral).** Content carried over; it still uses the first product's `DataAssetClassified` example and will be reworked when `go-event-publisher` is rebuilt. Two corrections from `event-schema-design` apply now: CloudEvents requires **four** attributes (`specversion`, `id`, `source`, `type`); `datacontenttype` is optional in the spec and set by house rule. The envelope also carries the house extensions `correlationid`, `causationid` and `tenantid` as top-level String fields, and `source` is a stable context URI with no deploy version. The CNCF Go SDK (`github.com/cloudevents/sdk-go`) is an alternative to a hand-rolled struct. Note too that `omitempty` never omits a zero `time.Time` in `encoding/json`.
 
 This file is self-contained. It defines the canonical Go struct pattern for
 CloudEvents events produced and consumed on this platform, covering:
@@ -13,7 +15,7 @@ CloudEvents events produced and consumed on this platform, covering:
 
 ## 1. The CloudEvents Envelope Struct
 
-The envelope carries the five required CloudEvents attributes and the optional
+The envelope carries the CloudEvents attributes (four spec-required, plus the house set) and the optional
 attributes this platform uses. The `Data` field is `json.RawMessage` — the
 envelope struct does not know the shape of the payload, keeping the producer
 and consumer domain code free to work with strongly-typed payload structs.
@@ -273,7 +275,7 @@ import (
 
 // MustNewClassifiedEvent constructs a DataAssetClassified event for use in
 // tests. Fails the test immediately if construction fails.
-func MustNewClassifiedEvent(t *testing.T, opts ...func(*classifiedEventOpts)) dataasset.ClassifiedPayload {
+func MustNewClassifiedEvent(t *testing.T, opts ...func(*classifiedEventOpts)) cloudevents.Event {
     t.Helper()
     o := &classifiedEventOpts{
         aggregateID:      uuid.New(),
@@ -353,3 +355,128 @@ func TestClassificationProjector(t *testing.T) {
 The functional-options pattern (`WithSensitivityLevel`, `WithPreviousLevel`)
 keeps the test helper extensible: adding a new option for a new field does not
 break existing tests.
+
+---
+
+## 6. Dual Publish During a Breaking Change
+
+`event-schema-design` decides a breaking change is a new event type, published beside the old one until telemetry shows no consumer reads the old type. In Go, the application service records both events in the same outbox write:
+
+```go
+func (svc *ClassificationService) Classify(ctx context.Context, cmd ClassifyCmd) error {
+    asset, err := svc.repo.FindByID(ctx, cmd.AssetID, cmd.TenantID)
+    if err != nil {
+        return err
+    }
+    if err := asset.Classify(cmd.Level, cmd.ReviewerID, cmd.Now); err != nil {
+        return err
+    }
+    // Publish old event type for consumers not yet migrated
+    oldEvt := newDataAssetClassifiedV1(asset)
+    // Publish new event type for migrated consumers
+    newEvt := newDataAssetReviewCompleted(asset)
+    return svc.repo.Save(ctx, asset, []cloudevents.Event{oldEvt, newEvt})
+}
+```
+
+## 7. Validating a Payload Against the Registry Before the Outbox Write
+
+Where the product uses a schema registry, the publisher can validate the payload against the registered schema before writing the outbox row, so an invalid event rolls the whole operation back. (Apicurio's `/test` endpoint, shown here, returns 200 when valid and 409 when not.)
+
+```go
+package registry
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "net/http"
+)
+
+// Validator fetches the registered schema and validates a JSON payload.
+type Validator struct {
+    baseURL    string
+    httpClient *http.Client
+}
+
+func NewValidator(baseURL string) *Validator {
+    return &Validator{baseURL: baseURL, httpClient: &http.Client{}}
+}
+
+// Validate checks payload against the latest registered schema for artifactID.
+// Returns nil if the payload is valid; an error describing the violation otherwise.
+func (v *Validator) Validate(artifactID string, payload json.RawMessage) error {
+    url := fmt.Sprintf(
+        "%s/apis/registry/v2/groups/events/artifacts/%s/test",
+        v.baseURL, artifactID,
+    )
+    resp, err := v.httpClient.Post(url, "application/json", bytes.NewReader(payload))
+    if err != nil {
+        return fmt.Errorf("registry validation request failed: %w", err)
+    }
+    defer resp.Body.Close()
+    if resp.StatusCode == http.StatusOK {
+        return nil
+    }
+    if resp.StatusCode == http.StatusConflict {
+        return fmt.Errorf("payload violates registered schema for %s", artifactID)
+    }
+    return fmt.Errorf("registry validation returned unexpected status %d", resp.StatusCode)
+}
+```
+
+```go
+func (svc *ClassificationService) Classify(ctx context.Context, cmd ClassifyCmd) error {
+    // ... load aggregate, run domain method ...
+
+    evt := newDataAssetClassifiedEvent(asset)
+    payload, _ := json.Marshal(evt.Data)
+
+    const artifactID = "com.sdlc-factory.data-asset-management.data-asset.classified"
+    if err := svc.schemaValidator.Validate(artifactID, payload); err != nil {
+        return fmt.Errorf("event schema violation: %w", err)
+    }
+
+    return svc.repo.Save(ctx, asset, []cloudevents.Event{evt})
+}
+```
+
+## 8. An Upcaster Registry for Stored Events
+
+For an event-sourced Aggregate's own stored events (never for published ones), old shapes are converted on read. See also `go-domain-model`'s aggregate implementation reference.
+
+```go
+// Upcaster registry — registered at application startup
+type Upcaster func(raw json.RawMessage) (json.RawMessage, error)
+
+var upcasters = map[string]map[int]Upcaster{
+    "DataAssetClassified": {
+        1: upcastClassifiedV1toV2,
+    },
+}
+
+// Applied at load time before Apply() sees the event
+func upcastClassifiedV1toV2(raw json.RawMessage) (json.RawMessage, error) {
+    var v1 struct {
+        AggregateID      string `json:"aggregateId"`
+        SensitivityLevel string `json:"sensitivityLevel"`
+        ClassifiedBy     string `json:"classifiedBy"`
+        // V1 had no previousLevel
+    }
+    if err := json.Unmarshal(raw, &v1); err != nil {
+        return nil, err
+    }
+    v2 := struct {
+        AggregateID      string  `json:"aggregateId"`
+        SensitivityLevel string  `json:"sensitivityLevel"`
+        ClassifiedBy     string  `json:"classifiedBy"`
+        PreviousLevel    *string `json:"previousLevel"` // nil = history not available
+    }{
+        AggregateID:      v1.AggregateID,
+        SensitivityLevel: v1.SensitivityLevel,
+        ClassifiedBy:     v1.ClassifiedBy,
+        PreviousLevel:    nil,
+    }
+    return json.Marshal(v2)
+}
+```

@@ -16,7 +16,7 @@ description: >
   data pipeline design, data classification scheme, data lineage design, data retention
   policy. Designs only; does not implement pipelines, migrations, repositories, or analytics.
 role: Data layer design authority — physical models, canonical model, event schemas, pipelines, classification, lineage, retention
-version: 2.3.0
+version: 2.4.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -175,12 +175,21 @@ read before applying it.
   and never compares records across tenants. (`canonical-data-model`)
 
 ### 4. Event schemas are wire contracts, evolved not edited
-- Every event is wrapped in a **CloudEvents 1.0** envelope with its five required attributes; the
-  registry subject is registered in `BACKWARD` mode before the first publish, with a CI gate.
+- Every event is wrapped in a **CloudEvents 1.0** envelope: the spec's four required attributes
+  (`specversion`, `id`, `source`, `type`), the house-required `datacontenttype`, `dataschema`,
+  `subject` and `time`, and the house extensions `correlationid`, `causationid` (and `tenantid` in a
+  multi-tenant product). `type` is lower-case reverse-DNS with no version; `source` is a stable
+  context URI. (`event-schema-design`)
+- Format, content mode and registry are decided per product before the first event: lean uses schema
+  files and consumer contract tests; a registry where independently deployed consumers, Avro or
+  Protobuf, or several teams need one. Each event's compatibility mode follows deploy order and
+  retention (BACKWARD by default, never NONE), and CI fails an incompatible change.
   (`event-schema-design`)
-- Rename, type change, and remove are **always** breaking. A breaking change is never made in place:
-  define a **new event type**, publish both during the transition, retire the old one only when
-  telemetry shows no consumer group reads it — never a `.v2` version suffix on the type name.
+- Classify every change first (Young): additive with a default true for old events goes in place;
+  rename, type or unit change, and remove are **always** breaking. A breaking change is never made in
+  place: define a **new event type**, publish both during the transition, retire the old one only
+  when telemetry shows no consumer group reads it — never a `.v2` version suffix on the type name.
+  An event-sourced Aggregate's stored events evolve by upcasting instead, and are never edited.
   (`event-schema-design`)
 - Payloads carry identifiers, levels, and metadata — never raw sensitive content, which an immutable
   replicated topic can only erase by crypto-shredding. (`event-schema-design`)
@@ -262,7 +271,7 @@ assuming.
 1. data-model                 ← Aggregates → schemas; shape (OLTP/OLAP), keys, tenancy, projections
 2. canonical-data-model       ← master entities, match/merge, survivorship, source mappings
    ── User approval gate ──  ← present 1 + 2 together before proceeding
-3. event-schema               ← CloudEvents envelope, registry subjects, compatibility + CI gate
+3. event-schema               ← CloudEvents envelope, format/registry choice, compatibility + CI gate
 4. data-pipeline-design       ← mode, stages, contracts, fault tolerance, SLA/observability
 5. data-classification-scheme ← taxonomy, tagging, propagation, control mapping
 6. data-lineage-design        ← granularity, capture points, storage model, question coverage
