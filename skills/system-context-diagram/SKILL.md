@@ -34,7 +34,9 @@ sources:
 
 ## Purpose
 
-The System Context diagram is C4's Level 1 (Brown, `c4-model-brown.md`). It answers one question for every reader, the product owner included: **what is this system, who uses it, and what other systems does it work with?** It is the first architecture view, drawn before the container diagram, because a wrong scope makes every view beneath it wrong, and this is the cheapest place to catch one (Fairbanks: a model earns its cost by answering a named question).
+The System Context diagram is C4's Level 1 (Brown, `c4-model-brown.md`). It answers one question for every reader, the product owner included: **what is this system, who uses it, and what other systems does it work with?** It is the first architecture view, drawn before the container diagram, because a wrong scope makes every view beneath it wrong, and this is the cheapest place to catch one.
+
+**Name its readers and its question first** (Clements: a view serves named stakeholders and their concern; Fairbanks: a model earns its cost by answering a named question). The readers are the product owner and the people the product owner shows it to: executives, partners, regulators, new team members. None of them needs the internal split, technology or deployment to answer the question, so those stay off this view; say so when declining a request to add them.
 
 One artifact per product: `design/architecture/system-context.md`, required at every profile (`./templates/system-context.md`).
 - **Lean:** one ASCII diagram, its key and the element catalog; rationale and boundary notes in a sentence or two each. No Mermaid, no supplementary diagrams.
@@ -63,7 +65,7 @@ Sources to inventory, so none is forgotten: the personas, the Event Storming tim
 
 ## 3. Relationships
 
-- **One-directional, labelled with what flows** in plain words ("Books a class", "Sends payment requests to", "Receives shift changes from"). Never "uses", "integrates with" or "interacts with", and never a two-headed arrow: draw two arrows, each with its own label.
+- **One-directional, labelled with what flows**, as a phrase that reads from the arrow's start to its end ("Books a class in", "Sends payment requests to", "Sends hourly readings to"), the same on the diagram and in the relationships table. A bare noun ("Payment requests") doesn't say which way it goes. Never "uses", "integrates with" or "interacts with", and never a two-headed arrow: draw two arrows, each with its own label.
 - **What an arrow means is stated in the key**, once for the diagram. The plugin's default: the arrow points from the party that starts the exchange.
 - **Every arrow touches the system box.** Arrows between two external systems, or between a person and an external system, are not this view's concern.
 - **Protocol is optional and plain** ("HTTPS", "OIDC", "SFTP file drop", "webhook"), never a library or framework.
@@ -96,10 +98,10 @@ The diagram is the primary presentation of a view; the documentation package aro
 1. **Read** the problem statement and the product manifest, `ideate/user-personas.md`, `design/event-storming/big-picture.md` (actors and external systems), `design/context-map.md`, the stories, and `ideate/nfr-specification.md`. If one is missing, carry on: mark each element you inferred *assumed* and list it under *Open questions*.
 2. **Inventory** every candidate person and system from those sources, with where each came from.
 3. **Classify** each candidate with the ownership test (§ 2). Containers drop out of this view; note the notable ones in the rationale ("the mobile app and the API are containers of this system").
-4. **Draw** the ASCII diagram with its title and key (§ 4), one box for the system, then each person and external system, then the arrows (§ 3).
+4. **Name the readers and the question** (§ Purpose) at the top of the artifact. **Draw** the ASCII diagram with its title and key (§ 4), one box for the system, then each person and external system, then the arrows (§ 3).
 5. **Write** the element catalog, rationale and boundary notes (§ 5). At standard or enterprise, add a Mermaid `C4Context` copy only if the user asks.
 6. **Validate, then loop.** Run `./scripts/validate-system-context.sh design/architecture/system-context.md`, fix every FAIL and re-run until it exits clean; then go through `./resources/checklist.md`.
-7. **Present** it to the user for approval before the container diagram, with the reason for every request declined (§ Gotchas). Hand on to the container diagram with the names as they stand.
+7. **Present** it to the user for approval before the container diagram: the readers and the question, the diagram, and the reason for every request declined (§ Gotchas), tied to what those readers need. Hand on to the container diagram with the names as they stand.
 
 Examples: `./examples/01-lean-internal-tool.md` (one person, two external systems, a database and a nightly job kept off the diagram), `./examples/02-standard-b2b-saas.md` (identity provider, payment provider, an outbound webhook consumer, a billing service another team owns, the mobile app as a container, a Mermaid C4Context copy), `./examples/03-enterprise-partner-and-regulator.md` (partner organisations' systems, a regulator feed, a legacy system being replaced, and what is out of scope).
 
@@ -107,7 +109,7 @@ Examples: `./examples/01-lean-internal-tool.md` (one person, two external system
 
 Each trap comes with the reason to give in full.
 
-- **"Put the database and the message broker on it, so people see the whole picture."** *Reason:* they are containers we run, inside the system; mixing levels makes the one diagram everyone can read unreadable (Brown). *Instead:* they go on the container diagram; say so in the rationale.
+- **"Put the database and the message broker on it, so people see the whole picture."** *Reason:* they are containers we run, inside the system; its readers (the product owner, executives, partners) need who uses it and what it works with, not its parts, and mixing levels makes the one diagram everyone can read unreadable (Brown). *Instead:* they go on the container diagram; say so in the rationale.
 - **"Draw the frontend and the backend as two systems,"** or "the mobile app is its own system." *Reason:* both are containers of the one system we build; two boxes fragment the boundary and show users talking to halves of an implementation. *Instead:* one box; the split is Level 2.
 - **"The billing service is ours, it's the same company, so leave it inside."** *Reason:* another team owns and runs it; we depend on its contract and its outages (Brown's ownership rule). *Instead:* an external system, its owning team named in the catalog.
 - **"Just one 'User' box."** *Reason:* it hides different roles with different needs, permissions and arrows. *Instead:* one person per role, named in the product's language.

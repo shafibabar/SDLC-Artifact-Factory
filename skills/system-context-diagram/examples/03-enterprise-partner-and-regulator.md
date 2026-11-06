@@ -12,6 +12,7 @@ Self-contained. **Grainlink** runs grain intake and grower settlement for an agr
 - **Legacy weighbridge:** it still runs and still sends weights to Grainlink until 2027, and Grainlink's team does not run it. **External** until it is retired; the boundary notes give the date and say the diagram is redrawn then.
 - **AWS:** where our containers run, not a system we exchange data with: the container diagram's deployment section. Declined.
 - **Northline's SFTP server:** the transport, not the system. The external system is **Northline Bookings**; "SFTP file drop" is the arrow's protocol.
+- **Readers:** the board, the elevator managers, the partners and the regulator. None of them needs the containers or the hosting to see what Grainlink depends on, which is why those stay off.
 - **Thirty systems:** that is a System Landscape diagram, an optional C4 extra with no single focus. It does not replace this view, which shows only what Grainlink works with. Offered as a separate drawing if the board wants it.
 - **Regulator:** Grainlink submits returns to the regulator's portal (an external system); the compliance officer is a person who signs them off in Grainlink.
 - **Enterprise:** every external system's owner and kind; boundary notes name the constraints and what is out of scope. A Mermaid copy was not asked for, so none is drawn.
@@ -32,7 +33,8 @@ traces-to: [ideate/user-personas.md, design/event-storming/big-picture.md, desig
 
 # System Context diagram for Grainlink
 
-**Question it answers:** what Grainlink is, who uses it, and which other systems it works with, for the board, the elevator managers and the partners.
+**Readers:** the product owner, the cooperative's board, the elevator managers, Northline Rail and the regulator
+**Question it answers:** what Grainlink is, who uses it, and which other systems it works with.
 
 ## Diagram
 

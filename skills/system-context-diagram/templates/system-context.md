@@ -14,6 +14,7 @@ traces-to: [ideate/user-personas.md, design/event-storming/big-picture.md, desig
 <!-- Path: artifacts/<product>/design/architecture/system-context.md. One per product, every profile.
      Lean: the diagram, key and catalog; one or two sentences each for Rationale and Boundary Notes; no Mermaid. -->
 
+**Readers:** [the product owner and who they show it to: executives, partners, a regulator, new team members]
 **Question it answers:** what [System] is, who uses it, and which other systems it works with.
 
 ## Diagram
@@ -53,7 +54,7 @@ traces-to: [ideate/user-personas.md, design/event-storming/big-picture.md, desig
 
 | From | To | What flows | Protocol |
 |---|---|---|---|
-| [person or system] | [System] | [what flows, in the arrow's direction; never "uses"] | [plain protocol or —] |
+| [person or system] | [System] | [a phrase that reads from start to end: "Sends … to", "Books … in"; never "uses" or a bare noun] | [plain protocol or —] |
 
 ## Rationale
 

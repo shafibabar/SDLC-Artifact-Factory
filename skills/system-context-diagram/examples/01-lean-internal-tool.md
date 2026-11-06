@@ -29,6 +29,7 @@ traces-to: [ideate/user-personas.md, design/event-storming/big-picture.md, ideat
 
 # System Context diagram for Kilnbook
 
+**Readers:** the product owner and the studio committee
 **Question it answers:** what Kilnbook is, who uses it, and which other systems it works with.
 
 ## Diagram

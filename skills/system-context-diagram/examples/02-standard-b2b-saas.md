@@ -30,6 +30,7 @@ traces-to: [ideate/user-personas.md, design/event-storming/big-picture.md, desig
 
 # System Context diagram for Crewdeck
 
+**Readers:** the product owner, customers' IT and security reviewers, new team members
 **Question it answers:** what Crewdeck is, who uses it, and which other systems it works with.
 
 ## Diagram

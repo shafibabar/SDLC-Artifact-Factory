@@ -20,6 +20,7 @@ Run after `./scripts/validate-system-context.sh` exits clean. The script checks 
 - [ ] Protocols, where shown, are plain words, not libraries or frameworks.
 
 ## The package
+- [ ] The readers and the question are named at the top, and every declined request is answered in terms of what those readers need.
 - [ ] Title and key; the key states what an arrow means; types are in text, not colour alone.
 - [ ] System description says what it does for its users, never how it is built; no technology anywhere on the diagram.
 - [ ] Rationale explains the shape; Boundary Notes give the constraints and what is out of scope.

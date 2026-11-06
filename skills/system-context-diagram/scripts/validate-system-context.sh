@@ -4,7 +4,7 @@
 #          (artifacts/<product>/design/architecture/system-context.md) against
 #          the structural items of resources/checklist.md: frontmatter; a title
 #          stating type and scope; the question it answers; an ASCII diagram in
-#          a fenced block; a key that says what an arrow means; exactly one
+#          a fenced block; its readers named; a key that says what an arrow means; exactly one
 #          system with a description; persons named as roles (no generic
 #          "User"); no containers, technology or infrastructure as elements;
 #          every catalog element named on the diagram and in a relationship;
@@ -72,6 +72,7 @@ body_nc = re.sub(r"<!--.*?-->", "", body, flags=re.S)
 title = re.search(r"^# (.+)$", body_nc, re.M)
 check("title states type and scope ('# System Context diagram for <System>')",
       bool(title) and bool(re.match(r"(?i)system context diagram for \S", title.group(1).strip())))
+check("names its readers", bool(re.search(r"(?im)^\*\*readers:?\*\*:?\s*[^\s\[]", body_nc)))
 check("states the question the diagram answers", bool(re.search(r"(?im)^\*\*question it answers:?\*\*:?\s*\S", body_nc)))
 
 sections, cur = {}, None

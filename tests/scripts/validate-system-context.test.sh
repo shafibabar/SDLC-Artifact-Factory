@@ -35,6 +35,7 @@ traces-to: [ideate/user-personas.md, design/event-storming/big-picture.md]
 
 # System Context diagram for Ferrylog
 
+**Readers:** the product owner and the port authority
 **Question it answers:** what Ferrylog is, who uses it, and which other systems it works with.
 
 ## Diagram
@@ -99,6 +100,9 @@ expect "a complete artifact passes" good.md 0 "INFO: system 'Ferrylog', 1 person
 
 sed 's/^# System Context diagram for Ferrylog$/# Ferrylog/' good.md > title.md
 expect "a title without type and scope fails" title.md 1 "title states type and scope"
+
+sed '/^\*\*Readers:/d' good.md > readers.md
+expect "no readers named fails" readers.md 1 "names its readers"
 
 sed '/^- Arrows point/d' good.md > key.md
 expect "a key that doesn't say what an arrow means fails" key.md 1 "Key says what an arrow means"
