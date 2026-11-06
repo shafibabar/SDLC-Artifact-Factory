@@ -21,7 +21,7 @@ description: >
   and idempotency-key depth in
   references/batching-backpressure-and-idempotency.md. Used by the
   backend-engineer during Implement.
-version: 2.1.0
+version: 2.2.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -36,7 +36,7 @@ related: [go-repository-pattern, go-event-consumer, go-concurrency-patterns, go-
 
 ## Purpose
 
-A service must publish a Domain Event whenever it changes state — reliably, even across crashes. Publishing directly from a request handler is unsafe: a crash between the DB commit and the broker publish silently loses the event (the dual-write problem). The **Transactional Outbox** closes this gap by splitting the work in two: `go-repository-pattern`'s `Save` writes the event into an `outbox` table in the *same transaction* as the aggregate's state change, so recording an event is exactly as atomic as the write that caused it; this skill builds the **relay** — a separate, independently-failing process that reliably drains that table to Redpanda. Full schema and atomic-insert SQL: `references/transactional-outbox-standard.md`.
+A service must publish a Domain Event whenever it changes state — reliably, even across crashes. Publishing directly from a request handler is unsafe: a crash between the DB commit and the broker publish silently loses the event (the dual-write problem). The **Transactional Outbox** closes this gap by splitting the work in two: `go-repository-pattern`'s `Save` writes the event into an `outbox` table in the *same transaction* as the aggregate's state change, so recording an event is exactly as atomic as the write that caused it; this skill builds the **relay** — a separate, independently-failing process that reliably drains that table to Redpanda. Full schema and atomic-insert SQL: `references/transactional-outbox-standard.md`. Relay retry escalation, a Debezium Change Data Capture relay and the audit archiver (moved from `domain-event-catalog`, merged here at this skill's rebuild): `./references/outbox-relay-and-cdc.md`.
 
 Decoupling *recording* (transactional, free) from *publishing* (network I/O, can fail, can be slow) is what makes at-least-once delivery achievable without a distributed transaction spanning the database and the broker.
 

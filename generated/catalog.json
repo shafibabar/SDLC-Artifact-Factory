@@ -2073,7 +2073,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.6.0"
+        "version": "1.7.0"
       },
       {
         "created": "2026-06-25",
@@ -4572,14 +4572,14 @@
         "dir": "skills/domain-event-catalog",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "domain-event-catalog",
         "owner": "domain-modeler",
         "phase": "design",
@@ -4588,24 +4588,36 @@
         ],
         "related": [
           "aggregate-design",
-          "bounded-context-mapping",
+          "command-catalog",
+          "context-map-patterns",
           "cqrs-pattern",
-          "glossary-management",
+          "data-retention-policy",
+          "event-driven-patterns",
+          "event-schema-design",
+          "event-storming-facilitation",
+          "go-event-consumer",
           "go-event-publisher",
-          "read-model-design"
+          "read-model-design",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/software-architecture/microservices-patterns-richardson.md"
+        ],
         "status": "stable",
         "tags": [
-          "cdc",
           "design",
           "domain-events",
           "domain-modeling",
+          "event-catalog",
           "event-naming",
-          "event-storming",
-          "outbox"
+          "integration-events",
+          "policies"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -5665,7 +5677,7 @@
           "redpanda",
           "relay"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-07-31",
@@ -8061,7 +8073,7 @@
           "relay",
           "tenant"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-07-31",
@@ -10807,8 +10819,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1030,
-    "edges_skill_sources": 194,
+    "edges_skill_related": 1036,
+    "edges_skill_sources": 199,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10822,18 +10834,18 @@
     "commands_with_test": 15,
     "research_files_cited": 65,
     "skills_with_assets": 10,
-    "skills_with_contract_test": 153,
+    "skills_with_contract_test": 152,
     "skills_with_domain": 189,
-    "skills_with_evals": 35,
-    "skills_with_examples": 35,
+    "skills_with_evals": 36,
+    "skills_with_examples": 36,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 34,
-    "skills_with_scripts": 31,
-    "skills_with_sources": 36,
+    "skills_with_resources": 35,
+    "skills_with_scripts": 32,
+    "skills_with_sources": 37,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 33
+    "skills_with_templates": 34
   },
   "edges": {
     "agent_produces": [
@@ -13580,7 +13592,11 @@
         "skill": "domain-event-catalog"
       },
       {
-        "related": "bounded-context-mapping",
+        "related": "command-catalog",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "context-map-patterns",
         "skill": "domain-event-catalog"
       },
       {
@@ -13588,7 +13604,23 @@
         "skill": "domain-event-catalog"
       },
       {
-        "related": "glossary-management",
+        "related": "data-retention-policy",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "event-driven-patterns",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "event-schema-design",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "go-event-consumer",
         "skill": "domain-event-catalog"
       },
       {
@@ -13597,6 +13629,10 @@
       },
       {
         "related": "read-model-design",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "ubiquitous-language",
         "skill": "domain-event-catalog"
       },
       {
@@ -16996,6 +17032,26 @@
       {
         "skill": "context-map-patterns",
         "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
       },
       {
         "skill": "domain-storytelling",
