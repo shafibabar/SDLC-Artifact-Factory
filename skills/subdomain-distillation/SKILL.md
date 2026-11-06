@@ -15,7 +15,7 @@ description: >
   Storming Big Picture, deciding build versus buy, asking whether something
   is Core, or prioritising a legacy modernisation. Used by domain-modeler;
   produces the subdomain-classification artifact.
-version: 3.1.0
+version: 3.1.1
 phase: design
 owner: domain-modeler
 created: 2026-07-22
@@ -82,7 +82,7 @@ The full tests with probing questions, and what each type means for modelling: `
 - **Build or buy:** as in the table. A Generic subdomain built from scratch is effort spent where no customer will notice.
 - **How rich the business logic is:** the type is a *necessary* input to `aggregate-design`'s choice of business-logic pattern (Transaction Script, Active Record, Domain Model, Event-Sourced Domain Model), not a sufficient one. That choice is made per Aggregate or use case. Domain-Driven Design still applies everywhere (CLAUDE.md): the language and the boundaries are never skipped, only the tactical machinery is scaled.
 - **How wide its context starts:** the Core's model is the least stable, so the Bounded Context around it starts wide and is split once the model settles. Splitting early and wrongly costs far more than splitting late, and a context need not be a microservice (Khononov). The contexts themselves are drawn by `bounded-context-mapping`.
-- **How agents work together:** `ddd-agent-handoff` reads the type to choose the interaction mode.
+- **How agents work together:** `ddd-agent-handoff` reads the type to choose between a plain hand-over and a joint review (a Core subdomain is one reason for joint review).
 
 ## 4. Security Is a Separate Axis
 
