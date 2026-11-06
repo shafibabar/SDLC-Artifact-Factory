@@ -1,19 +1,54 @@
-# Command Validation Patterns Reference
+# Command Structs, Validation and Rejections in Go
 
-Self-contained reference for implementing the two-layer Command validation hierarchy
-in Go. Covers structural validation in the API handler, business-rule validation
-inside the Aggregate, guard clause patterns, validation error shapes, and the
-flow when a Command is rejected. Read alongside `SKILL.md`'s Validation Hierarchy
-section.
+**Moved here from `command-catalog` (Wave 2, #1396; D047-10).** The design skill is now stack-neutral: it records each Command's inputs, its rejections with their kind and where each is checked, its idempotency key and its duplicate outcome. This file holds the Go that implements those records. It keeps the original `ClassifyDataAsset` worked example and is reworked when `go-service-layer` is rebuilt. Two points from the old design text no longer hold and are overridden here:
+- **Tenant is not a default envelope field.** Carry `TenantID` only where the product is multi-tenant (D047-7).
+- **HTTP status mapping is `api-contract-design`'s decision**; the `respondCommandError` mapping in § 6 is one implementation of it, not the source.
 
----
+The `command_log` table and the handler's step order are in `./command-handler-transaction-and-idempotency.md`; the three validation tiers are in `./three-tier-validation-boundary.md`.
 
-## Layer 1: Structural Validation (API Handler)
+## 1. The Command Struct: Envelope Fields Plus Domain Fields
 
-Structural validation runs in the API handler before any domain logic executes.
-It never touches the database or loads an Aggregate. Its sole purpose is to
-reject malformed Commands at the boundary — missing required fields, out-of-range
-values, wrong types — so the Aggregate never receives a syntactically invalid input.
+```go
+// package commands — lives in internal/application/commands/
+
+// BaseCommand carries envelope fields shared by every command.
+// Embed this in every concrete command struct.
+type BaseCommand struct {
+    CommandID     uuid.UUID `json:"commandId"     validate:"required"`
+    AggregateID   uuid.UUID `json:"aggregateId"   validate:"required"`
+    AggregateType string    `json:"aggregateType" validate:"required"`
+    IssuedBy      uuid.UUID `json:"issuedBy"      validate:"required"`
+    IssuedAt      time.Time `json:"issuedAt"      validate:"required"`
+    TenantID      uuid.UUID `json:"tenantId"      validate:"required"`
+}
+
+// Concrete command — embed BaseCommand, add domain fields directly.
+type ClassifyDataAsset struct {
+    BaseCommand
+
+    // Domain payload — fields specific to this Command's intent.
+    SensitivityLevel  domain.SensitivityLevel `json:"sensitivityLevel"  validate:"required,oneof=Public Internal Confidential Restricted"`
+    ClassificationNote string                 `json:"classificationNote" validate:"max=500"`
+}
+```
+
+- The struct name is the Command name, without a `Command` suffix; the handler is `ClassifyDataAssetHandler`.
+- `validate` tags follow `go-playground/validator/v10`; structural validation calls `validate.Struct(cmd)` in the HTTP handler before any domain logic.
+- `IssuedAt` is set by the HTTP handler at receipt. The Aggregate stamps its own occurrence time when it applies the change.
+
+## 2. Where Each Field Comes From
+
+| Field | Source |
+|---|---|
+| `CommandID` | The client's idempotency key (`Idempotency-Key` header), stable across retries of one intent. Never a fresh `uuid.New()` per request, or a retry becomes a new Command |
+| `AggregateID` | The URL path parameter |
+| `AggregateType` | Hard-coded in the handler for the endpoint |
+| `IssuedBy` | The authenticated request context (JWT `sub` mapped to `UserID`), never the body |
+| `IssuedAt` | The HTTP handler at receipt: `time.Now().UTC()` |
+| `TenantID` | Multi-tenant products only: the authenticated context (JWT `tenant_id`), never the body |
+| Domain fields | The JSON request body |
+
+## 3. Structural Validation in the HTTP Handler
 
 ### Using go-playground/validator
 
@@ -38,7 +73,7 @@ func (h *DataAssetHandler) ClassifyDataAsset(w http.ResponseWriter, r *http.Requ
     cmd.IssuedBy    = auth.UserIDFromContext(r.Context())
     cmd.TenantID    = auth.TenantIDFromContext(r.Context())
     cmd.IssuedAt    = time.Now().UTC()
-    cmd.CommandID   = uuid.New() // Generated per-invocation for idempotency
+    cmd.CommandID   = idempotencyKeyFromHeader(r) // the client keeps it across retries
 
     if err := validate.Struct(cmd); err != nil {
         respondValidationErrors(w, err)
@@ -88,9 +123,7 @@ func (c ClassifyDataAsset) Validate() error {
 "is this asset allowed to be classified at this level?" — that is Layer 2. It only
 checks "is this input well-formed enough to hand to the domain model?"
 
----
-
-## Validation Error Shape
+## 4. The Validation Error Shape
 
 Structural validation errors must be machine-readable and field-scoped. Return a
 consistent envelope rather than a bare error string, so API clients can display
@@ -131,13 +164,7 @@ HTTP response for a Layer 1 failure:
 }
 ```
 
----
-
-## Layer 2: Business Rule Validation (Inside the Aggregate)
-
-Business-rule validation runs inside the Aggregate Root's own method — not in the
-handler, not in a Domain Service, not in the Repository. The Aggregate is the only
-object that knows the full invariant state it must enforce.
+## 5. Guard Clauses Inside the Aggregate
 
 ### Guard Clause Pattern
 
@@ -205,7 +232,9 @@ var (
 )
 ```
 
-The API handler maps domain errors to HTTP status codes:
+## 6. Mapping Domain Errors to Responses
+
+One implementation of the status codes `api-contract-design` chooses for each rejection kind:
 
 ```go
 func respondCommandError(w http.ResponseWriter, err error) {
@@ -223,9 +252,7 @@ func respondCommandError(w http.ResponseWriter, err error) {
 }
 ```
 
----
-
-## Guards Requiring Cross-Aggregate State
+## 7. Rules About Another Aggregate
 
 Some invariants reference state from a *different* Aggregate. For example:
 "A DataAsset cannot be classified as Restricted while its StorageSource is Inactive."
@@ -257,9 +284,7 @@ Use Option A (denormalized) when the cross-Aggregate state changes rarely and ev
 consistency is acceptable. Use Option B (Domain Service) when real-time consistency
 is a genuine business requirement.
 
----
-
-## What Happens When a Command Is Rejected
+## 8. When a Command Is Rejected
 
 A rejected Command follows a deterministic flow:
 
@@ -267,8 +292,7 @@ A rejected Command follows a deterministic flow:
 2. The command handler receives the error and does **not** call `repo.Save()` — no
    state change is written.
 3. The handler records the rejection in `command_log` so that a retry of the same
-   `CommandID` returns the same error without re-running the Aggregate (see
-   `references/command-format.md` for the idempotency implementation).
+   `CommandID` returns the same error without re-running the Aggregate (§ 9).
 4. The handler maps the domain error to an HTTP status code and returns a structured
    error response to the client.
 5. No Domain Event is emitted. A rejection is not a fact worth broadcasting — it is
@@ -278,20 +302,8 @@ A rejected Command follows a deterministic flow:
 outcome for the domain model. Panics are reserved for programmer errors (nil dereference,
 invariant that should have been impossible to reach) — not for business rule violations.
 
----
+## 9. Idempotency Edge Cases (from the old design text)
 
-## Validation Layer Boundary: Decision Table
-
-| Check type | Where it lives | Accesses DB? | Example |
-|---|---|---|---|
-| Required field present | Layer 1 — handler `Validate()` | No | `commandId` is non-nil UUID |
-| Enum value valid | Layer 1 — handler or tag | No | `sensitivityLevel` is one of four allowed values |
-| String length limit | Layer 1 — handler or tag | No | `classificationNote` ≤ 500 chars |
-| Aggregate-own state rule | Layer 2 — Aggregate method guard | Yes (Aggregate loaded) | Asset is not archived |
-| Cross-Aggregate state rule | Layer 2 — Aggregate method (Option A) or Domain Service (Option B) | Yes | StorageSource is active |
-| Business workflow rule | Layer 2 — Aggregate method guard | Yes | No re-classification to same level |
-| Tenant/ownership check | Layer 2 — Aggregate method guard | Yes (Aggregate loaded) | TenantID matches |
-
-If a check requires a database lookup of data *not* owned by the target Aggregate,
-it is either an Option A denormalization or an Option B Domain Service pre-check —
-not a Layer 1 check, and not a Repository method called directly from the handler.
+The `command_log` placement in `./command-handler-transaction-and-idempotency.md` (insert-or-replay as the first statement of the transaction) already closes the "same transaction" and "concurrent duplicates" cases. Two cases from the old text still apply:
+- **Return the stored result.** A duplicate returns the same response as the original, including the original's rejection. A rejected domain call rolls the main transaction back, taking the `command_log` insert with it, so record the rejection in a separate short transaction under the same key; otherwise a retry re-runs the guards against state that may have moved and can succeed where the first attempt failed.
+- **Retention window.** Prune `command_log` on a schedule (for example nightly, `DELETE … WHERE created_at < now() - interval '7 days'`), never sooner than the client's longest retry horizon including failover. An index on `created_at` keeps the delete cheap. In a multi-tenant table, key the row on `(idempotency_key, tenant_id)` so keys cannot collide across tenants.

@@ -10,7 +10,7 @@ description: >
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
 role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
-version: 1.7.0
+version: 1.8.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -170,7 +170,7 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
 8. Aggregate Design (per BC)             ← pattern per use case; true invariants (three-question test), boundaries, members
    (lean: one domain-model document instead of steps 8-11, using aggregate-design)
 9. Domain Event Catalog (per BC)         ← what each event means; envelope and versioning follow event-schema-design
-10. Command Catalog (per BC)             ← commands, validation, idempotency, API mapping
+10. Command Catalog (per BC)             ← one Command per intent; rejections and where each is checked; idempotency; HTTP left to api-contract-design
                 ↓
          HAND TO enterprise-architect: read-side decision per BC (cqrs-pattern)
                 ↓
@@ -209,7 +209,7 @@ Wait for user approval
 For each Bounded Context:
     Design Aggregates (pattern per use case, true invariants, entities, VOs)
     Catalogue Domain Events (meaning, visibility, consumers and policies)
-    Catalogue Commands (validation, idempotency, API mapping)
+    Catalogue Commands (intent, issuer, rejections and where checked, idempotency)
         ↓
 enterprise-architect decides the read side per BC (cqrs-pattern)
         ↓
@@ -239,6 +239,7 @@ The domain-modeler enforces DDD compliance on all its outputs:
 | Aggregate invariants | Every use case states its business-logic pattern (`aggregate-design`). An Aggregate exists only where a True Invariant passes the three-question test, with the answers written down; a use case with no rule across records is a Transaction Script or Active Record. Event sourcing names the need it meets, never "it's Core". |
 | Cross-Aggregate by ID | No Aggregate holds a direct object reference to another Aggregate. |
 | Domain Event naming and visibility | Every event is a past-tense business fact in the context's language (never a CRUD verb or a Command in disguise); only business-meaningful facts are published, with internal and stored events translated (`domain-event-catalog`). Publication goes through the Transactional Outbox, never a dual write (`event-driven-patterns`). |
+| Command intent and validation | Every Command is an imperative domain verb naming one intent (never `UpdateX` with a status field) and targets one Aggregate; business rules are checked in the Aggregate, never only at the API; who issued it comes from the authenticated context; a duplicate returns the first outcome (`command-catalog`). |
 | CQRS read side | Read Models follow enterprise-architect's read-side decision for the BC (`cqrs-pattern`): a simple read model inside the service, or projections from Domain Events only where the decision names a trigger for them. |
 
 ---
@@ -292,7 +293,7 @@ The domain modelling portion of the Design phase is complete when all of the fol
 - [ ] Every context relationship with a third-party system names Conformist or Anti-Corruption Layer, with the trade-off stated
 - [ ] Aggregate designs complete per BC (lean: the one domain model) — pattern per use case, True Invariants with their answers, entities, VOs, commands, events; `validate-aggregate-design.sh` clean
 - [ ] Domain Event Catalog complete per BC — meaning, visibility and translations, consumers with policies and idempotency, retention need; `validate-domain-event-catalog.sh` clean
-- [ ] Command Catalog complete per BC — validation, idempotency, API mapping
+- [ ] Command Catalog complete per BC — one Command per intent, issuer, inputs and their sources, every rejection with its kind and where it is checked (rules in the Aggregate), idempotency key and duplicate outcome; `validate-command-catalog.sh` clean
 - [ ] Read Model designs complete for every BC whose read-side decision needs one — projectors, storage, rebuild procedure
 - [ ] All three handoffs (enterprise-architect, data-architect, test-strategist) documented
 - [ ] `pre-phase-advance` hook passes for domain-modeling artifacts

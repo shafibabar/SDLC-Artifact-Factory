@@ -2073,7 +2073,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.7.0"
+        "version": "1.8.0"
       },
       {
         "created": "2026-06-25",
@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.7.1"
+        "version": "1.7.2"
       },
       {
         "created": "2026-06-25",
@@ -3618,12 +3618,12 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "command-catalog",
         "owner": "domain-modeler",
         "phase": "design",
@@ -3631,23 +3631,35 @@
           "command-catalog"
         ],
         "related": [
+          "access-control-model",
           "aggregate-design",
           "api-contract-design",
           "cqrs-pattern",
-          "domain-event-catalog"
+          "domain-event-catalog",
+          "event-storming-facilitation",
+          "go-chi-handler",
+          "go-domain-model",
+          "go-service-layer",
+          "read-model-design",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/software-architecture/api-design-patterns-geewax.md"
+        ],
         "status": "stable",
         "tags": [
-          "aggregates",
-          "command-handler",
+          "command-catalog",
           "commands",
           "cqrs",
           "design",
           "domain-modeling",
+          "idempotency",
           "validation"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -6281,7 +6293,7 @@
           "transaction-boundary",
           "validation-boundary"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -10819,8 +10831,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1036,
-    "edges_skill_sources": 199,
+    "edges_skill_related": 1043,
+    "edges_skill_sources": 203,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10832,20 +10844,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 65,
+    "research_files_cited": 66,
     "skills_with_assets": 10,
     "skills_with_contract_test": 152,
     "skills_with_domain": 189,
     "skills_with_evals": 36,
-    "skills_with_examples": 36,
+    "skills_with_examples": 37,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 35,
-    "skills_with_scripts": 32,
-    "skills_with_sources": 37,
+    "skills_with_resources": 36,
+    "skills_with_scripts": 33,
+    "skills_with_sources": 38,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 34
+    "skills_with_templates": 35
   },
   "edges": {
     "agent_produces": [
@@ -13112,6 +13124,10 @@
         "skill": "ci-pipeline"
       },
       {
+        "related": "access-control-model",
+        "skill": "command-catalog"
+      },
+      {
         "related": "aggregate-design",
         "skill": "command-catalog"
       },
@@ -13125,6 +13141,30 @@
       },
       {
         "related": "domain-event-catalog",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "go-chi-handler",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "go-domain-model",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "go-service-layer",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "ubiquitous-language",
         "skill": "command-catalog"
       },
       {
@@ -16996,6 +17036,22 @@
       {
         "skill": "business-model-canvas",
         "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "command-catalog",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "command-catalog",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "command-catalog",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "command-catalog",
+        "source": "research/software-architecture/api-design-patterns-geewax.md"
       },
       {
         "skill": "competitive-analysis",

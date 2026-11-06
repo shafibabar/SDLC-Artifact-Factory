@@ -22,7 +22,7 @@ description: >
   and references/parallel-query-orchestration.md. Implements the
   enterprise-architect's CQRS design and command-catalog's idempotency
   contract in Go. Used by the backend-engineer during Implement.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -79,6 +79,8 @@ repo := h.assets.WithTx(tx) // caller-supplied transaction — repo never opened
 
 Full handler body (idempotency, load, ABAC, domain call, save, result recording,
 commit) and the `command_log` schema: `references/command-handler-transaction-and-idempotency.md`.
+Command structs, structural validation, guard clauses, domain-error mapping and
+replaying a rejection (moved from `command-catalog`): `references/command-structs-and-rejections.md`.
 
 A command handler changes **exactly one Aggregate per transaction** (`aggregate-design`).
 A use case that appears to need two changed atomically is a signal to reconsider the
@@ -127,10 +129,10 @@ worked example: `references/cache-aside.md`.
 
 ## Three-Tier Validation Boundary
 
-`command-catalog`'s two design-level layers (structural, business-rule) leave a gap: a
-check needing I/O (so it cannot be Tier 1) that is not an invariant of the *target*
-Aggregate (so it does not belong inside that Aggregate's method). This layer owns that
-middle tier.
+`command-catalog` records where each rejection is checked: the input, a reference to
+another thing the Command names, or the Aggregate. The middle one — a check needing
+I/O (so it cannot be Tier 1) that is not an invariant of the *target* Aggregate (so it
+does not belong inside that Aggregate's method) — is this layer's tier.
 
 | Tier | Owner | Checks | I/O | Example |
 |---|---|---|---|---|
