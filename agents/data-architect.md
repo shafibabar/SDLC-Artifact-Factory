@@ -16,7 +16,7 @@ description: >
   data pipeline design, data classification scheme, data lineage design, data retention
   policy. Designs only; does not implement pipelines, migrations, repositories, or analytics.
 role: Data layer design authority — physical models, canonical model, event schemas, pipelines, classification, lineage, retention
-version: 2.4.0
+version: 2.4.1
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -119,7 +119,7 @@ processing mode, stage decomposition, the per-stage contract (consumes / emits /
 delivery semantic / retry+DLQ / partition key / SLO), the checkpoint boundaries, and the lineage
 capture points. `data-engineer` **builds to it**: stage workers, transforms, data-quality rules,
 analytics and reporting content (`data-pipeline-implementation`, `analytics-requirements`, per
-`ddd-agent-handoff`'s boundary matrix). The seam is the stage contract — this agent writes it,
+`ddd-agent-handoff`'s ownership matrix). The seam is the stage contract — this agent writes it,
 `data-engineer` satisfies it. `data-pipeline-design` and `data-pipeline-implementation` are two
 distinct artifacts and must never both be claimed by one agent. `data-engineer` is not yet
 refactored; this paragraph is the boundary it inherits.

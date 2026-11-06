@@ -1984,7 +1984,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.4.0"
+        "version": "2.4.1"
       },
       {
         "created": "2026-07-20",
@@ -4416,23 +4416,43 @@
         "created": "2026-07-22",
         "dir": "skills/ddd-agent-handoff",
         "domain": "domain-modeling",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "ddd-agent-handoff",
         "owner": "factory-governance",
         "phase": "cross-cutting",
         "produces": [
           "handoff-record"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "aggregate-design",
+          "bounded-context-mapping",
+          "command-catalog",
+          "container-diagram",
+          "context-map-patterns",
+          "cqrs-pattern",
+          "domain-event-catalog",
+          "event-schema-design",
+          "event-storming-facilitation",
+          "glossary-management",
+          "multi-tenancy-design",
+          "read-model-design",
+          "subdomain-distillation",
+          "ubiquitous-language",
+          "workflow-orchestration"
+        ],
+        "sources": [
+          "research/devops-and-delivery/platform-engineering-fournier-nowland.md",
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/learning-ddd-khononov.md"
+        ],
         "status": "stable",
         "tags": [
           "agents",
@@ -4440,9 +4460,10 @@
           "ddd",
           "design",
           "governance",
-          "handoff"
+          "handoff",
+          "ownership"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -7037,7 +7058,7 @@
           "module-federation",
           "vite"
         ],
-        "version": "1.0.1"
+        "version": "1.0.2"
       },
       {
         "created": "2026-07-22",
@@ -10088,7 +10109,7 @@
           "strategic-design",
           "subdomain"
         ],
-        "version": "3.1.0"
+        "version": "3.1.1"
       },
       {
         "created": "2026-06-25",
@@ -10856,8 +10877,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1053,
-    "edges_skill_sources": 215,
+    "edges_skill_related": 1068,
+    "edges_skill_sources": 218,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10870,19 +10891,19 @@
     "agents_with_status": 5,
     "commands_with_test": 15,
     "research_files_cited": 66,
-    "skills_with_assets": 10,
-    "skills_with_contract_test": 149,
+    "skills_with_assets": 9,
+    "skills_with_contract_test": 148,
     "skills_with_domain": 189,
-    "skills_with_evals": 39,
-    "skills_with_examples": 39,
+    "skills_with_evals": 40,
+    "skills_with_examples": 40,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 38,
-    "skills_with_scripts": 35,
-    "skills_with_sources": 40,
+    "skills_with_resources": 39,
+    "skills_with_scripts": 36,
+    "skills_with_sources": 41,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 37
+    "skills_with_templates": 38
   },
   "edges": {
     "agent_produces": [
@@ -13635,6 +13656,66 @@
       {
         "related": "reporting-spec",
         "skill": "data-storytelling"
+      },
+      {
+        "related": "aggregate-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "bounded-context-mapping",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "command-catalog",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "context-map-patterns",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "cqrs-pattern",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "domain-event-catalog",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "event-schema-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "subdomain-distillation",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "ubiquitous-language",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "workflow-orchestration",
+        "skill": "ddd-agent-handoff"
       },
       {
         "related": "go-event-consumer",
@@ -17173,6 +17254,18 @@
       {
         "skill": "cqrs-pattern",
         "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "ddd-agent-handoff",
+        "source": "research/devops-and-delivery/platform-engineering-fournier-nowland.md"
+      },
+      {
+        "skill": "ddd-agent-handoff",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "ddd-agent-handoff",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
       },
       {
         "skill": "domain-event-catalog",

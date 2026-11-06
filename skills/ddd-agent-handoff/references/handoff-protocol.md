@@ -1,181 +1,69 @@
-# DDD Handoff Protocol
+# Handoff Protocol
 
-Full protocol for how DDD work hands off between this plugin's agents. This
-file is self-contained — loadable without reading `SKILL.md` first, since
-agents may consult it directly. It assumes only that you know the 11 agents
-that touch DDD work (domain-modeler, enterprise-architect, data-architect,
-data-engineer, backend-engineer, security-architect, security-engineer,
-platform-engineer, ux-architect, frontend-engineer, test-strategist) and
-that `SKILL.md`'s Agent Boundary Matrix is the lookup table for which one
-owns a given concern.
+The detail behind `SKILL.md` §§ 2–5. Self-contained. Grounded in Fournier & Nowland (*Platform Engineering*: X-as-a-Service as the default interaction, collaboration as a temporary mode that returns to it; the modes originate in *Team Topologies*), summarised in `research/devops-and-delivery/platform-engineering-fournier-nowland.md`, and in Evans (*Domain-Driven Design*: refactoring toward deeper insight), summarised in `research/domain-driven-design/domain-driven-design-evans.md`.
 
----
+In this plugin, agents run one after another under the product owner, who approves artifacts. A "mode" is therefore not two teams meeting; it is **when the receiving agent looks at the producer's work**: after approval (hand-over) or before it (joint review).
 
-## Handoff Record Schema
+## 1. The two modes
 
-Every handoff between two agents is recorded using
-`assets/handoff-record-template.md`. The schema is one common structure for
-every pairing — auditability requires a consistent shape — but which fields
-are *required* versus optional depends on the interaction mode (below).
+| | Hand-over | Joint review |
+|---|---|---|
+| When the receiver reads the artifact | after the product owner approves it | as a draft, before approval |
+| Flags | come back after approval; a fix returns the artifact to draft | go back and forth until none is open; then approval |
+| Use | the default | a named reason (§ 2) |
+| Ends | when the receiver accepts | when the artifact is stable; later hand-overs of that kind go back to hand-over |
 
-| Field | Purpose |
+There is no third, "facilitating" mode: an agent that needs another's standards loads that agent's skill. No agent teaches another or works on its behalf.
+
+## 2. Choosing joint review
+
+Use joint review when at least one is true, and write which in the record:
+- **Core subdomain** (`subdomain-distillation`): the differentiating model is worth the receiver's early eye.
+- **Personal or regulated data** in the artifact: a misread hand-over is a compliance risk (security-architect reviews the Aggregate's rules before approval).
+- **A disputed or unclear Bounded Context boundary** touches the concern.
+- **First hand-over of that kind on this product** between these two agents.
+
+Generic subdomains bought or adopted rather than modelled need no hand-over beyond the integration contract.
+
+**Escalate** a hand-over to joint review when the receiver raises a second flag of the same kind on the same artifact. **Step down** to hand-over when the last joint reviews of that kind closed with no flags. Record each change with its trigger, so a resumed session sees why.
+
+## 3. Flags back
+
+A flag is how an agent reports a defect in an artifact it does not own:
+
+| Part | Holds |
 |---|---|
-| `from_agent` / `to_agent` | Who is handing off to whom |
-| `concern` | The specific piece of DDD work changing hands (name it precisely — "Aggregate boundary for Order" not "domain modeling") |
-| `interaction_mode` | `collaboration` \| `x-as-a-service` \| `facilitating` — see below |
-| `subdomain_classification` | `core` \| `supporting` \| `generic` — from `subdomain-distillation`; the primary input to mode selection |
-| `status` | `in-progress` \| `blocked` \| `abandoned` \| `completed` |
-| `resumption_type` | `operational-pause` \| `breakthrough-triggered-refactor` — only set when `status` reflects an interruption; see Resumption below |
-| `artifacts_produced` | What was actually produced so far, with paths |
-| `open_questions` | Unresolved items the next agent (or a resumed session) must see |
-| `roster` | Every agent currently party to this handoff, with a join history if the roster changed mid-session |
-| `dates` | Created, last updated |
+| Raised by | the agent that found it |
+| Artifact | its path |
+| What | what is wrong or missing, and the evidence (an NFR, a story, a measurement, a contradiction with another artifact) |
+| Owner | the agent that owns the artifact (the matrix) |
+| Status | open → fixed (by the owner) or declined (by the owner, with the reason) |
 
-## The Three Interaction Modes
+The raiser never edits the artifact. The owner fixes it, and if the product owner had approved it, it returns to draft for re-approval (#1288). A declined flag the raiser still disputes becomes a dispute (§ 4).
 
-From Team Topologies, applied to agent-to-agent DDD handoffs:
+## 4. Disputes
 
-- **Collaboration** — iterative, back-and-forth. Both agents actively shape
-  the outcome together; neither can finish alone. Used when the work is
-  genuinely joint (e.g. security-architect and domain-modeler jointly
-  deciding how a PII-bearing Aggregate's invariants interact with an access
-  policy).
-- **X-as-a-Service** — one-directional. The producing agent finishes an
-  artifact to a Definition of Done; the consuming agent takes it as a
-  finished input and doesn't need to renegotiate it. Used when the artifact
-  is stable and the boundary is well-understood (e.g. backend-engineer
-  consuming a finished Aggregate design from domain-modeler).
-- **Facilitating** — guidance transfer, no artifact ownership change. One
-  agent helps another get unstuck or apply a standard correctly, without
-  taking over the work. Used when the concern is really a capability gap,
-  not a boundary question (e.g. test-strategist facilitating BDD feature
-  file conventions to backend-engineer, who still owns and writes the
-  tests).
+1. Both agents state the matrix row or Definition of Done they rely on.
+2. Bounded Context scope: the domain-modeler decides (it owns the Context Map).
+3. A product term: the context's Ubiquitous Language; the plugin's vocabulary: `glossary-management`.
+4. An event: meaning to the domain-modeler, envelope and registry to the data-architect (D047-2).
+5. Otherwise: record the record's status as *blocked*, with both positions, and ask the product owner. Neither agent proceeds on the disputed part.
 
-## Mode Selection Criteria
+## 5. Adding an agent mid-stage
 
-Apply in this order. This is a selection table — *applying* it to a specific
-task is the acting agent's job, not something this skill decides for you.
+When a concern from another matrix row appears (personal data found in a source, a regulated field), look up its owner, add a flag or a concern row naming them, and let them choose their own mode for their piece. Joining does not change the mode of the rest of the hand-over.
 
-1. **Subdomain classification (primary signal)** — from `subdomain-distillation`:
-   - **Core Domain** → default to **Collaboration**, regardless of how
-     stable or familiar the pairing seems. Core Domain work deserves the
-     deepest joint effort every time; a "routine" Core Domain handoff is
-     still worth the collaboration cost.
-   - **Generic Subdomain** → default to **X-as-a-Service**, or skip the
-     cross-agent DDD process entirely if the subdomain is genuinely being
-     bought/adopted rather than modeled.
-   - **Supporting Subdomain** → use the secondary signals below to decide
-     between Collaboration and X-as-a-Service.
-2. **Secondary signals** (for Supporting Subdomain, or to sanity-check a
-   Core/Generic default):
-   - **Artifact stability** — still evolving → Collaboration; finished and
-     stable → X-as-a-Service.
-   - **Regulatory/PII sensitivity** — present → lean Collaboration even if
-     otherwise stable (compliance risk from a misunderstood handoff is
-     rarely worth the X-as-a-Service savings).
-   - **Pairing history** — first time these two agents have handed off this
-     kind of concern → lean Collaboration; well-established, repeated
-     pairing → X-as-a-Service is usually safe.
-   - **Cross-Bounded-Context ambiguity** — the concern spans an unclear or
-     disputed Bounded Context boundary → Collaboration (resolve the
-     ambiguity jointly before treating it as a stable handoff).
+## 6. Resumption
 
-## Definition of Done Per Stage
-
-A handoff should not begin until the producing agent's stage meets its DoD.
-Sequencing follows each agent's own declared phase order.
-
-| Stage | Producing agent | Definition of Done |
+| Kind | Signal | Resume by |
 |---|---|---|
-| Strategic design | domain-modeler | Subdomain classification recorded (`subdomain-distillation`); Bounded Contexts named with a Context Map covering every inter-context relationship referenced downstream |
-| Tactical modeling | domain-modeler | Aggregates, invariants, and Domain Events identified for every Bounded Context in scope; Ubiquitous Language terms registered in `glossary-management` |
-| Architecture | enterprise-architect / data-architect | Service decomposition, CQRS split, and physical/canonical data model all trace back to a named Bounded Context and Aggregate — no orphaned architecture decisions |
-| Implementation | backend-engineer / frontend-engineer / platform-engineer | Code implements the Aggregate/event contract exactly as designed, with no undocumented deviation; deviations are handed back as a Collaboration item, not silently implemented |
-| Verification | test-strategist / security-engineer | Tests bind to Aggregates and Domain Events (not incidental implementation details); compliance checks cover every Bounded Context flagged with regulatory sensitivity |
+| **Operational pause** | the session ended for a reason unrelated to the model: a limit, a time box, an unrelated interruption | reading the open records, the artifacts produced and the open questions; continue; nothing is redone |
+| **Model found wrong** | the work stopped *because* a model decision was wrong: an invariant can't hold at that boundary, two contexts are one, a classification was wrong | **not** resuming forward. Route back to the model's owner for a deliberate revision (Evans: a breakthrough reshapes the model; building on to the old one compounds the error). List every downstream artifact built on the old model for review |
 
-## Mode Transition Protocol
+Set the record's status to *paused* or *model-revision* accordingly, with the next step naming who acts. A new hand-over record is opened once the revised model is approved, citing the old record as its reason.
 
-A handoff's mode can change mid-session. Trigger signs and how to record
-the change:
+## 7. Scaling
 
-- **Escalate X-as-a-Service → Collaboration** when the consuming agent
-  repeatedly finds ambiguity the producing agent must resolve jointly (more
-  than one round of "this doesn't quite fit" is the trigger — don't wait
-  for a third).
-- **Step down Collaboration → X-as-a-Service** when a pairing has produced
-  several stable handoffs in a row for the same kind of concern — continued
-  Collaboration at that point is unnecessary cost, not diligence.
-- **Recording**: update the handoff record's `interaction_mode` field and
-  append a dated note to `open_questions` (or a new `mode_history` entry if
-  the template has one) stating the trigger and which agent identified it.
-  A resumed session must be able to see *why* the mode changed, not just
-  that it did.
-
-## Roster Change Protocol
-
-When a concern surfaces mid-session that maps to a Boundary Matrix row not
-yet part of the active handoff:
-
-1. Look up the owning agent in `SKILL.md`'s Agent Boundary Matrix.
-2. Add them to the handoff record's `roster` with a join entry (date, what
-   triggered the addition, which concern they now own).
-3. The newly added agent applies Mode Selection Criteria for their piece
-   independently — joining a Collaboration-mode handoff doesn't force every
-   participant into the same mode for every sub-concern.
-
-Common trigger: a PII or cross-border data signal surfaces during what
-started as a two-agent handoff (e.g. domain-modeler + backend-engineer),
-requiring security-architect or a compliance concern requiring
-security-engineer to join.
-
-## Conflict Resolution / Escalation
-
-For genuine disagreement about ownership (distinct from `SKILL.md`'s "When
-Nothing Matches," which covers the case where *no* row fits — this covers
-two agents both believing a row fits *them*):
-
-1. Both agents state their claimed boundary and cite the specific Boundary
-   Matrix row or Definition of Done they believe applies.
-2. If the disagreement is about Bounded Context scope, domain-modeler has
-   final say (Context Map ownership) — not the two agents in dispute.
-3. If the disagreement is about vocabulary, `glossary-management` is the
-   tiebreaker, per `SKILL.md`'s existing rule.
-4. If neither resolves it, record the dispute as an `open_questions` entry
-   with `status: blocked` and escalate to the product owner rather than one agent
-   unilaterally proceeding.
-
-## Resumption: Operational Pause vs. Breakthrough
-
-Not every interruption should resume the same way:
-
-- **`operational-pause`** — the session ended for a reason unrelated to the
-  model's correctness (context limit, time-boxing, unrelated interruption).
-  Resume by reading the handoff record's `artifacts_produced` and
-  `open_questions` and continuing from there — no model rework implied.
-- **`breakthrough-triggered-refactor`** — the interruption happened *because*
-  the team realized the current model (an Aggregate boundary, a Context Map
-  relationship, a subdomain classification) is wrong. Per Evans' Continuous
-  Refactoring Toward Deeper Insight, the correct move is not to resume
-  forward — it's to route back to domain-modeler for deliberate model
-  revision before any downstream agent continues building on the old model.
-  Mark this explicitly in the record; a resumed session that only checks
-  `artifacts_produced` and continues forward on a `breakthrough` record is
-  compounding the error, not fixing it.
-
-See `references/handoff-worked-examples.md` for both scenarios worked in
-full.
-
-## Handoff Quality Checklist
-
-Pass/Defect, in `methodology-review`'s style. A **defect** blocks the
-handoff from being considered complete.
-
-| Check | Pass | Defect |
-|---|---|---|
-| Record exists | A handoff record exists for the concern before work starts on the receiving side | Work begins on the receiving side with no handoff record |
-| Mode is justified | `interaction_mode` matches what Mode Selection Criteria would recommend given the recorded `subdomain_classification` | Mode was picked without reference to subdomain classification, or contradicts it with no noted override reason |
-| DoD met before handoff | The producing agent's stage meets its Definition of Done | Handoff occurs with an unmet DoD item |
-| Roster changes recorded | Every agent added mid-session has a join entry | An agent is acting on the concern with no roster entry |
-| Mode changes recorded | Every mode change has a dated note explaining the trigger | `interaction_mode` changed with no record of why |
-| Resumption typed correctly | Every interrupted handoff has `resumption_type` set before being picked back up | A resumed session continues forward without checking whether the interruption was a breakthrough |
+- **Lean:** one record per pair per phase with the concerns table and any flags; joint review is rare (no Core-subdomain complexity usually warrants it).
+- **Standard:** full records; joint review on the named reasons.
+- **Enterprise:** full records; joint review is usual for regulated data and for contexts shared across regions or tenants.
