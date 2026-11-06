@@ -41,16 +41,16 @@ Which agent owns a concern, what must be decided before it, and how the work pas
 | Concern | Owner | Skill | After |
 |---|---|---|---|
 | Domain Storytelling, Event Storming (agent-run or workshop, D047-8) | domain-modeler | `domain-storytelling`, `event-storming-facilitation` | Ideate approved |
-| Subdomain classification (Core / Supporting / Generic) | domain-modeler | `subdomain-distillation` | the Big Picture (D047-14) |
-| Ubiquitous Language per Bounded Context, in the product's artifacts | domain-modeler | `ubiquitous-language` | Event Storming |
+| Subdomain classification (Core / Supporting / Generic); at lean a short table, never skipped | domain-modeler | `subdomain-distillation` | the Big Picture (D047-14) |
+| Ubiquitous Language per Bounded Context, in the product's own artifacts (never in `glossary-management`) | domain-modeler | `ubiquitous-language` | Event Storming |
 | Bounded Contexts and the Context Map; relationship patterns | domain-modeler | `bounded-context-mapping`; `context-map-patterns` | language (D047-5) |
 | Aggregates, invariants, business-logic pattern, event sourcing | domain-modeler | `aggregate-design` | the Context Map |
 | Domain Events: what each means, its payload's meaning, its consumers | domain-modeler | `domain-event-catalog` | Aggregates |
-| Event envelope, serialization, versioning, schema registry | data-architect | `event-schema-design` | the event catalog (D047-1, D047-2) |
+| Event envelope, serialization, versioning, schema registry; a breaking change is a **new event type**, never a `.vN` suffix | data-architect | `event-schema-design` | the event catalog (D047-1, D047-2) |
 | Commands | domain-modeler | `command-catalog` | Aggregates |
 | Read side per context; queries across services | enterprise-architect | `cqrs-pattern` | Commands; **before Read Models** (D047-4) |
 | Read Models | domain-modeler | `read-model-design` | the read-side decision |
-| System context; containers, service decomposition, deployment view, gateway placement | enterprise-architect | `system-context-diagram`, `container-diagram` | the domain model (D047-6, D047-11, D047-13) |
+| System context; containers, service decomposition (lean: one deployable, a modular monolith; a Bounded Context is not automatically a service), deployment view, gateway placement | enterprise-architect | `system-context-diagram`, `container-diagram` | the approved domain model (D047-6, D047-11, D047-13) |
 | Tenant isolation | enterprise-architect | `multi-tenancy-design` | NFRs and compliance; before the deployment view (D047-7) |
 | Components (only for services that differ from the default) | enterprise-architect | `component-diagram` | containers |
 | Choreography, outbox, consumers; orchestration and sagas; broker | enterprise-architect | `event-driven-patterns`; `workflow-orchestration` (D047-3); `message-broker-selection` | the event catalog |
@@ -66,14 +66,15 @@ Which agent owns a concern, what must be decided before it, and how the work pas
 | Security controls, compliance checks | security-engineer | `security-implementation`, `compliance-verification` | security design |
 | The plugin's own vocabulary | factory-governance | `glossary-management` (D047-9) | — |
 
-Where a decision comes *after* another, the later agent reads the earlier artifact and never makes the earlier decision itself. Edge cases and Definition of Done per stage: `./references/ownership-and-order.md`.
+Where a decision comes *after* another, the later agent waits for the earlier artifact, approved, and never makes the earlier decision itself. Lean keeps every step, shorter. Edge cases and Definition of Done per stage: `./references/ownership-and-order.md`.
 
 ## 2. Rules Every Agent Follows
 
 1. **Never edit another agent's artifact.** A defect found in it (a wrong invariant, a missing event, a contradiction) is a **flag back**: recorded in the hand-over record with what is wrong and the evidence, routed to the owner, who fixes it. A fixed artifact the product owner had approved returns to draft and needs re-approval (#1288).
-2. **Never take over an upstream decision.** A Read Model designer who finds a query rung 1 can't serve sends the evidence to enterprise-architect; a backend-engineer who finds the Aggregate boundary unworkable sends it to the domain-modeler.
-3. **Disputes:** Bounded Context scope → the domain-modeler decides; a product term → the context's Ubiquitous Language; plugin vocabulary → `glossary-management`; meaning vs. envelope of an event → split per D047-2. Anything else is recorded as *blocked* and goes to the product owner; neither agent proceeds alone.
-4. **Nothing fits:** ask one question naming the two closest owners rather than guess.
+2. **Never take over an upstream decision, and never work around it beneath.** A Read Model designer who finds a query rung 1 can't serve sends the evidence to enterprise-architect; a data-architect or backend-engineer who finds an Aggregate rule can't hold at its boundary sends it to the domain-modeler, and does not patch it below (a database trigger, a code path): the affected part waits for the revised model.
+3. **One owner per artifact.** Joint review is a temporary way of working, never shared ownership; afterwards the owner publishes and the other consumes.
+4. **Disputes:** Bounded Context scope → the domain-modeler decides; a product term → the context's Ubiquitous Language; plugin vocabulary → `glossary-management`; meaning vs. envelope of an event → split per D047-2. Anything else is recorded as *blocked* and goes to the product owner; neither agent proceeds alone.
+5. **Nothing fits:** ask one question naming the two closest owners rather than guess.
 
 ## 3. Two Ways to Hand Over
 
@@ -106,7 +107,8 @@ Each trap comes with the reason to give in full.
 - **"The domain-modeler can decide CQRS while designing Read Models."** *Reason:* the read side is enterprise-architect's, decided first; the Read Model's shape depends on it. *Instead:* `cqrs-pattern`, then `read-model-design`.
 - **"The data-architect owns the event, so it decides what `OrderPlaced` means."** *Reason:* meaning is the domain's; the data-architect owns envelope, serialization and registry. *Instead:* split per D047-2.
 - **"Resume where we left off"** after the boundary was found wrong. *Reason:* everything downstream builds on a model known to be wrong. *Instead:* route back to the owner, then review what depended on it.
-- **"Joint review for everything, to be safe."** *Reason:* every artifact then waits on two agents for no gain. *Instead:* hand-over by default; joint review on a named reason.
+- **"Add a trigger so the data model can be finished on the current design."** *Reason:* it enforces a rule the model put in the wrong place, and hides the defect under the schema. *Instead:* flag it back; the affected part waits for the revised Aggregate.
+- **"Joint review for everything, to be safe,"** or **"both agents own the file from now on."** *Reason:* every artifact then waits on two agents for no gain, and shared ownership leaves no one answerable for the model (Fournier & Nowland: permanent collaboration is the anti-pattern). *Instead:* one owner per artifact; hand-over by default; joint review for a named reason, then back to hand-over.
 - **"Mark it accepted; the open flag is minor."** *Reason:* an accepted record with open flags tells the next session the input is sound. *Instead:* close or decline each flag with a reason first.
 - **"Two agents disagree; the faster one proceeds."** *Reason:* the slower one's artifact now contradicts. *Instead:* record *blocked*; the rule in § 2 or the product owner decides.
 
