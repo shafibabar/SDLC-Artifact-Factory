@@ -1,7 +1,7 @@
 ---
 name: read-model-design
 description: "Teaches the domain-modeler and backend-engineer to design Read Models — the denormalized, query-optimized representations of Aggregate state produced by projections from Domain Events. Covers Read Model field selection (what to include from the Aggregate and related context), denormalization strategy (when and how to flatten nested structures), eventual consistency management (version fields, staleness tolerance, client-side handling), the Read Model artifact format, and naming conventions. Used during Design whenever a service exposes query endpoints that must return pre-computed, caller-optimized shapes."
-version: 2.1.0
+version: 2.2.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
@@ -117,4 +117,5 @@ If the API response requires significant transformation of a Read Model at query
 - `references/read-model-format.md` — complete Read Model artifact format (design document fields, worked `DataAssetView` example, storage options, Output Format template)
 - `references/denormalization-patterns.md` — embedding vs. referencing patterns; N+1 flattening heuristic; multi-model split; list/detail/summary view Go struct examples; Aggregate boundary decoupling
 - `references/consistency-patterns.md` — version field propagation from Aggregate to Read Model; read-your-own-writes polling; `AsOf` for dashboards; rebuild with shadow table; Projector position tracking; Kleppmann's eventual consistency anomalies
+- `references/projection-mechanics.md` — synchronous, event-driven and Change Data Capture projection mechanics compared (moved from `cqrs-pattern`); `cqrs-pattern` decides whether a context is projected at all, before this skill runs
 - `references/go-implementation.md` — pgx DDL for Read Model tables; Go repository interface; filter parameter pattern; Projector Go code; test fixture pattern

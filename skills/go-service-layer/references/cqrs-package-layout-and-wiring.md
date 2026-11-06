@@ -1,6 +1,6 @@
-# Go Implementation Patterns for CQRS
+# CQRS Package Layout, Handlers and Wiring in Go
 
-Self-contained reference for Go code patterns in a Full CQRS service. Usable without the parent SKILL.md in context.
+**Moved here from `cqrs-pattern` (Wave 2, #1397; D047-10).** The design skill now only decides the read side per Bounded Context (Simple Read Model by default, projections on a named trigger). This file keeps the old Go patterns for a service on the projections rung: package layout, a command handler, the repository with optimistic concurrency and the outbox insert, a projector, a query handler, a read store and start-up wiring. It is reworked when `go-service-layer` is rebuilt. Where it differs from this skill's own standards, they win: the command handler's step order and `command_log` placement are in `./command-handler-transaction-and-idempotency.md` (the transaction opens in the handler, not the repository); projector idempotency is `go-event-consumer`'s. A service on the Simple Read Model rung has no projector: its query handler reads the write tables through a read-side type, never the Aggregate.
 
 All patterns target this plugin's default stack: Go, `net/http` + `chi`, PostgreSQL + `pgx/v5`, Redpanda (Kafka-compatible). Patterns are grounded in Evans' four-layer architecture (UI/Application/Domain/Infrastructure) with the Domain layer isolated from all I/O.
 

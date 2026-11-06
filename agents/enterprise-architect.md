@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.7.2
+version: 1.8.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -211,6 +211,7 @@ Write an ADR whenever any of the following occur:
 | Check | How the enterprise-architect applies it |
 |---|---|
 | **DDD — Bounded Context boundaries** | No service splits a Bounded Context. One service may hold several contexts (a modular monolith, the lean default); splitting contexts into services follows `container-diagram`'s granularity checklists, and a non-obvious split gets an ADR. |
+| **CQRS read side** | One ladder (`cqrs-pattern`, D047-4): a Simple Read Model by default; projections only on a named trigger with evidence; API Composition across services before a CQRS view. CQRS never implies event sourcing, and no rule is checked against a Read Model. |
 | **SOLID** | Component Diagrams enforce dependency direction (DIP). Every service follows the layered architecture from `component-diagram` skill. No domain layer dependency on infrastructure — enforced at the architectural design level. |
 | **TDD readiness** | API contracts include enough detail (request/response schemas, error codes) that the test-strategist can write contract tests before any code is written. |
 | **BDD readiness** | Integration Design documents Consumer-Driven Contract requirements — these become BDD-style contract test scenarios. |
@@ -225,12 +226,12 @@ The enterprise-architect produces three explicit handoffs:
 ### Handoff to backend-engineer
 - Component Diagram (per service) — the package structure and layer separation blueprint
 - API Contract (OpenAPI spec) — the endpoints to implement
-- CQRS design per service — command handler / query handler structure
+- CQRS decisions per Bounded Context — Simple Read Model or projections, the staleness each view accepts, how the writer sees their own write
 - ADRs — decisions the backend-engineer must implement, not re-debate
 
 ### Handoff to data-architect
 - Container Diagram — which services own which databases
-- CQRS design — aggregate tables vs read model tables (separate ownership)
+- CQRS decisions — which contexts read their write tables and which keep projected Read Model stores; cross-service views and the events that feed them
 - Multi-Tenancy Design — the data partitioning the chosen tenancy model requires
 
 ### Handoff to platform-engineer
@@ -268,7 +269,7 @@ The architecture design portion of the Design phase is complete when all of the 
 
 - [ ] System Context Diagram complete and approved
 - [ ] Container Diagram complete and approved — all services named, technology labelled, communication protocols documented
-- [ ] CQRS read-side decision recorded for every Bounded Context before Read Models were designed
+- [ ] CQRS read-side decision recorded for every Bounded Context before Read Models were designed — Simple Read Model unless a named trigger with evidence; staleness and read-your-writes per projected context; API Composition for cross-service queries unless a trigger; `validate-cqrs-decisions.sh` clean
 - [ ] Multi-Tenancy Design complete — isolation model chosen from the NFRs and compliance input, with its enforcement and provisioning
 - [ ] Integration Design complete — all integrations inventoried, resilience patterns defined, Consumer-Driven Contract plan documented
 - [ ] Component Diagram complete for every service that differs from the default skeleton — layer structure, SOLID compliance

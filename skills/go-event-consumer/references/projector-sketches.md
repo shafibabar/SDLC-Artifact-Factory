@@ -1,0 +1,159 @@
+# Projector Sketches in Go
+
+**Moved here from `cqrs-pattern` (Wave 2, #1397; D047-10).** The Go sketches for the three projection mechanics (synchronous in the write transaction, event-driven from the broker, Change Data Capture from Debezium) and the two projector idempotency guards. The design-level comparison of the mechanics is in `read-model-design`. Kept as they were, with the original `DataAsset` example; reworked when `go-event-consumer` is rebuilt. This skill's own idempotency standard (`./idempotent-consumer-standard.md`) wins where they differ.
+
+## 1. Mechanic sketches
+
+### Sketch (within the Repository Save transaction)
+
+```go
+func (r *DataAssetRepo) Save(ctx context.Context, tx pgx.Tx, asset *domain.DataAsset) error {
+    // 1. Update aggregate state
+    _, err := tx.Exec(ctx,
+        `UPDATE data_assets SET sensitivity=$1, version=$2 WHERE id=$3 AND version=$4`,
+        asset.Sensitivity(), asset.Version(), asset.ID(), asset.Version()-1)
+    if err != nil {
+        return fmt.Errorf("updating aggregate: %w", err)
+    }
+    // 2. Insert outbox events
+    for _, evt := range asset.Events() {
+        if err := r.insertOutboxEvent(ctx, tx, evt); err != nil {
+            return err
+        }
+    }
+    // 3. Synchronous projection (only for simple, non-Full-CQRS scenarios)
+    _, err = tx.Exec(ctx,
+        `INSERT INTO data_asset_summary (id, sensitivity)
+         VALUES ($1, $2)
+         ON CONFLICT (id) DO UPDATE SET sensitivity = EXCLUDED.sensitivity`,
+        asset.ID(), asset.Sensitivity())
+    return err
+}
+```
+
+### Sketch (Projector consuming from Redpanda)
+
+```go
+// DataAssetProjector subscribes to data-asset-management.events
+// and maintains the data_asset_detail Read Model table.
+type DataAssetProjector struct {
+    store *pgxpool.Pool
+}
+
+func (p *DataAssetProjector) Handle(ctx context.Context, msg *kgo.Record) error {
+    var evt events.DataAssetClassified
+    if err := json.Unmarshal(msg.Value, &evt); err != nil {
+        return fmt.Errorf("unmarshal event: %w", err)
+    }
+
+    return p.handleDataAssetClassified(ctx, evt)
+}
+
+func (p *DataAssetProjector) handleDataAssetClassified(ctx context.Context, evt events.DataAssetClassified) error {
+    _, err := p.store.Exec(ctx, `
+        INSERT INTO data_asset_detail (
+            id, tenant_id, name, sensitivity,
+            storage_source_id, classified_at, event_sequence
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (id) DO UPDATE
+            SET sensitivity    = EXCLUDED.sensitivity,
+                classified_at  = EXCLUDED.classified_at,
+                event_sequence = EXCLUDED.event_sequence
+            WHERE data_asset_detail.event_sequence < EXCLUDED.event_sequence`,
+        evt.DataAssetID, evt.TenantID, evt.Name,
+        evt.Sensitivity, evt.StorageSourceID, evt.OccurredAt,
+        evt.EventSequence,
+    )
+    return err
+}
+```
+
+### Sketch (Projector consuming Debezium CDC events)
+
+```go
+// DebeziumEnvelope is the standard Debezium Kafka Connect change event shape.
+type DebeziumEnvelope struct {
+    Before *DataAssetRow `json:"before"`
+    After  *DataAssetRow `json:"after"`
+    Op     string        `json:"op"` // "c" create, "u" update, "d" delete, "r" read (snapshot)
+}
+
+type DataAssetRow struct {
+    ID          string `json:"id"`
+    TenantID    string `json:"tenant_id"`
+    Name        string `json:"name"`
+    Sensitivity string `json:"sensitivity"`
+    Version     int64  `json:"version"`
+}
+
+func (p *DataAssetCDCProjector) Handle(ctx context.Context, msg *kgo.Record) error {
+    var env DebeziumEnvelope
+    if err := json.Unmarshal(msg.Value, &env); err != nil {
+        return err
+    }
+
+    switch env.Op {
+    case "c", "u", "r":
+        return p.upsert(ctx, env.After)
+    case "d":
+        return p.delete(ctx, env.Before.ID)
+    }
+    return nil
+}
+```
+
+## 2. Idempotency guards
+
+### Dedup table: processed_event_ids Table
+
+For projectors where the upsert's own version-check is insufficient (e.g., delete events, or events with no natural sequence to compare), use a separate deduplication table:
+
+```sql
+CREATE TABLE processed_event_ids (
+    event_id    UUID        NOT NULL,
+    projector   TEXT        NOT NULL,
+    processed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (event_id, projector)
+);
+```
+
+```go
+func (p *DataAssetProjector) isAlreadyProcessed(ctx context.Context, tx pgx.Tx, eventID uuid.UUID) (bool, error) {
+    var exists bool
+    err := tx.QueryRow(ctx,
+        `SELECT EXISTS(
+            SELECT 1 FROM processed_event_ids
+            WHERE event_id = $1 AND projector = 'DataAssetProjector'
+        )`, eventID).Scan(&exists)
+    return exists, err
+}
+
+func (p *DataAssetProjector) markProcessed(ctx context.Context, tx pgx.Tx, eventID uuid.UUID) error {
+    _, err := tx.Exec(ctx,
+        `INSERT INTO processed_event_ids (event_id, projector)
+         VALUES ($1, 'DataAssetProjector')
+         ON CONFLICT DO NOTHING`,
+        eventID)
+    return err
+}
+```
+
+Both `isAlreadyProcessed` and the Read Model upsert run inside a single transaction. If the process crashes after the upsert but before committing, the event is reprocessed on restart — the `processed_event_ids` insert and the upsert both succeed again (ON CONFLICT DO NOTHING / ON CONFLICT DO UPDATE WHERE ... is idempotent).
+
+
+**Schema for sequence-carrying events:**
+
+```sql
+-- Read Model table carrying the sequence of the last applied event
+CREATE TABLE data_asset_detail (
+    id               UUID         PRIMARY KEY,
+    tenant_id        UUID         NOT NULL,
+    name             TEXT         NOT NULL,
+    sensitivity      TEXT         NOT NULL,
+    storage_source_name TEXT,
+    classified_at    TIMESTAMPTZ,
+    event_sequence   BIGINT       NOT NULL DEFAULT 0  -- Redpanda offset or domain event version
+);
+```
+
+The `event_sequence` column receives the Redpanda message offset (or domain event version number). The upsert's `WHERE` clause rejects any event whose sequence is not greater than the stored sequence, making duplicate delivery a no-op.

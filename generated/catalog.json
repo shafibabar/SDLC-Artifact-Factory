@@ -1505,8 +1505,8 @@
         "ubiquitous-language"
       ],
       "owners": [
-        "backend-engineer",
         "domain-modeler",
+        "enterprise-architect",
         "factory-governance"
       ],
       "skill_count": 12,
@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.7.2"
+        "version": "1.8.0"
       },
       {
         "created": "2026-06-25",
@@ -3968,37 +3968,49 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "cqrs-pattern",
-        "owner": "backend-engineer",
-        "phase": "implement",
+        "owner": "enterprise-architect",
+        "phase": "design",
         "produces": [
           "cqrs-design"
         ],
         "related": [
           "aggregate-design",
+          "api-contract-design",
+          "command-catalog",
+          "container-diagram",
           "domain-event-catalog",
-          "go-domain-model",
+          "event-driven-patterns",
+          "go-event-consumer",
+          "go-service-layer",
           "read-model-design",
-          "subdomain-distillation"
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/microservices-patterns-richardson.md"
+        ],
         "status": "stable",
         "tags": [
+          "api-composition",
           "cqrs",
-          "domain-modeling",
-          "event-sourcing",
-          "implement",
+          "design",
+          "eventual-consistency",
           "projections",
           "read-model",
+          "read-side",
           "write-model"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-22",
@@ -5639,7 +5651,7 @@
           "redpanda",
           "worker-pool"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -6293,7 +6305,7 @@
           "transaction-boundary",
           "validation-boundary"
         ],
-        "version": "3.1.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-06-25",
@@ -9370,7 +9382,7 @@
           "query-optimization",
           "read-model"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-07-20",
@@ -10779,7 +10791,7 @@
           "saga",
           "workflow"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-06-25",
@@ -10831,8 +10843,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1043,
-    "edges_skill_sources": 203,
+    "edges_skill_related": 1048,
+    "edges_skill_sources": 208,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10849,15 +10861,15 @@
     "skills_with_contract_test": 151,
     "skills_with_domain": 189,
     "skills_with_evals": 37,
-    "skills_with_examples": 37,
+    "skills_with_examples": 38,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 36,
-    "skills_with_scripts": 33,
-    "skills_with_sources": 38,
+    "skills_with_resources": 37,
+    "skills_with_scripts": 34,
+    "skills_with_sources": 39,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 35
+    "skills_with_templates": 36
   },
   "edges": {
     "agent_produces": [
@@ -13348,11 +13360,31 @@
         "skill": "cqrs-pattern"
       },
       {
+        "related": "api-contract-design",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "command-catalog",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "cqrs-pattern"
+      },
+      {
         "related": "domain-event-catalog",
         "skill": "cqrs-pattern"
       },
       {
-        "related": "go-domain-model",
+        "related": "event-driven-patterns",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "go-service-layer",
         "skill": "cqrs-pattern"
       },
       {
@@ -13360,7 +13392,7 @@
         "skill": "cqrs-pattern"
       },
       {
-        "related": "subdomain-distillation",
+        "related": "workflow-orchestration",
         "skill": "cqrs-pattern"
       },
       {
@@ -17088,6 +17120,26 @@
       {
         "skill": "context-map-patterns",
         "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
       },
       {
         "skill": "domain-event-catalog",
