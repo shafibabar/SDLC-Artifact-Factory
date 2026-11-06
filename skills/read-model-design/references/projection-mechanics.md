@@ -1,109 +1,73 @@
-# Projection Mechanics
+# Projections and Rebuilds
 
-**Moved here from `cqrs-pattern` (Wave 2, #1397).** `cqrs-pattern` now decides only *whether* a context's Read Models are projected (a named trigger, D047-4); how a projection is kept up to date is this skill's. The three mechanics below are kept as they were and reworked when `read-model-design` is rebuilt (#1398). Code and DDL moved to `go-event-consumer`. Note: the old text's "this plugin's default is Full CQRS for Core contexts" no longer holds; projections need a named trigger.
+The detail behind `SKILL.md` § 3, for Read Models that `cqrs-decisions.md` puts on projections. Self-contained. Grounded in Khononov (*Learning Domain-Driven Design*: projections, like snapshots, are derived and disposable), Young (*Versioning in an Event Sourced System*: a replay meets every historical event type), Richardson (*Microservices Patterns*: Transactional Outbox, CQRS views across services) and Campbell (*Designing Backend Systems in Go*: cache-aside), as summarised in `research/domain-driven-design/learning-ddd-khononov.md`, `research/domain-driven-design/versioning-event-sourced-system-young.md`, `research/software-architecture/microservices-patterns-richardson.md` and `research/software-architecture/designing-backend-systems-go-campbell.md`. No code: projector code is `go-event-consumer`'s (`references/projector-sketches.md`).
 
-A **Projector** consumes Domain Events and updates Read Model tables. Every Projector is idempotent: safe to process the same event twice.
+A **projector** reads events and writes one Read Model. It is the only thing that writes it.
 
----
+## 1. Three mechanics
 
-## Projection Mechanic 1: Synchronous (Same Transaction as Write)
+| | From published events | In the write transaction | Change data capture |
+|---|---|---|---|
+| How | a consumer reads the Domain Events the Transactional Outbox publishes | the view is updated in the same transaction as the Aggregate and outbox rows | a connector reads the write database's change log and publishes row changes |
+| Consistency | eventual: delivery lag, usually milliseconds to seconds, much longer in an outage | immediate | eventual |
+| Cost to writes | none | every write pays for every such view | none |
+| Payload speaks | the business language of the event | — | the write tables' columns: a table change changes the feed |
+| Rebuilt from | the stored events | the write tables (no event history is involved) | a fresh snapshot of the tables plus the log |
+| Use when | the usual choice for a projected view | one cheap summary inside one service where lag is unacceptable and writes are light | the write side publishes no events (a legacy schema) and adding an outbox is impractical |
 
-### What It Is
+Record the mechanic per Read Model. A view updated in the write transaction is still not something rules check, and it is still written only by its projection step, never by Command handlers directly.
 
-The Read Model table is updated inside the same database transaction that saves the Aggregate state and the outbox event row. If the transaction fails, neither the Aggregate state, the outbox row, nor the Read Model update is committed.
+## 2. Applying events safely
 
-### Characteristics
+Every mechanic delivers **at least once**: a relay retries, a consumer restarts from its last position, partitions are reassigned. So:
 
-- **Consistency**: Immediate — the Read Model is always current at the moment the write commits
-- **Coupling**: Tight — every schema change to any Read Model requires touching the write transaction
-- **Write throughput impact**: Every write pays the cost of every Read Model's update; complex or slow projections directly degrade write latency
-- **Rebuild**: Cannot replay from events — the Read Model was never built from events, so replaying the event stream will not reconstruct it
-- **Idempotency requirement**: Less critical (the write transaction is atomic), but still required if the write is retried after a partial failure
-
-### When to Use
-
-- The Simple Read Model variant, where write and read share one DB and there is no broker
-- A single, lightweight summary counter or materialised view that adds negligible write latency
-- **Do not use** in Full CQRS — this pattern reintroduces write-side coupling that Full CQRS exists to remove
-
-The Go sketches are in `go-event-consumer` (projector sketches).
-
----
-
-## Projection Mechanic 2: Event-Driven (Subscribe to Broker)
-
-### What It Is
-
-The Projector is a separate consumer that subscribes to a Redpanda topic (or consumer group). It processes Domain Events published by the Transactional Outbox relay and upserts Read Model tables. This is the standard mechanic for Full CQRS in this plugin.
-
-### Characteristics
-
-- **Consistency**: Eventual — Read Models lag the Write Model by the outbox relay + broker delivery round-trip (typically milliseconds to low seconds)
-- **Coupling**: Decoupled — the Projector can be updated, redeployed, or replaced without touching the write path
-- **Write throughput impact**: None — the write transaction ends when the outbox row is inserted; the projector runs asynchronously
-- **Rebuild**: Yes — stop the projector, truncate the Read Model table, reset the consumer group offset to the earliest message, restart. The full event history in Redpanda replays and rebuilds the Read Model.
-- **Idempotency requirement**: Critical — at-least-once delivery means the same event may arrive more than once (broker retry, consumer crash, rebalance). The projector must detect and skip duplicates.
-
-### When to Use
-
-- Any context `cqrs-pattern` has put on the projections rung
-- Any Read Model that must be independently scalable, deployable, or rebuildable
-
-The Go sketches are in `go-event-consumer` (projector sketches).
-
-An upsert that applies an event only when its sequence is newer than the one stored keeps out-of-order and duplicate events from regressing the Read Model to an older state.
-
-### Idempotency via processed_event_ids Table
-
-For projectors where the upsert's own version-check is insufficient (e.g., delete events, or events with no natural sequence to compare), record each processed event ID in a deduplication table, in the same transaction as the Read Model write.
-
----
-
-## Projection Mechanic 3: CDC-Driven (Change Data Capture via Debezium)
-
-### What It Is
-
-Debezium connects to the PostgreSQL Write DB's WAL (Write-Ahead Log) and captures every row-level change in the `data_assets` table (and optionally `outbox_events`). These change events are published to a Redpanda topic. The Projector subscribes to the Debezium topic instead of the application-level Domain Event topic.
-
-### Characteristics
-
-- **Consistency**: Eventual — slightly less lag than event-driven (no application-level outbox relay hop) but still asynchronous
-- **Coupling to write schema**: Higher — the CDC event payload reflects the Aggregate table's column structure, not the Domain Event's business language. Schema migrations on the Aggregate table directly change the CDC event shape.
-- **No application-level event publishing required**: The application does not need to publish Domain Events; Debezium observes the database directly. This is the primary advantage for legacy systems or contexts where event publishing is not yet in place.
-- **Rebuild**: Yes — but requires Debezium to replay from a WAL snapshot; the WAL is not retained indefinitely. For long-term replay, use the event-driven mechanic (events stored in Redpanda with long retention) instead.
-- **Idempotency requirement**: Same as event-driven — at-least-once delivery from Debezium; projector must be idempotent.
-
-### When to Use
-
-- The Write Model uses a legacy PostgreSQL schema where adding Transactional Outbox rows is impractical
-- The team needs to project data from a table that does not emit application-level Domain Events
-- Connecting an existing application's database changes to a new Read Model without modifying the application
-
-### When Not to Use
-
-- The Bounded Context already uses Transactional Outbox + Redpanda — the event-driven mechanic is simpler and more decoupled
-- You need the payload to carry business-meaningful Domain Event fields (not raw column values)
-- Long-term Read Model rebuild from an event stream is required — Debezium's WAL position may not be retained long enough
-
-The Go sketches are in `go-event-consumer` (projector sketches).
-
----
-
-## Idempotency: Why It Is Required and How to Implement It
-
-Every Projector must be idempotent regardless of which projection mechanic is used, because all delivery guarantees in this plugin are at-least-once:
-
-- The Transactional Outbox relay may retry a publish on a broker timeout — the consumer sees the event twice
-- A Redpanda consumer group rebalance may replay events already processed before the crash
-- A Projector restart for deployment may re-process messages from the last committed offset
-
-**The two idempotency patterns and when to use each:**
-
-| Pattern | When to use | Trade-off |
+| Guard | Use when | Note |
 |---|---|---|
-| **Event sequence check in upsert** (`ON CONFLICT DO UPDATE WHERE projector.event_sequence < EXCLUDED.event_sequence`) | When events carry a natural sequence number (version, timestamp, offset) and the Read Model row is keyed by the Aggregate ID | No extra table; works inline with the upsert; does not protect against non-upsert operations |
-| **`processed_event_ids` dedup table** | When events are delete operations, when the Read Model cannot carry a comparable sequence, or when the projector spans multiple Read Model tables in one handler | Full protection for all event types; adds one table lookup + insert per event; must be within the same transaction as the Read Model write |
+| **Apply only if newer:** the row stores the version (or sequence) of the last event applied; an event with a lower or equal version is a no-op | the row is keyed on one Aggregate's identity and events carry its version | handles duplicates and out-of-order arrival in one step |
+| **Processed-event record:** the event ID is recorded in the same transaction as the view change; a recorded ID is skipped | deletes, one event touching many rows (a rename re-projecting every row that copied the name), summaries that add to a running total | without it, a duplicate `MealOrdered` adds to the day's count twice |
 
-For most projectors, use the event sequence check as the primary guard and add the `processed_event_ids` table for any handler that performs delete operations or touches multiple tables.
+- **Position with the write.** The projector's consumer position is saved in the same transaction as the view change. A crash between the two then means reprocessing (which the guards absorb), never a skipped event (permanent drift).
+- **Ordering.** Events of one Aggregate arrive in order when they are partitioned by its identity. A view combining several Aggregates or contexts must say what it shows while one stream lags (an order for a dish not yet on the menu: hold it, or show it with a placeholder).
+- **Unknown types are ignored; known old types are not** (§ 5).
+- **Projectors only write their view.** No Commands, no published events, no emails: a rebuild replays everything, and every side effect would fire again. A reaction to an event is a Policy on the write side (`domain-event-catalog`).
 
-The Read Model row carries the sequence of the last applied event (the Aggregate version or the broker offset), so a duplicate is a no-op.
+## 3. Where a projection lives
+
+| Store | When |
+|---|---|
+| Tables in the context's own database | the default |
+| A search index | the query is full-text or faceted search |
+| A cache in front of a view (cache-aside) | a read-heavy view where even the view's own query is too costly; the time-to-live (or invalidation) must be no longer than the staleness the decision accepts (Campbell) |
+| A separate read database | the read load or shape needs a different store, named in `cqrs-decisions.md` |
+
+A cache is never the Read Model itself: on a miss it falls through to the view, and a cold or flushed cache must give the same answers, just slower. Store choice in detail is `data-model-design`'s.
+
+## 4. Rebuilds
+
+A projection is disposable (Khononov): it can always be dropped and rebuilt from its events. Rebuild when the projector's logic changes, a new Read Model is added over old history, or the view has drifted.
+
+**Procedure (no downtime):**
+1. Create a copy of the view's storage beside the live one (a second table, a new index).
+2. Run the fixed projector into the copy from the first event (or from a snapshot the events since then can be applied to).
+3. Watch it catch up: compare its position with the live projector's.
+4. When it is within the accepted staleness, switch readers to it in one step (rename in one transaction; move the index alias).
+5. Keep the old copy until the switch is confirmed, then drop it.
+
+Never truncate the live view and replay into it: readers see an empty or half-built view for the whole replay. Never patch rows by hand: the next replay brings the error back, and the projector bug that caused it stays.
+
+**Rebuild source.** Name where the full history comes from. A broker topic keeps events only for its retention window; a rebuild from it recovers only that window. Full history lives in an event store (event-sourced contexts), a compacted topic for current-state views, or an outbox archive. If none exists, say what a rebuild cannot recover and raise it as an open question.
+
+**Rebuild time.** Estimate it (events × apply rate). If it is longer than the business can wait for a fix, plan snapshots or a partial rebuild (one tenant, one region).
+
+## 5. Replaying old event types
+
+A replay from the start meets **every event type ever stored**, not just today's (Young). An event type that was replaced by a new one (a breaking change is a new type: `event-schema-design`, D047-1) is not "unknown":
+- keep its handler in the projector, or
+- read old events through the upcaster that turns them into the current type.
+
+Skipping it silently drops everything that happened before the change. Keep sample events of every historical type as test fixtures, so a projector change that breaks a replay is caught before a rebuild. Only a type the projector has never subscribed to (a future addition, another Aggregate's event on the same stream) is ignored without error (Tolerant Reader).
+
+## 6. Event-sourced contexts and cross-service views
+
+- **Event-sourced Aggregates** (`aggregate-design` § 6): the event stream is the record, so every query is a projection and the rebuild source is the stream itself. Internal events used to rebuild the Aggregate may be finer than the published ones; a view inside the context may read internal events, a view in another context reads only published ones.
+- **Cross-service CQRS views** (Richardson): fed by the other services' published events through their outbox, never their tables. The projector translates their terms into this context's language. Their changes reach the view through `event-schema-design`'s compatibility rules, and a new event type from them needs a handler here before they retire the old one.

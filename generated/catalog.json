@@ -2073,7 +2073,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.8.0"
+        "version": "1.9.0"
       },
       {
         "created": "2026-06-25",
@@ -5651,7 +5651,7 @@
           "redpanda",
           "worker-pool"
         ],
-        "version": "3.1.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-06-25",
@@ -6257,7 +6257,7 @@
           "tenant",
           "transactions"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -9351,13 +9351,13 @@
         "domain": "domain-modeling",
         "has_assets": false,
         "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "read-model-design",
         "owner": "domain-modeler",
         "phase": "design",
@@ -9366,12 +9366,25 @@
         ],
         "related": [
           "aggregate-design",
+          "api-contract-design",
+          "command-catalog",
           "cqrs-pattern",
           "data-model-design",
           "domain-event-catalog",
-          "go-repository-pattern"
+          "event-schema-design",
+          "go-event-consumer",
+          "go-repository-pattern",
+          "multi-tenancy-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/versioning-event-sourced-system-young.md",
+          "research/software-architecture/designing-backend-systems-go-campbell.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/microservices-patterns-richardson.md"
+        ],
         "status": "stable",
         "tags": [
           "cqrs",
@@ -9379,10 +9392,10 @@
           "design",
           "domain-modeling",
           "projections",
-          "query-optimization",
-          "read-model"
+          "read-model",
+          "rebuild"
         ],
-        "version": "2.2.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -10843,8 +10856,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1048,
-    "edges_skill_sources": 208,
+    "edges_skill_related": 1053,
+    "edges_skill_sources": 215,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10860,16 +10873,16 @@
     "skills_with_assets": 10,
     "skills_with_contract_test": 150,
     "skills_with_domain": 189,
-    "skills_with_evals": 38,
-    "skills_with_examples": 38,
+    "skills_with_evals": 39,
+    "skills_with_examples": 39,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 37,
-    "skills_with_scripts": 34,
-    "skills_with_sources": 39,
+    "skills_with_resources": 38,
+    "skills_with_scripts": 35,
+    "skills_with_sources": 40,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 36
+    "skills_with_templates": 37
   },
   "edges": {
     "agent_produces": [
@@ -15996,6 +16009,14 @@
         "skill": "read-model-design"
       },
       {
+        "related": "api-contract-design",
+        "skill": "read-model-design"
+      },
+      {
+        "related": "command-catalog",
+        "skill": "read-model-design"
+      },
+      {
         "related": "cqrs-pattern",
         "skill": "read-model-design"
       },
@@ -16008,7 +16029,19 @@
         "skill": "read-model-design"
       },
       {
+        "related": "event-schema-design",
+        "skill": "read-model-design"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "read-model-design"
+      },
+      {
         "related": "go-repository-pattern",
+        "skill": "read-model-design"
+      },
+      {
+        "related": "multi-tenancy-design",
         "skill": "read-model-design"
       },
       {
@@ -17492,6 +17525,34 @@
       {
         "skill": "pricing-and-packaging",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/domain-driven-design/versioning-event-sourced-system-young.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/designing-backend-systems-go-campbell.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
       },
       {
         "skill": "requirements-analysis",

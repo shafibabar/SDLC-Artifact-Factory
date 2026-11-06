@@ -24,7 +24,7 @@ description: >
   event-sourced repository (conditional append on expected version).
   Implements the data-architect's schemas. Used by the backend-engineer
   during Implement.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -162,6 +162,8 @@ A missing tenant must never silently become a cross-tenant query — the applica
 - **An event-sourced Aggregate.** The persistence shape changes, but the concurrency rule does not. Append new events only if the stream is still at the expected version; a rejected append means a concurrent writer, the same signal as a compare-and-swap that touched 0 rows (Khononov, *Learning Domain-Driven Design*). Read `./examples/04-event-sourced-repository.md`.
 
 The simplest complete repository (read, compare-and-swap save, outbox) is `./examples/01-basic-repository.md`.
+
+Serving a Read Model designed in `read-model-design` (its table, scanning struct, query port, filters and test fixtures, moved from that skill): `./references/read-model-query-sketches.md`. Its list query predates this skill's query-construction standard; the standard wins.
 
 ---
 

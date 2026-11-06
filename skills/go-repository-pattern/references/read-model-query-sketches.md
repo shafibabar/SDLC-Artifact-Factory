@@ -1,8 +1,8 @@
-# Go Implementation Patterns for Read Models
+# Read Model Query Sketches in Go
 
-Self-contained reference for Go + pgx Read Model implementation. Stack: Go, pgx v5, PostgreSQL.
+**Moved here from `read-model-design` (Wave 2, #1398; D047-10).** The Go and SQL for serving Read Models: table DDL for a list, a detail and a summary view, pgx row-scanning structs, the Read Model repository port, a filter struct, and the test-fixture pattern. Plus three small snippets that were embedded in the design references: the applied-version header for read-your-writes, the `asOf` field on a summary response, and scanning JSONB columns. The design (what a Read Model holds, which rung it sits on, its staleness and rebuild) stays in `read-model-design`. Kept as they were, with the original `DataAsset` example; reworked when `go-repository-pattern`'s harder cases next change. **This skill's own standards win where they differ:** in particular, the list query below assembles its `WHERE` clause with `fmt.Sprintf` (values still travel as `$N` parameters), which the Query-Construction Standard in `SKILL.md` forbids. Build the optional filters with `pgx.StrictNamedArgs` and fixed `(@x::type IS NULL OR column = @x)` predicates instead. Use keyset pagination (`./examples/02-tenant-list-keyset-pagination.md`), not `OFFSET`, on large tenant lists.
 
----
+Projector code (the side that writes these tables) is in `go-event-consumer` (`references/projector-sketches.md` § 3).
 
 ## PostgreSQL Table DDL
 
@@ -256,92 +256,6 @@ func (r *pgDataAssetReadModelRepo) ListByTenant(
 
 ---
 
-## Projector Go Code
-
-```go
-package projector
-
-import (
-    "context"
-    "fmt"
-
-    "github.com/google/uuid"
-    "github.com/jackc/pgx/v5"
-    "yourmodule/internal/domain"
-    "yourmodule/internal/readmodel/store"
-)
-
-// DataAssetListProjector maintains the data_asset_list_view table.
-// It is idempotent, never issues Commands, and handles all subscribed events.
-type DataAssetListProjector struct {
-    store             store.DataAssetListStore
-    storageSourceRepo StorageSourceReader
-    offsetStore       store.OffsetStore
-}
-
-func (p *DataAssetListProjector) Project(ctx context.Context, tx pgx.Tx, rec ConsumerRecord) error {
-    var err error
-    switch e := rec.Event.(type) {
-    case domain.DataAssetRegistered:
-        err = p.handleRegistered(ctx, tx, e)
-    case domain.DataAssetClassified:
-        err = p.handleClassified(ctx, tx, e)
-    case domain.DataAssetArchived:
-        err = p.handleArchived(ctx, tx, e)
-    case domain.StorageSourceConfirmed:
-        err = p.handleStorageSourceConfirmed(ctx, tx, e)
-    default:
-        // Tolerate unknown events — Tolerant Reader pattern.
-        return p.offsetStore.CommitOffset(ctx, tx, rec.Topic, rec.Partition, rec.Offset)
-    }
-    if err != nil {
-        return fmt.Errorf("projecting %T: %w", rec.Event, err)
-    }
-    // Commit the event offset in the SAME transaction as the Read Model write.
-    return p.offsetStore.CommitOffset(ctx, tx, rec.Topic, rec.Partition, rec.Offset)
-}
-
-func (p *DataAssetListProjector) handleRegistered(ctx context.Context, tx pgx.Tx, e domain.DataAssetRegistered) error {
-    source, err := p.storageSourceRepo.FindByID(ctx, e.TenantID, e.StorageSourceID)
-    if err != nil {
-        return fmt.Errorf("resolving storage source: %w", err)
-    }
-    return p.store.Upsert(ctx, tx, store.UpsertListItemParams{
-        ID:                e.DataAssetID,
-        TenantID:          e.TenantID,
-        FilePath:          e.FilePath,
-        FileType:          e.FileType,
-        SensitivityLevel:  "Unclassified",
-        StorageSourceID:   e.StorageSourceID,
-        StorageSourceName: source.Name,
-        StorageSourceType: source.SourceType,
-        Version:           e.AggregateVersion,
-        UpdatedAt:         e.OccurredAt,
-    })
-}
-
-func (p *DataAssetListProjector) handleClassified(ctx context.Context, tx pgx.Tx, e domain.DataAssetClassified) error {
-    return p.store.UpdateSensitivity(ctx, tx, store.UpdateSensitivityParams{
-        DataAssetID: e.DataAssetID, TenantID: e.TenantID,
-        SensitivityLevel: e.SensitivityLevel.String(), EntityCount: e.ExtractedEntityCount,
-        LastClassifiedAt: e.OccurredAt, Version: e.AggregateVersion, UpdatedAt: e.OccurredAt,
-    })
-}
-
-func (p *DataAssetListProjector) handleArchived(ctx context.Context, tx pgx.Tx, e domain.DataAssetArchived) error {
-    return p.store.DeleteByID(ctx, tx, e.TenantID, e.DataAssetID)
-}
-
-// handleStorageSourceConfirmed re-projects all rows for the named source — the display name may have changed.
-func (p *DataAssetListProjector) handleStorageSourceConfirmed(ctx context.Context, tx pgx.Tx, e domain.StorageSourceConfirmed) error {
-    return p.store.UpdateStorageSourceInfo(ctx, tx, store.UpdateStorageSourceInfoParams{
-        TenantID: e.TenantID, StorageSourceID: e.StorageSourceID,
-        StorageSourceName: e.Name, StorageSourceType: e.SourceType,
-    })
-}
-```
-
----
 
 ## Test Fixture Pattern for Read Model Data
 
@@ -398,3 +312,56 @@ Two separate test concerns:
 - **Repository tests** use the fixture to seed rows and test query/filter logic only.
 - **Projector tests** feed raw Domain Events and assert the correct Read Model rows appear,
   verifying the projection logic end-to-end without touching the repository interface.
+
+---
+
+## Snippets Moved From the Design References
+
+### Read-your-writes: expose the applied version
+
+The Command's response carries the new Aggregate version; the Read Model's GET exposes the version the view has applied, so the client (or BFF) can wait until `appliedVersion >= expectedVersion` or show the change as pending.
+
+```go
+// POST /data-assets/{id}/classify — handler response
+type ClassifyResponse struct {
+    DataAssetID      string `json:"dataAssetId"`
+    SensitivityLevel string `json:"sensitivityLevel"`
+    AppliedVersion   int64  `json:"appliedVersion"` // new Aggregate version after classify
+}
+
+// GET /data-assets/{id} — handler
+func (h *Handler) GetDataAsset(w http.ResponseWriter, r *http.Request) {
+    view, err := h.repo.FindByID(r.Context(), tenantID, assetID)
+    // ...
+    w.Header().Set("X-Applied-Version", strconv.FormatInt(view.Version, 10))
+    json.NewEncoder(w).Encode(view)
+}
+```
+
+### Summary views always expose `asOf`
+
+```go
+type ComplianceDashboardResponse struct {
+    TotalAssets     int                   `json:"totalAssets"`
+    ClassifiedCount int                   `json:"classifiedCount"`
+    GapsByFramework map[string]GapSummary `json:"gapsByFramework"`
+    AsOf            time.Time             `json:"asOf"` // always exposed; never omitted
+    LastScanAt      *time.Time            `json:"lastScanAt,omitempty"`
+}
+```
+
+### Scanning JSONB columns
+
+```go
+type DataAssetView struct {
+    // ... other fields ...
+    ExtractedEntities json.RawMessage `db:"extracted_entities"`
+    ComplianceFlags   json.RawMessage `db:"compliance_flags"`
+}
+
+// Unmarshal when needed by the handler:
+var flags []ComplianceFlag
+if err := json.Unmarshal(view.ComplianceFlags, &flags); err != nil {
+    return nil, fmt.Errorf("unmarshal compliance flags: %w", err)
+}
+```

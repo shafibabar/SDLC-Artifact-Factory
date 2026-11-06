@@ -10,7 +10,7 @@ description: >
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
 role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
-version: 1.8.0
+version: 1.9.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -174,7 +174,7 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
                 ↓
          HAND TO enterprise-architect: read-side decision per BC (cqrs-pattern)
                 ↓
-11. Read Model Design (per BC)           ← only where the read-side decision calls for one
+11. Read Model Design (per BC)           ← every BC with queries, on the rung the read-side decision set: short entries for simple ones, full design for projections
 ```
 
 Steps 1-5 and steps 6-7 each have a mandatory user approval gate. The remainder (8-11) may be produced in sequence without individual approval gates, with a final review at the end. Step 11 waits for enterprise-architect's read-side decision; the phase command runs it between steps 10 and 11.
@@ -213,8 +213,8 @@ For each Bounded Context:
         ↓
 enterprise-architect decides the read side per BC (cqrs-pattern)
         ↓
-For each Bounded Context that needs one:
-    Design Read Models (per the read-side decision)
+For each Bounded Context with queries:
+    Design Read Models (per the read-side decision: one per query shape; projections get events, idempotency, staleness, rebuild)
         ↓
 Final review of all domain-modeling artifacts
         ↓
@@ -294,7 +294,7 @@ The domain modelling portion of the Design phase is complete when all of the fol
 - [ ] Aggregate designs complete per BC (lean: the one domain model) — pattern per use case, True Invariants with their answers, entities, VOs, commands, events; `validate-aggregate-design.sh` clean
 - [ ] Domain Event Catalog complete per BC — meaning, visibility and translations, consumers with policies and idempotency, retention need; `validate-domain-event-catalog.sh` clean
 - [ ] Command Catalog complete per BC — one Command per intent, issuer, inputs and their sources, every rejection with its kind and where it is checked (rules in the Aggregate), idempotency key and duplicate outcome; `validate-command-catalog.sh` clean
-- [ ] Read Model designs complete for every BC whose read-side decision needs one — projectors, storage, rebuild procedure
+- [ ] Read Model designs complete per BC (lean: the Read Models table in the domain model) — one per query shape, on the decided rung; projections with events, idempotency, staleness and freshness, read-your-writes, rebuild source and rebuild; `validate-read-models.sh` clean
 - [ ] All three handoffs (enterprise-architect, data-architect, test-strategist) documented
 - [ ] `pre-phase-advance` hook passes for domain-modeling artifacts
 - [ ] Every artifact has been presented for the user's approval; the phase command records approvals and phase completion with `product-state.py`.

@@ -157,3 +157,120 @@ CREATE TABLE data_asset_detail (
 ```
 
 The `event_sequence` column receives the Redpanda message offset (or domain event version number). The upsert's `WHERE` clause rejects any event whose sequence is not greater than the stored sequence, making duplicate delivery a no-op.
+
+---
+
+## 3. A Read Model projector (moved from `read-model-design`, #1398)
+
+The full projector for one list view, moved with the rest of `read-model-design`'s Go (D047-10). It shows four things the design asks for: the event's Aggregate version copied into the row (for read-your-writes and the newer-than guard), a display value resolved at projection time and re-projected when its source changes, unknown event types skipped without error, and the consumer position written in the same transaction as the view. Note a gap the design names that this sketch does not cover: a replay from the start meets every historical event type, so a type that was replaced by a new one must keep its handler (or be read through an upcaster), never fall into `default` and be skipped. This skill's idempotency standard (`./idempotent-consumer-standard.md`) and offset-commit standard win where they differ.
+
+```go
+package projector
+
+import (
+    "context"
+    "fmt"
+
+    "github.com/google/uuid"
+    "github.com/jackc/pgx/v5"
+    "yourmodule/internal/domain"
+    "yourmodule/internal/readmodel/store"
+)
+
+// DataAssetListProjector maintains the data_asset_list_view table.
+// It is idempotent, never issues Commands, and handles all subscribed events.
+type DataAssetListProjector struct {
+    store             store.DataAssetListStore
+    storageSourceRepo StorageSourceReader
+    offsetStore       store.OffsetStore
+}
+
+func (p *DataAssetListProjector) Project(ctx context.Context, tx pgx.Tx, rec ConsumerRecord) error {
+    var err error
+    switch e := rec.Event.(type) {
+    case domain.DataAssetRegistered:
+        err = p.handleRegistered(ctx, tx, e)
+    case domain.DataAssetClassified:
+        err = p.handleClassified(ctx, tx, e)
+    case domain.DataAssetArchived:
+        err = p.handleArchived(ctx, tx, e)
+    case domain.StorageSourceConfirmed:
+        err = p.handleStorageSourceConfirmed(ctx, tx, e)
+    default:
+        // Tolerate unknown events — Tolerant Reader pattern.
+        return p.offsetStore.CommitOffset(ctx, tx, rec.Topic, rec.Partition, rec.Offset)
+    }
+    if err != nil {
+        return fmt.Errorf("projecting %T: %w", rec.Event, err)
+    }
+    // Commit the event offset in the SAME transaction as the Read Model write.
+    return p.offsetStore.CommitOffset(ctx, tx, rec.Topic, rec.Partition, rec.Offset)
+}
+
+func (p *DataAssetListProjector) handleRegistered(ctx context.Context, tx pgx.Tx, e domain.DataAssetRegistered) error {
+    source, err := p.storageSourceRepo.FindByID(ctx, e.TenantID, e.StorageSourceID)
+    if err != nil {
+        return fmt.Errorf("resolving storage source: %w", err)
+    }
+    return p.store.Upsert(ctx, tx, store.UpsertListItemParams{
+        ID:                e.DataAssetID,
+        TenantID:          e.TenantID,
+        FilePath:          e.FilePath,
+        FileType:          e.FileType,
+        SensitivityLevel:  "Unclassified",
+        StorageSourceID:   e.StorageSourceID,
+        StorageSourceName: source.Name,
+        StorageSourceType: source.SourceType,
+        Version:           e.AggregateVersion,
+        UpdatedAt:         e.OccurredAt,
+    })
+}
+
+func (p *DataAssetListProjector) handleClassified(ctx context.Context, tx pgx.Tx, e domain.DataAssetClassified) error {
+    return p.store.UpdateSensitivity(ctx, tx, store.UpdateSensitivityParams{
+        DataAssetID: e.DataAssetID, TenantID: e.TenantID,
+        SensitivityLevel: e.SensitivityLevel.String(), EntityCount: e.ExtractedEntityCount,
+        LastClassifiedAt: e.OccurredAt, Version: e.AggregateVersion, UpdatedAt: e.OccurredAt,
+    })
+}
+
+func (p *DataAssetListProjector) handleArchived(ctx context.Context, tx pgx.Tx, e domain.DataAssetArchived) error {
+    return p.store.DeleteByID(ctx, tx, e.TenantID, e.DataAssetID)
+}
+
+// handleStorageSourceConfirmed re-projects all rows for the named source — the display name may have changed.
+func (p *DataAssetListProjector) handleStorageSourceConfirmed(ctx context.Context, tx pgx.Tx, e domain.StorageSourceConfirmed) error {
+    return p.store.UpdateStorageSourceInfo(ctx, tx, store.UpdateStorageSourceInfoParams{
+        TenantID: e.TenantID, StorageSourceID: e.StorageSourceID,
+        StorageSourceName: e.Name, StorageSourceType: e.SourceType,
+    })
+}
+```
+
+---
+
+
+### Copying the Aggregate version into the row
+
+```go
+func (p *DataAssetListProjector) handleClassified(ctx context.Context, e domain.DataAssetClassified) error {
+    return p.store.UpdateSensitivity(ctx, UpdateSensitivityParams{
+        DataAssetID:      e.DataAssetID,
+        TenantID:         e.TenantID,
+        SensitivityLevel: e.SensitivityLevel.String(),
+        LastClassifiedAt: e.OccurredAt,
+        Version:          e.AggregateVersion, // copied from the event
+        UpdatedAt:        e.OccurredAt,
+    })
+}
+```
+
+The upsert applies only a newer version, so a re-delivered old event cannot roll the row back:
+
+```sql
+INSERT INTO data_asset_list_view (id, tenant_id, file_path, version, updated_at)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (id, tenant_id)
+DO UPDATE SET file_path = EXCLUDED.file_path, version = EXCLUDED.version, updated_at = EXCLUDED.updated_at
+WHERE data_asset_list_view.version < EXCLUDED.version;
+```

@@ -500,7 +500,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "Only for Bounded Contexts whose read-side decision (cqrs-design) calls for a Read Model."
+        "note": "One per Bounded Context with queries, after its read-side decision (cqrs-design): short entries for Simple Read Models (query, shape, source tables), the full design for projected ones. Lean lists Read Models in domain-model.md instead."
       },
       {
         "artifact": "system-context-diagram",
