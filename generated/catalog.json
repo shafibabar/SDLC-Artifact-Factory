@@ -1433,7 +1433,7 @@
         "data-architect",
         "data-engineer"
       ],
-      "skill_count": 14,
+      "skill_count": 15,
       "skills": [
         "analytics-requirements",
         "canonical-data-model",
@@ -1447,6 +1447,7 @@
         "data-retention-policy",
         "data-storytelling",
         "document-data-modeling",
+        "event-schema-design",
         "metrics-instrumentation-plan",
         "reporting-spec"
       ]
@@ -1497,7 +1498,6 @@
         "domain-event-catalog",
         "domain-model",
         "domain-story",
-        "event-schema",
         "event-storming-session",
         "handoff-record",
         "read-model",
@@ -1509,7 +1509,7 @@
         "domain-modeler",
         "factory-governance"
       ],
-      "skill_count": 13,
+      "skill_count": 12,
       "skills": [
         "aggregate-design",
         "bounded-context-mapping",
@@ -1519,7 +1519,6 @@
         "ddd-agent-handoff",
         "domain-event-catalog",
         "domain-storytelling",
-        "event-schema-design",
         "event-storming-facilitation",
         "read-model-design",
         "subdomain-distillation",
@@ -1985,7 +1984,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.3.0"
+        "version": "2.4.0"
       },
       {
         "created": "2026-07-20",
@@ -4829,40 +4828,52 @@
       {
         "created": "2026-06-25",
         "dir": "skills/event-schema-design",
-        "domain": "domain-modeling",
+        "domain": "data",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "event-schema-design",
-        "owner": "domain-modeler",
+        "owner": "data-architect",
         "phase": "design",
         "produces": [
           "event-schema"
         ],
         "related": [
-          "cqrs-pattern",
+          "aggregate-design",
+          "canonical-data-model",
           "data-retention-policy",
+          "distributed-tracing-design",
           "domain-event-catalog",
-          "go-domain-model"
+          "event-driven-patterns",
+          "go-contract-test",
+          "go-event-consumer",
+          "go-event-publisher"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/versioning-event-sourced-system-young.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/cloudevents-spec.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+        ],
         "status": "stable",
         "tags": [
-          "backward-compatibility",
           "cloudevents",
+          "compatibility",
+          "data",
           "design",
-          "domain-modeling",
           "event-schema",
+          "schema-evolution",
           "schema-registry",
-          "schema-versioning"
+          "upcasting"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -5654,7 +5665,7 @@
           "redpanda",
           "relay"
         ],
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "created": "2026-07-31",
@@ -10796,8 +10807,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1025,
-    "edges_skill_sources": 189,
+    "edges_skill_related": 1030,
+    "edges_skill_sources": 194,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10809,20 +10820,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 63,
+    "research_files_cited": 65,
     "skills_with_assets": 10,
-    "skills_with_contract_test": 154,
+    "skills_with_contract_test": 153,
     "skills_with_domain": 189,
-    "skills_with_evals": 34,
-    "skills_with_examples": 34,
+    "skills_with_evals": 35,
+    "skills_with_examples": 35,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 33,
-    "skills_with_scripts": 30,
-    "skills_with_sources": 35,
+    "skills_with_resources": 34,
+    "skills_with_scripts": 31,
+    "skills_with_sources": 36,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 32
+    "skills_with_templates": 33
   },
   "edges": {
     "agent_produces": [
@@ -13721,7 +13732,11 @@
         "skill": "event-driven-patterns"
       },
       {
-        "related": "cqrs-pattern",
+        "related": "aggregate-design",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "canonical-data-model",
         "skill": "event-schema-design"
       },
       {
@@ -13729,11 +13744,27 @@
         "skill": "event-schema-design"
       },
       {
+        "related": "distributed-tracing-design",
+        "skill": "event-schema-design"
+      },
+      {
         "related": "domain-event-catalog",
         "skill": "event-schema-design"
       },
       {
-        "related": "go-domain-model",
+        "related": "event-driven-patterns",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "go-contract-test",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "go-event-publisher",
         "skill": "event-schema-design"
       },
       {
@@ -16997,6 +17028,26 @@
       {
         "skill": "epic-definition",
         "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/domain-driven-design/versioning-event-sourced-system-young.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/software-architecture/cloudevents-spec.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
       },
       {
         "skill": "event-storming-facilitation",

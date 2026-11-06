@@ -21,7 +21,7 @@ description: >
   and idempotency-key depth in
   references/batching-backpressure-and-idempotency.md. Used by the
   backend-engineer during Implement.
-version: 2.0.0
+version: 2.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -60,7 +60,7 @@ A slow or unavailable broker is ordinary operation, not an incident, for this de
 
 ## The Envelope, Partition Key, and Idempotency Key
 
-Each outbox row becomes one Redpanda record with the standard envelope (`event-schema-design`) and W3C trace context propagated into headers so the consumer continues the same trace (`distributed-tracing-design`).
+Each outbox row becomes one Redpanda record with the standard envelope (`event-schema-design`) and W3C trace context propagated into headers so the consumer continues the same trace (`distributed-tracing-design`). The CloudEvents envelope in Go (struct, payload structs, factory functions, test helpers, dual publish during a breaking change, registry validation, upcasters for stored events): `./references/cloudevents-event-structs.md`. Where the envelope sketch below differs from it, `event-schema-design`'s CloudEvents rules win; both are reworked when this skill is rebuilt.
 
 ```go
 func (r *OutboxRelay) toRecord(ctx context.Context, m outboxRow) *kgo.Record {
