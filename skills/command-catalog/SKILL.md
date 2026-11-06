@@ -45,7 +45,7 @@ At **lean** the catalog is skipped. Commands go in the Commands table of `aggreg
 
 ## 1. Where Commands Come From
 
-The blue stickies of the Event Storming wall (Brandolini's chain: read model → actor → Command → system → event → policy), the Commands-and-events tables in `aggregates.md`, the "whenever X, then Y" policies in `domain-event-catalog` (Y is a Command in the reacting context), and the user stories. A Command that records no event, or an event no Command or Policy raises, is a gap to close first.
+The blue stickies of the Event Storming wall (Brandolini's chain: read model → actor → Command → system → event → policy), the Commands-and-events tables in `aggregates.md`, the "whenever X, then Y" policies in `domain-event-catalog` (Y is a Command in the reacting context), time passing that the business acts on (a loan falls due: a schedule issues `MarkLoanOverdue`; a state nobody acts on is just read from a Read Model), and the user stories. A Command that records no event, or an event no Command or Policy raises, is a gap to close first.
 
 ## 2. Naming: Which Intent?
 
@@ -61,7 +61,7 @@ Splitting worked through, and the command-storm trap: `./references/naming-and-t
 
 - **The intent's inputs, in the language:** only what this intent needs, each with its meaning.
 - **The target:** which Aggregate instance, by identity.
-- **Facts from the caller's context, never from the request body:** who issued it (the actor or the Policy), and the tenant only where the product is multi-tenant (D047-7). A client that can set them can act as someone else.
+- **Facts from the caller's context, never from the request body:** who issued it (the actor or the Policy), and, where the product is multi-tenant, the tenant (D047-7). The Command still carries both; they are filled from the authenticated context, because a client that can set them can act as someone else. A globally unique target ID does not remove the tenant: it says which thing, not whether this caller may touch it.
 - **An idempotency key** (§ 5), and where concurrency matters, the **version the actor saw** (§ 6).
 
 Field types and formats are not decided here. Each input records its meaning, its source, and the rule it must meet before it reaches the Aggregate.
