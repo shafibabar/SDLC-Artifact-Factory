@@ -66,6 +66,7 @@ Sources to inventory, so none is forgotten: the personas, the Event Storming tim
 ## 3. Relationships
 
 - **One-directional, labelled with what flows**, as a phrase that reads from the arrow's start to its end ("Books a class in", "Sends payment requests to", "Sends hourly readings to"), the same on the diagram and in the relationships table. A bare noun ("Payment requests") doesn't say which way it goes. Never "uses", "integrates with" or "interacts with", and never a two-headed arrow: draw two arrows, each with its own label.
+- **A request and its reply are one exchange:** one arrow from the side that asks, labelled with the request ("Signs users in through"), never "…and gets X back from". A second arrow only when the other side starts an exchange of its own (a webhook, a pushed file).
 - **What an arrow means is stated in the key**, once for the diagram. The plugin's default: the arrow points from the party that starts the exchange.
 - **Every arrow touches the system box.** Arrows between two external systems, or between a person and an external system, are not this view's concern.
 - **Protocol is optional and plain** ("HTTPS", "OIDC", "SFTP file drop", "webhook"), never a library or framework.
