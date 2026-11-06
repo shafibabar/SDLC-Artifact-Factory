@@ -10,7 +10,8 @@ Run after `./scripts/validate-cqrs-decisions.sh` exits clean. The script checks 
 - [ ] Every context records *revisit when*: a signal, not a date.
 
 ## Consistency
-- [ ] Every projected view states the lag the business accepts and why; a view that can't lag is not projected.
+- [ ] Every projected view states the lag the business accepts and why, and which guarantees it gives (read-your-writes, monotonic reads, consistent prefix); "eventually consistent" alone is not a promise.
+- [ ] Only views someone acts on with no rule in the Aggregate behind them are kept off projections for lag reasons.
 - [ ] Read-your-writes is provided for the writer in every projected context, and the record says how.
 - [ ] Views served from replicas or regions say how monotonic reads are kept.
 - [ ] No rule is checked against a Read Model; guards stay in the Aggregate.

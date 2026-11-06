@@ -61,7 +61,7 @@ Version 2.1.0: read-your-writes and region pinning added for the examiner dashbo
 |---|---|---|
 | Examiner dashboard (scripts marked, remaining) | projection: ExaminerProgress | event-sourced context |
 | Script history for an appeal | projection: ScriptHistory | every mark and change, by date |
-| Remaining allocation before submitting | write side (cannot lag) | the quota rule is checked in the Allocation Aggregate |
+| Remaining allocation before submitting | projection: ExaminerProgress | the quota rule is checked in the Allocation Aggregate on submit, so the figure shown may lag |
 
 ## Context: Moderation
 

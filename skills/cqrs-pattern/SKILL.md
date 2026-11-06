@@ -77,7 +77,8 @@ Projections can be fed by Domain Events from current-state Aggregates through th
 
 ## 4. Consistency Each View Accepts
 
-- **State the staleness each projected view accepts** and why (a league table: a minute; a balance before a payment: none, so it stays rung 1 or reads the write side).
+- **Eventual consistency alone promises nothing a person can rely on:** neither how soon a change appears nor that the person who made it sees it (Kleppmann). So for each projected view state **how stale it may be**, and **which guarantees it gives**: read-your-writes, monotonic reads, consistent prefix (each below).
+- **What decides the lag a view may have is whether anyone acts on it unprotected.** A displayed account balance can lag when every charge against it is checked by the Aggregate's rule: the customer may see an older figure, but is never charged wrongly, and sees their own change through read-your-writes. A view stays on rung 1 only when a person acts on it and no rule in the Aggregate protects that action. Heavy load on such a view is a trigger like any other.
 - **Read-your-writes** (Kleppmann): the person who just wrote must see their own change. The Command returns the new version; the writer's view shows the change as pending, or waits until the view has applied that version. Other readers may lag.
 - **Monotonic reads:** where a view is served from replicas or regions, one reader must not see a newer state and then an older one; pin a reader to one copy or compare versions.
 - **Rules never check a Read Model.** A projection lags the write side, so a guard checked against it races reality. Rules are checked in the Aggregate, against the state it loaded (`aggregate-design`).
@@ -110,7 +111,8 @@ Each trap comes with the reason to give in full.
 - **"Never join the write tables for a read."** *Reason:* a query type over the write tables is legitimate CQRS; what breaks the split is loading the Aggregate for a query. *Instead:* rung 1 until a trigger is named.
 - **"Read the other service's tables directly for the report."** *Reason:* each service owns its data; a shared-table read couples their schemas and deployments. *Instead:* API Composition, or a CQRS view fed by that service's events on a named trigger.
 - **"Return the updated state from the Command so the screen isn't stale."** *Reason:* the write path takes on read concerns. *Instead:* return the new version; the writer's view waits for it or shows the change as pending (read-your-writes).
-- **"A few seconds of lag doesn't matter anywhere."** *Reason:* for some views it does (a balance before paying, a seat count before booking). *Instead:* state the staleness per view; a view that cannot lag stays on rung 1.
+- **"It's eventually consistent; that's fine everywhere, they can pull to refresh."** *Reason:* eventual consistency promises neither how soon nor that the writer sees their own change; a customer who adds funds and still sees the old figure adds them again. *Instead:* per view, the staleness it may have and the guarantees it gives: read-your-writes for the writer, monotonic reads across replicas or regions, consistent prefix where causes and effects both show.
+- **"The balance must never lag, so it can't be a projection."** *Reason:* if the charge is checked by the Aggregate, the displayed balance is information, not the guard; keeping a heavily read view on the write tables puts that load on the write path. *Instead:* project it, with read-your-writes for the person who changed it; keep on rung 1 only views someone acts on with no rule behind them.
 - **"Design the Read Models first; we'll pick CQRS later."** *Reason:* the rung decides whether a Read Model is a query over the write tables or a projection with lag and rebuilds, so designing it first means redesigning it. *Instead:* decide the read side first (D047-4), then `read-model-design`.
 
 ## References
