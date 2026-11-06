@@ -124,6 +124,9 @@ expect "'no cache' is not a cache" nocache.md 0
 sed 's/^| \*\*Staleness accepted\*\* | 20 seconds |$/| **Staleness accepted** | immediate |/' good.md > stale.md
 expect "an asynchronous projection claiming immediate consistency fails" stale.md 1 "accepts some staleness"
 
+sed 's/^| \*\*Staleness accepted\*\* | 20 seconds |$/| **Staleness accepted** | per cqrs-decisions |/' good.md > nofig.md
+expect "staleness with no figure fails" nofig.md 1 "staleness is stated as a figure"
+
 sed 's/^| title | the book.s name | TitleCatalogued.name | .*$/| title | the book name | TitleCatalogued.name | catalogue |/' good.md > copied.md
 expect "a copied value with no change event fails" copied.md 1 "names the event that changes it"
 

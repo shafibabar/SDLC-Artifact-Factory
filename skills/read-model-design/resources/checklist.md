@@ -18,7 +18,7 @@ Run after `./scripts/validate-read-models.sh` exits clean. The script checks str
 ## Projections
 - [ ] Every event that creates, changes or removes rows is listed, including other Aggregates' and contexts' published events.
 - [ ] The idempotency guard fits each event: "apply only if newer" for single-row updates; a processed-event record for deletes, many-row updates and running totals.
-- [ ] Staleness matches `cqrs-decisions.md`; freshness is visible (version per row, *as of* on summaries); the lag alert sits below the accepted staleness.
+- [ ] Every projected view states its staleness as a figure with its reason, matching `cqrs-decisions.md` or marked as an assumption to confirm; freshness is visible (version per row, *as of* on summaries); the lag alert sits below the accepted staleness.
 - [ ] The writer sees their own change by the decided method, or the document says why the writer never reads this view.
 - [ ] A cache, if any, has a time-to-live within the accepted staleness and is not the Read Model itself.
 - [ ] The rebuild source holds the full history, or the document says what a rebuild cannot recover.

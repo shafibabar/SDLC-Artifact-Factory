@@ -138,6 +138,8 @@ for b in rms:
         if not mech.startswith("in the write transaction"):
             check(f"{name}: a projection fed asynchronously accepts some staleness",
                   filled(stale) and not re.match(r"(?i)\s*(immediate|none|zero|real[- ]time)\b", stale))
+        check(f"{name}: staleness is stated as a figure (a number of seconds, minutes, ...), not 'per the decision'",
+              bool(re.search(r"(?i)\d|\b(immediate|seconds?|minutes?|hours?|days?)\b", stale)))
         rebuild = f.get("rebuild", "")
         check(f"{name}: the rebuild is from events, not a hand patch or a live truncate",
               not affirmed(rebuild, r"\b(by hand|manual(ly)?|patch(ed|ing)?|hand[- ]edit\w*|truncat\w*)\b"))

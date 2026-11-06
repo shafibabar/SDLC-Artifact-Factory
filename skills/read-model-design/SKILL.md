@@ -41,14 +41,14 @@ sources:
 
 A Read Model is the information someone looks at before deciding (Brandolini's green sticky): a screen, a list, a dashboard, a search, an answer another system asks for. This skill designs each one: what it answers, what it holds, where it comes from and how it stays correct.
 
-It runs **after** enterprise-architect's CQRS decisions (`design/architecture/cqrs-decisions.md`, `cqrs-pattern`), which put each Bounded Context on a rung and give each projected view its accepted staleness and read-your-writes method (D047-4). This skill applies that decision and never re-decides it.
+It runs **after** enterprise-architect's CQRS decisions (`design/architecture/cqrs-decisions.md`, `cqrs-pattern`), which put each Bounded Context on a rung and give each projected view its accepted staleness and read-your-writes method (D047-4). This skill applies that decision and never re-decides the rung. Where the record is missing, or gives no figure for a view, the design still states one: propose it, mark it as an assumption and send it to enterprise-architect to confirm.
 
 What this skill does **not** hold:
 - the rung, triggers and per-view guarantees (`cqrs-pattern`);
 - tables, indexes and store choice in detail (`data-model-design`); GET endpoints (`api-contract-design`);
 - code: queries in `go-repository-pattern`, projectors in `go-event-consumer` (D047-10).
 
-At **lean** there is no document: Read Models are a table in `design/domain-model.md` (each a query over the write tables). At **standard** and **enterprise**, every context with queries gets one `design/<context>/read-models.md` (`./templates/read-models.md`).
+At **lean** there is no document: Read Models are a table in `design/domain-model.md` (each a query over the write tables). A lean context that a named trigger puts on projections moves to standard for that context (`cqrs-pattern`) and gets its own `read-models.md`. At **standard** and **enterprise**, every context with queries gets one `design/<context>/read-models.md` (`./templates/read-models.md`).
 
 ## 1. Every Read Model, Either Rung
 
@@ -74,7 +74,7 @@ For each Read Model the decision puts on projections, record:
 1. **Events and their effect.** Every event that creates, changes or removes rows, including events from other Aggregates or published by other contexts that supply copied values. A copied value (a dish name, a product title) needs the event that changes it, re-projecting the rows that hold it.
 2. **Mechanic:** from published events (the usual one); in the write transaction (immediate, every write pays for it); or change data capture (no events to read; payload is table rows). `./references/projection-mechanics.md`.
 3. **Idempotent apply.** Delivery is at-least-once. Key rows on what they answer and apply an event only when it is newer than the version stored, so duplicates and late arrivals cannot roll a row back; deletes and multi-row updates record the processed event ID. The consumer position is written in the same transaction as the view.
-4. **Staleness and freshness.** The staleness accepted comes from `cqrs-decisions.md`. Each row carries the version it has applied; summaries carry an *as of* time the caller sees; a lag alert fires before the accepted staleness is exceeded. **Read-your-writes** uses the decided method: the Command returns the new version, the writer's view shows *pending* until the row reaches it.
+4. **Staleness and freshness.** State how stale each projected Read Model may be **as a figure with its reason** ("30 seconds: the kitchen refreshes every 10 s and cooks by the hour"): the one in `cqrs-decisions.md`, or, where it gives none or cannot be read, one proposed from who acts on the view and how soon, marked *assumption, to confirm with enterprise-architect*. "Per the decision" or "eventually consistent" is not a staleness. Each row carries the version it has applied; summaries carry an *as of* time the caller sees; a lag alert fires before the accepted staleness is exceeded. **Read-your-writes**, named per view: the decided method, or the usual one (the Command returns the new version, the writer's view shows *pending* until the row reaches it); or why the writer never reads this view.
 5. **Store.** The context's own database by default. A search index or cache only when the query needs it: a cache is cache-aside with a time-to-live no longer than the staleness accepted (Campbell).
 6. **Rebuild.** Every projection can be rebuilt from its events, from the start: build into a copy beside the live view, let it catch up, swap, drop the old one. Name the **rebuild source**: a broker topic with a seven-day retention cannot rebuild a year of history. A replay meets **every historical event type** (Young): an old type that was replaced keeps its handler or is read through an upcaster; only a type the projector has never had is ignored. A drifted view is rebuilt, never patched by hand.
 7. **Projectors only write the view.** They never issue Commands or publish events, so a rebuild cannot re-fire behaviour; reactions are Policies on the write side.
@@ -87,7 +87,7 @@ When `cqrs-decisions.md` gives a service a CQRS view over other services' data (
 
 ## Producing the Document
 
-1. **Read** `cqrs-decisions.md` (rung, staleness, read-your-writes, cross-service views), the context's `aggregates.md`, `domain-event-catalog.md` and the published events of other contexts it copies from, `command-catalog.md` (versions returned), the screens, user stories and Event Storming read models, the NFRs and the tenancy design.
+1. **Read** `cqrs-decisions.md` (rung, staleness, read-your-writes, cross-service views), the context's `aggregates.md`, `domain-event-catalog.md` and the published events of other contexts it copies from, `command-catalog.md` (versions returned), the screens, user stories and Event Storming read models, the NFRs and the tenancy design. If any is missing, carry on: state each assumption where it is used and list it under *Open questions*.
 2. **List the queries:** each screen, caller and question, with who asks it.
 3. **Shape** one Read Model per query shape (§ 1): fields, sources, name.
 4. **Write** rung-1 entries (§ 2), full projection designs (§ 3) and any cross-service views (§ 4).
@@ -107,6 +107,7 @@ Each trap comes with the reason to give in full.
 - **"Truncate the view and replay into it."** *Reason:* readers see an empty or half-built view for the whole replay. *Instead:* build the copy beside the live view and swap when it has caught up.
 - **"Rebuild from the topic."** *Reason:* a topic keeps only its retention window; older events are gone. *Instead:* name a rebuild source that holds the full history (an event store, an outbox archive) or say what the rebuild can and cannot recover.
 - **"We don't emit `OrderPlaced` any more; skip it on replay."** *Reason:* the stored history still holds it; skipping it silently drops every order placed before the change. *Instead:* keep its handler or read it through the upcaster (Young).
+- **"Leave staleness and read-your-writes as 'per cqrs-decisions' until the architect fills them in."** *Reason:* a view with no stated lag promises nothing (Kleppmann), and the writer who just booked sees their booking vanish. *Instead:* a figure and a method for every projected view, proposed and labelled as an assumption where the record has none.
 - **"Check stock against the Read Model before accepting the order."** *Reason:* the view lags; two orders can pass against the same stale count. *Instead:* the Aggregate checks; the view only shows likely availability.
 - **"Let the Command handler update the view too,"** or **"have the projector send the email."** *Reason:* a view written by Command handlers can't be rebuilt from events, and a projector that acts re-fires on every replay. *Instead:* only projectors write the view; reactions are Policies.
 - **"Store IDs; the screen can look up the names."** *Reason:* one lookup per row, on every page load. *Instead:* copy the display values and project the event that changes them.

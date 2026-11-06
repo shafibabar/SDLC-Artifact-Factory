@@ -50,7 +50,7 @@ traces-to: [design/architecture/cqrs-decisions.md, design/<context>/aggregates.m
 | **Mechanic** | [from published events | in the write transaction | change data capture] — [why] |
 | **Store** | [the context's database | a search index | … ; a cache in front only with a time-to-live within the staleness] |
 | **Keyed on** | [what one row answers for: an identity, a tenant and day, …] |
-| **Staleness accepted** | [<N> in normal running, from cqrs-decisions; what readers see during a rebuild] |
+| **Staleness accepted** | [<N> seconds/minutes in normal running, and why; from cqrs-decisions, or proposed and marked *assumption, to confirm with enterprise-architect*; what readers see during a rebuild] |
 | **Freshness shown** | [the version applied per row | an *as of* time the caller sees] |
 | **Read-your-writes** | [how the writer sees their own change: the Command returns the version, the view shows pending until applied | the writer does not read this view: <why>] |
 | **Idempotency** | [apply only if newer, by <version> | processed-event record for <events>] |
