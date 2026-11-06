@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.8.0
+version: 1.9.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -163,7 +163,8 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
 ```
 0. CQRS read-side decision per BC  ← called before the domain-modeler's Read Models (cqrs-pattern)
 1. Read NFR architecture handoff
-2. System Context Diagram          ← who uses the system; what external systems exist
+2. System Context Diagram          ← one box; persons by role; external systems by ownership (another
+                                     team's service is external); title, key, ASCII primary (system-context-diagram)
 3. Container Diagram               ← service decomposition (lean: modular monolith; otherwise granularity
                                      checklists), technology, communication, gateway placement
 4. Multi-Tenancy Design            ← isolation model chosen from the NFRs and compliance input; no default
@@ -267,7 +268,7 @@ The enterprise-architect escalates to the user when:
 
 The architecture design portion of the Design phase is complete when all of the following are true:
 
-- [ ] System Context Diagram complete and approved
+- [ ] System Context Diagram complete and approved — one system box, persons as roles, external systems decided by ownership, one-directional labelled arrows, title and key, element catalog, rationale and boundary notes with what is out of scope; `validate-system-context.sh` clean; names reused unchanged on the Container Diagram
 - [ ] Container Diagram complete and approved — all services named, technology labelled, communication protocols documented
 - [ ] CQRS read-side decision recorded for every Bounded Context before Read Models were designed — Simple Read Model unless a named trigger with evidence; staleness and read-your-writes per projected context; API Composition for cross-service queries unless a trigger; `validate-cqrs-decisions.sh` clean
 - [ ] Multi-Tenancy Design complete — isolation model chosen from the NFRs and compliance input, with its enforcement and provisioning
