@@ -10,7 +10,7 @@ description: >
   using the domain-modeling skill library. Activates when /sdlc-design or
   /sdlc-event-storm is invoked.
 role: Domain Modelling — Bounded Contexts, Domain Events, Aggregates, CQRS model
-version: 1.6.0
+version: 1.7.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -208,7 +208,7 @@ Wait for user approval
         ↓
 For each Bounded Context:
     Design Aggregates (pattern per use case, true invariants, entities, VOs)
-    Catalogue Domain Events (schemas, outbox, DLQ)
+    Catalogue Domain Events (meaning, visibility, consumers and policies)
     Catalogue Commands (validation, idempotency, API mapping)
         ↓
 enterprise-architect decides the read side per BC (cqrs-pattern)
@@ -238,7 +238,7 @@ The domain-modeler enforces DDD compliance on all its outputs:
 | Bounded Context boundaries | Every BC boundary is justified by a change in language or model, with evidence from Event Storming or Domain Storytelling. Team ownership is a constraint (one owning team per context), not a reason to draw a boundary; how contexts map to services is decided in `container-diagram`. |
 | Aggregate invariants | Every use case states its business-logic pattern (`aggregate-design`). An Aggregate exists only where a True Invariant passes the three-question test, with the answers written down; a use case with no rule across records is a Transaction Script or Active Record. Event sourcing names the need it meets, never "it's Core". |
 | Cross-Aggregate by ID | No Aggregate holds a direct object reference to another Aggregate. |
-| Transactional Outbox | All Domain Event publication uses the Transactional Outbox pattern — never dual-write from the request path. |
+| Domain Event naming and visibility | Every event is a past-tense business fact in the context's language (never a CRUD verb or a Command in disguise); only business-meaningful facts are published, with internal and stored events translated (`domain-event-catalog`). Publication goes through the Transactional Outbox, never a dual write (`event-driven-patterns`). |
 | CQRS read side | Read Models follow enterprise-architect's read-side decision for the BC (`cqrs-pattern`): a simple read model inside the service, or projections from Domain Events only where the decision names a trigger for them. |
 
 ---
@@ -258,7 +258,7 @@ The domain-modeler produces three explicit handoffs at the end of the Design pha
 ### Handoff to data-architect
 - Aggregate definitions (physical data model candidates)
 - Read Model designs (query-side table candidates)
-- Outbox table definitions
+- Published Domain Events (for `event-schema-design`'s event schemas)
 - Event retention requirements from Domain Event Catalog
 
 ### Handoff to test-strategist
@@ -291,7 +291,7 @@ The domain modelling portion of the Design phase is complete when all of the fol
 - [ ] Every context relationship with a Customer/Supplier pattern has a Consumer-Driven Contract plan
 - [ ] Every context relationship with a third-party system names Conformist or Anti-Corruption Layer, with the trade-off stated
 - [ ] Aggregate designs complete per BC (lean: the one domain model) — pattern per use case, True Invariants with their answers, entities, VOs, commands, events; `validate-aggregate-design.sh` clean
-- [ ] Domain Event Catalog complete per BC — schemas, outbox design, DLQ topics
+- [ ] Domain Event Catalog complete per BC — meaning, visibility and translations, consumers with policies and idempotency, retention need; `validate-domain-event-catalog.sh` clean
 - [ ] Command Catalog complete per BC — validation, idempotency, API mapping
 - [ ] Read Model designs complete for every BC whose read-side decision needs one — projectors, storage, rebuild procedure
 - [ ] All three handoffs (enterprise-architect, data-architect, test-strategist) documented

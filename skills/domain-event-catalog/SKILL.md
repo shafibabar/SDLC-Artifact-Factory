@@ -1,173 +1,113 @@
 ---
 name: domain-event-catalog
 description: >
-  Teaches the domain-modeler and backend-engineer how to author, structure,
-  and maintain a Domain Event Catalog — the authoritative registry of every
-  Domain Event emitted by a Bounded Context, covering event naming conventions,
-  the canonical envelope format (what fields every event must carry), the
-  Outbox pattern as the reliable emission mechanism, Change Data Capture as
-  the Outbox trigger, event versioning strategy, retention policy by event
-  class, and the catalog artifact template. Used during Design and Implement
-  phases whenever a new Bounded Context or Domain Event is defined.
-version: 2.1.0
+  Catalog the Domain Events of a Bounded Context: what each event means in
+  the Ubiquitous Language, how it is named (a past-tense business fact, never
+  a CRUD verb like Updated or a command in disguise), which Command, Policy
+  or deadline raises it, what its payload carries and why, whether it stays
+  internal or is published to other contexts (and how internal events
+  translate to coarser published ones), who consumes it with which reaction,
+  and how long the business needs it. Use when naming or reviewing an event,
+  deciding what goes in its payload, choosing between one generic event and
+  several specific facts, deciding which events to publish, listing an
+  event's consumers and policies, or writing the context's event catalog. The
+  envelope, wire type and versioning are event-schema-design; delivery
+  (outbox, relay, dead-letter queue) is event-driven-patterns. Used by
+  domain-modeler.
+version: 3.0.0
 phase: design
 owner: domain-modeler
 created: 2026-06-25
-tags: ["design","domain-modeling","event-storming","domain-events","outbox","event-naming","cdc"]
+tags: [design, domain-modeling, domain-events, event-naming, event-catalog, policies, integration-events]
 produces: domain-event-catalog
 domain: domain-modeling
 status: stable
-related:
-  - aggregate-design
-  - bounded-context-mapping
-  - go-event-publisher
-  - cqrs-pattern
-  - read-model-design
-  - glossary-management
+related: [aggregate-design, event-storming-facilitation, ubiquitous-language, event-schema-design, event-driven-patterns, context-map-patterns, command-catalog, read-model-design, cqrs-pattern, data-retention-policy, go-event-publisher, go-event-consumer]
+sources:
+  - research/domain-driven-design/domain-driven-design-evans.md
+  - research/domain-driven-design/implementing-ddd-vernon.md
+  - research/domain-driven-design/learning-ddd-khononov.md
+  - research/domain-driven-design/introducing-eventstorming-brandolini.md
+  - research/software-architecture/microservices-patterns-richardson.md
 ---
 
 # Domain Event Catalog
 
 ## Purpose
 
-A Domain Event is something that happened in the domain that is significant to the business — immutable, past-tense, and business-meaningful. Evans identified Domain Events as the escape hatch for Rule 3 (one Aggregate per transaction): an Aggregate emits an event inside its own transaction; everything else updates asynchronously via that event. The Domain Event Catalog is the authoritative, versioned record of every Domain Event in a Bounded Context. Any service integration not governed by this catalog is undocumented coupling.
+A Domain Event is something that happened in the domain that matters to the business: immutable, past tense, named in the Ubiquitous Language. Evans added it to the tactical patterns so an Aggregate can tell the rest of the system what happened without a reference to, or a call into, another Aggregate. The catalog is the context's record of **what each event means**, who raises it, and who reacts. Any integration not in a catalog is undocumented coupling.
 
----
+What the catalog does **not** hold (D047-1, D047-2):
+- the envelope, wire type, field types, versioning and registry, which are `event-schema-design`'s (`design/data/event-schemas.md`);
+- delivery (the Transactional Outbox, relay, Change Data Capture, the Dead Letter Queue), which is `event-driven-patterns`';
+- the code, which is `go-event-publisher` and `go-event-consumer`.
 
-## Event Naming
+At **lean** the catalog is skipped; events are listed in `aggregate-design`'s `domain-model.md`, under the same naming and payload rules.
 
-Events follow the pattern: `[Aggregate][PastTenseVerb]` in PascalCase.
+## 1. Where Events Come From
 
-| Good | Poor | Why the poor name fails |
-|---|---|---|
-| `DataAssetClassified` | `FileUpdated` | Too generic; no business meaning |
-| `ComplianceGapDetected` | `GapFound` | No aggregate prefix; imprecise |
-| `StorageSourceConnected` | `SourceAdded` | Vague; not Ubiquitous Language |
-| `AuditRecordCreated` | `AuditLogged` | Technical verb; domain says "created" |
+From the Event Storming wall (orange stickies, Brandolini), from `aggregate-design`'s Commands-and-events tables (each Command records one event), and from Policies and deadlines ("the hold expired"). An event no Aggregate records, or a Command that records nothing, is a gap to close before cataloguing.
 
-Rules:
-- Past tense — the event records something that already happened
-- Name must be meaningful to a domain expert, not just an engineer
-- Never use a CRUD verb alone as the full name — `DataAssetRegistered`, not `DataAssetCreated`
+## 2. Naming: Which Fact Happened?
 
----
+- **Past tense, in the context's language, naming the business fact**, so a domain expert recognises it: `ParcelDeposited`, `RefundIssued`, `HoldExpired`.
+- **Ask which fact happened.** `CustomerUpdated` hides `CustomerRelocated`, `AddressCorrected` and `ContactPreferenceChanged`, and Tax reacts to a move but not to a typo fix. One event per business fact; several field changes that are one fact are one event.
+- **Never a CRUD or technical verb as the fact** (`Updated`, `Changed`, `Modified`, `Saved`, `RowInserted`). `Created` and `Deleted` usually have a better word (`MemberEnrolled`, `ListingWithdrawn`).
+- **Never a Command disguised as an event.** `SendReminder` is an instruction; the fact is `PaymentOverdue`, and a Policy in the consumer decides to remind.
+- **No version in the name.** A changed shape or meaning follows `event-schema-design`'s protocol.
+- PascalCase here; `event-schema-design` derives the lower-case wire type from it.
 
-## Event Categories
+Worked contrasts: `./references/naming-and-meaning.md`.
 
-Identify the category before defining an event — it determines retention, routing, and versioning discipline.
+## 3. What the Payload Carries
 
-| Category | Definition | Example | Published externally? |
-|---|---|---|---|
-| **Domain Event** | A business fact from inside one Bounded Context; notifies consumers across contexts | `DataAssetClassified` | Yes — via Outbox → Redpanda |
-| **Integration Event** | A shaped, translated version of a Domain Event for a specific consumer's contract | `ComplianceIntegration.DataAssetClassified.v1` | Yes — shaped per consumer |
-| **Notification Event** | A lightweight signal carrying only the Aggregate ID; consumer fetches state via Read Model | `DataAssetUpdated` (ID only) | Yes — coarse-grained fan-out |
+The catalog states what each field **means** and why a consumer needs it; `event-schema-design` fixes its type and default. Carry what consumers need to react **without calling back**: identifiers (other Aggregates by ID), the values that changed, the **prior value** when consumers act on transitions, the actor, the reason where it matters. Not the whole Aggregate (it couples every consumer to the write model), not an ID alone unless that is a stated choice, not envelope facts (event ID, time, tenant, correlation), never raw sensitive values on a retained topic.
 
-Use Domain Events as the default. Use Integration Events when a consuming context needs a stable, separately-versioned schema. Use Notification Events only when consumers will always query the Read Model for details anyway.
+## 4. Internal or Published
 
-> **Internal vs. integration events (Khononov):** An event-sourced Aggregate may maintain internal persistence events used only to reconstruct its own state — these are distinct from the Domain Events published for cross-context integration. Design both lists separately and translate internal events to coarser Domain Events before the Outbox. See `references/versioning-and-retention.md`.
+- **Internal:** stays inside the context. **Stored:** an event-sourced Aggregate's own stream. **Published:** a fact other contexts react to, and therefore a contract.
+- **Publish the business-meaningful fact, not every internal step** (Khononov). Translate fine-grained internal or stored events into coarser published ones, and record which map to which and which are never published. Publishing the internal stream couples consumers to how the Aggregate stores itself.
+- A published event sits on a context-map line; the line's pattern (`context-map-patterns`) says what the contract obliges.
 
----
+## 5. Consumers, Policies, Retention Need
 
-## Canonical Envelope
+- For each published event, every known consumer with its reaction as a policy: **"Whenever `PaymentOverdue`, then `SendReminder`"**. The Command belongs to the consumer's context.
+- Delivery is at least once (Vernon), so **every reaction is idempotent**; say on what. Order holds only within one Aggregate; a causal chain is followed through `correlationid` and `causationid`. Record per consumer what a stuck (dead-lettered) event does to its order.
+- **Retention need:** why and how long the business needs the event (audit evidence, consumer replay, operational only). The schedule is `data-retention-policy`'s.
 
-Every Domain Event carries the same envelope regardless of type. Required fields:
+Detail, the causation chain and the stuck-event choice: `./references/visibility-and-consumers.md`.
 
-| Field | Type | Role |
-|---|---|---|
-| `eventId` | UUID v4 | Unique event instance ID — consumers use this for idempotency |
-| `eventType` | string | PascalCase event name: `DataAssetClassified` |
-| `version` | string | Schema version: `1.0.0` |
-| `occurredAt` | ISO 8601 | When the fact happened in the domain (not when published) |
-| `aggregateId` | UUID | The emitting Aggregate's ID |
-| `aggregateType` | string | The emitting Aggregate's type: `DataAsset` |
-| `correlationId` | UUID | Traces the full event chain back to the originating Command |
-| `causationId` | UUID | ID of the immediate event or Command that directly caused this event |
-| `boundedContext` | string | The emitting Bounded Context: `classification-engine` |
-| `tenantId` | UUID | Physical multi-tenancy — required in every event for this product |
-| `payload` | object | Event-specific data — schema defined per event in the catalog |
+## Producing the Catalog
 
-For the Go struct definition, CloudEvents alignment, detailed field-by-field explanations, and a worked `DataAssetClassified` example with every field filled: see **`references/event-format.md`**.
+One `design/<context>/domain-event-catalog.md` per Bounded Context (`./templates/domain-event-catalog.md`). No code, no DDL.
 
----
+1. **Read** the context's `aggregates.md` (Commands and events), the Event Storming Process or Software Design output, the context's Ubiquitous Language and the context map (which lines carry events).
+2. **List the facts.** Reconcile the wall and the Aggregates; close gaps. Name each fact by § 2, splitting generic events into the facts they hide.
+3. **Per event:** its meaning in one sentence, the Aggregate, what raises it, visibility, payload meaning, guarantees, consumers and policies, ordering and retention need. For internal and stored events, the translation to published ones.
+4. **Agent-run:** a consumer or reaction that rests on an assumption (another context's intent) is marked *assumed*, with an open question.
+5. **Plan → validate → execute** for a change to a published event (rename, changed meaning, retirement): agree it with `event-schema-design`'s protocol and the consumers before editing the catalog.
+6. **Validate, then loop.** Run `./scripts/validate-domain-event-catalog.sh design/<context>/domain-event-catalog.md`. Fix every FAIL and run it again until it exits clean, then go through `./resources/catalog-checklist.md`.
+7. **Present** the published events and their consumers, the translations, and for every request you declined, its reason in full (§ Gotchas). Then hand the published events to data-architect for `event-schemas.md`.
 
-## Outbox Pattern
+Examples: `./examples/01-lean-events-in-domain-model.md` (lean: no catalog), `./examples/02-standard-food-delivery.md` (a generic event split; coarse published facts), `./examples/03-enterprise-claims-event-sourced.md` (a stored stream translated for other contexts).
 
-Publishing a Domain Event from the request path (dual-write) is an anti-pattern: a crash between the database write and the broker publish loses events or creates phantoms. The Transactional Outbox pattern solves this without a distributed transaction:
+## Gotchas
 
-1. **Same transaction:** Update the Aggregate's table AND write the event to `outbox_events` — COMMIT. Either both succeed or both fail.
-2. **Separate relay process:** Read unpublished rows, publish to Redpanda, mark as published.
+Each trap comes with the reason to give in full.
 
-Two relay approaches:
-- **Polling:** A background goroutine queries `WHERE NOT published ORDER BY created_at` on a schedule. Simple; slight latency.
-- **CDC (Change Data Capture):** Debezium captures WAL changes to `outbox_events` and forwards them to Redpanda. Near-real-time; requires Kafka Connect deployment.
-
-Choose polling for simplicity; choose CDC when sub-second latency is required or polling load on the database is unacceptable.
-
-For the full `outbox_events` DDL, Go polling publisher implementation, CDC/Debezium connector configuration, idempotency consumer pattern, and DLQ mechanics: see **`references/outbox-and-cdc.md`**.
-
----
-
-## Versioning Strategy
-
-Events are immutable facts. Once emitted, they cannot be changed. When the schema must evolve:
-
-| Change type | Strategy | Consumer obligation |
-|---|---|---|
-| Additive (new optional field) | Minor bump: `1.0.0 → 1.1.0` | Forward-compatible: tolerate unknown fields |
-| Breaking (rename, remove, type change) | Major bump: `1.0.0 → 2.0.0` | Run both versions in parallel; old version has documented sunset |
-| Event rename | Emit under new name; keep old name through sunset period | Consumers opt into migration explicitly |
-
-> **Event-sourced internal events:** The additive/breaking strategy applies to transient integration events. Permanently-stored internal events (event-sourced Aggregates) require **event upcasting** — a load-time transformation, never parallel emission — because stored events can never be deleted or reissued. See `references/versioning-and-retention.md`.
-
-For migration playbooks, consumer-side tolerant-reader patterns, and upcasting implementation: see **`references/versioning-and-retention.md`**.
-
----
-
-## Retention Policy
-
-| Event category | Broker retention | Long-term storage |
-|---|---|---|
-| Domain Event (audit-required) | 90 days | Indefinitely in the audit store |
-| Domain Event (non-audit) | 30 days | Not required |
-| Integration Event | Match consumer SLA | Consumer decides |
-| Notification Event | 7 days | Not required |
-
-Default for this product: all `DataAsset*` events are audit-required — 90 days on Redpanda, indefinitely in the audit store.
-
----
-
-## Anti-Patterns
-
-| Anti-pattern | Correction |
-|---|---|
-| **Event as state dump** — full Aggregate state in payload | Carry only the business fact and the fields consumers need to react |
-| **Anaemic event** — only an ID in payload | Include the business-meaningful fields of the fact itself |
-| **CRUD event name** — `DataAssetUpdated` as the only event | One event per business fact: `DataAssetClassified`, `DataAssetArchived` |
-| **Dual write** — request handler publishes directly to broker | All publication goes through the Transactional Outbox |
-| **Command disguised as event** — `SendComplianceReport` emitted as event | Name the fact (`ComplianceGapDetected`); a Policy in the consumer issues the Command |
-| **Mutating published schema in place** | Additive → minor bump; breaking → new major version run in parallel |
-| **Consumer coupling to cross-Aggregate order** | Per-Aggregate order only; use `correlationId`/`causationId` for causal reconstruction |
-| **Internal events published as external contracts** | Translate internal persistence events to coarser Domain Events before the Outbox |
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Past-tense naming | `[Aggregate][PastTenseVerb]` in PascalCase | Present tense, CRUD-only, or informal names |
-| Full envelope | All required envelope fields present | Missing `eventId`, `correlationId`, `tenantId`, or `version` |
-| Idempotency key | Every event names the consumer-deduplication field | No idempotency key defined |
-| Consumer list | Every event names known consumers | Orphan events with no consumers |
-| Versioning strategy | Additive vs. breaking change handling stated | No versioning strategy |
-| Outbox only | All publication uses Transactional Outbox | Direct broker publish from request path |
-| DLQ defined | Every consumer topic has a DLQ topic | Events silently discarded on failure |
-
----
+- **"Call it `CustomerUpdated`; consumers can work out what changed."** *Reason:* a generic event hides several business facts that consumers react to differently; each consumer then decodes fields to guess which fact happened, and the language loses the words. *Instead:* ask which fact happened and name each one (`CustomerRelocated`, `AddressCorrected`).
+- **"Publish every event in the stream so consumers have full detail."** *Reason:* internal and stored events mirror how this Aggregate stores itself; publishing them makes every internal change a breaking change for other contexts (Khononov). *Instead:* publish coarser business facts and record the translation.
+- **"Emit `SendInvoice` when the order ships."** *Reason:* that is a Command in disguise; the producer would be deciding the consumer's work. *Instead:* publish the fact (`OrderShipped`); Billing's policy decides to invoice.
+- **"Put the whole Order in the payload so nobody has to call back."** *Reason:* a state dump couples every consumer to the write model and carries data no consumer needs, sensitive data included. *Instead:* the fact, the identifiers, what changed and the prior value where it matters.
+- **"Add `eventId`, `occurredAt` and `tenantId` to the payload."** *Reason:* those are envelope attributes (`event-schema-design`); duplicates drift. *Instead:* the payload holds the fact only.
+- **"Consumers can rely on events arriving in order."** *Reason:* order holds only within one Aggregate's partition, and a dead-lettered event lets later ones overtake it. *Instead:* record per consumer what it needs and what it does with a stuck event; follow causation IDs for chains.
+- **"Add the outbox table and DLQ topics to the catalog."** *Reason:* delivery is `event-driven-patterns`' and the code is the go-* skills'; the catalog is meaning (D047-10, W2-10). *Instead:* name the events, consumers and retention need; point to those skills.
+- **"Version it as `RefundIssuedV2`."** *Reason:* a version in the name is a wire-contract fix applied in the wrong place; `event-schema-design` owns the one protocol (D047-1). *Instead:* keep the business name; a changed meaning is a new fact with a new name.
 
 ## References
 
-- **`references/event-format.md`** — Full envelope specification: Go struct, CloudEvents alignment, field-by-field purpose, worked `DataAssetClassified` example with every field filled
-- **`references/outbox-and-cdc.md`** — Outbox DDL, polling publisher (Go), CDC/Debezium configuration, idempotency consumer pattern, DLQ mechanics
-- **`references/versioning-and-retention.md`** — Additive versioning worked example, breaking-change migration playbook, event upcasting for event-sourced Aggregates, retention table with rationale, archival mechanics
-- **`references/catalog-template.md`** — Fill-in artifact template with worked `DataAssetClassified` entry showing every field
+| Question | File |
+|---|---|
+| Where do events come from? Is this the right name? What goes in the payload? | `./references/naming-and-meaning.md` |
+| Internal or published? Consumers, idempotency, ordering? Retention need? | `./references/visibility-and-consumers.md` |
+| Checking before hand-off | `./resources/catalog-checklist.md` |

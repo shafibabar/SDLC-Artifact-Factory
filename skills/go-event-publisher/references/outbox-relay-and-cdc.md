@@ -1,4 +1,6 @@
-# Outbox Pattern and Change Data Capture — Full Reference
+# Outbox Relay, Change Data Capture and Consumer Idempotency — Moved Notes
+
+**Moved here from `domain-event-catalog` in #1395 (D047-10; W2-10: the outbox is taught in one place).** The design-level rule (Transactional Outbox, polling vs Change Data Capture) is `event-driven-patterns`'; the code standard is this skill's `./transactional-outbox-standard.md` and `go-event-consumer`'s DLQ and idempotency standards. This file is kept for the details those don't yet carry (the relay's `retry_count`/`last_error` escalation, the Debezium EventRouter configuration, the audit archiver) and is merged into them when `go-event-publisher` and `go-event-consumer` are rebuilt. It still uses the first product's example and the old house envelope columns (`event_version`, `correlation_id`, …): the envelope is now CloudEvents per `event-schema-design` (no version column; `correlationid`/`causationid`/`tenantid` extensions), and a tenant column exists only in a multi-tenant product.
 
 Self-contained reference for the Transactional Outbox implementation, CDC/Debezium configuration,
 at-least-once delivery guarantees, consumer idempotency, and Dead Letter Queue mechanics.
@@ -86,8 +88,8 @@ import (
     "github.com/google/uuid"
     "github.com/jackc/pgx/v5"
 
-    "github.com/caizin/data-asset-management/internal/domain"
-    "github.com/caizin/data-asset-management/internal/domain/events"
+    "github.com/example/data-asset-management/internal/domain"
+    "github.com/example/data-asset-management/internal/domain/events"
 )
 
 type ClassifyDataAssetHandler struct {
@@ -369,3 +371,65 @@ Record which approach each consumer takes in the Domain Event Catalog entry.
 monitored separately. A background job (or Grafana alert on `outbox_events WHERE retry_count >= 5`)
 should page on-call when publication has failed repeatedly — these events may represent a broker
 outage or a serialisation bug that requires a deployment fix, not just a retry.
+
+---
+
+## Topic Retention and the Audit Archiver (moved from `domain-event-catalog`'s versioning-and-retention reference)
+
+How long each event must be kept is a business need recorded per event in the catalog; the schedule is `data-retention-policy`'s and topic configuration is platform work. The first product's mechanics:
+
+### Topic Configuration
+
+```bash
+# Create a topic with 90-day retention (milliseconds).
+rpk topic create events.DataAsset \
+  --partitions 12 \
+  --replicas 3 \
+  --topic-config retention.ms=7776000000 \
+  --topic-config retention.bytes=-1 \
+  --topic-config min.insync.replicas=2
+```
+
+**Partition count guidance:**
+- 12 partitions as a starting point for `events.DataAsset` (allows up to 12 consumer instances).
+- Use `aggregate_id` as the partition key (already done by the relay) — this guarantees
+  per-Aggregate ordering across the broker's lifetime.
+- Do not reduce partition count after creation — Redpanda requires a new topic for that.
+
+### Archival to the Audit Store
+
+Events classified as audit-required must be written to a long-term audit store (separate from
+the Redpanda topic) before or immediately after broker publication.
+
+**Recommended pattern:** A dedicated `audit-archiver` consumer subscribes to all audit-required
+event topics and writes rows to a `audit_events` PostgreSQL table (or an S3-compatible object
+store for very high volume) with indefinite retention.
+
+```sql
+-- In the audit store database (separate schema, read-only for most services)
+CREATE TABLE audit_events (
+    id              UUID        PRIMARY KEY,             -- Same as eventId
+    event_type      TEXT        NOT NULL,
+    event_version   TEXT        NOT NULL,
+    tenant_id       UUID        NOT NULL,
+    aggregate_id    UUID        NOT NULL,
+    aggregate_type  TEXT        NOT NULL,
+    correlation_id  UUID        NOT NULL,
+    occurred_at     TIMESTAMPTZ NOT NULL,
+    recorded_at     TIMESTAMPTZ NOT NULL DEFAULT now(),  -- When the archiver wrote this row
+    payload         JSONB       NOT NULL
+);
+
+CREATE INDEX idx_audit_tenant_type
+    ON audit_events (tenant_id, event_type, occurred_at DESC);
+
+CREATE INDEX idx_audit_aggregate
+    ON audit_events (aggregate_id, occurred_at ASC);
+```
+
+**Archiver idempotency:** The archiver uses `INSERT ... ON CONFLICT (id) DO NOTHING` — if the
+same event is received more than once (at-least-once delivery), the duplicate is silently ignored
+and the original row is preserved.
+
+---
+
