@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.7.1
+version: 1.7.2
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -104,7 +104,7 @@ The enterprise-architect does not produce domain models, implementation code, or
 | Context Map | `artifacts/[product]/design/context-map.md` | Required — service boundaries derived from BC boundaries |
 | Aggregate designs | `artifacts/[product]/design/[bc]/aggregates.md` | Required — CQRS and component layer design |
 | Domain Event Catalog | `artifacts/[product]/design/[bc]/domain-event-catalog.md` | Required — event-driven integration topology |
-| Command Catalog | `artifacts/[product]/design/[bc]/command-catalog.md` | Required — API endpoint mapping |
+| Command Catalog | `artifacts/[product]/design/[bc]/command-catalog.md` | Required — the Commands each API operation exposes: who may call them, their rejections by kind (mapped to status codes in `api-contract-design`), idempotency keys, and whether the caller needs the outcome now |
 | Read Model designs | `artifacts/[product]/design/[bc]/read-models.md` | Required — API read endpoint mapping |
 | NFR specification | `artifacts/[product]/ideate/nfr-specification.md` | Required — architecture-handoff section |
 | User personas | `artifacts/[product]/ideate/user-personas.md` | Required — Person elements in System Context Diagram |
