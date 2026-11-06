@@ -19,6 +19,7 @@ A published event is a contract on the line between two contexts. The context ma
 For each published event, list every known consumer and its reaction, written as Brandolini's policy: **"Whenever `PaymentOverdue`, then `SendReminder`."** The Command belongs to the consumer's context, not the producer's. A published event with no consumer yet is allowed: mark it "none yet", with the reason it is published.
 
 What each consumer can rely on, and must cope with:
+- **Recorded atomically with the state change** (the Transactional Outbox, Vernon and Richardson): the event exists if and only if the change committed, with no lost events and no phantom ones. How it is built is `event-driven-patterns`'.
 - **At least once** (Vernon): delivery is durable and may repeat. Every reaction is **idempotent**, keyed by the envelope's event ID within its source, or by a business key when the same fact can arrive under two IDs (during a dual-publish window, for instance).
 - **Order only within one Aggregate.** Events for the same Aggregate arrive in order when the broker is partitioned by the Aggregate's ID. Nothing orders events across Aggregates; a consumer that needs a cause-and-effect chain follows `correlationid` and `causationid`.
 - **What a stuck event does to order.** If a consumer parks an unprocessable event in a Dead Letter Queue, later events for that Aggregate can overtake it. Record per consumer whether it halts that Aggregate's partition until the event is fixed, or tolerates out-of-order replay.

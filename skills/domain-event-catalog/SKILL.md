@@ -54,7 +54,7 @@ From the Event Storming wall (orange stickies, Brandolini), from `aggregate-desi
 - **Ask which fact happened.** `CustomerUpdated` hides `CustomerRelocated`, `AddressCorrected` and `ContactPreferenceChanged`, and Tax reacts to a move but not to a typo fix. One event per business fact; several field changes that are one fact are one event.
 - **Never a CRUD or technical verb as the fact** (`Updated`, `Changed`, `Modified`, `Saved`, `RowInserted`). `Created` and `Deleted` usually have a better word (`MemberEnrolled`, `ListingWithdrawn`).
 - **Never a Command disguised as an event.** `SendReminder` is an instruction; the fact is `PaymentOverdue`, and a Policy in the consumer decides to remind.
-- **No version in the name.** A changed shape or meaning follows `event-schema-design`'s protocol.
+- **No version in the name.** A breaking change to a published event becomes a **new, descriptively named event type** published alongside the old one, never `.v2` (D047-1); the protocol is `event-schema-design`'s, and the catalog points to it. A changed meaning is a different fact with its own business name.
 - PascalCase here; `event-schema-design` derives the lower-case wire type from it.
 
 Worked contrasts: `./references/naming-and-meaning.md`.
@@ -72,7 +72,7 @@ The catalog states what each field **means** and why a consumer needs it; `event
 ## 5. Consumers, Policies, Retention Need
 
 - For each published event, every known consumer with its reaction as a policy: **"Whenever `PaymentOverdue`, then `SendReminder`"**. The Command belongs to the consumer's context.
-- Delivery is at least once (Vernon), so **every reaction is idempotent**; say on what. Order holds only within one Aggregate; a causal chain is followed through `correlationid` and `causationid`. Record per consumer what a stuck (dead-lettered) event does to its order.
+- **The guarantees consumers rely on, stated in the catalog:** a published event is recorded in the **same transaction as the state change** (the Transactional Outbox: Vernon, Richardson), so it exists if and only if the change happened; it is delivered **at least once**, so **every reaction is idempotent**; say on what. How the outbox, relay and DLQ are built is `event-driven-patterns`' and the go-* skills'. Order holds only within one Aggregate; a causal chain is followed through `correlationid` and `causationid`. Record per consumer what a stuck (dead-lettered) event does to its order.
 - **Retention need:** why and how long the business needs the event (audit evidence, consumer replay, operational only). The schedule is `data-retention-policy`'s.
 
 Detail, the causation chain and the stuck-event choice: `./references/visibility-and-consumers.md`.
@@ -101,8 +101,8 @@ Each trap comes with the reason to give in full.
 - **"Put the whole Order in the payload so nobody has to call back."** *Reason:* a state dump couples every consumer to the write model and carries data no consumer needs, sensitive data included. *Instead:* the fact, the identifiers, what changed and the prior value where it matters.
 - **"Add `eventId`, `occurredAt` and `tenantId` to the payload."** *Reason:* those are envelope attributes (`event-schema-design`); duplicates drift. *Instead:* the payload holds the fact only.
 - **"Consumers can rely on events arriving in order."** *Reason:* order holds only within one Aggregate's partition, and a dead-lettered event lets later ones overtake it. *Instead:* record per consumer what it needs and what it does with a stuck event; follow causation IDs for chains.
-- **"Add the outbox table and DLQ topics to the catalog."** *Reason:* delivery is `event-driven-patterns`' and the code is the go-* skills'; the catalog is meaning (D047-10, W2-10). *Instead:* name the events, consumers and retention need; point to those skills.
-- **"Version it as `RefundIssuedV2`."** *Reason:* a version in the name is a wire-contract fix applied in the wrong place; `event-schema-design` owns the one protocol (D047-1). *Instead:* keep the business name; a changed meaning is a new fact with a new name.
+- **"Add the outbox table and DLQ topics to the catalog."** *Reason:* delivery is `event-driven-patterns`' and the code is the go-* skills'; the catalog is meaning (D047-10, W2-10). *Instead:* name the events, consumers and retention need, state the two guarantees consumers rely on (recorded atomically with the state change; delivered at least once, so reactions are idempotent), and point to those skills for how.
+- **"Version it as `RefundIssuedV2`."** *Reason:* consumers would have to enumerate versions, and the suffix says nothing about what changed; `event-schema-design` owns the one protocol (D047-1). *Instead:* a breaking change becomes a new, descriptively named event type published alongside the old one until consumers move, per `event-schema-design`; a changed meaning is a new fact with a new business name.
 
 ## References
 
