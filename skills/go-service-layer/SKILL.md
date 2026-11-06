@@ -22,7 +22,7 @@ description: >
   and references/parallel-query-orchestration.md. Implements the
   enterprise-architect's CQRS design and command-catalog's idempotency
   contract in Go. Used by the backend-engineer during Implement.
-version: 3.1.0
+version: 3.2.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -81,6 +81,8 @@ Full handler body (idempotency, load, ABAC, domain call, save, result recording,
 commit) and the `command_log` schema: `references/command-handler-transaction-and-idempotency.md`.
 Command structs, structural validation, guard clauses, domain-error mapping and
 replaying a rejection (moved from `command-catalog`): `references/command-structs-and-rejections.md`.
+Package layout, projector, read store and start-up wiring for a service on the
+projections rung (moved from `cqrs-pattern`): `references/cqrs-package-layout-and-wiring.md`.
 
 A command handler changes **exactly one Aggregate per transaction** (`aggregate-design`).
 A use case that appears to need two changed atomically is a signal to reconsider the

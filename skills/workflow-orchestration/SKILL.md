@@ -11,7 +11,7 @@ description: >
   complex, long-running, visibility-critical flows. Used during Design when
   defining how a multi-step business process spanning Bounded Contexts is
   coordinated and how its cross-service queries are answered.
-version: 1.0.0
+version: 1.0.1
 phase: design
 owner: enterprise-architect
 created: 2026-07-31
@@ -95,7 +95,7 @@ Once each service owns its data, a query spanning services can no longer be one 
 | **Cost** | Bad for large datasets / wide fan-out; couples to N services' availability | Eventual consistency + replication machinery to build and maintain |
 | **Choose when** | **Default** — small result, low fan-out | The join is over large data, fan-out is too wide, OR the same data must answer **many differently-shaped queries** |
 
-**Rule: API Composition first; graduate to CQRS on a *named* trigger.** Do not build a Read Model speculatively — name the trigger in the design. CQRS mechanics themselves live in `cqrs-pattern`; this skill owns only the *decision to build one at all*.
+**Rule: API Composition first; graduate to CQRS on a *named* trigger.** Do not build a Read Model speculatively — name the trigger in the design. The decision, its triggers and the record are `cqrs-pattern`'s (its cross-service rungs, D047-4); this table summarises it for Saga and composition design.
 
 ---
 

@@ -24,7 +24,7 @@ description: >
   The idempotency-key contract this consumer's dedup depends on is owned by
   go-event-publisher's EventID construction rule, cross-referenced here, not
   restated. Used by the backend-engineer during Implement.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -174,3 +174,4 @@ internal/handlers/events/consumer_test.go    (written first — TDD; includes a 
 ```
 
 Full standards: `references/idempotent-consumer-standard.md`, `references/dead-letter-queue-standard.md`, `references/offset-commit-standard.md`, `references/rebalance-handling.md`, `references/liveness-heartbeat.md`.
+Projector sketches for the three projection mechanics (moved from `cqrs-pattern`): `references/projector-sketches.md`.
