@@ -512,7 +512,8 @@
           "lean": "required",
           "standard": "required",
           "enterprise": "required"
-        }
+        },
+        "note": "One per product: ASCII diagram with title and key, element catalog, rationale and boundary notes (what is out of scope). Lean: a sentence each for rationale and boundary notes, no Mermaid (D047-13)."
       },
       {
         "artifact": "container-diagram",

@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.8.0"
+        "version": "1.9.0"
       },
       {
         "created": "2026-06-25",
@@ -10117,13 +10117,13 @@
         "domain": "architecture",
         "has_assets": false,
         "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "system-context-diagram",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -10131,14 +10131,20 @@
           "system-context-diagram"
         ],
         "related": [
+          "bounded-context-mapping",
           "component-diagram",
           "container-diagram",
           "event-storming-facilitation",
           "glossary-management",
+          "integration-design",
           "nfr-specification",
           "user-persona"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/c4-model-brown.md",
+          "research/software-architecture/documenting-software-architectures-clements.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
@@ -10149,7 +10155,7 @@
           "system-boundary",
           "system-context"
         ],
-        "version": "2.1.2"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10877,8 +10883,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1068,
-    "edges_skill_sources": 218,
+    "edges_skill_related": 1070,
+    "edges_skill_sources": 221,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10890,20 +10896,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 66,
+    "research_files_cited": 67,
     "skills_with_assets": 9,
     "skills_with_contract_test": 148,
     "skills_with_domain": 189,
-    "skills_with_evals": 40,
-    "skills_with_examples": 40,
+    "skills_with_evals": 41,
+    "skills_with_examples": 41,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 39,
-    "skills_with_scripts": 36,
-    "skills_with_sources": 41,
+    "skills_with_resources": 40,
+    "skills_with_scripts": 37,
+    "skills_with_sources": 42,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 38
+    "skills_with_templates": 39
   },
   "edges": {
     "agent_produces": [
@@ -16538,6 +16544,10 @@
         "skill": "subdomain-distillation"
       },
       {
+        "related": "bounded-context-mapping",
+        "skill": "system-context-diagram"
+      },
+      {
         "related": "component-diagram",
         "skill": "system-context-diagram"
       },
@@ -16551,6 +16561,10 @@
       },
       {
         "related": "glossary-management",
+        "skill": "system-context-diagram"
+      },
+      {
+        "related": "integration-design",
         "skill": "system-context-diagram"
       },
       {
@@ -17782,6 +17796,18 @@
       {
         "skill": "subdomain-distillation",
         "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "system-context-diagram",
+        "source": "research/software-architecture/c4-model-brown.md"
+      },
+      {
+        "skill": "system-context-diagram",
+        "source": "research/software-architecture/documenting-software-architectures-clements.md"
+      },
+      {
+        "skill": "system-context-diagram",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
       },
       {
         "skill": "uat-plan",
