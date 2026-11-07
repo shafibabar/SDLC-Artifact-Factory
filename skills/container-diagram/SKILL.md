@@ -117,7 +117,7 @@ Detail and vocabulary: `./references/deployment-view.md`. Why the two views stay
 4. **Draw** the ASCII container view with title, readers, question and key; write the catalog, rationale and fitness functions.
 5. **Deployment view** (§ 5): draw it from the NFRs; the tenant dimension from `multi-tenancy-design`, or marked pending until it exists.
 6. **Validate, then loop.** Run `./scripts/validate-container-diagram.sh design/architecture/container-diagram.md design/architecture/system-context.md`, fix every FAIL, re-run until clean; then `./resources/checklist.md`.
-7. **Present** for approval (the phase gate after the deployment view), with the reason for every request declined (§ Gotchas). Hand on: integrations, tenancy, component diagrams for non-default containers, API contracts.
+7. **Present** for approval (the phase gate after the deployment view), with the reason for every request declined (§ Gotchas). Hand on: integrations, tenancy, component diagrams for non-default containers, API contracts. Answering in a reply rather than a file: the declined requests and their reasons once, then the artifact once; no second summary.
 
 Examples: `./examples/01-lean-modular-monolith.md` (a box office: two contexts in one app, no gateway, one environment), `./examples/02-standard-split-on-disintegrators.md` (a veterinary group: three deployables from four contexts, each split justified, a gateway without business logic, broker topics readable, staging and production), `./examples/03-enterprise-regions-and-stamps.md` (a freight platform: per-region deployment views, dedicated stamps for two large customers chosen by multi-tenancy-design, a variability guide).
 
