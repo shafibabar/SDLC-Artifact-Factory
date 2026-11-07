@@ -93,7 +93,7 @@ Detail: `./references/gateway-placement.md`.
 
 ## 5. The Deployment View (a Section, D047-13)
 
-The container view says what talks to what; the deployment view says **where each container runs, how many instances, in which environment** (Clements' allocation view; Brown's deployment diagram). Keep them apart: nothing in this section goes on the container picture.
+The container view says what talks to what; the deployment view says **where each container runs, how many instances, in which environment** (Clements' allocation view; Brown's deployment diagram). A container is not a pod or a Docker image; pods, images and counts are how it is deployed, so they live here. Keep the two apart: nothing in this section goes on the container picture.
 - One per environment that differs (production always; staging if its shape differs).
 - **Deployment nodes**, nested (region, cluster, namespace, managed database service), **infrastructure nodes** (load balancer, ingress, CDN, DNS) and the **container instances** in each, with counts.
 - **Tenancy:** only what `multi-tenancy-design` chose: a pooled deployment, a stamp per tenant or per region, or a mix. There is no default; never assume a per-tenant stamp or a shared broker. No tenancy needed means a single deployment.
@@ -126,8 +126,7 @@ Examples: `./examples/01-lean-modular-monolith.md` (a box office: two contexts i
 Each trap comes with the reason to give in full.
 
 - **"Each Bounded Context is its own service,"** even for a small tool. *Reason:* a context is a language boundary; deployables are chosen by granularity forces and the profile (Hard Parts; D047-6), and every split adds a network, a deployment and a failure mode. *Instead:* lean is one modular monolith; split on a named disintegrator.
-- **"Put the pod counts, replicas, ports and '×N per tenant' on the diagram."** *Reason:* they change where things run, not what talks to what; mixed in, the picture answers neither question (Clements). *Instead:* the deployment view section.
-- **"List our Docker images as the containers."** *Reason:* a C4 container is a runnable unit (an app, an API, a database), not a Docker container (Brown). *Instead:* containers here; images and pods in the deployment view.
+- **"Put the pod counts, replicas, ports and '×N per tenant' on the diagram,"** or "list our Docker images as the containers." *Reason, in full:* a C4 container is a runnable unit (an app, an API, a database), **not a pod or a Docker container** (Brown); pods, images, counts and tenant copies change where and how many, not what talks to what, and mixed in, the picture answers neither question (Clements: a component-and-connector view vs an allocation view). *Instead:* containers here; pods, images, counts and copies in the deployment view section.
 - **"Let the two services share the database; it's simpler."** *Reason:* a shared schema is an unmanaged shared model and couples their releases. *Instead:* one owner per database; the other asks through an API or an event. In a monolith, one schema per module.
 - **"Put the discount and eligibility rules in the gateway."** *Reason:* a smart gateway becomes an unowned service coupled to every context (Xu, Newman). *Instead:* rules in the owning service; the gateway routes, validates tokens, limits rates.
 - **"The gateway checks the token, so services don't need to."** *Reason:* anything that reaches a service another way bypasses it (D047-12). *Instead:* services verify identity too.
