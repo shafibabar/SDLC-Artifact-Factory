@@ -8,7 +8,7 @@ There is no separate deployment-diagram artifact or skill. platform-engineer tur
 
 ## 1. When It Is Drawn
 
-After the container view and after `multi-tenancy-design`, because the tenancy model decides the shape. If the tenancy design doesn't exist yet, write the section header with *pending multi-tenancy-design* and list it as an open question; never fill it with an assumed model.
+After the container view and after `multi-tenancy-design`, because the tenancy model decides the shape. If the tenancy design doesn't exist yet, draw everything the NFRs already fix (environments, the regions data residency requires, clusters and namespaces, infrastructure nodes, instances and counts) and mark only the tenant dimension *pending multi-tenancy-design*, with an open question; never fill it with an assumed model.
 
 ## 2. Vocabulary (Brown)
 

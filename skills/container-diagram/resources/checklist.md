@@ -4,7 +4,7 @@ Run after `./scripts/validate-container-diagram.sh` exits clean. The script chec
 
 ## Decomposition
 - [ ] Started from the Context Map, not from "one context, one service".
-- [ ] Lean: one modular monolith, contexts as modules with their own schemas; any split names an overwhelming disintegrator.
+- [ ] Lean: one modular monolith, contexts as modules with their own schemas, reaching each other's data only through the owning module's interface or events; any split names an overwhelming disintegrator.
 - [ ] Standard and enterprise: every split names a disintegrator with evidence and the integrators it overrides; contexts kept together name the integrator.
 - [ ] No context is split between deployables that both write its Aggregates; no deployable reaches another's database.
 - [ ] A service another team runs is an external system, not a container here.
@@ -25,7 +25,7 @@ Run after `./scripts/validate-container-diagram.sh` exits clean. The script chec
 - [ ] The north-south entry and the east-west mesh are both marked.
 
 ## Deployment view
-- [ ] Drawn after multi-tenancy-design, showing exactly its model (or marked pending, with an open question); no assumed stamps or shared broker.
+- [ ] The tenant dimension shows exactly multi-tenancy-design's model, or is marked pending with an open question; no assumed stamps or shared broker. Everything the NFRs fix (environments, residency regions, nodes, counts) is drawn either way.
 - [ ] One per environment whose shape differs; every container mapped to a node with a count.
 - [ ] Regions, stamps, replicas and ports appear here and nowhere on the container picture.
 - [ ] The variability guide says what changes per environment, region or tenant.

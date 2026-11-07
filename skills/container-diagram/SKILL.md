@@ -57,8 +57,8 @@ What this skill does **not** hold: the Bounded Contexts (`bounded-context-mappin
 
 ## 1. Decomposition: Which Contexts Share a Deployable
 
-Start from the Context Map, never from a rule that each context is a service. A Bounded Context is a language boundary, not a deployment decision.
-- **Lean: a modular monolith.** One deployable; each context is a module with its own tables or schema; no module reads another's tables or imports another's internals. Split later, on evidence.
+Start from the Context Map, never from a rule that each context is a service. A Bounded Context is a language boundary, not a deployment decision: **a Bounded Context is not automatically a service.**
+- **Lean: a modular monolith.** One deployable; each context is a module that owns its own tables or schema (Hard Parts' Single Owner). A module that needs another's data calls that module's published interface in-process, or reacts to its events (Delegate); it never reads or writes another module's tables, or imports its internals. Split later, on evidence.
 - **Standard and enterprise: weigh both checklists** (Hard Parts, `software-architecture-hard-parts-ford.md`). Split a group of contexts off only on a named **disintegrator** with evidence: distinct scope, very different change rate, independent scaling or throughput, fault isolation, security isolation, extensibility. Keep together on an **integrator**: one transaction across them, chatty workflows between them, heavy shared code, tight data relationships. Record the forces both ways for each split; a non-obvious one gets an ADR.
 - **Rules at every profile:** a context is never split between two deployables that both write its Aggregates (one write authority); an API and a worker of one context are two containers of one deployable; no two deployables share a database (within a monolith, one schema per module); a team boundary is a constraint, and another team's service is an external system (Brown; Newman's Conway's Law).
 
@@ -96,7 +96,8 @@ Detail: `./references/gateway-placement.md`.
 The container view says what talks to what; the deployment view says **where each container runs, how many instances, in which environment** (Clements' allocation view; Brown's deployment diagram). Keep them apart: nothing in this section goes on the container picture.
 - One per environment that differs (production always; staging if its shape differs).
 - **Deployment nodes**, nested (region, cluster, namespace, managed database service), **infrastructure nodes** (load balancer, ingress, CDN, DNS) and the **container instances** in each, with counts.
-- **Tenancy:** only what `multi-tenancy-design` chose: a pooled deployment, a stamp per tenant or per region, or a mix. If tenancy is not yet designed, it runs first; never assume a per-tenant stamp or a shared broker. No tenancy model means a single deployment.
+- **Tenancy:** only what `multi-tenancy-design` chose: a pooled deployment, a stamp per tenant or per region, or a mix. There is no default; never assume a per-tenant stamp or a shared broker. No tenancy needed means a single deployment.
+- **Tenancy not designed yet:** still draw what the NFRs already fix: the environment, the regions data residency requires (EU data in an EU region), cluster and namespaces, infrastructure nodes, container instances and counts. Mark only the tenant dimension (stamps, which tenants where) *pending multi-tenancy-design*, list it as an open question, and say in the variability guide what will vary per tenant once it is decided.
 - A **mapping table** (every container to the node it runs on) and a **variability guide** (what changes per environment, region or tenant).
 - platform-engineer turns it into manifests at Deploy; it doesn't redraw it.
 
@@ -114,7 +115,7 @@ Detail and vocabulary: `./references/deployment-view.md`. Why the two views stay
 2. **Decompose** (§ 1): profile, deployables, the forces for each split, the context mapping.
 3. **List containers** (§ 2) and **connectors** (§ 3); place the gateway (§ 4).
 4. **Draw** the ASCII container view with title, readers, question and key; write the catalog, rationale and fitness functions.
-5. **Deployment view** (§ 5) once the tenancy model is known; until then mark it *pending multi-tenancy-design*.
+5. **Deployment view** (§ 5): draw it from the NFRs; the tenant dimension from `multi-tenancy-design`, or marked pending until it exists.
 6. **Validate, then loop.** Run `./scripts/validate-container-diagram.sh design/architecture/container-diagram.md design/architecture/system-context.md`, fix every FAIL, re-run until clean; then `./resources/checklist.md`.
 7. **Present** for approval (the phase gate after the deployment view), with the reason for every request declined (§ Gotchas). Hand on: integrations, tenancy, component diagrams for non-default containers, API contracts.
 
@@ -132,6 +133,7 @@ Each trap comes with the reason to give in full.
 - **"The gateway checks the token, so services don't need to."** *Reason:* anything that reaches a service another way bypasses it (D047-12). *Instead:* services verify identity too.
 - **"One shared broker and a stamp per tenant,"** before any tenancy decision. *Reason:* there is no tenancy default (D047-7); the model comes from the NFRs and compliance input. *Instead:* run `multi-tenancy-design` first; mark the deployment view pending.
 - **"Draw every arrow into the broker."** *Reason:* the real producer-consumer pairs vanish (Brown). *Instead:* topic labels, and who publishes and consumes each topic in the matrix.
+- **"Draw a component diagram for every service, so the set is complete."** *Reason:* component diagrams are drawn only for a container whose insides differ from the default skeleton (D047-13; Brown: optional, only where they add value). *Instead:* name the container that needs one and why; for the rest, one line saying the default skeleton applies.
 - **"Make a separate deployment-diagram artifact."** *Reason:* the plugin keeps the deployment view as a section of this artifact (D047-13). *Instead:* the section, one per environment that differs.
 - **"Call Stripe 'Payments API' here,"** or add an external system not on the context diagram. *Reason:* names that differ between levels look like different systems; hand-drawn diagrams don't keep in step. *Instead:* identical names; a new external system is added to the context diagram first.
 - **"Mermaid flowchart only."** *Reason:* one rule for all C4 diagrams: ASCII primary plus tables, Mermaid optional (D047-13). *Instead:* ASCII first; a `C4Container` copy at standard or enterprise if asked.

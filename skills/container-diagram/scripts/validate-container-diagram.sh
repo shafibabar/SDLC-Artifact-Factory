@@ -13,7 +13,7 @@
 #          section (identity, planes); rationale and fitness functions; a
 #          deployment view with a tenancy line, an environment, every
 #          container mapped, and a variability line (or pending tenancy as an
-#          open question). With a second argument (the system context
+#          open question; the environment is still drawn). With a second argument (the system context
 #          artifact), persons and external systems must carry its names.
 #          Whether the decomposition is right stays with the agent.
 # Usage:   validate-container-diagram.sh <container-diagram.md> [system-context.md]
@@ -216,7 +216,7 @@ check("Deployment View states the tenancy model (or pending multi-tenancy-design
 oq = sec("open questions").lower()
 if re.search(r"(?i)pending", ten):
     check("pending tenancy is listed as an open question", "multi-tenancy" in oq or "tenancy" in oq)
-else:
+if True:  # what the NFRs fix is drawn even while tenancy is pending
     envs = [s for s in order if s.startswith("environment:")]
     check("Deployment View has at least one environment", bool(envs))
     if envs:

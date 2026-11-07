@@ -191,6 +191,9 @@ expect "pending tenancy without an open question fails" 1 "listed as an open que
 sed 's/^- \*\*Tenancy:\*\* single deployment, no tenancy$/- **Tenancy:** pending multi-tenancy-design/; s/^- none$/- tenancy model: multi-tenancy-design, blocking the deployment view/' good.md > pendingok.md
 expect "pending tenancy listed as an open question passes" 0 "" pendingok.md
 
+sed '/^### Environment: production$/,/^- \*\*Variability:/d' pendingok.md > pendingnoenv.md
+expect "pending tenancy still needs the environment drawn" 1 "has at least one environment" pendingnoenv.md
+
 { cat good.md; printf '\n## Mermaid copy\n\n```mermaid\nflowchart TB\n  a --> b\n```\n'; } > flow.md
 expect "a Mermaid flowchart fails (C4Container)" 1 "uses C4Container or C4Deployment" flow.md
 
