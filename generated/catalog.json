@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.9.0"
+        "version": "1.10.0"
       },
       {
         "created": "2026-06-25",
@@ -3878,13 +3878,13 @@
         "domain": "architecture",
         "has_assets": false,
         "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "container-diagram",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -3893,25 +3893,41 @@
         ],
         "related": [
           "adr-authoring",
+          "api-gateway-design",
+          "bounded-context-mapping",
           "component-diagram",
+          "cqrs-pattern",
           "glossary-management",
+          "go-project-structure",
           "integration-design",
+          "kubernetes-manifest",
           "methodology-review",
+          "multi-tenancy-design",
+          "nfr-specification",
+          "sdlc-config-management",
           "system-context-diagram"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/api-gateway-patterns.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/c4-model-brown.md",
+          "research/software-architecture/documenting-software-architectures-clements.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
+          "api-gateway",
           "architecture",
           "c4-model",
           "container-diagram",
-          "deployment",
+          "deployment-view",
           "design",
-          "documentation",
-          "runtime-topology",
-          "viewtype"
+          "modular-monolith",
+          "service-decomposition"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10883,8 +10899,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1070,
-    "edges_skill_sources": 221,
+    "edges_skill_related": 1078,
+    "edges_skill_sources": 228,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10896,20 +10912,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 67,
+    "research_files_cited": 69,
     "skills_with_assets": 9,
     "skills_with_contract_test": 147,
     "skills_with_domain": 189,
-    "skills_with_evals": 41,
-    "skills_with_examples": 41,
+    "skills_with_evals": 42,
+    "skills_with_examples": 42,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 40,
-    "skills_with_scripts": 37,
-    "skills_with_sources": 42,
+    "skills_with_resources": 41,
+    "skills_with_scripts": 38,
+    "skills_with_sources": 43,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 39
+    "skills_with_templates": 40
   },
   "edges": {
     "agent_produces": [
@@ -13348,7 +13364,19 @@
         "skill": "container-diagram"
       },
       {
+        "related": "api-gateway-design",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "bounded-context-mapping",
+        "skill": "container-diagram"
+      },
+      {
         "related": "component-diagram",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "cqrs-pattern",
         "skill": "container-diagram"
       },
       {
@@ -13356,11 +13384,31 @@
         "skill": "container-diagram"
       },
       {
+        "related": "go-project-structure",
+        "skill": "container-diagram"
+      },
+      {
         "related": "integration-design",
         "skill": "container-diagram"
       },
       {
+        "related": "kubernetes-manifest",
+        "skill": "container-diagram"
+      },
+      {
         "related": "methodology-review",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "sdlc-config-management",
         "skill": "container-diagram"
       },
       {
@@ -17232,6 +17280,34 @@
       {
         "skill": "competitive-analysis",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/devops-and-delivery/api-gateway-patterns.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/c4-model-brown.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/documenting-software-architectures-clements.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/system-design-interview-xu.md"
       },
       {
         "skill": "context-map-patterns",

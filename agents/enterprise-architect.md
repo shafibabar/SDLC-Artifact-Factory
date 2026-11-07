@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.9.0
+version: 1.10.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -269,7 +269,7 @@ The enterprise-architect escalates to the user when:
 The architecture design portion of the Design phase is complete when all of the following are true:
 
 - [ ] System Context Diagram complete and approved — one system box, persons as roles, external systems decided by ownership, one-directional labelled arrows, title and key, element catalog, rationale and boundary notes with what is out of scope; `validate-system-context.sh` clean; names reused unchanged on the Container Diagram
-- [ ] Container Diagram complete and approved — all services named, technology labelled, communication protocols documented
+- [ ] Container Diagram complete and approved — decomposition with the profile and the forces for every split (lean: one modular monolith), every container typed with technology, connectors with protocol and sync/async, broker topics with publishers and consumers, gateway placement (services verify identity; north-south and east-west marked), fitness functions, and the deployment view drawn from the tenancy design; `validate-container-diagram.sh` clean against the system context
 - [ ] CQRS read-side decision recorded for every Bounded Context before Read Models were designed — Simple Read Model unless a named trigger with evidence; staleness and read-your-writes per projected context; API Composition for cross-service queries unless a trigger; `validate-cqrs-decisions.sh` clean
 - [ ] Multi-Tenancy Design complete — isolation model chosen from the NFRs and compliance input, with its enforcement and provisioning
 - [ ] Integration Design complete — all integrations inventoried, resilience patterns defined, Consumer-Driven Contract plan documented
