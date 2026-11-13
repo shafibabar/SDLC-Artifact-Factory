@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.1"
+        "version": "1.10.2"
       },
       {
         "created": "2026-06-25",
@@ -2462,7 +2462,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.4.0"
+        "version": "1.4.1"
       },
       {
         "created": "2026-06-25",
@@ -3799,13 +3799,13 @@
         "domain": "architecture",
         "has_assets": false,
         "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "component-diagram",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -3815,24 +3815,41 @@
         "related": [
           "adr-authoring",
           "container-diagram",
+          "context-map-patterns",
+          "cqrs-pattern",
+          "glossary-management",
+          "go-makefile",
           "go-project-structure",
           "go-repository-pattern",
           "go-service-layer",
-          "system-context-diagram"
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "read-model-design",
+          "sdlc-config-management",
+          "system-context-diagram",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/c4-model-brown.md",
+          "research/software-architecture/clean-architecture-martin.md",
+          "research/software-architecture/documenting-software-architectures-clements.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
           "c4-model",
           "clean-architecture",
           "component-diagram",
-          "dependency-direction",
+          "dependency-rule",
           "design",
-          "documentation",
-          "layering"
+          "fitness-function",
+          "layering",
+          "module-view"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-31",
@@ -10918,8 +10935,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1091,
-    "edges_skill_sources": 232,
+    "edges_skill_related": 1101,
+    "edges_skill_sources": 237,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10935,16 +10952,16 @@
     "skills_with_assets": 9,
     "skills_with_contract_test": 145,
     "skills_with_domain": 189,
-    "skills_with_evals": 43,
-    "skills_with_examples": 43,
+    "skills_with_evals": 44,
+    "skills_with_examples": 44,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 42,
-    "skills_with_scripts": 39,
-    "skills_with_sources": 44,
+    "skills_with_resources": 43,
+    "skills_with_scripts": 40,
+    "skills_with_sources": 45,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 41
+    "skills_with_templates": 42
   },
   "edges": {
     "agent_produces": [
@@ -13347,6 +13364,22 @@
         "skill": "component-diagram"
       },
       {
+        "related": "context-map-patterns",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "cqrs-pattern",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "go-makefile",
+        "skill": "component-diagram"
+      },
+      {
         "related": "go-project-structure",
         "skill": "component-diagram"
       },
@@ -13359,7 +13392,31 @@
         "skill": "component-diagram"
       },
       {
+        "related": "integration-design",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "sdlc-config-management",
+        "skill": "component-diagram"
+      },
+      {
         "related": "system-context-diagram",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "workflow-orchestration",
         "skill": "component-diagram"
       },
       {
@@ -17351,6 +17408,26 @@
       {
         "skill": "competitive-analysis",
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/c4-model-brown.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/clean-architecture-martin.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/documenting-software-architectures-clements.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
       },
       {
         "skill": "container-diagram",

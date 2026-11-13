@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.10.1
+version: 1.10.2
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -213,7 +213,7 @@ Write an ADR whenever any of the following occur:
 |---|---|
 | **DDD — Bounded Context boundaries** | No service splits a Bounded Context. One service may hold several contexts (a modular monolith, the lean default); splitting contexts into services follows `container-diagram`'s granularity checklists, and a non-obvious split gets an ADR. |
 | **CQRS read side** | One ladder (`cqrs-pattern`, D047-4): a Simple Read Model by default; projections only on a named trigger with evidence; API Composition across services before a CQRS view. CQRS never implies event sourcing, and no rule is checked against a Read Model. |
-| **SOLID** | Component Diagrams enforce dependency direction (DIP). Every service follows the layered architecture from `component-diagram` skill. No domain layer dependency on infrastructure — enforced at the architectural design level. |
+| **SOLID** | Every service follows the Dependency Rule (dependencies point inward; Dependency Inversion where an adapter implements a domain port), from the default skeleton or, for a non-default service, its Component Diagram (`component-diagram`). No domain layer dependency on infrastructure — enforced at the architectural design level. |
 | **TDD readiness** | API contracts include enough detail (request/response schemas, error codes) that the test-strategist can write contract tests before any code is written. |
 | **BDD readiness** | Integration Design documents Consumer-Driven Contract requirements — these become BDD-style contract test scenarios. |
 | **Zero Trust** | Authentication required on all API endpoints (except health checks), and every service verifies identity itself — the gateway is only the first check. mTLS between services via Linkerd (noted in Container Diagram). Tenant isolation enforced as the Multi-Tenancy Design's chosen model requires. |
