@@ -1,150 +1,152 @@
 ---
 name: container-diagram
 description: >
-  Teaches the enterprise-architect to produce a C4 Level 2 (Container) diagram —
-  the runtime building blocks of a system (services, databases, message brokers,
-  front-ends) and the synchronous/asynchronous communication paths between them —
-  while keeping the runtime component-and-connector concerns cleanly separated from
-  deployment/allocation concerns (which belong to the deployment view). Covers C4-L2
-  notation, technology-choice annotation, the Clements component-and-connector vs.
-  allocation viewtype distinction, and the diagram template. Used during Design
-  after the System Context view is fixed.
-version: 2.1.1
+  Draw a product's C4 Container diagram (Level 2) and decide what it is made
+  of: which Bounded Contexts share a deployable (lean: one modular monolith;
+  standard and enterprise: split only on a named granularity disintegrator,
+  weighed against the integrators), the containers (apps, APIs, workers,
+  databases, brokers; not Docker containers) with technology on each, how they
+  talk (one-directional labelled arrows, protocol, sync or async, broker topics
+  that keep producer-consumer pairs readable), one write authority and no
+  shared database, where the API gateway sits and what it must not hold, and
+  the deployment view as a section of the same artifact (environments,
+  deployment nodes, instances, tenant stamps only if multi-tenancy-design chose
+  them). Pods, replicas, ports, regions and per-tenant multipliers never go on
+  the container picture. ASCII primary, Mermaid C4Container optional; names
+  carried unchanged from the system context. Use when drawing, reviewing or
+  changing a container diagram, deciding services or a modular monolith,
+  placing a gateway, or drawing a deployment view. Used by enterprise-architect.
+version: 3.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
-tags: [design, architecture, c4-model, container-diagram, documentation, runtime-topology, viewtype, deployment]
+tags: [design, architecture, c4-model, container-diagram, service-decomposition, modular-monolith, deployment-view, api-gateway]
 produces: container-diagram
 domain: architecture
 status: stable
-related: [system-context-diagram, component-diagram, integration-design, adr-authoring, glossary-management, methodology-review]
+related: [system-context-diagram, component-diagram, bounded-context-mapping, multi-tenancy-design, integration-design, api-gateway-design, cqrs-pattern, adr-authoring, nfr-specification, sdlc-config-management, kubernetes-manifest, go-project-structure, glossary-management, methodology-review]
+sources:
+  - research/software-architecture/c4-model-brown.md
+  - research/software-architecture/documenting-software-architectures-clements.md
+  - research/software-architecture/software-architecture-hard-parts-ford.md
+  - research/software-architecture/fundamentals-of-software-architecture-richards-ford.md
+  - research/software-architecture/building-microservices-newman.md
+  - research/software-architecture/system-design-interview-xu.md
+  - research/devops-and-delivery/api-gateway-patterns.md
 ---
 
 # Container Diagram
 
-## What a Container Diagram Is
+## Purpose
 
-A Container Diagram (C4 Level 2) zooms one level inside the system boundary drawn by the
-System Context view and shows the **containers** — the independently deployable and runnable
-units that make the system work: a Go API service, a PostgreSQL database, a Redpanda broker, a
-React front-end, a background worker. A container is anything that must be **separately deployed
-and run** and that hosts code or stores state.
+C4 Level 2 (Brown, `c4-model-brown.md`) zooms into the one system box of the system context diagram. **Readers:** engineers who will build it, platform-engineer and security-architect, and the product owner checking how many things there are to run and pay for. **Question:** what runnable units make up the system, what technology each uses, and how they talk at runtime?
 
-The Container Diagram answers exactly three questions:
+One artifact per product, at every profile: `design/architecture/container-diagram.md` (`./templates/container-diagram.md`). It holds four parts, decided in this order:
+1. **Decomposition:** which Bounded Contexts share a deployable (D047-6).
+2. **The container view:** containers and connectors, a component-and-connector view (Clements).
+3. **Gateway placement** (D047-11).
+4. **The deployment view:** an allocation view, as a section, after `multi-tenancy-design` (D047-7, D047-13).
 
-1. **What are the independently deployable/runnable units of this system?**
-2. **What technology does each one use?**
-3. **How do they communicate at runtime — over what protocol, synchronously or asynchronously?**
-
-It is a **component-and-connector (C&C) view** in Clements' viewtype terminology: components are
-the running containers, connectors are the runtime communication paths. This single fact governs
-everything below — see `references/viewtype-distinction.md`.
-
-### What it shows vs. what it omits
-
-| Shows | Omits (and where it belongs) |
+| Profile | Shape |
 |---|---|
-| Deployable/runnable units and their technology | Internal component/layer structure of a container → **C4 L3 Component diagram** |
-| Runtime communication paths (protocol, sync/async) | Where containers physically run — nodes, pods, regions, tenant stamps → **deployment (allocation) view** |
-| The system boundary; persons and external systems carried down from L1 | Class/function structure → **C4 L4 Code** |
+| Lean | One application container (a modular monolith, the contexts as its modules), its database, the web app if separate. Decomposition in two lines. Deployment view: one environment, a short table. No Mermaid |
+| Standard | A split only where a disintegrator is named; one deployment view per environment that differs |
+| Enterprise | The same, plus regions and tenant stamps in the deployment view only, with a variability guide |
 
-## The Correctness Rule: C&C vs. Allocation
+What this skill does **not** hold: the Bounded Contexts (`bounded-context-mapping`); the tenancy model (`multi-tenancy-design`); how each integration behaves under failure (`integration-design`); gateway configuration (`api-gateway-design`, platform-engineer at Deploy); manifests (`kubernetes-manifest`); a container's insides (`component-diagram`).
 
-**A Container Diagram is a runtime C&C view. Deployment placement is a separate view. Never mix them.**
+## 1. Decomposition: Which Contexts Share a Deployable
 
-This is a correctness rule, not a style preference. The Container Diagram documents *what talks to
-what, and how* at runtime. It must NOT document *where each container is deployed* — Kubernetes
-nodes, pods, availability zones, per-tenant stamps, Helm release topology, or how many copies run.
-That is an **allocation view** (a deployment diagram): the mapping of software onto non-software
-structure.
+Start from the Context Map, never from a rule that each context is a service. A Bounded Context is a language boundary, not a deployment decision: **a Bounded Context is not automatically a service.**
+- **Lean: a modular monolith.** One deployable; each context is a module that owns its own tables or schema (Hard Parts' Single Owner). A module that needs another's data calls that module's published interface in-process, or reacts to its events (Delegate); it never reads or writes another module's tables, or imports its internals. Split later, on evidence.
+- **Standard and enterprise: weigh both checklists** (Hard Parts, `software-architecture-hard-parts-ford.md`). Split a group of contexts off only on a named **disintegrator** with evidence: distinct scope, very different change rate, independent scaling or throughput, fault isolation, security isolation, extensibility. Keep together on an **integrator**: one transaction across them, chatty workflows between them, heavy shared code, tight data relationships. Record the forces both ways for each split; a non-obvious one gets an ADR.
+- **Rules at every profile:** a context is never split between two deployables that both write its Aggregates (one write authority); an API and a worker of one context are two containers of one deployable; no two deployables share a database (within a monolith, one schema per module); a team boundary is a constraint, and another team's service is an external system (Brown; Newman's Conway's Law).
 
-Prior review (Clements, *Documenting Software Architectures*) flagged the earlier version of this
-skill for exactly this conflation — putting deployment-flavoured annotations (cluster placement,
-port bindings, tenant multiplication) onto what is nominally a C&C diagram. Symptoms that you have
-drifted into an allocation view: node/pod boxes, region labels, or "×N per tenant" multipliers
-appearing on the diagram. When you catch these, move them to the deployment diagram (owned by
-`deployment-diagram` / `platform-engineer`) and leave a pure C&C view behind.
+Detail, merge and split cases, naming, anti-patterns: `./references/service-decomposition.md`.
 
-The two views relate through a **mapping between views** — each container in this diagram is later
-allocated to nodes/pods in the deployment view — but they are drawn separately and never merged.
-Full theory, the questions each view answers, and the conflation symptoms: `references/viewtype-distinction.md`.
+## 2. Containers
 
-## Standard Container Set (Default Stack)
+- A **container** is a separately runnable or deployable unit that runs code or stores data: a web app, a mobile app, an API, a worker, a database, a broker, a file store, a scheduled job (Brown). **Not a Docker container**: images, pods and replicas are deployment details (§ 5).
+- Each box: **type tag** (`[Container: API]`, `[Container: Database]`), **name** in the product's language, **technology**, one-line **responsibility**.
+- **Technology** comes from `sdlc-config.json` and the plugin defaults (`sdlc-config-management`); a deviation is an ADR before it appears here.
+- **Persons and external systems** come from the system context diagram with identical names. One that is missing there goes back to be added there first.
+- **Every datastore and the broker appear.** An omitted one is an unplanned one.
 
-For a Bounded Context in this repo's default stack, the standard C&C container set is:
+## 3. Connectors
 
-| Container | Role | Technology annotation |
-|---|---|---|
-| `<BC> API` | Synchronous request/response + command handling | `Go, net/http + chi` |
-| `<BC> Worker` | Consumes Domain Events, async processing | `Go, franz-go consumer` |
-| `<BC> DB` | State store owned by exactly this service | `PostgreSQL 16, pgx` |
-| Redpanda | Shared broker; one logical topic set per BC | `Redpanda (Kafka API)` |
-| Web Shell / MFE | User-facing front-end | `React 18, TypeScript` |
-| Graph store | Relationship/lineage queries | `Apache AGE (PostgreSQL ext.)` |
+- **One direction, from the caller or publisher;** the label says what flows and reads start to end ("Publishes `BookingConfirmed` to"), plus the **protocol** (mandatory at Level 2) and **sync or async**. The key states what an arrow means.
+- **Through the broker,** keep producer-consumer pairs readable (Brown): label each arrow with its topic, or draw the broker and list who publishes and who consumes each topic in the communication matrix. A hub where every arrow just points at the broker hides who depends on whom.
+- **Smart endpoints, dumb pipes** (Newman): no business rules in the broker, the gateway or the mesh.
+- Each synchronous call between deployables is a coupling point: name it, and leave timeouts, retries and breakers to `integration-design`.
 
-**One database per service** is a hard rule: no two containers share a database; cross-service data
-flows through APIs (sync) or Domain Events on Redpanda (async), never a shared schema. Every
-container carries an explicit technology label — an unlabelled container is an incomplete artifact.
-Annotation conventions and the technology vocabulary: `references/runtime-topology-and-template.md`.
+Notation, box anatomy, the broker options: `./references/c4-container-notation.md`.
 
-## Notation (summary)
+## 4. Gateway Placement (D047-11, D047-12)
 
-- **Container box** — name + technology + one-line responsibility. Nothing about placement.
-- **Sync connector** — solid arrow, labelled with protocol and payload, e.g. `HTTP/JSON`, `gRPC`.
-- **Async connector** — dashed arrow via the broker, labelled with the topic, e.g. `Kafka/Redpanda: dataasset.discovered`.
-- **System boundary box** — everything inside is a container of *this* system.
-- **Person / external system** — carried down unchanged from the System Context (L1) view.
+Decide whether there is a gateway and where it sits; platform-engineer configures it at Deploy (`api-gateway-design`).
+- **Two planes, both marked:** one north-south entry for client traffic (the gateway, or the ingress when there is none); east-west calls between containers go through the mesh (Linkerd, mutual TLS), not back through the gateway. Complementary, never alternatives (`api-gateway-patterns.md`).
+- **It holds routing, TLS, token validation, rate limits. Never business logic** (pricing, eligibility, workflow) (Xu, Newman). Client-specific aggregation is a backend-for-frontend container behind it.
+- **Services still verify identity** themselves; the gateway is the first check, not the only one (D047-12).
+- **Lean** usually needs no gateway: the ingress routes straight to the one application. Say so.
 
-Full notation catalogue — box anatomy, arrow semantics, boundary and external-element rules:
-`references/c4-container-notation.md`.
+Detail: `./references/gateway-placement.md`.
 
-## Deciding Container Boundaries
+## 5. The Deployment View (a Section, D047-13)
 
-Container boundaries follow Bounded Context boundaries from the domain model. Split further only
-when a concern genuinely demands an independently deployable unit:
+The container view says what talks to what; the deployment view says **where each container runs, how many instances, in which environment** (Clements' allocation view; Brown's deployment diagram). A C4 container is neither a pod nor a Docker container; pods, images and counts are how it is deployed, so they live here, and a request to put them on the picture is answered with both halves of that reason. Keep the two apart: nothing in this section goes on the container picture.
+- One per environment that differs (production always; staging if its shape differs).
+- **Deployment nodes**, nested (region, cluster, namespace, managed database service), **infrastructure nodes** (load balancer, ingress, CDN, DNS) and the **container instances** in each, with counts.
+- **Tenancy:** only what `multi-tenancy-design` chose: a pooled deployment, a stamp per tenant or per region, or a mix. There is no default; never assume a per-tenant stamp or a shared broker. No tenancy needed means a single deployment.
+- **Tenancy not designed yet:** still draw what the NFRs already fix: the environment, the regions data residency requires (EU data in an EU region), cluster and namespaces, infrastructure nodes, container instances and counts. Mark only the tenant dimension (stamps, which tenants where) *pending multi-tenancy-design*, list it as an open question, and say in the variability guide what will vary per tenant once it is decided.
+- A **mapping table** (every container to the node it runs on) and a **variability guide** (what changes per environment, region or tenant).
+- platform-engineer turns it into manifests at Deploy; it doesn't redraw it.
 
-How Bounded Contexts become deployable units (merge and split rules, one write authority per Aggregate), moved here from `bounded-context-mapping` under D047-6: `./references/service-decomposition.md`. Its one-context-one-service default is superseded; the full rework is #1401.
+Detail and vocabulary: `./references/deployment-view.md`. Why the two views stay apart: `./references/viewtype-distinction.md`.
 
-| Driver | Effect |
-|---|---|
-| Independent scaling | A unit that must scale on its own (scanning worker) is its own container |
-| Change rate | A fast-changing unit is not coupled into a stable one |
-| Team ownership | Different owners → different containers |
+## 6. Notation and the Package
 
-Note: physical multi-tenancy and data-residency constraints affect *where* and *how many times* a
-container is deployed — that is allocation reasoning and is captured in the deployment view, not by
-adding tenant copies to this C&C diagram. The container boundary stays singular here.
+- **Title** `Container diagram for <System>`, **readers and question**, **key** (types, solid sync, dashed async, what an arrow means) (Brown).
+- **ASCII primary** inside a system boundary box, with the catalog tables; **Mermaid `C4Container` optional**, never at lean (D047-13); the deployment view in ASCII or a table, Mermaid `C4Deployment` optional.
+- **Catalog:** containers; communication matrix (from, to, what flows, protocol, sync or async); context to deployable mapping. **Rationale:** why this shape. **Fitness functions** (Richards & Ford): the automated check that keeps each rule true (a module import test, no cross-schema queries, one writer per table).
 
-## Quality Criteria
+## Procedure
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Pure C&C view | No nodes, pods, replicas, regions, or tenant multipliers | Deployment placement drawn on the diagram |
-| Technology labelled | Every container states its technology | Container labelled with a name only |
-| Protocol labelled | Every connector names protocol + sync/async | Unlabelled arrows |
-| One DB per service | No shared databases | Two services against one DB |
-| External systems consistent | Match the System Context view exactly | New external systems appearing here |
+1. **Read** the approved system context diagram, `design/context-map.md`, the domain model, `cqrs-decisions.md`, the NFR specification's architecture handoff, `sdlc-config.json`, and `multi-tenancy-design.md` if it exists. Missing input: carry on, mark each assumption, list it under *Open questions*.
+2. **Decompose** (§ 1): profile, deployables, the forces for each split, the context mapping.
+3. **List containers** (§ 2) and **connectors** (§ 3); place the gateway (§ 4).
+4. **Draw** the ASCII container view with title, readers, question and key; write the catalog, rationale and fitness functions.
+5. **Deployment view** (§ 5): draw it from the NFRs; the tenant dimension from `multi-tenancy-design`, or marked pending until it exists.
+6. **Validate, then loop.** Run `./scripts/validate-container-diagram.sh design/architecture/container-diagram.md design/architecture/system-context.md`, fix every FAIL, re-run until clean; then `./resources/checklist.md`.
+7. **Present** for approval (the phase gate after the deployment view), with the reason for every request declined (§ Gotchas). Hand on: integrations, tenancy, component diagrams for non-default containers, API contracts. Answering in a reply rather than a file: the declined requests and their reasons once, then the artifact once; no second summary.
 
-## Anti-Patterns
+Examples: `./examples/01-lean-modular-monolith.md` (a box office: two contexts in one app, no gateway, one environment), `./examples/02-standard-split-on-disintegrators.md` (a veterinary group: three deployables from four contexts, each split justified, a gateway without business logic, broker topics readable, staging and production), `./examples/03-enterprise-regions-and-stamps.md` (a freight platform: per-region deployment views, dedicated stamps for two large customers chosen by multi-tenancy-design, a variability guide).
 
-| Anti-pattern | Why it fails | Correction |
-|---|---|---|
-| **Deployment on a C&C view** | Nodes/pods/replicas make it an unlabelled combined view that answers no question cleanly | Move placement to the deployment (allocation) diagram; keep this a pure C&C view |
-| **Shared database** | Silent coupling; the DB becomes an unmanaged Shared Kernel | One DB per service; cross-service via API or Domain Event |
-| **Invisible infrastructure** | An omitted broker/DB/worker is an unplanned one | Every deployable and datastore appears |
-| **Business logic in the gateway** | The BFF becomes an unowned service coupled to every BC | Gateway does routing/auth/rate-limiting only |
-| **Aspirational technology labels** | Diagram silently overrides `sdlc-config.json` | Labels come from the agreed stack; deviations need an ADR |
+## Gotchas
 
-## Producing the Artifact
+Each trap comes with the reason to give in full.
 
-Follow the template in `references/runtime-topology-and-template.md`: a Mermaid/textual C4 primary
-presentation, a Containers catalogue table, a Communication Matrix (pure C&C — from, to, protocol,
-sync/async), a Bounded-Context→Container mapping, and a pointer to where the deployment/allocation
-view lives. That reference includes a fully worked, deployment-free Container diagram for this
-repo's system (DataAsset Management + Compliance + Reporting services, Postgres, Redpanda, React shell).
+- **"Each Bounded Context is its own service,"** even for a small tool. *Reason:* a context is a language boundary; deployables are chosen by granularity forces and the profile (Hard Parts; D047-6), and every split adds a network, a deployment and a failure mode. *Instead:* lean is one modular monolith; split on a named disintegrator.
+- **"Put the pod counts, replicas, ports and '×N per tenant' on the diagram,"** or "list our Docker images as the containers." *Reason, in full:* a C4 container is a runnable unit (an app, an API, a database), **not a pod or a Docker container** (Brown); pods, images, counts and tenant copies change where and how many, not what talks to what, and mixed in, the picture answers neither question (Clements: a component-and-connector view vs an allocation view). *Instead:* say both in the reason, even when only pods were asked about (a container is neither a pod nor a Docker container); containers here; pods, images, counts and copies in the deployment view section.
+- **"Let the two services share the database; it's simpler."** *Reason:* a shared schema is an unmanaged shared model and couples their releases. *Instead:* one owner per database; the other asks through an API or an event. In a monolith, one schema per module.
+- **"Put the discount and eligibility rules in the gateway."** *Reason:* a smart gateway becomes an unowned service coupled to every context (Xu, Newman). *Instead:* rules in the owning service; the gateway routes, validates tokens, limits rates.
+- **"The gateway checks the token, so services don't need to."** *Reason:* anything that reaches a service another way bypasses it (D047-12). *Instead:* services verify identity too.
+- **"One shared broker and a stamp per tenant,"** before any tenancy decision. *Reason:* there is no tenancy default (D047-7); the model comes from the NFRs and compliance input. *Instead:* run `multi-tenancy-design` first; mark the deployment view pending.
+- **"The gateway product isn't chosen, so write 'chosen in api-gateway-design' as its technology."** *Reason:* every container names its technology (Brown); a deferral note is not one, and the box then reads as unfinished. *Instead:* the agreed product, or **Kong (proposed, ADR pending)** with the ADR under Open Questions.
+- **"EU and US have the same shape, so draw one 'Region: EU | US' box."** *Reason:* the merged box hides which data lives where, which residency requires the deployment view to show. *Instead:* one deployment node per region; the second can say "same shape as EU".
+- **"Draw every arrow into the broker."** *Reason:* the real producer-consumer pairs vanish (Brown). *Instead:* topic labels, and who publishes and consumes each topic in the matrix.
+- **"Draw a component diagram for every service, so the set is complete."** *Reason:* component diagrams are drawn only for a container whose insides differ from the default skeleton (D047-13; Brown: optional, only where they add value). *Instead:* name the container that needs one and why; for the rest, one line saying the default skeleton applies.
+- **"Make a separate deployment-diagram artifact."** *Reason:* the plugin keeps the deployment view as a section of this artifact (D047-13). *Instead:* the section, one per environment that differs.
+- **"Call Stripe 'Payments API' here,"** or add an external system not on the context diagram. *Reason:* names that differ between levels look like different systems; hand-drawn diagrams don't keep in step. *Instead:* identical names; a new external system is added to the context diagram first.
+- **"Mermaid flowchart only."** *Reason:* one rule for all C4 diagrams: ASCII primary plus tables, Mermaid optional (D047-13). *Instead:* ASCII first; a `C4Container` copy at standard or enterprise if asked.
 
 ## References
 
-- `references/c4-container-notation.md` — full C4-L2 notation: box anatomy, sync/async connectors, system boundary, persons and external systems carried down from L1.
-- `references/viewtype-distinction.md` — Clements' module / C&C / allocation viewtypes; why a Container diagram is C&C and a deployment diagram is allocation; conflation symptoms; how the two views relate.
-- `references/runtime-topology-and-template.md` — technology-annotation conventions, the diagram artifact template, and a fully worked pure-C&C Container diagram for this repo's system.
+| Question | File |
+|---|---|
+| Which contexts share a deployable; merge and split; naming; anti-patterns | `./references/service-decomposition.md` |
+| Box anatomy, technology labels, connectors, broker options, key | `./references/c4-container-notation.md` |
+| Gateway or none, north-south vs east-west, BFF, identity | `./references/gateway-placement.md` |
+| Environments, nodes, instances, tenancy, variability guide | `./references/deployment-view.md` |
+| Why container and deployment views stay apart | `./references/viewtype-distinction.md` |
+| The artifact skeleton | `./templates/container-diagram.md` |
+| Checking before hand-off | `./resources/checklist.md` |
