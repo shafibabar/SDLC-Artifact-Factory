@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.0"
+        "version": "1.10.1"
       },
       {
         "created": "2026-06-25",
@@ -7210,14 +7210,14 @@
         "dir": "skills/multi-tenancy-design",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "multi-tenancy-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -7225,27 +7225,46 @@
           "multi-tenancy-design"
         ],
         "related": [
+          "access-control-model",
+          "adr-authoring",
+          "api-gateway-design",
+          "canary-deployment",
+          "compliance-design",
+          "container-diagram",
+          "data-classification",
           "data-model-design",
           "data-pipeline-design",
           "environment-config",
           "event-driven-patterns",
+          "event-schema-design",
           "gitops-workflow",
+          "glossary-management",
+          "methodology-review",
+          "nfr-specification",
+          "opentelemetry-instrumentation",
           "opentofu-module",
+          "secrets-management",
           "zero-trust-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/building-multi-tenant-saas-golding.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
-          "data-isolation",
+          "data-partitioning",
           "design",
           "multi-tenancy",
-          "physical-isolation",
-          "provisioning",
-          "soc2",
-          "tenant-isolation"
+          "pool",
+          "saas",
+          "silo",
+          "tenant-isolation",
+          "tiering"
         ],
-        "version": "2.1.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-06-24",
@@ -10899,8 +10918,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1078,
-    "edges_skill_sources": 228,
+    "edges_skill_related": 1091,
+    "edges_skill_sources": 232,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10912,20 +10931,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 69,
+    "research_files_cited": 70,
     "skills_with_assets": 9,
-    "skills_with_contract_test": 146,
+    "skills_with_contract_test": 145,
     "skills_with_domain": 189,
-    "skills_with_evals": 42,
-    "skills_with_examples": 42,
+    "skills_with_evals": 43,
+    "skills_with_examples": 43,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 41,
-    "skills_with_scripts": 38,
-    "skills_with_sources": 43,
+    "skills_with_resources": 42,
+    "skills_with_scripts": 39,
+    "skills_with_sources": 44,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 40
+    "skills_with_templates": 41
   },
   "edges": {
     "agent_produces": [
@@ -15236,6 +15255,34 @@
         "skill": "moscow-prioritization"
       },
       {
+        "related": "access-control-model",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "adr-authoring",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "api-gateway-design",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "canary-deployment",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "compliance-design",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "data-classification",
+        "skill": "multi-tenancy-design"
+      },
+      {
         "related": "data-model-design",
         "skill": "multi-tenancy-design"
       },
@@ -15252,11 +15299,35 @@
         "skill": "multi-tenancy-design"
       },
       {
+        "related": "event-schema-design",
+        "skill": "multi-tenancy-design"
+      },
+      {
         "related": "gitops-workflow",
         "skill": "multi-tenancy-design"
       },
       {
+        "related": "glossary-management",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "opentelemetry-instrumentation",
+        "skill": "multi-tenancy-design"
+      },
+      {
         "related": "opentofu-module",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "secrets-management",
         "skill": "multi-tenancy-design"
       },
       {
@@ -17624,6 +17695,22 @@
       {
         "skill": "moscow-prioritization",
         "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/building-multi-tenant-saas-golding.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/system-design-interview-xu.md"
       },
       {
         "skill": "nfr-specification",
