@@ -18,7 +18,7 @@ description: >
   answering whether a framework or customer requires dedicated
   infrastructure, or planning tenant onboarding and offboarding. Used by
   enterprise-architect.
-version: 3.0.0
+version: 3.0.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -139,6 +139,7 @@ Each trap comes with the reason to give in full.
 - **"The deployment view is finished; write the tenancy design to match it."** *Reason:* the tenancy model decides the deployment topology, so it comes first (D047-7). *Instead:* decide the model, then revise the deployment view to follow it; per-tenant namespaces appear only where the model siloes compute.
 - **"Support can move a tenant to a dedicated setup by hand."** *Reason:* manual moves drift and don't scale; tier change is part of the lifecycle (Golding). *Instead:* the control plane automates it: copy, cut over, re-route.
 - **"Read cost per tenant off the cloud bill tags."** *Reason:* tags only see dedicated resources. *Instead:* tags for silos; for the pool, apportion from per-tenant consumption the services record.
+- **"The tenant key leads every index, so we're done."** *Reason:* one large tenant becomes a hot partition, and its jobs hog shared workers, degrading the others (Kleppmann). *Instead:* say what happens when the largest tenant dominates and how it is contained: compound keys, a per-tenant cap, or moving it to a silo.
 - **"Put the tenant id on every metric."** *Reason:* thousands of tenants explode metric cardinality. *Instead:* tenant on spans and logs; per-tenant metrics bounded (top tenants, tiers) and usage events for metering.
 
 ## References

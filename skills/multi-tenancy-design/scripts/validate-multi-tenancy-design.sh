@@ -13,7 +13,8 @@
 #          the token), database, broker; a cross-tenant test; lifecycle with
 #          onboarding, tier change and offboarding (offboarding mentions backups
 #          or per-tenant keys when anything is pooled); metering and cost per
-#          tenant; open questions. Whether the model is right stays with the agent.
+#          tenant; for a pool, the partition key and the hot-tenant case;
+#          open questions. Whether the model is right stays with the agent.
 # Usage:   validate-multi-tenancy-design.sh <multi-tenancy-design.md>
 # Output:  one PASS/FAIL/WARN line per check, then counts.
 # Contract: plain CLI args, advisory only. Exit 0 if every check passes (WARN
@@ -140,6 +141,11 @@ check("no 'compliance requires' without a named source", not re.search(r"(?i)com
 # Tiers and noisy neighbour
 check("Tiers and Noisy Neighbour section names a noisy-neighbour control",
       bool(re.search(r"(?i)rate limit|quota|throttl|separate queue|worker pool", sec("tiers and noisy neighbour"))))
+
+if "pool" in models_used:
+    tn = bullets("tiers and noisy neighbour").get("partition key and hot tenant", "")
+    check("pooled design states its partition key and what happens when the largest tenant dominates (hot tenant)",
+          filled(tn) and bool(re.search(r"(?i)key", tn)) and bool(re.search(r"(?i)larg|domin|hot|biggest|outgrow", tn)))
 
 # Isolation enforcement
 _, irows = table(sections.get("isolation enforcement", []))

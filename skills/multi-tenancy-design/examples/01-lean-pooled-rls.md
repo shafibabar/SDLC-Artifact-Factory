@@ -65,6 +65,8 @@ traces-to: [ideate/nfr-specification.md, design/context-map.md, design/data-clas
 |---|---|---|---|
 | all tenants | one plan | pooled | per-tenant rate limit at the ingress; VAT-return generation on a queue with a per-tenant concurrency cap |
 
+- **Partition key and hot tenant:** `tenant_id` leads every primary key and index. The largest business holds about 20× the smallest's invoices; at quarter-end its VAT run could hold shared connections and workers while small businesses wait. Contained by the per-tenant concurrency cap on the VAT queue and compound keys (tenant + invoice) so its rows are one contiguous range, not a scan of everyone's. If one business outgrows that (sustained load above a fifth of the pool), it is the first candidate for its own database, through the tier-change path
+
 ## Isolation Enforcement
 
 | Layer | Mechanism |

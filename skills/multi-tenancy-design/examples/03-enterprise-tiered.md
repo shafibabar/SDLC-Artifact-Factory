@@ -72,6 +72,8 @@ traces-to: [ideate/nfr-specification.md, design/context-map.md, design/data-clas
 | Standard | shared service, 99.9% | pooled per region | per-tenant rate limits; month-end stock reports on a queue with per-tenant concurrency caps; tenant-leading keys checked for hot chains |
 | Dedicated | dedicated infrastructure, own keys, 99.95% | full-stack silo | none needed between tenants; ordinary scaling inside the stamp |
 
+- **Partition key and hot tenant:** pooled tables lead with `tenant_id`, keys compound with branch and item; topics keyed by `tenantid` + branch. The largest Standard chain (60 branches) is 12× a 5-branch one; left alone, its month-end report run would hog the shared report workers and its writes would concentrate on one key range. Contained by a per-tenant cap on the report queue and writes spread by branch. A Standard chain that sustains more than a tenth of a regional pool's load is offered the Dedicated tier (tier-change path). The two stamps scale inside themselves (replicas, caches) and do not affect the pool
+
 ## Isolation Enforcement
 
 | Layer | Mechanism |

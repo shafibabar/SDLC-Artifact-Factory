@@ -47,6 +47,8 @@ traces-to: [ideate/nfr-specification.md, design/context-map.md, (data classifica
 |---|---|---|---|
 | [tier, or "all tenants"] | [what the price point promises] | [pooled / which are siloed] | [rate limits, quotas, separate queues] |
 
+- **Partition key and hot tenant:** [the tenant-leading key of each pooled store; what happens when the largest tenant dominates (a hot partition, its jobs hogging shared workers); how it is contained: a compound key (tenant + entity), a per-tenant cap, or moving that tenant to a silo]
+
 ## Isolation Enforcement
 
 | Layer | Mechanism |

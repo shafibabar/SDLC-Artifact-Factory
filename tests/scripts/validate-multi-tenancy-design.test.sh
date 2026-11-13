@@ -69,6 +69,8 @@ traces-to: [ideate/nfr-specification.md]
 |---|---|---|---|
 | all tenants | one plan | pooled | per-tenant rate limit |
 
+- **Partition key and hot tenant:** tenant_id leads every key; the largest kennel is capped per tenant
+
 ## Isolation Enforcement
 
 | Layer | Mechanism |
@@ -140,6 +142,9 @@ expect "'mixed' with one model in the table fails" 1 "more than one model" mixed
 
 sed 's/^- \*\*Never reads tenant data:\*\*.*$/- **Access:** admin console/' good.md > cp.md
 expect "control plane without the never-reads rule fails" 1 "never reads tenant data" cp.md
+
+sed '/^- \*\*Partition key and hot tenant:/d' good.md > nohot.md
+expect "a pooled design without the hot-tenant line fails" 1 "hot tenant" nohot.md
 
 sed '/^traces-to:/d' good.md > notrace.md
 expect "missing traces-to fails" 1 "FAIL: frontmatter has" notrace.md

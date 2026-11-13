@@ -69,6 +69,8 @@ traces-to: [ideate/nfr-specification.md, design/context-map.md, design/data-clas
 | Core | features | pooled; own schema | per-tenant rate limits at the gateway |
 | Plus | more features, bulk imports | pooled; own schema | bulk imports on a separate worker pool with a per-tenant concurrency cap |
 
+- **Partition key and hot tenant:** PostgreSQL is split by schema, so a large customer is one large schema, not a hot range in shared tables; Redpanda topics are keyed by `tenantid` + employee id so one customer's January hiring burst spreads across partitions instead of filling one. The largest customer (3,000 staff) is about 15× the smallest; its bulk imports are capped per tenant. A customer that saturates the regional instance moves to its own instance (a silo for that store) by the tier-change path
+
 ## Isolation Enforcement
 
 | Layer | Mechanism |
