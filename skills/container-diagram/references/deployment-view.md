@@ -54,7 +54,7 @@ What changes per environment, region or tenant, and what stays fixed (Clements):
 
 ## 7. Drawing It
 
-ASCII nested boxes: environment frame, then region, cluster, namespace, each containing container instances with counts; infrastructure nodes at the edge. Or a table when the nesting is shallow (lean). Mermaid `C4Deployment` is an optional copy at standard and enterprise.
+ASCII nested boxes: environment frame, then region, cluster, namespace, each containing container instances with counts; infrastructure nodes at the edge. Draw each region as its own deployment node, even when the regions have the same shape: one "Region: EU | US" box hides which data lives where, the thing residency asks the picture to show. Say "same shape as EU" inside the second box rather than merging them. Or a table when the nesting is shallow (lean). Mermaid `C4Deployment` is an optional copy at standard and enterprise.
 
 ```
 Production

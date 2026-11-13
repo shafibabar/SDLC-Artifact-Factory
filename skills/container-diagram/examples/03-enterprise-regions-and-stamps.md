@@ -73,7 +73,7 @@ traces-to: [design/architecture/system-context.md, design/context-map.md, design
                                           +--------------------------------+
                                           | [Container: Gateway]           |
                                           | Edge Gateway                   |
-                                          | chosen in api-gateway-design   |
+                                          | Kong (proposed, ADR pending)   |
                                           | Routes, checks tokens, limits  |
                                           +--------------------------------+
                    +---------------------------------------+---------------------------------------+
@@ -129,7 +129,7 @@ traces-to: [design/architecture/system-context.md, design/context-map.md, design
 | Container | Type | Technology | Deployable | Responsibility |
 |---|---|---|---|---|
 | Web App | Web App | React + TypeScript | edge | Shipper and agent screens |
-| Edge Gateway | Gateway | chosen in api-gateway-design | edge | Routes, validates tokens and API keys, limits rates per customer |
+| Edge Gateway | Gateway | Kong (proposed, ADR pending) | edge | Routes, validates tokens and API keys, limits rates per customer |
 | Bookings API | API | Go, net/http + chi | bookings | Bookings, rates, invoices |
 | Bookings DB | Database | PostgreSQL, pgx | bookings | Bookings and invoices |
 | Tracking API | API | Go, net/http + chi | tracking | Where each shipment is |
@@ -208,19 +208,34 @@ Three deployables: tracking split for throughput, customs for fault and security
 ### Environment: production
 
 ```
-Production — one stamp (every stamp has this shape)
-+-- Region: <stamp's region> ----------------------------------------------+
-|  [Infrastructure] DNS --> Load balancer --> Ingress                      |
-|  +-- Kubernetes cluster -----------------------------------------------+ |
-|  |  namespace: edge       Edge Gateway x3, Web App x2, Event Broker x3 | |
-|  |  namespace: bookings   Bookings API x3                              | |
-|  |  namespace: tracking   Tracking API x2, Tracking Ingest x4          | |
-|  |  namespace: customs    Customs API x2                               | |
-|  +---------------------------------------------------------------------+ |
-|  [Managed PostgreSQL] Bookings DB, Tracking DB, Customs DB               |
-|                       (separate instances, primary + standby in-region)  |
-+--------------------------------------------------------------------------+
+Production — one node per region; each stamp is drawn once in full, then referenced
++-- Region: EU (e.g. eu-central) — EU customers' data stays here --------------+
+|  +-- Stamp: EU pooled (EU customers as rows) ------------------------------+ |
+|  |  [Infrastructure] DNS --> Load balancer --> Ingress                     | |
+|  |  +-- Kubernetes cluster ----------------------------------------------+ | |
+|  |  |  namespace: edge       Edge Gateway x3, Web App x2, Event Broker x3| | |
+|  |  |  namespace: bookings   Bookings API x3                             | | |
+|  |  |  namespace: tracking   Tracking API x2, Tracking Ingest x4         | | |
+|  |  |  namespace: customs    Customs API x2                              | | |
+|  |  +--------------------------------------------------------------------+ | |
+|  |  [Managed PostgreSQL] Bookings DB, Tracking DB, Customs DB              | |
+|  |                       (separate instances, primary + standby in-region) | |
+|  +-------------------------------------------------------------------------+ |
+|  +-- Stamp: EU dedicated, Halvorsen Lines ---------------------------------+ |
+|  |  same shape as EU pooled, half the instance counts                      | |
+|  +-------------------------------------------------------------------------+ |
++------------------------------------------------------------------------------+
++-- Region: US (e.g. us-east) — US customers' data stays here -----------------+
+|  +-- Stamp: US pooled (US customers as rows) -----------------------------+  |
+|  |  same shape as EU pooled                                               |  |
+|  +------------------------------------------------------------------------+  |
+|  +-- Stamp: US dedicated, Baymark Freight --------------------------------+  |
+|  |  same shape as EU pooled, half the instance counts                     |  |
+|  +------------------------------------------------------------------------+  |
++------------------------------------------------------------------------------+
 ```
+
+Instances are per pooled stamp; dedicated stamps run half.
 
 | Container | Deployment node | Instances | Notes |
 |---|---|---|---|
@@ -239,7 +254,7 @@ Production — one stamp (every stamp has this shape)
 
 ## Open Questions
 
-- none
+- Kong for the Edge Gateway: not in the default stack, so an ADR is pending (`adr-authoring`, configured in `api-gateway-design`).
 ````
 
 ## Why this is right

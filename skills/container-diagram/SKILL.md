@@ -16,7 +16,7 @@ description: >
   carried unchanged from the system context. Use when drawing, reviewing or
   changing a container diagram, deciding services or a modular monolith,
   placing a gateway, or drawing a deployment view. Used by enterprise-architect.
-version: 3.0.0
+version: 3.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -131,6 +131,8 @@ Each trap comes with the reason to give in full.
 - **"Put the discount and eligibility rules in the gateway."** *Reason:* a smart gateway becomes an unowned service coupled to every context (Xu, Newman). *Instead:* rules in the owning service; the gateway routes, validates tokens, limits rates.
 - **"The gateway checks the token, so services don't need to."** *Reason:* anything that reaches a service another way bypasses it (D047-12). *Instead:* services verify identity too.
 - **"One shared broker and a stamp per tenant,"** before any tenancy decision. *Reason:* there is no tenancy default (D047-7); the model comes from the NFRs and compliance input. *Instead:* run `multi-tenancy-design` first; mark the deployment view pending.
+- **"The gateway product isn't chosen, so write 'chosen in api-gateway-design' as its technology."** *Reason:* every container names its technology (Brown); a deferral note is not one, and the box then reads as unfinished. *Instead:* the agreed product, or **Kong (proposed, ADR pending)** with the ADR under Open Questions.
+- **"EU and US have the same shape, so draw one 'Region: EU | US' box."** *Reason:* the merged box hides which data lives where, which residency requires the deployment view to show. *Instead:* one deployment node per region; the second can say "same shape as EU".
 - **"Draw every arrow into the broker."** *Reason:* the real producer-consumer pairs vanish (Brown). *Instead:* topic labels, and who publishes and consumes each topic in the matrix.
 - **"Draw a component diagram for every service, so the set is complete."** *Reason:* component diagrams are drawn only for a container whose insides differ from the default skeleton (D047-13; Brown: optional, only where they add value). *Instead:* name the container that needs one and why; for the rest, one line saying the default skeleton applies.
 - **"Make a separate deployment-diagram artifact."** *Reason:* the plugin keeps the deployment view as a section of this artifact (D047-13). *Instead:* the section, one per environment that differs.

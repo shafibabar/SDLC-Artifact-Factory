@@ -194,6 +194,15 @@ expect "pending tenancy listed as an open question passes" 0 "" pendingok.md
 sed '/^### Environment: production$/,/^- \*\*Variability:/d' pendingok.md > pendingnoenv.md
 expect "pending tenancy still needs the environment drawn" 1 "has at least one environment" pendingnoenv.md
 
+sed 's/^| Ferrylog App | Application | Go, net\/http + chi |/| Ferrylog App | Application | chosen in an ADR |/' good.md > placeholder.md
+expect "a placeholder technology label fails" 1 "not a placeholder" placeholder.md
+
+sed 's/^| Ferrylog App | Application | Go, net\/http + chi |/| Ferrylog App | Application | Kong (proposed, ADR pending) |/' good.md > proposed.md
+expect "a proposed technology without an open question fails" 1 "listed as an open question (ADR)" proposed.md
+
+sed 's/^| Ferrylog App | Application | Go, net\/http + chi |/| Ferrylog App | Application | Kong (proposed, ADR pending) |/; s/^- none$/- Kong for the gateway: ADR pending/' good.md > proposedok.md
+expect "a proposed technology listed as an open question passes" 0 "" proposedok.md
+
 { cat good.md; printf '\n## Mermaid copy\n\n```mermaid\nflowchart TB\n  a --> b\n```\n'; } > flow.md
 expect "a Mermaid flowchart fails (C4Container)" 1 "uses C4Container or C4Deployment" flow.md
 

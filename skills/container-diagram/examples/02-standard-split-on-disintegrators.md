@@ -73,7 +73,7 @@ traces-to: [design/architecture/system-context.md, design/context-map.md, design
                                           +--------------------------------+
                                           | [Container: Gateway]           |
                                           | Edge Gateway                   |
-                                          | chosen in api-gateway-design   |
+                                          | Kong (proposed, ADR pending)   |
                                           | Routes, checks tokens, limits  |
                                           +--------------------------------+
                    +---------------------------------------+---------------------------------------+
@@ -128,7 +128,7 @@ traces-to: [design/architecture/system-context.md, design/context-map.md, design
 | Container | Type | Technology | Deployable | Responsibility |
 |---|---|---|---|---|
 | Web App | Web App | React + TypeScript | edge | All screens |
-| Edge Gateway | Gateway | chosen in api-gateway-design | edge | Routes, validates tokens, limits rates |
+| Edge Gateway | Gateway | Kong (proposed, ADR pending) | edge | Routes, validates tokens, limits rates |
 | Appointments API | API | Go, net/http + chi | appointments | Books and moves visits |
 | Reminders Worker | Worker | Go | appointments | Sends visit reminders |
 | Appointments DB | Database | PostgreSQL, pgx | appointments | Appointments and reminder schedule |
@@ -254,7 +254,7 @@ Production
 
 ## Open Questions
 
-- none
+- Kong for the Edge Gateway: not in the default stack, so an ADR is pending (`adr-authoring`, configured in `api-gateway-design`).
 ````
 
 ## Why this is right

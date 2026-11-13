@@ -37,6 +37,6 @@ The gateway is the first check, not the only one. Every service validates the to
 
 ## 5. On the Diagram
 
-- The gateway is a container: `[Container: Gateway]`, its technology (the agreed gateway product, or "to be chosen in api-gateway-design" with the ADR pending), responsibility "routes, validates tokens, limits rates".
+- The gateway is a container: `[Container: Gateway]`, a named technology, responsibility "routes, validates tokens, limits rates". The default stack names no gateway, so the technology is the agreed product, or, when none is agreed, **Kong (proposed, ADR pending)**: the gateway `api-gateway-design` works through, with the ADR listed under Open Questions. Never a placeholder ("chosen in api-gateway-design", "TBD", "none"): every box names its technology, and a deferral note is not one (Brown).
 - One arrow per route group to the containers behind it.
 - The gateway section of the artifact records: gateway or none, what it holds, that services verify identity, where client-specific shaping lives, and that configuration is platform-engineer's at Deploy.

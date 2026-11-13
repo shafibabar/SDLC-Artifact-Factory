@@ -6,7 +6,9 @@
 #          to the system context; title, readers, question; a profile and a
 #          deployables table where every split names its forces; an ASCII
 #          container view with no deployment detail on it; a key; every
-#          container typed, with technology, a deployable and a responsibility,
+#          container typed, with a named technology (no placeholder such as
+#          "chosen in ..." or "TBD"; a proposed one is listed as an open
+#          question), a deployable and a responsibility,
 #          named on the diagram and in the communication matrix; no database
 #          reached from another deployable; arrows say what flows, protocol,
 #          sync or async; a topics table when there is a broker; the gateway
@@ -139,6 +141,8 @@ check("Key distinguishes synchronous and asynchronous", bool(re.search(r"(?i)\bs
 _, conts = table(sections.get("containers", []))
 check("at least one container", bool(conts))
 TYPES = ("web app", "mobile app", "api", "worker", "application", "database", "broker", "file store", "gateway", "job", "backend-for-frontend", "bff", "cache", "search index")
+PLACEHOLDER = re.compile(r"(?i)\bchosen in\b|\btbd\b|\btbc\b|to be (decided|chosen|confirmed)|^\(?(none|pending|unknown|n/?a)\)?$")
+proposed = []
 cmap = {}
 for r in conts:
     g = lambda i: r[i] if i < len(r) else ""
@@ -146,6 +150,11 @@ for r in conts:
     cmap[norm(name)] = (typ.lower(), norm(dep))
     check(f"container '{name}': has a known type", any(t in typ.lower() for t in TYPES))
     check(f"container '{name}': has a technology label", filled(tech))
+    if filled(tech):
+        check(f"container '{name}': technology is a named product, not a placeholder",
+              not PLACEHOLDER.search(tech))
+        if re.search(r"(?i)proposed", tech):
+            proposed.append((name, tech))
     check(f"container '{name}': belongs to a deployable in the Decomposition table", norm(dep) in deployables)
     check(f"container '{name}': has a responsibility", filled(resp))
     if diagram:
@@ -214,6 +223,9 @@ dv = bullets("deployment view")
 ten = dv.get("tenancy", "")
 check("Deployment View states the tenancy model (or pending multi-tenancy-design)", filled(ten))
 oq = sec("open questions").lower()
+for pname, ptech in proposed:
+    first = norm(re.split(r"[(,]", ptech)[0])
+    check(f"proposed technology for '{pname}' is listed as an open question (ADR)", bool(first) and first in oq)
 if re.search(r"(?i)pending", ten):
     check("pending tenancy is listed as an open question", "multi-tenancy" in oq or "tenancy" in oq)
 if True:  # what the NFRs fix is drawn even while tenancy is pending
