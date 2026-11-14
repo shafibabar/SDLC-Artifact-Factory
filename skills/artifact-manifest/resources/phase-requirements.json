@@ -598,10 +598,11 @@
         ],
         "agent": "enterprise-architect",
         "profiles": {
-          "lean": "skip",
+          "lean": "optional",
           "standard": "optional",
           "enterprise": "required"
-        }
+        },
+        "note": "lean: only when the product calls an external system, listing just those calls (module calls are in-process). Resilience sized to risk; lighter choices recorded as risk-accepted."
       },
       {
         "artifact": "workflow-orchestration-design",

@@ -1,156 +1,62 @@
-# Synchronous vs Asynchronous — The Full Decision Framework
+# Sync vs Async: The Decision
 
-Reference for `integration-design`. Self-contained: choose the communication
-style for any service-to-service or service-to-external interaction, understand
-the failure semantics of each, and separate the three coupling axes that a naive
-"sync vs. async" toggle conflates.
+Reference for `integration-design`. Self-contained: the interaction shapes, the four criteria for choosing, the three separate questions a "sync or async" toggle conflates, contract strictness, and worked decisions.
 
----
+## 1. Three Interaction Shapes
 
-## The three interaction shapes
-
-Every integration is one of three shapes. They are not the same as "sync vs.
-async" — request/acknowledge is technically synchronous on the wire but
-semantically fire-and-forget.
-
-| Shape | Wire | Caller waits for | Failure meaning | Use for |
+| Shape | On the wire | Caller waits for | When it fails | Use for |
 |---|---|---|---|---|
-| **Request / Response** | HTTP, gRPC | the *result* of the work | caller cannot proceed; failure propagates up | queries feeding the current request; a Command whose outcome the user must see now |
-| **Request / Acknowledge** | HTTP 202, enqueue | only *acceptance* of the work | work accepted but not yet done; caller polls or is notified | long-running work triggered in-request (an estate scan); the initial leg of an async flow |
-| **Event-Driven** | Redpanda topic | nothing — publishes a fact | producer is unaffected; each consumer's failure is its own | Domain Events, cross-context state propagation, one-to-many fan-out |
+| **Request / response** | HTTP, gRPC | The result | The caller can't proceed; the failure travels up | A query feeding the current request; a command whose outcome the user must see now |
+| **Request / acknowledge** | HTTP `202` plus a status resource | Only acceptance | Accepted, not done; the caller polls or is notified | Long work started in a request (an import, a report); the first leg of an async flow |
+| **Event** | A topic | Nothing: it publishes a fact | Each consumer's failure is its own | Domain Events, state propagation across contexts, one-to-many fan-out |
 
-Request/Acknowledge is the bridge: a `POST /v1/estate-scans` returns `202` with a
-scan ID immediately (Geewax's long-running `Operation` shape — `id`, `done`,
-later `response`/`error`, polled via `GET`), while the actual scan proceeds
-asynchronously behind the acknowledgement. It gives the caller an immediate,
-bounded interaction *and* decouples the slow work.
+Request/acknowledge is the bridge: the caller gets a bounded, immediate answer (an operation id), and the slow work runs behind it (the long-running-operation shape in `api-contract-design`).
 
----
+## 2. The Four Criteria
 
-## The four selection criteria, expanded
+1. **Does the caller need the answer to finish?** Showing a quote to the user needs the pricing answer now: request/response. "Update loyalty points when an order ships" needs no answer: an event. Publishing an event and then waiting for a reply event means you chose the wrong shape.
+2. **Can both sides be up at the same moment?** Request/response needs both up together. Availability multiplies down a chain: three 99.9% services in series give `0.999³ ≈ 99.7%`, about triple the downtime. With events, a consumer outage becomes lag that drains later, not a failure upstream.
+3. **How far does a failure spread?** Under request/response, a callee failure walks up the chain; a dependency many services call is a single point of failure for all of them. Under events, a failed consumer leaves the event on the topic or in its Dead Letter Queue; nobody else notices. The wider the spread, the stronger the case for async.
+4. **Fan-out.** One caller, one answer: request/response. One fact several contexts react to differently: publish once rather than make N calls and couple to N services.
 
-### 1. Need for immediate response
-Ask: *can the caller complete its current unit of work without this result?* The
-API Gateway serving a user's "show me this data asset's classification" request
-genuinely needs the Classification Service's answer before it can respond — that
-is request/response. But "the Compliance context should re-evaluate gaps when a
-data asset is reclassified" needs no answer to the reclassifying caller — that is
-an event. If you find yourself publishing an event and then *waiting for a
-response event*, you have chosen the wrong shape: use request/response instead
-(see the "Request/reply over the broker" anti-pattern).
+**Default:** events across Bounded Contexts; synchronous is the justified exception, inside the current request's flow.
 
-### 2. Temporal coupling tolerance
-Synchronous request/response requires both services be up *at the same instant*.
-Availability composes multiplicatively down a call chain: a flow through three
-independent 99.9%-available services is `0.999³ ≈ 99.7%` — roughly tripling the
-expected downtime. Every synchronous hop lowers the ceiling on the whole flow's
-availability. Asynchronous messaging removes temporal coupling entirely: the
-producer writes to its outbox and moves on; the consumer processes whenever it is
-healthy, and a consumer outage becomes broker lag (a queue that drains later),
-not an upstream failure.
+## 3. Three Separate Questions (Ford, *Hard Parts*)
 
-### 3. Failure blast radius
-Trace what happens when the *callee* fails. Under request/response, the caller's
-goroutine blocks until timeout, then fails its own caller — the failure walks *up*
-the chain. A high-fan-in synchronous dependency (many services call it) is a
-single point of failure for all of them. Under event-driven, a consumer failure
-is contained: the event sits on the topic (or moves to the DLQ), the producer and
-every other consumer are unaffected. **The larger the blast radius of the
-downstream's failure, the stronger the case for async.**
+`research/software-architecture/software-architecture-hard-parts-ford.md` separates three dynamic-coupling axes; decide each:
+1. **Communication:** sync or async (§ 1, § 2).
+2. **Consistency:** atomic (all or nothing across services) or eventual. A separate question from communication, and easy to conflate. Most cross-context flows are eventual.
+3. **Coordination:** for a multi-step flow, orchestrated (a coordinator directs each step) or choreographed (each reacts to the last event). Richards & Ford call these the mediator and broker topologies (`fundamentals-of-software-architecture-richards-ford.md`). Choreography design: `event-driven-patterns`; orchestration and when to choose it: `workflow-orchestration` (D047-3).
 
-### 4. Data volume and fan-out
-One caller needing one answer from one callee is a clean request/response. One
-fact that N independent contexts each react to differently (a `DataAsset
-Classified` event that Compliance, Reporting, and the Graph projection all
-consume) is event-driven — publishing once and letting each consumer subscribe is
-far cheaper than the producer making N synchronous calls and coupling to all N.
+Crossing the three gives Ford's saga archetypes; three are worth naming:
+- **Parallel saga** (async, eventual, orchestrated): a complex flow that still needs central visibility.
+- **Anthology saga** (async, eventual, choreographed): genuinely independent reactions; the most decoupled.
+- **Horror story** (async, atomic, choreographed): all-or-nothing across uncoordinated async steps. Avoid it: accept eventual consistency openly, or orchestrate.
 
----
+In an artifact, classify by the three axes; the archetype name is a parenthetical cross-reference.
 
-## Separate the three coupling axes (Ford, *Hard Parts*)
-
-"Sync vs. async" is only one of **three orthogonal dynamic-coupling axes**. A
-robust integration design decides each independently:
-
-1. **Communication** — synchronous or asynchronous (this document's main axis).
-2. **Consistency** — does the interaction need *atomic* (all-or-nothing across
-   services) or *eventual* consistency? This is a **separate question** from
-   communication style and is easy to conflate. Most cross-BC flows on this
-   platform are deliberately eventual.
-3. **Coordination** — is the multi-step flow *orchestrated* (a central
-   coordinator directs each step) or *choreographed* (each service reacts to the
-   previous one's event with no central brain)? See `event-driven-patterns`.
-
-Crossing the three axes yields Ford's eight named Saga archetypes. Two matter as
-targets and one as a trap:
-
-- **Parallel Saga** (async + eventual + orchestrated) — the recommended shape for
-  a complex multi-step business process that still needs central visibility: a
-  persistent orchestrator directs asynchronous, eventually-consistent steps.
-- **Anthology Saga** (async + eventual + choreographed) — the most decoupled and
-  scalable shape, correct when steps are genuinely independent reactions needing
-  no central coordinator.
-- **Horror Story** (async + *atomic* + choreographed) — the trap: attempting
-  all-or-nothing atomicity across asynchronous, uncoordinated steps. Ford
-  explicitly says avoid it. If a choreographed flow silently assumes every step
-  completes together, either accept eventual consistency openly or move to a
-  Parallel Saga.
-
-The whimsical names are a cross-reference, not artifact vocabulary — in a
-PM-reviewable artifact classify a flow by its three axes (communication /
-consistency / coordination), and cite the archetype name only parenthetically.
-
----
-
-## Static coupling: contract strictness (a second axis)
-
-Beyond runtime (dynamic) coupling, classify each integration's **static
-coupling** — how strict its contract is at rest:
+## 4. Contract Strictness (Static Coupling)
 
 | Contract | Coupling | Trade-off |
 |---|---|---|
-| Strict (gRPC/Protobuf, typed) | High | Compile-time safety; producer/consumer must evolve together |
-| Loose (JSON + tolerant-reader) | Low | Independent evolution; runtime risk if a field vanishes |
+| **Strict** (typed: Protobuf over gRPC, a schema-registry-enforced event) | High | Compile-time safety; producer and consumer evolve together |
+| **Loose** (JSON read by a tolerant reader) | Low | Independent evolution; runtime risk if a field vanishes |
 
-Two integrations can be the same Context-Map pattern (e.g. Customer/Supplier) yet
-carry very different risk depending on contract strictness. On this platform the
-default is loose JSON over HTTP with tolerant-reader parsing (consumers ignore
-unknown fields), which maximizes independent deployability — paired with
-Consumer-Driven Contract tests to catch the removal of a field a consumer
-actually reads.
+The default for HTTP is loose JSON with a **tolerant reader** (consumers ignore unknown fields; Newman, `building-microservices-newman.md`), paired with a **Consumer-Driven Contract** test that catches removal of a field a consumer actually reads. Events are usually strict at the schema level (`event-schema-design`). Record strictness per integration.
 
----
+## 5. Worked Decisions
 
-## Worked decision: this repo's cross-BC calls
+**Checkout → Payment Provider (external).** The order can't be confirmed without the authorisation: **request/response**. Consistency: the order and the charge must agree, so the call carries an **idempotency key** and an unknown outcome is reconciled, not retried blind. Loose JSON, a Consumer-Driven Contract on the fields read.
 
-**DataAsset Management → Source Catalog (external).** The context needs the
-catalog's metadata *before* it can register a data asset — immediate response
-required, so **request/response (synchronous)**, wrapped in an ACL and the full
-resilience stack with a cached fallback. Consistency is eventual (a slightly
-stale catalog entry is acceptable); no multi-step coordination.
+**Orders → Loyalty (two contexts).** Loyalty updates points when an order ships. Orders needs no answer and must not fail when Loyalty is down; Analytics reacts to the same fact: **event**, eventual, choreographed. Published through the Transactional Outbox; Loyalty consumes idempotently with a Dead Letter Queue (`event-driven-patterns`).
 
-**DataAsset Management → Compliance.** When a data asset is classified,
-Compliance must re-evaluate gaps. The classifying caller needs no answer, many
-contexts react to the same fact, and a Compliance outage must not fail
-classification — **event-driven (asynchronous)**, choreographed, eventual
-consistency. `dataasset.classified` is published via the Transactional Outbox;
-Compliance consumes idempotently with a DLQ. This is an Anthology Saga step.
+**Bulk menu import (user-facing).** Takes minutes: **request/acknowledge**, `202` with an import operation the UI polls; the import runs async and emits progress events.
 
-**Estate scan trigger (user-facing).** A scan takes minutes. The user's request
-cannot block that long — **request/acknowledge**: `202` + a scan `Operation` the
-UI polls, with the scan itself proceeding asynchronously and emitting progress
-events.
+## 6. Decision Record per Integration
 
----
-
-## Decision checklist
-
-For each integration, record:
-
-1. Which shape — request/response, request/acknowledge, or event-driven — and why
-   (cite the criterion that decided it).
-2. Consistency need: atomic or eventual (separate line from the shape).
-3. If multi-step: orchestrated or choreographed, and the Saga archetype.
-4. Static coupling: strict or loose contract, and the contract-test mechanism.
-5. For synchronous shapes: the resilience stack (see `resilience-patterns.md`).
-6. For external/foreign models: the ACL (see `integration-patterns.md`).
+1. Shape, and the criterion that decided it.
+2. Consistency: atomic or eventual.
+3. Multi-step: orchestrated or choreographed (and the archetype).
+4. Contract: strict or loose, and its Consumer-Driven Contract test.
+5. Sync: the resilience, sized per `resilience-patterns.md`.
+6. Foreign model: the anti-corruption layer (`integration-patterns.md`).

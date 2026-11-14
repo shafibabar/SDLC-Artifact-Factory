@@ -3219,7 +3219,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.7.1"
+        "version": "2.8.0"
       },
       {
         "created": "2026-06-25",
@@ -6747,13 +6747,13 @@
         "domain": "architecture",
         "has_assets": false,
         "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "integration-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -6761,28 +6761,45 @@
           "integration-design"
         ],
         "related": [
+          "adr-authoring",
           "api-contract-design",
+          "api-gateway-design",
+          "container-diagram",
           "context-map-patterns",
           "data-model-design",
           "event-driven-patterns",
           "event-schema-design",
-          "go-contract-test"
+          "glossary-management",
+          "go-contract-test",
+          "grpc-contract-design",
+          "methodology-review",
+          "nfr-specification",
+          "opentelemetry-instrumentation",
+          "read-model-design",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/software-architecture/software-architecture-in-practice-bass.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
           "anti-corruption-layer",
           "architecture",
           "asynchronous",
-          "bulkhead",
           "circuit-breaker",
+          "consumer-driven-contract",
           "design",
+          "idempotency",
           "integration",
           "resilience",
-          "synchronous",
-          "timeout"
+          "synchronous"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -10935,8 +10952,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1101,
-    "edges_skill_sources": 237,
+    "edges_skill_related": 1111,
+    "edges_skill_sources": 243,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10952,16 +10969,16 @@
     "skills_with_assets": 9,
     "skills_with_contract_test": 144,
     "skills_with_domain": 189,
-    "skills_with_evals": 44,
-    "skills_with_examples": 44,
+    "skills_with_evals": 45,
+    "skills_with_examples": 45,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 43,
-    "skills_with_scripts": 40,
-    "skills_with_sources": 45,
+    "skills_with_resources": 44,
+    "skills_with_scripts": 41,
+    "skills_with_sources": 46,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 42
+    "skills_with_templates": 43
   },
   "edges": {
     "agent_produces": [
@@ -15144,7 +15161,19 @@
         "skill": "information-architecture"
       },
       {
+        "related": "adr-authoring",
+        "skill": "integration-design"
+      },
+      {
         "related": "api-contract-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "api-gateway-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "container-diagram",
         "skill": "integration-design"
       },
       {
@@ -15164,7 +15193,35 @@
         "skill": "integration-design"
       },
       {
+        "related": "glossary-management",
+        "skill": "integration-design"
+      },
+      {
         "related": "go-contract-test",
+        "skill": "integration-design"
+      },
+      {
+        "related": "grpc-contract-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "integration-design"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "integration-design"
+      },
+      {
+        "related": "opentelemetry-instrumentation",
+        "skill": "integration-design"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "workflow-orchestration",
         "skill": "integration-design"
       },
       {
@@ -17724,6 +17781,30 @@
       {
         "skill": "impact-mapping",
         "source": "research/requirements-and-user-stories/impact-mapping-adzic.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/software-architecture-in-practice-bass.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/system-design-interview-xu.md"
       },
       {
         "skill": "jtbd-analysis",
