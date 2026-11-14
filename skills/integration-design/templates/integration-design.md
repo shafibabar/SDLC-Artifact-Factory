@@ -12,8 +12,10 @@ traces-to: [design/context-map.md, design/architecture/container-diagram.md, ide
 # Integration Design for [Product]
 
 <!-- Path: artifacts/<product>/design/architecture/integration-design.md.
-     Lean: only when the product calls an external system; list only those calls (module calls are in-process).
-     Standard: optional. Enterprise: required.
+     Lean: only when the product calls an external system, and SHORT: frontmatter, title, readers and question,
+     profile, the Integration Inventory (external calls only; module calls are in-process and not listed),
+     one "Notes" line per call if needed, Open Questions. Omit every other section.
+     Standard: optional. Enterprise: required, every section.
      "CDC" means Change Data Capture only; always write "Consumer-Driven Contract" in full. -->
 
 **Readers:** [enterprise-architect, backend-engineer, platform-engineer, the product owner]
@@ -50,7 +52,8 @@ traces-to: [design/context-map.md, design/architecture/container-diagram.md, ide
 
 ## Coordination
 
-- [multi-step flows: choreographed or orchestrated (and the archetype), with a pointer to the orchestration design | none]
+- **[flow name]:** communication: [sync / async] · consistency: [atomic / eventual] · coordination: [orchestrated / choreographed] ([archetype, e.g. parallel saga]); [compensations, and the pointer to the orchestration design] | none
+<!-- Never atomic with choreographed (the "horror story"): accept eventual, or orchestrate. -->
 
 ## Anti-Corruption Layers
 

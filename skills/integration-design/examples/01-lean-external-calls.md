@@ -42,58 +42,11 @@ traces-to: [design/architecture/container-diagram.md, ideate/nfr-specification.m
 | Stripe | PawRoute App (webhook) | event | eventual | HTTPS/JSON | loose (tolerant reader) | none: signature check and recorded payloads | idempotent: store the Stripe event id, ignore repeats, move payment state only forward |
 | PawRoute App | Postmark (send email) | request/response | eventual | HTTPS/JSON | loose (tolerant reader) | none: recorded-response test | timeout 2 s; 1 retry keyed by message id; risk-accepted: no breaker (a lost email costs little; failures logged and visible on the booking) |
 
-## Synchronous Integrations
+## Notes
 
-### PawRoute App → Stripe
-
-- **Why sync:** the booking can't be confirmed without the payment intent
-- **Timeout:** 3 s per attempt
-- **Retry:** 2 retries, 200 ms then 400 ms with jitter, always with the booking id as Stripe's idempotency key; on a final timeout the booking stays "payment pending" and the webhook or a 10-minute check settles it
-- **Circuit breaker:** not needed: risk-accepted at lean (one downstream, low traffic)
-- **Bulkhead:** not needed: risk-accepted
-- **Fallback:** "payment pending" shown to the owner; a metric counts pending bookings older than 10 minutes
-
-### PawRoute App → Postmark
-
-- **Why sync:** the email is sent when the booking is confirmed
-- **Timeout:** 2 s
-- **Retry:** 1 retry keyed by the message id
-- **Circuit breaker:** not needed: risk-accepted
-- **Bulkhead:** not needed: risk-accepted
-- **Fallback:** the booking is confirmed regardless; a failed send is logged and shown on the booking
-
-## Asynchronous Integrations
-
-| Topic | Publisher (mechanism) | Consumers (group) | Idempotency | Retry and DLQ |
-|---|---|---|---|---|
-| none (in-process module events) | — | — | — | — |
-
-## Coordination
-
-- none
-
-## Anti-Corruption Layers
-
-| Foreign system or context | Domain port | Adapter | What is translated |
-|---|---|---|---|
-| Stripe | `PaymentGateway` (start a payment, read its outcome) | payments adapter | intent id, status, amount; Stripe error codes to domain outcomes |
-| Postmark | `Notifier` (send a booking message) | email adapter | template id, recipient |
-
-## Cross-Context Reads
-
-| Reader | Data owned by | Option | Why not the others |
-|---|---|---|---|
-| none (modules of one deployable call each other's interfaces) | — | — | — |
-
-## Consumer-Driven Contract Plan
-
-| Consumer | Provider | Contract | Where the test runs | Gate |
-|---|---|---|---|---|
-| none: both providers are third parties | — | — | — | recorded-response tests in the app build |
-
-## Related ADRs
-
-- none
+- **Stripe, create payment intent:** a timeout is an unknown outcome, so retries always carry the booking id as Stripe's idempotency key; after the last retry the booking stays "payment pending" and the webhook or a 10-minute check against Stripe settles it. Stripe's model stays behind the Payments module's `PaymentGateway` port.
+- **Stripe webhook:** at-least-once and possibly out of order: store the event id, ignore repeats, and only move a payment's state forward.
+- **Postmark:** the booking is confirmed whether or not the email goes; a failed send is logged and shown on the booking.
 
 ## Open Questions
 
@@ -105,5 +58,6 @@ traces-to: [design/architecture/container-diagram.md, ideate/nfr-specification.m
 - Module calls stayed in-process; only the two remote calls are designed.
 - The payment retry is keyed, and an unknown outcome is reconciled rather than repeated.
 - The webhook is idempotent, because it can arrive twice.
+- It stays short, as lean should: the inventory, one note per call, open questions; nothing else.
 - Every lighter choice is written down as risk-accepted, with its reason.
 - `validate-integration-design.sh` exits clean on the artifact.

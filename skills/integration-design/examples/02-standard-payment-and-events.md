@@ -75,7 +75,7 @@ traces-to: [design/context-map.md, design/architecture/container-diagram.md, ide
 
 ## Coordination
 
-- Weekly cycle (charge, pack, deliver) is choreographed: each context reacts to the previous event; eventual (Anthology saga). No step needs to undo another.
+- **Weekly cycle (charge, pack, deliver):** communication: async · consistency: eventual · coordination: choreographed (anthology saga); each context reacts to the previous event, and no step needs to undo another.
 
 ## Anti-Corruption Layers
 

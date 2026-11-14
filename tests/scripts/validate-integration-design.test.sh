@@ -118,6 +118,18 @@ expect "a sync detail block without a timeout fails" 1 "timeout stated" nodetail
 sed 's/^- \*\*Retry:\*\* 2 retries with jitter (a read)$/- **Retry:** 3 retries/' good.md > blinddetail.md
 expect "a sync detail retry that isn't idempotent or keyed fails" 1 "retry says idempotent" blinddetail.md
 
+sed 's/^## Cross-Context Reads$/## Coordination\n\n- **Race weekend:** choreographed; eventual\n\n## Cross-Context Reads/' good.md > coord.md
+expect "a coordinated flow missing the three axes fails" 1 "states communication, consistency and coordination" coord.md
+
+sed 's/^## Cross-Context Reads$/## Coordination\n\n- **Race weekend:** communication: async · consistency: eventual · coordination: choreographed (anthology saga)\n\n## Cross-Context Reads/' good.md > coordok.md
+expect "a coordinated flow on three axes passes" 0 "" coordok.md
+
+sed 's/^- \*\*Profile:\*\* standard$/- **Profile:** lean/' good.md > leanlong.md
+expect "a lean artifact with extra sections fails (keep it short)" 1 "lean artifact is short" leanlong.md
+
+awk '/^## Synchronous Integrations$/{skip=1} /^## Open Questions$/{skip=0} !skip' leanlong.md > leanshort.md
+expect "a short lean artifact (inventory and open questions) passes" 0 "" leanshort.md
+
 sed '/^traces-to:/d' good.md > notrace.md
 expect "missing traces-to fails" 1 "FAIL: frontmatter has" notrace.md
 

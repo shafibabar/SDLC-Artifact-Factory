@@ -11,7 +11,8 @@
 #          with outbox / idempotent consumer / DLQ (or Change Data Capture); a
 #          detail block per sync row with timeout and retry; cross-context reads
 #          naming one of the three options (never a shared database); no
-#          request/reply over the broker; open questions.
+#          request/reply over the broker; every coordinated flow on three axes;
+#          lean kept short (inventory, notes, open questions only); open questions.
 #          Whether each choice is right stays with the agent.
 # Usage:   validate-integration-design.sh <integration-design.md>
 # Output:  one PASS/FAIL/WARN line per check, then counts.
@@ -139,8 +140,22 @@ for lvl, name in order:
         in_sync = (name == "synchronous integrations")
     elif lvl == 3 and in_sync:
         sd_heads.append(name)
-if sync_rows:
+if sync_rows and profile != "lean":
     check("Synchronous Integrations has a detail block per sync row", len(sd_heads) >= len({(a.lower(), b.lower()) for a, b in sync_rows}))
+if profile == "lean":
+    extra = [n for lvl, n in order if lvl == 2 and n not in ("integration inventory", "notes", "open questions")]
+    check("lean artifact is short: only Integration Inventory, Notes and Open Questions" + (f" (also: {', '.join(extra)})" if extra else ""), not extra)
+
+# Coordination: every flow on three axes
+for l in sections.get("coordination", []):
+    m = re.match(r"^\s*-\s+(.*)$", l)
+    if not m or re.match(r"(?i)none\b", m.group(1).strip()) or not filled(m.group(1)):
+        continue
+    t = m.group(1).lower()
+    check(f"coordination '{m.group(1)[:40]}': states communication, consistency and coordination",
+          all(k in t for k in ("communication", "consistency", "coordination")))
+    if "atomic" in t and "choreograph" in t and not re.search(r"(?i)not atomic|never atomic|horror", t):
+        check(f"coordination '{m.group(1)[:40]}': not atomic and choreographed together", False)
 for h in sd_heads:
     b = bullets_of(sections.get(h, []))
     check(f"sync detail '{h}': timeout stated", filled(b.get("timeout", "")))

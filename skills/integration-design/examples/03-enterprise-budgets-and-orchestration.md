@@ -94,7 +94,7 @@ The Payouts consumer only records the instruction and commits; the partner call 
 
 ## Coordination
 
-- Payout flow: async, eventual, **orchestrated** by the transfer coordinator (a parallel saga), with compensations: release the quote, refund the debit. Design: `orchestration-design.md` (`workflow-orchestration`).
+- **Payout flow (screen, lock quote, debit, partner payout, notify):** communication: async · consistency: eventual · coordination: orchestrated by the transfer coordinator (parallel saga); compensations: release the quote, refund the debit. Not atomic: the requested "everything rolls back" choreography would be the horror story. Design: `orchestration-design.md` (`workflow-orchestration`).
 
 ## Anti-Corruption Layers
 

@@ -17,7 +17,7 @@ description: >
   event-driven-patterns, orchestration to workflow-orchestration. Use when
   designing, reviewing or changing an integration, an integration inventory,
   retries, timeouts or circuit breakers. Used by enterprise-architect.
-version: 3.0.0
+version: 3.0.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -45,7 +45,7 @@ Runs after the context map (`context-map-patterns`: who talks, in what relations
 
 | Profile | Artifact |
 |---|---|
-| Lean | Optional, only when the product calls an external system: a short inventory of those calls with their timeouts, idempotency and any risk-accepted choice. Module-to-module calls inside the monolith are in-process; none is listed |
+| Lean | Optional, only when the product calls an external system, and **short**: the inventory of those calls (timeout, idempotency, any risk-accepted choice in the row), a notes line per call if needed, open questions; no other sections. Module-to-module calls are in-process; none is listed |
 | Standard | Optional: every cross-service and external integration, sized by risk |
 | Enterprise | Required: every integration, the full stack on cross-service and external calls, timeout budgets across chains |
 
@@ -54,7 +54,7 @@ Runs after the context map (`context-map-patterns`: who talks, in what relations
 Decide each separately; conflating them is the common error:
 1. **Communication shape.** **Request/response** when the caller can't finish its work without the answer; **request/acknowledge** (`202` and a status to poll) when the work is long; **event** when the caller needs no answer, many react, or the other side's failure must not reach the caller. Across Bounded Contexts, events are the default and sync is the justified exception. Availability multiplies down a sync chain: three 99.9% services in series give 99.7%.
 2. **Consistency.** Atomic or eventual. Most cross-context flows are eventual; atomic across services means one transaction boundary was drawn wrong, or a saga.
-3. **Coordination.** For a multi-step flow: choreographed (each reacts to the last event; `event-driven-patterns`) or orchestrated (a coordinator; `workflow-orchestration`, D047-3). Never atomic and choreographed together (Ford's "Horror Story").
+3. **Coordination.** Record every multi-step flow on all three axes in one line ("communication: async · consistency: eventual · coordination: orchestrated"). For a multi-step flow: choreographed (each reacts to the last event; `event-driven-patterns`) or orchestrated (a coordinator; `workflow-orchestration`, D047-3). Never atomic and choreographed together (Ford's "Horror Story").
 
 **Request/reply over the broker** (publish, then wait for a reply event) is the wrong shape: it keeps the temporal coupling and loses the timeout and backpressure. Use a sync call with resilience; events are facts, fire and forget.
 
@@ -122,6 +122,7 @@ Each trap comes with the reason to give in full.
 - **"Call the partner API inside the event consumer."** *Reason:* the consumer's lag grows behind the slowest partner and redeliveries multiply the load. *Instead:* its own resilience, or a separate step and topic.
 - **"Use CDC on our new service to publish events."** *Reason:* Change Data Capture leaks the table schema; a service you own can publish intentional Domain Events. *Instead:* the Transactional Outbox (log tailing may relay the outbox table); Change Data Capture of business tables only for a source that can't publish.
 - **"Write CDC for the contract test."** *Reason:* CDC already means Change Data Capture here. *Instead:* spell out Consumer-Driven Contract.
+- **"Make the inbound contract the partner's full record, every field required."** *Reason:* that is stamp coupling: every partner is tied to fields you never read, and any change breaks them all (Ford). *Instead:* a contract of only the fields you use, read by a tolerant reader that ignores the rest, with its strictness stated.
 - **"Async and consistency are the same choice."** *Reason:* an async flow can still need a coordinator or atomicity (Ford). *Instead:* record shape, consistency and coordination separately.
 
 ## References
