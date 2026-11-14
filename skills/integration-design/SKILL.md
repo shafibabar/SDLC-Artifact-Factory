@@ -17,7 +17,7 @@ description: >
   event-driven-patterns, orchestration to workflow-orchestration. Use when
   designing, reviewing or changing an integration, an integration inventory,
   retries, timeouts or circuit breakers. Used by enterprise-architect.
-version: 3.0.1
+version: 3.0.2
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -95,7 +95,7 @@ Detail: `./references/integration-patterns.md`.
 
 ## 5. Async Integrations: What This Artifact Records
 
-This skill records **which mechanism** each async integration uses; the design lives in `event-driven-patterns` (outbox, idempotent consumer, dead-letter queue, ordering) and the code in `go-event-publisher` / `go-event-consumer`. Per async row: publisher via the Transactional Outbox (or Change Data Capture and why); each consumer idempotent, with its own consumer group, retry policy and Dead Letter Queue. A synchronous external call inside a consumer's critical path gets its own resilience, or becomes its own step. **Inbound webhooks and callbacks** from external systems are at-least-once and may arrive out of order: handle them idempotently (record the event id, ignore repeats, move state only forward).
+This skill records **which mechanism** each async integration uses; the design lives in `event-driven-patterns` (outbox, idempotent consumer, dead-letter queue, ordering) and the code in `go-event-publisher` / `go-event-consumer`. Per async row: publisher via the Transactional Outbox (or Change Data Capture and why); each consumer idempotent, with its own consumer group, retry policy and Dead Letter Queue. **An external call triggered by an event** never runs inside the consumer with the offset held: the consumer records the instruction idempotently (deduplicating on the event id) and commits; a separate step makes the call with a timeout and an idempotency key, and a call that can't complete ends in a visible **failed or dead-letter state** that can be re-driven, never lost. **Inbound webhooks and callbacks** from external systems are at-least-once and may arrive out of order: handle them idempotently (record the event id, ignore repeats, move state only forward).
 
 ## Procedure
 
@@ -119,7 +119,7 @@ Each trap comes with the reason to give in full.
 - **"One circuit breaker for all downstreams."** *Reason:* one failing partner opens it for the healthy ones. *Instead:* one breaker and one pool per downstream.
 - **"Wrap every call in the full stack, module calls too."** *Reason:* an in-process call has no network to fail; the stack adds cost and noise (Fairbanks). *Instead:* resilience on remote calls, sized by risk.
 - **"We're small; skip the timeouts."** *Reason:* an external call without a timeout inherits the partner's worst case and hangs the caller. *Instead:* a timeout on every external call, at every profile.
-- **"Call the partner API inside the event consumer."** *Reason:* the consumer's lag grows behind the slowest partner and redeliveries multiply the load. *Instead:* its own resilience, or a separate step and topic.
+- **"Call the partner API inside the event consumer and commit the offset after it answers."** *Reason:* the partition stalls behind the slowest partner, a crash after the call but before the commit repeats it, and redeliveries multiply the load. *Instead:* record the instruction (dedupe on the event id), commit, and call from a separate step with a timeout, an idempotency key and a failed or dead-letter state.
 - **"Use CDC on our new service to publish events."** *Reason:* Change Data Capture leaks the table schema; a service you own can publish intentional Domain Events. *Instead:* the Transactional Outbox (log tailing may relay the outbox table); Change Data Capture of business tables only for a source that can't publish.
 - **"Write CDC for the contract test."** *Reason:* CDC already means Change Data Capture here. *Instead:* spell out Consumer-Driven Contract.
 - **"Make the inbound contract the partner's full record, every field required."** *Reason:* that is stamp coupling: every partner is tied to fields you never read, and any change breaks them all (Ford). *Instead:* a contract of only the fields you use, read by a tolerant reader that ignores the rest, with its strictness stated.
