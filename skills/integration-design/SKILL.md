@@ -17,7 +17,7 @@ description: >
   event-driven-patterns, orchestration to workflow-orchestration. Use when
   designing, reviewing or changing an integration, an integration inventory,
   retries, timeouts or circuit breakers. Used by enterprise-architect.
-version: 3.0.3
+version: 3.0.4
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -54,7 +54,7 @@ Runs after the context map (`context-map-patterns`: who talks, in what relations
 Decide each separately; conflating them is the common error:
 1. **Communication shape.** **Request/response** when the caller can't finish its work without the answer; **request/acknowledge** (`202` and a status to poll) when the work is long; **event** when the caller needs no answer, many react, or the other side's failure must not reach the caller. Across Bounded Contexts, events are the default and sync is the justified exception. Availability multiplies down a sync chain: three 99.9% services in series give 99.7%.
 2. **Consistency.** Atomic or eventual. Most cross-context flows are eventual; atomic across services means one transaction boundary was drawn wrong, or a saga.
-3. **Coordination.** Record every multi-step flow on all three axes in one line ("communication: async · consistency: eventual · coordination: orchestrated"). For a multi-step flow: choreographed (each reacts to the last event; `event-driven-patterns`) or orchestrated (a coordinator; `workflow-orchestration`, D047-3). Never atomic and choreographed together (Ford's "Horror Story").
+3. **Coordination.** Record every multi-step flow on all three axes in one line ("communication: async · consistency: eventual · coordination: orchestrated"). For an orchestrated flow this artifact records that decision and the integrations it uses; the steps, compensations and coordinator are designed in `workflow-orchestration`, not here. For a multi-step flow: choreographed (each reacts to the last event; `event-driven-patterns`) or orchestrated (a coordinator; `workflow-orchestration`, D047-3). Never atomic and choreographed together (Ford's "Horror Story").
 
 **Request/reply over the broker** (publish, then wait for a reply event) is the wrong shape: it keeps the temporal coupling and loses the timeout and backpressure. Use a sync call with resilience; events are facts, fire and forget.
 
@@ -78,10 +78,10 @@ Spend design effort where being wrong is expensive, and record what was consciou
 | Cross-service or external, standard and enterprise | The full stack: timeout, retry with backoff and jitter, **circuit breaker per downstream**, **bulkhead** (own pool per downstream), an **observable fallback** |
 | Hot path or long chain | Also a **timeout budget**: each caller's deadline exceeds its downstream's whole retry envelope; the remaining deadline is passed down |
 
-- **A timeout is an unknown outcome.** Retrying a non-idempotent write (a payment, an order) can duplicate it. Without an idempotency key, don't auto-retry: surface the uncertainty and reconcile.
+- **A timeout is an unknown outcome.** Retrying a non-idempotent write (a payment, an order) can duplicate it. Auto-retry a write only with an idempotency key **the provider is confirmed to honour** (its documentation or a sandbox test, recorded). Unconfirmed or unsupported: **no automatic retry**; mark it pending and check its status with the provider, never re-send. A request for blind retries is answered as "not as asked", not "granted".
 - **Nesting order:** timeout inside retry inside breaker inside bulkhead; fallback catches what the stack refuses.
 - **A lighter choice is recorded as risk-accepted** with its reason ("hacked, not designed", Fairbanks), never silently skipped.
-- Overload protection names its rate-limiting algorithm and where it is enforced (gateway, service), and rejects with `429` and rate-limit headers (Xu); fault detection and recovery tactics come from Bass.
+- **Rate limiting** names its algorithm **and why it fits** (a token bucket allows a caller's short bursts up to a cap, then a steady rate; a sliding window counter smooths the edges of fixed windows), where it is enforced (the gateway for per-caller limits, and the service for endpoint-specific rate limits where an endpoint needs its own; a concurrency cap is a bulkhead, not a rate limit), and what a rejected caller gets: `429` with rate-limit headers and `Retry-After` (Xu). Fault detection and recovery tactics come from Bass.
 
 Breaker states, thresholds, budgets, fallbacks: `./references/resilience-patterns.md`.
 
@@ -113,7 +113,7 @@ Examples: `./examples/01-lean-external-calls.md` (a dog-walking booking app: two
 
 Each trap comes with the reason to give in full.
 
-- **"Retry the POST to the payment provider three times on timeout."** *Reason:* a timeout is an unknown outcome; the charge may have gone through, and a retry can charge twice. *Instead:* retry only with an idempotency key the provider deduplicates on; without one, don't auto-retry: mark it pending and reconcile.
+- **"Retry the POST to the payment provider three times on timeout."** *Reason:* a timeout is an unknown outcome; the charge may have gone through, and a retry can charge twice. *Instead:* not as asked: retry only with an idempotency key the provider is confirmed to honour; unconfirmed or unsupported, no automatic retry: mark it pending and check the payment's status with the provider (or wait for its webhook), never re-send.
 - **"Use request/reply over the broker for this lookup."** *Reason:* waiting for a reply event keeps the temporal coupling and loses timeouts and backpressure. *Instead:* a synchronous call with resilience; events state facts.
 - **"Let the two services share the table; it's simpler."** *Reason:* neither can change the schema without the other, and invariants leak. *Instead:* API composition, event replication, or Change Data Capture.
 - **"One circuit breaker for all downstreams."** *Reason:* one failing partner opens it for the healthy ones. *Instead:* one breaker and one pool per downstream.

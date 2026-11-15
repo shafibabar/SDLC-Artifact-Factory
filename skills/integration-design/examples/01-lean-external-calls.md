@@ -9,7 +9,7 @@ Self-contained. **PawRoute** books dog walks: owners book a walk, walkers accept
 ## Working it
 
 - **Module calls** (Bookings → Payments) are in-process inside the monolith: no network, so no resilience stack. They aren't listed.
-- **Stripe:** the booking can't be confirmed without the payment intent, so request/response. A timeout is an unknown outcome: a blind retry could create a second intent and charge twice. Retry only with Stripe's idempotency key (the booking id); otherwise reconcile. The webhook arrives at least once and possibly out of order: handle it idempotently.
+- **Stripe:** the booking can't be confirmed without the payment intent, so request/response. A timeout is an unknown outcome: a blind retry could create a second intent and charge twice. Not as asked: Stripe documents idempotency keys on create requests (confirmed in its API reference and checked in test mode), so retries carry the booking id as the key. For a provider without a confirmed key there would be no automatic retry: pending, then a status check. The webhook arrives at least once and possibly out of order: handle it idempotently.
 - **Postmark:** losing one booking email is low-cost; a timeout and one keyed retry; no breaker, recorded as risk-accepted.
 - **Breakers and bulkheads:** two low-traffic external calls from one app; the cost outweighs the risk at this profile, recorded as risk-accepted (Fairbanks).
 
@@ -38,9 +38,9 @@ traces-to: [design/architecture/container-diagram.md, ideate/nfr-specification.m
 
 | From | To | Shape | Consistency | Protocol | Contract strictness | Contract test | Resilience |
 |---|---|---|---|---|---|---|---|
-| PawRoute App | Stripe (create payment intent) | request/response | eventual (reconciled by the webhook) | HTTPS/JSON | loose (tolerant reader) | none: Stripe's published API, pinned version; recorded-response test of the fields read | timeout 3 s; retry 2× with jitter only with idempotency key = booking id; risk-accepted: no breaker or bulkhead (one low-traffic downstream) |
-| Stripe | PawRoute App (webhook) | event | eventual | HTTPS/JSON | loose (tolerant reader) | none: signature check and recorded payloads | idempotent: store the Stripe event id, ignore repeats, move payment state only forward |
-| PawRoute App | Postmark (send email) | request/response | eventual | HTTPS/JSON | loose (tolerant reader) | none: recorded-response test | timeout 2 s; 1 retry keyed by message id; risk-accepted: no breaker (a lost email costs little; failures logged and visible on the booking) |
+| PawRoute App | Stripe (create payment intent) | request/response (sync) | eventual (reconciled by the webhook) | HTTPS/JSON | loose (tolerant reader) | none: Stripe's published API, pinned version; recorded-response test of the fields read | timeout 3 s; retry 2× with jitter only with idempotency key = booking id; risk-accepted: no breaker or bulkhead (one low-traffic downstream) |
+| Stripe | PawRoute App (webhook) | event (async) | eventual | HTTPS/JSON | loose (tolerant reader) | none: signature check and recorded payloads | idempotent: store the Stripe event id, ignore repeats, move payment state only forward |
+| PawRoute App | Postmark (send email) | request/response (sync) | eventual | HTTPS/JSON | loose (tolerant reader) | none: recorded-response test | timeout 2 s; 1 retry keyed by message id; risk-accepted: no breaker (a lost email costs little; failures logged and visible on the booking) |
 
 ## Notes
 

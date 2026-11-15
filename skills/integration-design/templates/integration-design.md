@@ -27,7 +27,7 @@ traces-to: [design/context-map.md, design/architecture/container-diagram.md, ide
 
 | From | To | Shape | Consistency | Protocol | Contract strictness | Contract test | Resilience |
 |---|---|---|---|---|---|---|---|
-| [caller or publisher] | [callee, topic or external system] | [request/response / request/acknowledge / event] | [atomic / eventual] | [HTTPS/JSON, gRPC, Kafka protocol] | [strict / loose (tolerant reader)] | [Consumer-Driven Contract / event schema compatibility / none: reason] | [sync: timeout, retry (idempotent or keyed), breaker, bulkhead, fallback, or "risk-accepted: <reason>"; async: outbox, idempotent consumer, DLQ] |
+| [caller or publisher] | [callee, topic or external system] | [request/response (sync) / request/acknowledge (sync, then async) / event (async)] | [atomic / eventual] | [HTTPS/JSON, gRPC, Kafka protocol] | [strict / loose (tolerant reader)] | [Consumer-Driven Contract / event schema compatibility / none: reason] | [sync: timeout, retry (idempotent or keyed), breaker, bulkhead, fallback, or "risk-accepted: <reason>"; async: outbox, idempotent consumer, DLQ] |
 
 ## Synchronous Integrations
 
@@ -52,7 +52,7 @@ traces-to: [design/context-map.md, design/architecture/container-diagram.md, ide
 
 ## Coordination
 
-- **[flow name]:** communication: [sync / async] · consistency: [atomic / eventual] · coordination: [orchestrated / choreographed] ([archetype, e.g. parallel saga]); [compensations, and the pointer to the orchestration design] | none
+- **[flow name]:** communication: [sync / async] · consistency: [atomic / eventual] · coordination: [orchestrated / choreographed] ([archetype, e.g. parallel saga]); [pointer to the orchestration design, where steps and compensations are designed] | none
 <!-- Never atomic with choreographed (the "horror story"): accept eventual, or orchestrate. -->
 
 ## Anti-Corruption Layers

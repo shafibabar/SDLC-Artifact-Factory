@@ -39,12 +39,12 @@ traces-to: [design/context-map.md, design/architecture/container-diagram.md, ide
 
 | From | To | Shape | Consistency | Protocol | Contract strictness | Contract test | Resilience |
 |---|---|---|---|---|---|---|---|
-| Subscriptions | Adyen (charge) | request/response | atomic per charge via idempotency key; eventual for the subscription state | HTTPS/JSON | loose (tolerant reader) | recorded-response test of the fields read; Adyen API version pinned | timeout, retry (idempotency key = billing period id), breaker, bulkhead, fallback |
-| Delivery | RouteRunner (book courier) | request/response | eventual | HTTPS/JSON | loose (tolerant reader) | Consumer-Driven Contract agreed with RouteRunner | timeout, retry (booking reference as idempotency key), breaker, bulkhead, fallback |
-| Kitchen | `box-packed` topic | event | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
-| Delivery | `box-packed` topic | event | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | idempotent consumer, retry, DLQ |
-| Subscriptions | `subscription-skipped` topic | event | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
-| Kitchen | `subscription-skipped` topic | event | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | idempotent consumer, retry, DLQ |
+| Subscriptions | Adyen (charge) | request/response (sync) | atomic per charge via idempotency key; eventual for the subscription state | HTTPS/JSON | loose (tolerant reader) | recorded-response test of the fields read; Adyen API version pinned | timeout, retry (idempotency key = billing period id), breaker, bulkhead, fallback |
+| Delivery | RouteRunner (book courier) | request/response (sync) | eventual | HTTPS/JSON | loose (tolerant reader) | Consumer-Driven Contract agreed with RouteRunner | timeout, retry (booking reference as idempotency key), breaker, bulkhead, fallback |
+| Kitchen | `box-packed` topic | event (async) | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
+| Delivery | `box-packed` topic | event (async) | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | idempotent consumer, retry, DLQ |
+| Subscriptions | `subscription-skipped` topic | event (async) | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
+| Kitchen | `subscription-skipped` topic | event (async) | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | idempotent consumer, retry, DLQ |
 
 ## Synchronous Integrations
 

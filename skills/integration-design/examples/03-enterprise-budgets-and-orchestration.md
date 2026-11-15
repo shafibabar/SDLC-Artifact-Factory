@@ -8,7 +8,7 @@ Self-contained. **Kinsend** sends money across borders: a sender pays in, Kinsen
 
 ## Working it
 
-- **Payout flow** (screen, quote lock, debit, partner payout, notify) has five ordered steps with compensations (release the quote, refund the debit). Orchestration with a coordinator in `transfers`; the design of the coordinator goes to `workflow-orchestration` (D047-3). Declined: choreography with "everything rolls back" (async, choreographed and atomic: Ford's Horror Story).
+- **Payout flow** (screen, quote lock, debit, partner payout, notify) has five ordered steps, some of which must be undone when a later one fails. Orchestration with a coordinator in `transfers`; the design of the coordinator goes to `workflow-orchestration` (D047-3). Declined: choreography with "everything rolls back" (async, choreographed and atomic: Ford's Horror Story).
 - **Full customer record, every field required, on partner callbacks:** declined. That is **stamp coupling** (Ford): every partner would be tied to fields Kinsend never reads, and a change to any of them breaks every corridor. The callback contract carries only what Payouts uses (payout id, partner reference, status, status time, failure reason), is read by a tolerant reader that ignores the rest, and is loose; a Consumer-Driven Contract per partner pins those fields.
 - **Partner call inside the consumer:** declined. The consumer records the payout instruction idempotently (deduplicating on the event id) and commits; the partner call is its own step with a timeout, an idempotency key and a failed state, so consumer lag never grows behind a slow bank.
 - **Quote chain** (gateway → transfers → pricing → FX provider) gets a timeout budget.
@@ -38,14 +38,14 @@ traces-to: [design/context-map.md, design/architecture/container-diagram.md, ide
 
 | From | To | Shape | Consistency | Protocol | Contract strictness | Contract test | Resilience |
 |---|---|---|---|---|---|---|---|
-| Transfers | Pricing (lock quote) | request/response | eventual (quote expires) | gRPC | strict (Protobuf) | Consumer-Driven Contract plus breaking-change check on the proto | timeout (budget), retry (idempotent: quote request id), breaker, bulkhead, fallback |
-| Pricing | FX Rate Provider | request/response | eventual | HTTPS/JSON | loose (tolerant reader) | recorded-response test, API version pinned | timeout (budget), retry (read), breaker, bulkhead, fallback |
-| Compliance | Sanctions List Provider | request/response | eventual | HTTPS/JSON | loose (tolerant reader) | recorded-response test | timeout, retry (read), breaker, bulkhead, fallback |
-| Transfers | `payout-requested` topic | event | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
-| Payouts | `payout-requested` topic | event | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | idempotent consumer, retry, DLQ |
-| Payout Partner | Payouts (status callback) | event (inbound callback, at-least-once) | eventual | HTTPS/JSON, signed | loose (tolerant reader: payout id, partner reference, status, status time, failure reason) | Consumer-Driven Contract per partner | timeout (2 s ack), idempotent by partner event id, forward-only states; risk-accepted: no breaker, we are the receiver |
-| Payouts | Payout Partner (per corridor) | request/response | eventual (partner confirms later) | HTTPS/JSON | loose (tolerant reader) | Consumer-Driven Contract per partner | timeout, retry (idempotency key = payout id), breaker and bulkhead per partner, fallback |
-| Payouts | `payout-completed` / `payout-failed` topics | event | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
+| Transfers | Pricing (lock quote) | request/response (sync) | eventual (quote expires) | gRPC | strict (Protobuf) | Consumer-Driven Contract plus breaking-change check on the proto | timeout (budget), retry (idempotent: quote request id), breaker, bulkhead, fallback |
+| Pricing | FX Rate Provider | request/response (sync) | eventual | HTTPS/JSON | loose (tolerant reader) | recorded-response test, API version pinned | timeout (budget), retry (read), breaker, bulkhead, fallback |
+| Compliance | Sanctions List Provider | request/response (sync) | eventual | HTTPS/JSON | loose (tolerant reader) | recorded-response test | timeout, retry (read), breaker, bulkhead, fallback |
+| Transfers | `payout-requested` topic | event (async) | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
+| Payouts | `payout-requested` topic | event (async) | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | idempotent consumer, retry, DLQ |
+| Payout Partner | Payouts (status callback) | event (async, inbound callback, at-least-once) | eventual | HTTPS/JSON, signed | loose (tolerant reader: payout id, partner reference, status, status time, failure reason) | Consumer-Driven Contract per partner | timeout (2 s ack), idempotent by partner event id, forward-only states; risk-accepted: no breaker, we are the receiver |
+| Payouts | Payout Partner (per corridor) | request/response (sync) | eventual (partner confirms later) | HTTPS/JSON | loose (tolerant reader) | Consumer-Driven Contract per partner | timeout, retry (idempotency key = payout id), breaker and bulkhead per partner, fallback |
+| Payouts | `payout-completed` / `payout-failed` topics | event (async) | eventual | Kafka protocol | strict (registered schema) | event schema compatibility check | Transactional Outbox |
 
 ## Synchronous Integrations
 
@@ -96,7 +96,7 @@ The Payouts consumer only records the instruction (deduplicating on the event id
 
 ## Coordination
 
-- **Payout flow (screen, lock quote, debit, partner payout, notify):** communication: async · consistency: eventual · coordination: orchestrated by the transfer coordinator (parallel saga); compensations: release the quote, refund the debit. Not atomic: the requested "everything rolls back" choreography would be the horror story. Design: `orchestration-design.md` (`workflow-orchestration`).
+- **Payout flow (screen, lock quote, debit, partner payout, notify):** communication: async · consistency: eventual · coordination: orchestrated by the transfer coordinator (parallel saga). Not atomic: the requested "everything rolls back" choreography would be the horror story. The steps, their compensations and the coordinator are designed in `orchestration-design.md` (`workflow-orchestration`); this artifact records the integrations each step uses.
 
 ## Anti-Corruption Layers
 
