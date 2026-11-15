@@ -17,7 +17,7 @@ description: >
   event-driven-patterns, orchestration to workflow-orchestration. Use when
   designing, reviewing or changing an integration, an integration inventory,
   retries, timeouts or circuit breakers. Used by enterprise-architect.
-version: 3.0.2
+version: 3.0.3
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -105,7 +105,7 @@ This skill records **which mechanism** each async integration uses; the design l
 4. **Size the resilience** (§ 3) and write the risk-accepted reason for anything below the profile's default. Write timeout budgets for chains.
 5. **Foreign models and data reads** (§ 4); async rows point to `event-driven-patterns` (§ 5).
 6. **Validate, then loop.** Run `./scripts/validate-integration-design.sh design/architecture/integration-design.md`, fix every FAIL, re-run until clean; then `./resources/checklist.md`.
-7. **Present** with the reason for every request declined (§ Gotchas). Consequential choices (a sync dependency on a critical partner, a Change Data Capture integration) get an ADR. Answering in a reply: the declined requests and their reasons once, then the artifact once.
+7. **Present** with the reason for every request declined (§ Gotchas). Consequential choices (a sync dependency on a critical partner, a Change Data Capture integration) get an ADR. Each declined request **names the concept, then explains it in plain words** ("that is stamp coupling: every partner is tied to fields we never read"; "a tolerant reader that ignores extra fields"; "a strict / loose contract"), so the reader can look the term up and the reasoning is checkable. Answering in a reply: the declined requests and their reasons once, then the artifact once.
 
 Examples: `./examples/01-lean-external-calls.md` (a dog-walking booking app: two external calls, timeouts and an idempotency key, one call risk-accepted), `./examples/02-standard-payment-and-events.md` (a meal-kit subscription service: a payment call with the full stack and an idempotency key, events with outbox and dead-letter queue, an anti-corruption layer for the courier API), `./examples/03-enterprise-budgets-and-orchestration.md` (a cross-border remittance platform: a timeout budget across a three-hop chain, per-region partners, an orchestrated payout pointing to workflow-orchestration).
 
