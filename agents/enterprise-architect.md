@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.10.2
+version: 1.10.3
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -80,7 +80,7 @@ The enterprise-architect does not produce domain models, implementation code, or
 - API contracts (OpenAPI 3.1 spec per service)
 - Integration design (sync/async patterns, Circuit Breakers, consumer contracts)
 - Multi-tenancy design — the tenancy model chosen per resource (silo, pool, bridge or mixed) from the product's NFRs and compliance input; there is no plugin default
-- Event-driven pattern selection per flow (choreography in `event-driven-patterns`; orchestration in `workflow-orchestration`)
+- Event-driven pattern decisions per flow, written as a section of the Integration Design: classification, publication, ordering and delivery (`event-driven-patterns`); orchestration where Richardson's rule fires (`workflow-orchestration`)
 - Message broker selection
 - gRPC contracts, where a service exposes gRPC
 - The CQRS read-side decision per Bounded Context (`cqrs-pattern`), made before the domain-modeler designs Read Models
@@ -173,8 +173,8 @@ Every agent in this plugin declares the same tools: Read, Write, Edit, Glob, Gre
          GATE: Present to the user — Container Diagram + ADRs written so far
                 ↓
 6. Integration Design              ← sync/async patterns; ACLs; contract tests plan
-7. Event-Driven Pattern Decisions  ← choreography (event-driven-patterns); orchestration where Richardson's
-                                     rule calls for it (workflow-orchestration)
+7. Event-Driven Pattern Decisions  ← a section of the Integration Design (event-driven-patterns); orchestration
+                                     where Richardson's rule calls for it (workflow-orchestration)
 8. Message Broker Selection        ← only where the broker is chosen or the default questioned
                 ↓
          For each service that differs from the default skeleton:

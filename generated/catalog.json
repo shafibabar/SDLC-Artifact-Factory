@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.2"
+        "version": "1.10.3"
       },
       {
         "created": "2026-06-25",
@@ -4877,14 +4877,14 @@
         "dir": "skills/event-driven-patterns",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "event-driven-patterns",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -4896,10 +4896,25 @@
           "context-map-patterns",
           "cqrs-pattern",
           "data-pipeline-design",
+          "domain-event-catalog",
           "event-schema-design",
-          "integration-design"
+          "glossary-management",
+          "go-event-consumer",
+          "go-event-publisher",
+          "integration-design",
+          "message-broker-selection",
+          "methodology-review",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/microservices-patterns-richardson.md",
+          "research/software-architecture/rabbitmq-in-depth-roy.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
@@ -4908,12 +4923,12 @@
           "dead-letter-queue",
           "design",
           "event-driven",
+          "eventual-consistency",
           "idempotency",
-          "orchestration",
-          "saga",
+          "partitioning",
           "transactional-outbox"
         ],
-        "version": "2.0.1"
+        "version": "3.0.3"
       },
       {
         "created": "2026-06-25",
@@ -10952,8 +10967,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1111,
-    "edges_skill_sources": 243,
+    "edges_skill_related": 1118,
+    "edges_skill_sources": 250,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10965,20 +10980,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 70,
+    "research_files_cited": 71,
     "skills_with_assets": 9,
-    "skills_with_contract_test": 144,
+    "skills_with_contract_test": 143,
     "skills_with_domain": 189,
-    "skills_with_evals": 45,
-    "skills_with_examples": 45,
+    "skills_with_evals": 46,
+    "skills_with_examples": 46,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 44,
-    "skills_with_scripts": 41,
-    "skills_with_sources": 46,
+    "skills_with_resources": 45,
+    "skills_with_scripts": 42,
+    "skills_with_sources": 47,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 43
+    "skills_with_templates": 44
   },
   "edges": {
     "agent_produces": [
@@ -14073,11 +14088,39 @@
         "skill": "event-driven-patterns"
       },
       {
+        "related": "domain-event-catalog",
+        "skill": "event-driven-patterns"
+      },
+      {
         "related": "event-schema-design",
         "skill": "event-driven-patterns"
       },
       {
+        "related": "glossary-management",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "go-event-publisher",
+        "skill": "event-driven-patterns"
+      },
+      {
         "related": "integration-design",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "message-broker-selection",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "workflow-orchestration",
         "skill": "event-driven-patterns"
       },
       {
@@ -17613,6 +17656,34 @@
       {
         "skill": "epic-definition",
         "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/rabbitmq-in-depth-roy.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
       },
       {
         "skill": "event-schema-design",
