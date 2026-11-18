@@ -1,241 +1,102 @@
-# Resilience Patterns for Synchronous Dependencies
+# Resilience Patterns for Synchronous Calls
 
-Reference for `integration-design`. Self-contained: the five patterns that make a
-synchronous remote call safe, with concrete numbers, the state machine, and the
-Go implementation on this platform (Go + `chi` + `pgx`, OpenTelemetry-
-instrumented). A synchronous call to another service is a shared-fate link until
-every one of these is in place.
+Reference for `integration-design`. Self-contained: the patterns that make a remote synchronous call safe, how much of them each call needs, the numbers to choose, the order they nest in, and what to observe. Rules and numbers only; the code lives in backend-engineer's skills for the configured stack.
 
----
+## 1. Sizing: How Much Resilience a Call Needs
 
-## 1. Timeout — every remote call has a deadline
+Fairbanks' risk-driven model (`research/software-architecture/just-enough-software-architecture-fairbanks.md`): spend design effort where the cost of being wrong is high and uncertain, and record consciously what was left light.
 
-No remote call may block indefinitely. A call with no timeout inherits the
-downstream's worst case: if the downstream hangs, your goroutine hangs, your
-connection pool fills, and the hang walks up the chain. Every outbound call sets
-an explicit, per-call deadline via `context.Context`.
+| Call | Needs | Why |
+|---|---|---|
+| In-process: modules of one deployable (a lean monolith) | None of this | No network, no partial failure; a module call fails like any function call |
+| External system, any profile | Timeout; retry only if idempotent or keyed; a defined failure response | A partner you don't run will be slow or down; without a timeout your caller hangs |
+| Cross-service or external, standard and enterprise | Timeout, retry with backoff and jitter, circuit breaker and bulkhead per downstream, observable fallback | Independent deploys and more traffic make cascading failure likely |
+| Hot path, long chain, or a high-fan-in dependency | All of the above plus a timeout budget along the chain | A failure here becomes everyone's failure |
 
-### Timeout budgeting (nesting)
+Anything below its row's default is written in the inventory as **risk-accepted**, with the reason (low traffic, a manual fallback exists, the partner has a strong SLA). Silence is not a decision.
 
-Timeouts nest. A caller's budget **must exceed** its downstream's *full retry
-envelope* — every attempt plus every backoff delay — or the caller gives up while
-the downstream is still working, then retries on top of it, doubling the load.
+Bass's availability tactics (`software-architecture-in-practice-bass.md`) are the vocabulary: *detect* faults (timeouts, health checks), *recover* (retry, graceful degradation), *prevent* (removal from service: the open breaker).
 
-Worked budget for a Gateway → Classification → Source Catalog chain:
+## 2. Timeout: Every Remote Call Has a Deadline
 
-```
-Source Catalog single-attempt timeout:      500ms
-Classification retry envelope to Catalog:    500 + (100 backoff) + 500
-                                           + (200 backoff) + 500  = 1800ms
-Classification's own single-attempt budget: 1800ms  (must exceed the envelope)
-Gateway timeout to Classification:          ≥ 2000ms (envelope + margin)
-User-facing request budget:                 ≥ 2500ms
-```
+A call without a timeout inherits the downstream's worst case: it hangs, its pool fills, and the hang walks up the chain.
 
-Propagate the *remaining* deadline downward: pass `ctx` (carrying the deadline)
-into every client call so a downstream never works longer than the caller will
-wait. In Go, `context.WithTimeout(parent, d)` and the `pgx`/HTTP clients that
-honor `ctx` give this for free.
-
----
-
-## 2. Retry with Backoff and jitter
-
-Transient failures — `503`, `504`, connection reset, a dropped TCP segment — are
-worth retrying. Permanent failures (`400`, `404`, `422`) are not: retrying them
-just wastes the budget.
-
-```go
-type RetryConfig struct {
-    MaxAttempts  int           // cap — never unbounded
-    InitialDelay time.Duration
-    MaxDelay     time.Duration
-    Multiplier   float64
-    JitterFactor float64       // fraction of delay randomized
-}
-
-var DefaultRetry = RetryConfig{
-    MaxAttempts:  3,
-    InitialDelay: 100 * time.Millisecond,
-    MaxDelay:     5 * time.Second,
-    Multiplier:   2.0,
-    JitterFactor: 0.2, // ±20%
-}
-```
-
-**Jitter is mandatory.** Without it, every caller that failed at the same instant
-retries at the same instant — a synchronized retry storm (thundering herd) that
-finishes off the recovering downstream. Full jitter: `delay = random(0,
-min(MaxDelay, InitialDelay * Multiplier^attempt))`.
-
-**Idempotency is a precondition of retry.** A timeout is an *unknown* outcome —
-the request may have succeeded. Retrying a non-idempotent write (create a
-compliance report, charge an account) duplicates the side effect. Rule: retry
-`GET`s freely; retry a mutating call only if it carries an `Idempotency-Key` the
-provider deduplicates on. Otherwise, do not auto-retry — surface the uncertainty.
-
----
-
-## 3. Circuit Breaker — the three-state machine
-
-A breaker stops a caller from hammering a downstream that is already down, and
-lets threads fail fast instead of piling up on timeouts.
+**Budgets nest.** A caller's deadline must exceed its downstream's whole retry envelope (every attempt plus every backoff), or the caller gives up while the downstream is still working and retries on top of it.
 
 ```
-        failures ≥ threshold
- ┌────────┐ ───────────────────▶ ┌────────┐
- │ CLOSED │                      │  OPEN  │
- │ (pass  │ ◀─────────────────── │ (fail  │
- │ through)│    probe succeeds    │  fast) │
- └────────┘                      └────────┘
-      ▲                              │
-      │ probe succeeds     reset timeout elapsed
-      │                              ▼
-      │        ┌───────────────────────────┐
-      └────────│        HALF-OPEN          │
-   probe fails │ (allow ONE trial request) │──┐
-   → back OPEN └───────────────────────────┘  │ probe fails
-                            └──────────────────┘ → OPEN
+Partner API, one attempt:                   400 ms
+Pricing → Partner retry envelope:           400 + 100 + 400 + 200 + 400 = 1500 ms
+Pricing's own budget:                       1600 ms   (exceeds the envelope)
+Gateway → Pricing:                          1800 ms
+User-facing request:                        2000 ms
 ```
 
-- **Closed** — normal. Requests pass through; the breaker counts failures in a
-  rolling window.
-- **Open** — the failure threshold was crossed. Every request fails *immediately*
-  (returns the fallback) without touching the downstream — no waiting for a
-  timeout. Stays open for the **reset timeout**.
-- **Half-Open** — after the reset timeout, the breaker lets **one** trial request
-  ("probe") through. If it succeeds, the breaker closes (recovered). If it fails,
-  the breaker re-opens and waits another reset timeout. This single-probe design
-  prevents a flood of traffic from slamming a downstream the instant its window
-  expires.
+Pass the **remaining** deadline down with each call, so no downstream works longer than its caller will wait.
 
-### Concrete configuration (per downstream)
+## 3. Retry with Backoff and Jitter
 
-| Downstream | Failure threshold | Rolling window | Reset timeout |
+- Retry **transient** failures (`503`, `504`, connection reset). Never permanent ones (`400`, `404`, `422`).
+- **Capped attempts** (typically 3), exponential backoff (e.g. 100 ms, ×2, max 5 s).
+- **Jitter is mandatory:** without it, every caller that failed together retries together and knocks over the recovering downstream. Full jitter: a random delay between 0 and the backoff.
+- **Idempotency is a precondition.** A timeout is an *unknown outcome*: the request may have succeeded. Retry reads freely; retry a write only if it carries an **idempotency key** the provider deduplicates on. Otherwise don't auto-retry: record it as pending and reconcile (query the provider, or a scheduled check).
+
+## 4. Circuit Breaker
+
+Stops a caller hammering a downstream that is already down, and fails fast instead of waiting on timeouts.
+- **Closed:** calls pass; failures are counted in a rolling window.
+- **Open:** the threshold was crossed; calls fail immediately (to the fallback) for the reset timeout.
+- **Half-open:** after the reset timeout, **one** probe is let through. Success closes the breaker; failure reopens it.
+
+| Downstream kind | Trips at | Window | Reset |
 |---|---|---|---|
-| Classification Service (internal, hot path) | 5 consecutive failures | 10s | 5s |
-| Source Catalog (external, tolerant) | 50% of ≥20 requests | 30s | 30s |
-| Google Drive API (external, rate-limited) | 50% of ≥10 requests | 60s | 60s |
+| Internal, hot path | 5 consecutive failures | 10 s | 5 s |
+| External, tolerant | 50% of at least 20 calls | 30 s | 30 s |
+| External, rate-limited | 50% of at least 10 calls | 60 s | 60 s |
 
-Configure **one breaker per downstream** — never a global breaker. A global
-breaker opens for healthy dependencies the moment one unrelated dependency fails.
+**One breaker per downstream**, never one for all: a global breaker opens for healthy partners when one fails. Export its state as a metric; an open breaker is an operational signal.
 
-### Go implementation (`sony/gobreaker`)
+## 5. Bulkhead
 
-```go
-var catalogBreaker = gobreaker.NewCircuitBreaker(gobreaker.Settings{
-    Name:        "source-catalog",
-    MaxRequests: 1,                // half-open: single probe
-    Interval:    30 * time.Second, // rolling window reset
-    Timeout:     30 * time.Second, // open → half-open reset timeout
-    ReadyToTrip: func(c gobreaker.Counts) bool {
-        return c.Requests >= 20 &&
-            float64(c.TotalFailures)/float64(c.Requests) >= 0.5
-    },
-    OnStateChange: func(name string, from, to gobreaker.State) {
-        breakerStateGauge.WithLabelValues(name).Set(stateCode(to)) // Prometheus
-    },
-})
+Each downstream gets its own connection pool or concurrency limit, so a slow one exhausts only its own share. When full, fail fast; don't queue without bound. At the transport layer: a separate client (and connection limit) per downstream, not one shared client.
 
-func (c *CatalogClient) Fetch(ctx context.Context, id string) (Asset, error) {
-    v, err := catalogBreaker.Execute(func() (any, error) {
-        return c.doFetch(ctx, id) // has its own timeout + retry inside
-    })
-    if err != nil {
-        return c.fallback(id) // breaker open OR call failed → degrade
-    }
-    return v.(Asset), nil
-}
-```
+## 6. Fallback
 
-Emit the breaker's state as a Prometheus gauge and trace open→half-open→closed
-transitions in Tempo — an open breaker is an operational signal that a downstream
-is unhealthy, and belongs on the Grafana dashboard.
+When the breaker is open, the bulkhead full or the call fails, return a **defined, degraded** response, in rough order of preference:
+- the last known good value, marked stale;
+- a sensible default (an empty list, "pending");
+- queue the work and return `202` (turn the failed sync call into async);
+- an explicit partial result naming what failed.
 
----
+A fallback that silently returns wrong data is worse than an error. Every fallback is **observable**: a flag on the response, a metric, a log.
 
-## 4. Bulkhead — isolate resource pools
-
-Named for a ship's watertight compartments: one flooded compartment does not sink
-the ship. Each downstream gets its **own connection pool / concurrency limit**, so
-a slow dependency can exhaust only its own budget, not the resources every other
-call needs. Without bulkheads, one slow downstream saturates a shared pool and
-every unrelated call starves behind it.
-
-```go
-// Per-downstream semaphore caps concurrent in-flight calls.
-type Bulkhead struct{ sem chan struct{} }
-
-func NewBulkhead(max int) *Bulkhead { return &Bulkhead{sem: make(chan struct{}, max)} }
-
-func (b *Bulkhead) Do(ctx context.Context, fn func() error) error {
-    select {
-    case b.sem <- struct{}{}:
-        defer func() { <-b.sem }()
-        return fn()
-    case <-ctx.Done():
-        return ctx.Err() // pool full → fail fast, don't queue unboundedly
-    }
-}
-```
-
-Also applies at the HTTP transport layer: a distinct `http.Client` with its own
-`MaxConnsPerHost` per downstream, not one shared client for all of them.
-
----
-
-## 5. Fallback and graceful degradation
-
-When the breaker is open, the bulkhead is full, or the call ultimately fails, the
-caller returns a **defined degraded response** rather than propagating the
-failure. Options, in rough order of preference:
-
-- **Cached / last-known-good value** — serve a stale Source Catalog entry with a
-  freshness marker rather than failing the whole request.
-- **Sensible default** — an empty result set, a "classification pending" status.
-- **Queue for later** — accept the request, enqueue the work, return `202`
-  (converts a failed sync call into an async one).
-- **Explicit partial failure** — return the parts that succeeded plus a typed
-  error for the part that did not, so the caller can decide.
-
-A fallback that silently returns wrong data is worse than a failure. Every
-fallback must be observably *degraded* (a flag, a metric, a log) so operators know
-the system is running on a fallback path.
-
----
-
-## How the patterns compose (fixed nesting order)
-
-The five patterns wrap in a specific order — outermost first:
+## 7. Nesting Order
 
 ```
-Bulkhead {              // admission control: is there capacity at all?
-  CircuitBreaker {      // is this downstream even worth calling right now?
-    Retry {             // transient failure? try again with backoff+jitter
-      Timeout {         // this single attempt gets a hard deadline
-        remoteCall()
+Bulkhead {             admission: is there capacity at all?
+  Circuit breaker {    is this downstream worth calling now?
+    Retry {            transient failure: try again with backoff and jitter
+      Timeout {        this one attempt has a deadline
+        remote call
       }
     }
   }
-} else Fallback         // any layer refuses/fails → degraded response
+} otherwise Fallback   any layer refuses or fails: degraded response
 ```
 
-Order matters. The **timeout is innermost** so it bounds each individual attempt;
-**retry sits outside timeout** so each retry gets a fresh deadline; the **breaker
-sits outside retry** so a downstream that fails every retry counts as one failure
-toward tripping; the **bulkhead is outermost** so the whole retry+breaker sequence
-consumes exactly one concurrency slot. Fallback catches whatever the stack throws.
+Timeout innermost so each attempt is bounded; retry outside it so each attempt gets a fresh deadline; breaker outside retry so a call that fails every retry counts once; bulkhead outermost so the whole sequence uses one slot.
 
----
+## 8. Rate Limiting at the Edge
 
-## Checklist per synchronous integration
+Overload protection names its algorithm and why (Xu, `system-design-interview-xu.md`): token bucket (bursts allowed up to a capacity), leaky bucket (smooth output), fixed or sliding window counters, sliding window log. Enforce at the gateway for cross-cutting limits and in the service for endpoint-specific ones; a distributed limiter names its shared store and how check-and-increment is atomic. A rejected caller gets HTTP `429` with the `X-RateLimit-*` headers (and `Retry-After`), so it can back off instead of retrying blind. Gateway configuration: `api-gateway-design`.
 
-- [ ] Explicit per-call timeout, deadline propagated via `context.Context`.
-- [ ] Caller's budget ≥ downstream's full retry envelope.
-- [ ] Retry only idempotent calls (or `Idempotency-Key`-bearing), with jitter and
-      a capped attempt count.
-- [ ] One Circuit Breaker per downstream, thresholds + reset timeout chosen for
-      that downstream's tolerance.
-- [ ] One connection pool / concurrency limit (Bulkhead) per downstream.
-- [ ] A defined, observable Fallback for the open/failed path.
-- [ ] Breaker state exported to Prometheus; transitions traced in Tempo.
+## 9. What to Observe
+
+Per downstream: breaker state, retry count, timeout count, fallback count, latency percentiles; per async consumer: lag and Dead Letter Queue depth (`opentelemetry-instrumentation`). Trace context crosses both sync calls and event headers, so one request is one trace.
+
+## 10. Checklist per Synchronous Integration
+
+- [ ] Timeout set; remaining deadline passed down; budgets exceed retry envelopes.
+- [ ] Retries only on transient errors, capped, with jitter; writes only with an idempotency key.
+- [ ] One breaker and one pool per downstream, thresholds chosen for that downstream.
+- [ ] A defined, observable fallback.
+- [ ] Anything lighter than the profile's default recorded as risk-accepted, with its reason.
