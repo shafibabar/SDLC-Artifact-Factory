@@ -4878,7 +4878,7 @@
         "domain": "architecture",
         "has_assets": false,
         "has_contract_test": true,
-        "has_evals": false,
+        "has_evals": true,
         "has_examples": true,
         "has_references": true,
         "has_resources": true,
@@ -4928,7 +4928,7 @@
           "partitioning",
           "transactional-outbox"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-06-25",
@@ -10984,7 +10984,7 @@
     "skills_with_assets": 9,
     "skills_with_contract_test": 144,
     "skills_with_domain": 189,
-    "skills_with_evals": 45,
+    "skills_with_evals": 46,
     "skills_with_examples": 46,
     "skills_with_produces": 189,
     "skills_with_references": 184,
