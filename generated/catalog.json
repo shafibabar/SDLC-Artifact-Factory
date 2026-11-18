@@ -4928,7 +4928,7 @@
           "partitioning",
           "transactional-outbox"
         ],
-        "version": "3.0.1"
+        "version": "3.0.2"
       },
       {
         "created": "2026-06-25",
