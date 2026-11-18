@@ -12,7 +12,7 @@ Self-contained. **BrewLog** is a web app for home brewers: log a batch, record g
 - **Classification:** async inside the process, eventual (a reminder is scheduled moments after the reading), choreographed: Reminders reacts, nobody holds the flow, two modules, no compensation.
 - **Publication:** the reading and the "reminder due" row must not diverge if the process crashes, so the reminder instruction is written in the same transaction as the reading (an outbox row inside the one database). That is the Transactional Outbox applied locally; no broker is involved.
 - **The email** is an external call made because of an event: recorded idempotently (dedupe on the event id), committed, then sent by a separate step with a timeout and an idempotency key (`integration-design` § 5). A failed send ends in a visible failed state that can be re-driven, so a separate dead-letter topic is not needed.
-- **Topics, partition keys and delivery tables:** none; there is no broker. When a second deployable appears, this section grows.
+- **Topics, partition keys and delivery tables:** none; there is no broker. When a second deployable appears, this section grows. If the user then asks to scale a consumer with Competing Consumers on a topic and keep order: that is the queue model and loses order; a log scales with a consumer group keyed on what must stay in order (the batch id, never a tenant id, which BrewLog does not have), and the answer states both limits beside the key: group members beyond the partition count get no work, and one very busy batch stays on one partition, capping its throughput.
 
 ## Output: the section in `artifacts/brewlog/design/architecture/integration-design.md`
 
