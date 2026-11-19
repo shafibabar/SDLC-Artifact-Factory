@@ -1,155 +1,85 @@
 ---
 name: workflow-orchestration
 description: >
-  Teaches the enterprise-architect to design orchestration-based distributed
-  workflows — the orchestration-vs-choreography decision (extends
-  event-driven-patterns), the process-manager / persisted-state-machine model,
-  the compensatable/pivot/retriable step classes, semantic locks and Saga
-  isolation countermeasures, and the API-Composition-vs-CQRS query boundary.
-  Positions a central orchestrator (e.g. Conductor, or a hand-rolled Go
-  coordinator) as the deliberate exception to the repo choreography default for
-  complex, long-running, visibility-critical flows. Used during Design when
-  defining how a multi-step business process spanning Bounded Contexts is
-  coordinated and how its cross-service queries are answered.
-version: 1.0.1
+  Design an orchestrated flow across services, once Richardson's rule says a
+  flow should be orchestrated: confirm which trigger fired (branching, a long
+  wait, one view of progress, or compensation across 4 or more services) or
+  hand the flow back to choreography or a single local transaction; classify
+  every step as compensatable, pivot or retriable and place exactly one pivot
+  (two points of no return are two sagas); write each compensation as
+  idempotent, always eventually applicable and built from data captured on the
+  way forward; design the orchestrator as a persisted state machine that sends
+  commands and does no business work; set timeouts and a path for stuck flows;
+  name a semantic lock or another countermeasure for the missing isolation;
+  choose a hand-rolled coordinator before a workflow engine. Use when
+  designing, reviewing or changing an orchestrated Saga, its compensations or
+  its coordinator. Cross-service queries are cqrs-pattern's. Used by
+  enterprise-architect.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-07-31
-tags: ["design","architecture","orchestration","saga","process-manager","choreography","workflow"]
+tags: [design, architecture, orchestration, saga, process-manager, compensation, workflow]
 produces: workflow-orchestration-design
 domain: architecture
 status: stable
-related: ["event-driven-patterns","integration-design","conductor-workflow-authoring","cqrs-pattern"]
+related: [event-driven-patterns, integration-design, conductor-workflow-authoring, cqrs-pattern, container-diagram, multi-tenancy-design, command-catalog, domain-event-catalog, nfr-specification, glossary-management, methodology-review]
+sources:
+  - research/software-architecture/microservices-patterns-richardson.md
+  - research/software-architecture/software-architecture-hard-parts-ford.md
+  - research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md
+  - research/software-architecture/fundamentals-of-software-architecture-richards-ford.md
 ---
 
 # Workflow Orchestration
 
 ## Purpose
 
-`event-driven-patterns` makes **choreography the platform default** and names orchestration as one row in its selection table. This skill owns the *orchestration half* as a design object: the orchestrator as a **persisted state machine**, the **compensatable/pivot/retriable** step classes as an authoring discipline, the **semantic-lock** and other countermeasures for the Saga's missing isolation, and the **API-Composition-vs-CQRS** decision for cross-service queries. It is knowledge, not reasoning: it holds the criteria and models. Applying them to a specific flow — where *this* pivot sits, which query graduates to a Read Model — is the enterprise-architect's job.
+Some flows cannot stay choreographed: they branch, wait for a person, or need undoing across several services in a set order. Without a design, the undo is improvised, a crash strands the flow, and nobody can say where one stands. This skill turns an orchestrated flow into a reviewable design: where the point of no return sits, what undoes each step, what the coordinator holds, and what happens when a step never answers. **Readers:** enterprise-architect, backend-engineer, the product owner (what a failed or stuck flow does to a customer). **Question:** for this flow, what is done, what is undone, and what happens when a step fails or never answers?
 
-This skill is the **selector and design depth**; `conductor-workflow-authoring` is the concrete authoring target once orchestration is chosen.
+The output is a document, `artifacts/<product>/design/architecture/workflow-orchestration.md` (`./templates/workflow-orchestration-design.md`), with frontmatter. `event-driven-patterns` decides per flow whether it is orchestrated and hands it here; the code is the `go-*` skills, and the engine authoring (if an engine is chosen) is `conductor-workflow-authoring`. Cross-service queries are `cqrs-pattern`'s ladder, not decided here.
 
----
-
-## When Orchestration Beats Choreography
-
-Orchestration is the **deliberate exception** to the choreography+Saga default — it adds a central component every participant depends on, which is a real cost against this repo's frugality constraint. Reach for it only when one or more triggers fire:
-
-| Trigger | Why choreography fails here |
+| Profile | What this document holds |
 |---|---|
-| **Complexity** — 4+ steps, branching, loops, parallel fan-out/join | Flow logic smears across N services; the implicit event ordering becomes untraceable |
-| **Visibility** — "where is this process right now?" must be one query | Choreography answers it only by reading N services' logs |
-| **Long-running** — waits for human approval, an external signal, or hours/days | No participant owns the flow's suspended state; it is lost between reactions |
-| **Compensation breadth** — undo must span 4+ services in a defined reverse order | Reverse-order compensation across autonomous reactors has no coordinator to sequence it |
+| Lean | Normally not produced (the requirement is "skip"): steps inside one deployable share a transaction, and a short flow stays choreographed. If a flow really needs it, one saga, short |
+| Standard | Optional: one section per orchestrated saga, with steps, state machine, timeouts and isolation |
+| Enterprise | As standard, plus a named owner per coordinator, the progress view, and how in-flight flows survive a change to the definition |
 
-**Default holds** for simple flows: 2–3 services, independent reactions, no branching, no central-view requirement — keep those choreographed. Do not orchestrate by habit.
+## Procedure
 
-**Frugality order** once orchestration is chosen: prefer a **hand-rolled persisted-state-machine coordinator** (Go + `pgx` + Transactional Outbox, deployed per-tenant like everything else) for a single complex flow; justify pulling in **Netflix Conductor** as an open-source engine only when the number and complexity of orchestrated flows outgrows hand-rolled coordinators and central visibility across many workflows becomes the point.
+1. **Read** the Integration Design and its Event-Driven Pattern Decisions (the orchestrated rows), the command and event catalogs (the commands each step sends), the container diagram, the NFR specification (how long a flow may run, what loss is tolerable) and the multi-tenancy design (the boundary the coordinator runs inside).
+2. **Confirm the trigger** (`./references/saga-design.md`): a flow is orchestrated only when it branches or loops, runs long, needs one answer to "where is this one now?", or must compensate across 4 or more services in order. Name the one that fired. None fired: hand the flow back, choreographed (2 or 3 independent steps) or one local transaction (all steps in one deployable and one database). Say so plainly.
+3. **List the steps** in order: the command, the context that owns it. Then **classify** each as compensatable, pivot or retriable and place the **one pivot**: the last step where abandoning the whole flow is still acceptable. Two points of no return means two sagas.
+4. **Write each compensation**: semantic, never a rollback; idempotent; always eventually applicable (retried, escalated if it cannot be); built from data **captured on the way forward**; run in reverse order. A compensatable step with no written compensation is an unfinished design.
+5. **Plan forward recovery after the pivot**: retriable steps are retried with backoff, never compensated; one that can fail for good goes to a manual-repair path while the flow stays visible.
+6. **Design the orchestrator** (`./references/orchestrator-model.md`): states, transitions on replies, the command sent on entry to each state; the state change and the command committed in **one transaction** through the Transactional Outbox; every participant an Idempotent Consumer; **no business work** in the coordinator. Participants apply the rules.
+7. **Set timeouts**: every wait (a reply, a human, an external signal) has a limit and a defined path when it expires. State how a stuck flow is found, and how the progress view answers "where is this one?".
+8. **Name the isolation countermeasure** (`./references/isolation-countermeasures.md`): for each record the saga exposes mid-flight, the anomaly possible and the semantic lock (or another countermeasure), with what clears it and what releases a stale one. The record the saga's own commands change is always exposed and always gets a lock; `risk-accepted` is only for a record nobody outside the saga can read.
+9. **Choose the coordinator**: a hand-rolled coordinator for one flow; a workflow engine only once many orchestrated flows have accumulated and visibility across them is the need. It runs inside the boundary `multi-tenancy-design` chose; a saga never spans tenants.
+10. **Validate, then loop.** Run `./scripts/validate-workflow-orchestration.sh <file>`, fix every FAIL, re-run until clean; then `./resources/checklist.md`.
+11. **Present** with the reason for every request declined (§ Gotchas). Open with the verdict: orchestrated or not, and the trigger that fired. State that steps after the pivot are retried and never compensated, and that every wait has a timeout and an expiry path. Say in one line that this is a document at `design/architecture/workflow-orchestration.md` and names the design, not code: **no code of any kind in the answer, not even a query or a statement, when describing what to do instead.** Answering in a reply: the declined requests and their reasons once, then the document once.
 
----
+Examples: `./examples/01-lean-plant-swap-declined.md` (a two-step flow where the requested engine is declined), `./examples/02-standard-clinic-booking.md` (a six-step booking with a deposit pivot, captured compensations, a human wait and a semantic lock), `./examples/03-enterprise-policy-binding-two-sagas.md` (a 5-day approval flow whose two points of no return become two sagas).
 
-## The Process-Manager Model
+## Gotchas
 
-A Saga orchestrator is the **Process Manager** pattern (Hohpe) applied to a Saga: a state machine that holds the flow state choreography would scatter. Its three obligations:
-
-1. **States + transitions.** Explicit states; transitions fire on **reply messages** from participants. Each state dispatches the next **Command** — never business logic. The orchestrator sends Commands and consumes replies; it must not call databases or apply domain rules (that would make it a god service that bypasses participants' invariants).
-2. **Persisted, transactionally.** The state transition and the Command/event it emits are written in **one local transaction** via the Transactional Outbox, so a crash mid-Saga **resumes** at the right state rather than double-sending or losing the flow. An in-memory-only orchestrator is a defect.
-3. **Idempotent participants.** Every task worker dedups on message/task id, because both the Outbox relay and Redpanda redeliver at-least-once.
-
-Full state-machine model, transition table, and a worked coordinator: `references/orchestration-saga-design.md`.
-
----
-
-## The Three Step Classes
-
-A Saga cannot roll back — each committed local transaction is visible immediately. Designing a Saga **is** deciding where the **pivot** sits. Classify every step:
-
-| Class | Definition | Obligation |
-|---|---|---|
-| **Compensatable** | Runs *before* the pivot; its effect can be semantically undone | Must have a written **compensating transaction** (semantic undo, run in reverse order) |
-| **Pivot** | The point of no return — once it commits, the Saga runs **forward** to completion, never backward | Exactly one per Saga; its placement is the core design decision |
-| **Retriable** | Runs *after* the pivot; must eventually succeed | Retried until success (with backoff), never compensated |
-
-A Saga with **no identified pivot**, or a "compensatable" step whose compensation is **not written**, is an incomplete design — fail it in review. Worked DataAsset onboarding Saga with a compensation for each step: `references/orchestration-saga-design.md`.
-
----
-
-## Saga Isolation Countermeasures
-
-A Saga sacrifices **I** (isolation): it gives ACD (atomicity via compensation, consistency, durability) but *not* isolation, so concurrent transactions can read the intermediate, not-yet-fully-committed state. The anomalies (lost update, dirty read, fuzzy read) and their five countermeasures are the **biggest genuine gap** in this repo's Saga material.
-
-The primary countermeasure is the **semantic lock**: an application-level flag/state (e.g. a DataAsset in `ONBOARDING_PENDING`) set by the first compensatable step and cleared by a later retriable step, signaling "this record is mid-Saga — treat it with care." Four further countermeasures (commutative updates, and others that reorder or re-check) complete the toolkit.
-
-The anomalies, all five countermeasures, and which to reach for when: `references/saga-isolation-countermeasures.md`.
-
----
-
-## The Cross-Service Query Boundary: API Composition vs. CQRS
-
-Once each service owns its data, a query spanning services can no longer be one join. Two patterns, and a rule for choosing:
-
-| | API Composition | CQRS (Read Model) |
-|---|---|---|
-| **How** | A composer (gateway/dedicated service) calls each owning service and joins **in memory** | A query-optimized **Read Model** fed by subscribing to source contexts' Domain Events off Redpanda |
-| **Cost** | Bad for large datasets / wide fan-out; couples to N services' availability | Eventual consistency + replication machinery to build and maintain |
-| **Choose when** | **Default** — small result, low fan-out | The join is over large data, fan-out is too wide, OR the same data must answer **many differently-shaped queries** |
-
-**Rule: API Composition first; graduate to CQRS on a *named* trigger.** Do not build a Read Model speculatively — name the trigger in the design. The decision, its triggers and the record are `cqrs-pattern`'s (its cross-service rungs, D047-4); this table summarises it for Saga and composition design.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Coordination justified | Orchestration chosen against a named trigger (complexity/visibility/long-running/compensation) | Orchestration by habit, or a 6-service flow left choreographed |
-| Pivot identified | Exactly one pivot step named; steps before are compensatable, after are retriable | Saga with no pivot, or ambiguous step classes |
-| Compensation written | Every compensatable step has a documented compensating transaction | "Compensations added later" |
-| State persisted | Orchestrator state + emitted Command written in one Outbox transaction | In-memory-only orchestrator that loses the flow on crash |
-| Isolation addressed | Each Saga names its semantic lock (or another countermeasure) for the anomalies it exposes | Intermediate state readable with no countermeasure named |
-| Query graduated deliberately | Cross-service query defaults to API Composition; CQRS justified by a named trigger | Read Model built speculatively |
-
----
-
-## Anti-Patterns
-
-| Anti-pattern | Why it fails | Correction |
-|---|---|---|
-| **Orchestrator doing the work** | Coordinator calls DBs / applies domain rules → god service bypassing invariants | Orchestrator only sends Commands, tracks state, triggers compensations |
-| **In-memory orchestrator** | Crash mid-Saga loses or double-sends the flow | Persist state + Command in one Outbox transaction; resume on restart |
-| **Pivot as afterthought** | No point-of-no-return means undefined behavior on late failure | Decide the pivot first; it *is* the Saga design |
-| **Isolation ignored** | Concurrent readers see intermediate state (lost update, dirty/fuzzy read) | Set a semantic lock or another countermeasure per Saga |
-| **Speculative Read Model** | CQRS replication machinery built before a query needs it | API Composition until a named trigger fires |
-| **Conductor by reflex** | A central engine dependency added for a single simple flow | Hand-rolled Go coordinator first; Conductor only when flows multiply |
-
----
+- **"Use a workflow engine for the two-step flow."** *Reason:* the coordinator is a component every participant depends on, and two or three independent steps do not need one. *Instead:* choreography, or one local transaction inside one deployable; say which condition would change the answer (a fourth step, branching, a long wait, a need for one view of progress), and that even then a hand-rolled coordinator comes first for one flow and an engine only once many orchestrated flows have accumulated.
+- **"Make every step undoable; roll everything back."** *Reason:* a committed step is visible at once and cannot be rolled back; some effects (a payout sent, an email read) cannot be undone. *Instead:* choose the pivot; steps before it are undone by new, inverse actions, steps after it are retried forward.
+- **"The compensation can look up what to undo."** *Reason:* current state may have changed since the step ran, and the lookup races concurrent changes. *Instead:* capture what the compensation needs when the step runs forward.
+- **"Compensations are best effort."** *Reason:* a compensation that fails leaves a half-done flow no one owns. *Instead:* idempotent, retried until it succeeds, and escalated (alert, a manual queue) if it cannot.
+- **"Keep the coordinator's state in memory."** *Reason:* a crash mid-flow loses it or sends a command twice. *Instead:* persist the state and the next command in one transaction (Outbox); resume from the last committed state.
+- **"Let the orchestrator check the balance (or stock, or credit) itself."** *Reason:* it becomes a god service that bypasses the owning context's rules. *Instead:* the coordinator sends a command; the owner decides and replies.
+- **"The flow has two points of no return."** *Reason:* "exactly one pivot" is what makes failure behaviour defined. *Instead:* split it into two sagas; the first ends at its pivot and its completion starts the second.
+- **"Wait for the approval as long as it takes."** *Reason:* an unbounded wait strands resources and semantic locks. *Instead:* a timeout, and a stated path on expiry (cancel and compensate, or escalate).
+- **"The dashboard can ask the orchestrator for data across services."** *Reason:* the coordinator holds flow state, not business data, and cross-service reads have their own ladder. *Instead:* progress comes from the coordinator's state; business queries follow `cqrs-pattern`.
+- **"Lock the record in the database for the whole saga."** *Reason:* each step is a separate transaction, so no database lock can span them. *Instead:* a semantic lock: a state that says "mid-saga", honoured by every reader and writer.
 
 ## References
 
-- **`references/orchestration-saga-design.md`** — the process-manager persisted-state-machine model (states, transitions, per-state Command dispatch), the compensatable/pivot/retriable step classes with compensating transactions, a fully worked **DataAsset onboarding Saga** (register → scan → classify → compliance-check → index) with a compensation for each step and the pivot placement reasoned out, Go coordinator sketch on `pgx` + Outbox, and the written rule for when orchestration beats choreography.
-- **`references/saga-isolation-countermeasures.md`** — the Saga's missing-isolation anomalies (lost update, dirty read, fuzzy/non-repeatable read) and all five countermeasures (semantic lock, commutative updates, pessimistic view, reread value, by-value), each with when-to-use, a DataAsset example, and Go/SQL sketches — the biggest gap in this repo's Saga material.
-
----
-
-## Output Format
-
-This skill produces design notes for the Integration Design and Container Diagram artifacts:
-
-```markdown
-## Orchestration Decision: [Flow Name]
-| Trigger fired | Coordinator (hand-rolled Go / Conductor) | Why not choreography |
-|---|---|---|
-
-## Saga State Machine: [Saga Name]
-| State | On reply | Command dispatched | Step class (comp/pivot/retry) | Compensation |
-|---|---|---|---|---|
-
-## Isolation Countermeasures
-| Anomaly exposed | Countermeasure | Semantic-lock state (if any) |
-|---|---|---|
-
-## Cross-Service Queries
-| Query | Pattern (API Composition / CQRS) | Graduation trigger (if CQRS) |
-|---|---|---|
-```
+| Question | File |
+|---|---|
+| Richardson's trigger rule, step classes, the pivot, compensation rules, forward recovery, the three axes for an orchestrated flow | `./references/saga-design.md` |
+| The state machine, persistence, idempotent participants, timeouts, in-flight versions, progress view, build or adopt an engine | `./references/orchestrator-model.md` |
+| The three anomalies and five countermeasures | `./references/isolation-countermeasures.md` |
+| The artifact | `./templates/workflow-orchestration-design.md` |
+| Checking before hand-off | `./resources/checklist.md` |
