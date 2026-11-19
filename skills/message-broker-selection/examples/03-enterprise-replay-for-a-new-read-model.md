@@ -57,6 +57,8 @@ Services are separate and deployed in two regions; Usage Analytics and the audit
 
 ## Delivery
 
+Both kinds of broker deliver at-least-once, so every consumer is idempotent and effectively-once is the consumer's job; acknowledgement or the offset commit comes after the work is durable.
+
 | Broker | Acknowledgement | Retry | Dead Letter Queue | Alert |
 |---|---|---|---|---|
 | Redpanda | offset committed after the work is durable; consumers idempotent on the event id | transient failures only, through a retry topic with backoff | a dead-letter topic keeping the original reading and the failure reason, re-driven by Billing support | consumer lag per partition; dead-letter depth above zero |

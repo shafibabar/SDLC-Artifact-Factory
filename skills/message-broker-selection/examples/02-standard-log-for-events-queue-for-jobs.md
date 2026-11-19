@@ -60,6 +60,8 @@ Orders, Payments, Fulfilment and Rendering are separate services, so flows cross
 
 ## Delivery
 
+Both kinds of broker deliver at-least-once, so every consumer is idempotent and effectively-once is the consumer's job; acknowledgement or the offset commit comes after the work is durable.
+
 | Broker | Acknowledgement | Retry | Dead Letter Queue | Alert |
 |---|---|---|---|---|
 | Redpanda | offset committed after the work is durable | transient failures only, through a retry topic with backoff | a dead-letter topic with the failure reason, re-driven by Fulfilment | consumer lag; dead-letter depth above zero |

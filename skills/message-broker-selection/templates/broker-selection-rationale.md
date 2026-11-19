@@ -46,6 +46,8 @@ traces-to: [design/architecture/integration-design.md, design/architecture/conta
 
 ## Delivery
 
+Both kinds of broker deliver at-least-once, so every consumer is idempotent and effectively-once is the consumer's job; acknowledgement or the offset commit comes after the work is durable.
+
 | Broker | Acknowledgement | Retry | Dead Letter Queue | Alert |
 |---|---|---|---|---|
 | [broker] | [offset committed or message acknowledged after the work is durable] | [transient failures only: how it is built on this broker] | [where failed messages go, owner, re-drive] | [what is watched: lag, depth] |
