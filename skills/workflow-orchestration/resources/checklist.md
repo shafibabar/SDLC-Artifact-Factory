@@ -27,7 +27,7 @@ Resource for `workflow-orchestration`. Run after `./scripts/validate-workflow-or
 - [ ] The coordinator sends commands and records replies; every rule is applied by the owning context.
 - [ ] Every wait has a timeout and an expiry path; locks are released on it.
 - [ ] A progress view answers "where is this flow?" from the coordinator's own record, and it serves nothing else.
-- [ ] The coordinator runs inside the tenancy boundary; no saga spans tenants.
+- [ ] Tenancy appears only if the product is multi-tenant (then the coordinator sits inside the chosen boundary); no multi-tenant assumption otherwise.
 
 ## Isolation
 - [ ] Every exposed record names its anomaly and its countermeasure (usually a semantic lock and its state).

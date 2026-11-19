@@ -32,7 +32,7 @@ traces-to: [design/architecture/integration-design.md, design/architecture/conta
 ## Saga: [Flow Name]
 
 **Pivot:** [the step, and why abandoning the flow is acceptable up to here and not after]
-**Coordinator:** [where it runs, inside the boundary multi-tenancy-design chose; owner]
+**Coordinator:** [where it runs and who owns it; multi-tenant products only: inside the boundary multi-tenancy-design chose]
 **State persistence:** [state row and the command it sends in one transaction through the Transactional Outbox; one writer per flow]
 **Business logic in the coordinator:** [none: it sends commands and records replies; the owning context decides]
 
