@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.3"
+        "version": "1.10.4"
       },
       {
         "created": "2026-06-25",
@@ -10884,14 +10884,14 @@
         "dir": "skills/workflow-orchestration",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "workflow-orchestration",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -10899,23 +10899,35 @@
           "workflow-orchestration-design"
         ],
         "related": [
+          "command-catalog",
           "conductor-workflow-authoring",
+          "container-diagram",
           "cqrs-pattern",
+          "domain-event-catalog",
           "event-driven-patterns",
-          "integration-design"
+          "glossary-management",
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "nfr-specification"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/microservices-patterns-richardson.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
-          "choreography",
+          "compensation",
           "design",
           "orchestration",
           "process-manager",
           "saga",
           "workflow"
         ],
-        "version": "1.0.1"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10967,8 +10979,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1118,
-    "edges_skill_sources": 250,
+    "edges_skill_related": 1125,
+    "edges_skill_sources": 254,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10982,18 +10994,18 @@
     "commands_with_test": 15,
     "research_files_cited": 71,
     "skills_with_assets": 9,
-    "skills_with_contract_test": 143,
+    "skills_with_contract_test": 142,
     "skills_with_domain": 189,
-    "skills_with_evals": 46,
-    "skills_with_examples": 46,
+    "skills_with_evals": 47,
+    "skills_with_examples": 47,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 45,
-    "skills_with_scripts": 42,
-    "skills_with_sources": 47,
+    "skills_with_resources": 46,
+    "skills_with_scripts": 43,
+    "skills_with_sources": 48,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 44
+    "skills_with_templates": 45
   },
   "edges": {
     "agent_produces": [
@@ -17300,7 +17312,15 @@
         "skill": "vision-statement"
       },
       {
+        "related": "command-catalog",
+        "skill": "workflow-orchestration"
+      },
+      {
         "related": "conductor-workflow-authoring",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "container-diagram",
         "skill": "workflow-orchestration"
       },
       {
@@ -17308,11 +17328,31 @@
         "skill": "workflow-orchestration"
       },
       {
+        "related": "domain-event-catalog",
+        "skill": "workflow-orchestration"
+      },
+      {
         "related": "event-driven-patterns",
         "skill": "workflow-orchestration"
       },
       {
+        "related": "glossary-management",
+        "skill": "workflow-orchestration"
+      },
+      {
         "related": "integration-design",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "nfr-specification",
         "skill": "workflow-orchestration"
       },
       {
@@ -18336,6 +18376,22 @@
       {
         "skill": "vision-statement",
         "source": "research/storytelling-and-narrative/the-best-story-wins.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
       }
     ]
   }
