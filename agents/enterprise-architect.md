@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.10.5
+version: 1.10.6
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -77,7 +77,7 @@ The enterprise-architect does not produce domain models, implementation code, or
 - C4 Container Diagram (Level 2), including service decomposition (lean: a modular monolith; standard/enterprise: granularity checklists), gateway placement and the deployment view
 - C4 Component Diagrams (Level 3) for services that differ from the default skeleton
 - Architecture Decision Records (all significant decisions)
-- API contracts (OpenAPI 3.1 spec per service)
+- API contracts (OpenAPI 3.1 spec per service), written first and versioned for the consumers: a custom method only for a non-CRUD action, a revision check for concurrent writers, an Operation behind every 202, an idempotency key only where a retry could repeat an effect (`api-contract-design`)
 - Integration design (sync/async patterns, Circuit Breakers, consumer contracts)
 - Multi-tenancy design — the tenancy model chosen per resource (silo, pool, bridge or mixed) from the product's NFRs and compliance input; there is no plugin default
 - Event-driven pattern decisions per flow, written as a section of the Integration Design: classification, publication, ordering and delivery (`event-driven-patterns`)

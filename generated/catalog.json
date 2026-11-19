@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.5"
+        "version": "1.10.6"
       },
       {
         "created": "2026-06-25",
@@ -3119,15 +3119,15 @@
         "created": "2026-06-25",
         "dir": "skills/api-contract-design",
         "domain": "architecture",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "api-contract-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -3135,11 +3135,23 @@
           "openapi-specification"
         ],
         "related": [
+          "api-gateway-design",
           "command-catalog",
-          "read-model-design",
-          "skill-authoring-standards"
+          "cqrs-pattern",
+          "glossary-management",
+          "go-contract-test",
+          "grpc-contract-design",
+          "integration-design",
+          "methodology-review",
+          "python-contract-test",
+          "read-model-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/api-design-patterns-geewax.md",
+          "research/software-architecture/api-first-transformation-lane.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/testing/testing-web-apis-winteringham.md"
+        ],
         "status": "stable",
         "tags": [
           "api-first",
@@ -3147,9 +3159,10 @@
           "contract-first",
           "design",
           "openapi",
-          "rest"
+          "rest",
+          "versioning"
         ],
-        "version": "2.3.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-31",
@@ -10996,8 +11009,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1134,
-    "edges_skill_sources": 260,
+    "edges_skill_related": 1141,
+    "edges_skill_sources": 264,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -11010,19 +11023,19 @@
     "agents_with_status": 5,
     "commands_with_test": 15,
     "research_files_cited": 71,
-    "skills_with_assets": 9,
-    "skills_with_contract_test": 141,
+    "skills_with_assets": 8,
+    "skills_with_contract_test": 140,
     "skills_with_domain": 189,
-    "skills_with_evals": 48,
-    "skills_with_examples": 48,
+    "skills_with_evals": 49,
+    "skills_with_examples": 49,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 47,
+    "skills_with_resources": 48,
     "skills_with_scripts": 44,
-    "skills_with_sources": 49,
+    "skills_with_sources": 50,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 46
+    "skills_with_templates": 47
   },
   "edges": {
     "agent_produces": [
@@ -13041,15 +13054,43 @@
         "skill": "analytics-requirements"
       },
       {
+        "related": "api-gateway-design",
+        "skill": "api-contract-design"
+      },
+      {
         "related": "command-catalog",
         "skill": "api-contract-design"
       },
       {
-        "related": "read-model-design",
+        "related": "cqrs-pattern",
         "skill": "api-contract-design"
       },
       {
-        "related": "skill-authoring-standards",
+        "related": "glossary-management",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "go-contract-test",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "grpc-contract-design",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "integration-design",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "python-contract-test",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "read-model-design",
         "skill": "api-contract-design"
       },
       {
@@ -17489,6 +17530,22 @@
       {
         "skill": "aggregate-design",
         "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/software-architecture/api-design-patterns-geewax.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/software-architecture/api-first-transformation-lane.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/testing/testing-web-apis-winteringham.md"
       },
       {
         "skill": "beta-program-design",
