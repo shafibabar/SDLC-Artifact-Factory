@@ -1,0 +1,13 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It does **not** deliver the requested orchestrator or Conductor design for this flow. It says plainly that a two-step flow inside one deployable that stays within one database does not meet the bar for orchestration, and that the user's reason ("ready for scale") is not one of the triggers (Richardson's written rule, `research/software-architecture/microservices-patterns-richardson.md`, Actionable Techniques "Choose coordination by a written rule, not by habit"; `discovery/fresh-eyes/wave-2-findings.md`, "When to orchestrate" and W2-6).
+2. It says what to do instead: in the lean modular monolith the seat reservation and a record of the email to send are written in **one local transaction** (an outbox-style row), and a worker sends the email afterwards and retries it on failure, so a failed email never loses the booking. It does not propose a Saga or a distributed transaction between two modules of one database (D047-6, lean is a modular monolith; `microservices-patterns-richardson.md`, Core Concepts, "The Transactional Outbox is the reliable-messaging foundation").
+3. It names at least one **concrete condition** under which orchestration would become the right choice, taken from the written rule: the flow starts to branch or loop, it runs long on a human or external signal, someone needs one answer to "where is this one booking now?", or a compensation must run across four or more services in an order (`microservices-patterns-richardson.md`, Actionable Techniques; `wave-2-findings.md`, "When to orchestrate"). A vague "when it grows" does not count.
+4. It treats Conductor as an added dependency that is not justified for one flow: it says a simple hand-rolled coordinator is preferred for a single flow, and a workflow engine is adopted only when **many** orchestrated flows accumulate (`microservices-patterns-richardson.md`, Caveats, "This repo defaults to choreography+Saga ... Conductor is an added dependency"; Budget and Frugality in `CLAUDE.md`).
+5. It does not accept "compensation for each step" as a requirement for this flow: it explains that a failed email is retried, not undone, so there is nothing to compensate and the seat reservation does not roll back because of it (`microservices-patterns-richardson.md`, Core Concepts, "Compensating transactions and the three step classes": retriable steps are retried, not compensated).
+6. The reply contains no code (no Go, SQL, JSON workflow definition); a plain-language description of the transaction and retry is enough (D047-10, design skills are stack-neutral).
+Fail if any of the 6 is missing.
