@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.4"
+        "version": "1.10.5"
       },
       {
         "created": "2026-06-25",
@@ -6987,14 +6987,14 @@
         "dir": "skills/message-broker-selection",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "message-broker-selection",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -7002,26 +7002,43 @@
           "broker-selection-rationale"
         ],
         "related": [
+          "adr-authoring",
+          "container-diagram",
           "event-driven-patterns",
+          "glossary-management",
           "go-amqp-consumer",
           "go-amqp-publisher",
           "go-event-consumer",
           "go-event-publisher",
-          "integration-design"
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "python-amqp-consumer",
+          "python-amqp-publisher",
+          "sdlc-config-management",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/rabbitmq-in-depth-roy.md"
+        ],
         "status": "stable",
         "tags": [
-          "amqp",
           "architecture",
           "broker",
+          "competing-consumers",
+          "consumer-group",
           "design",
-          "kafka",
-          "log-vs-queue",
+          "log-based",
           "messaging",
-          "rabbitmq"
+          "queue-based",
+          "replay"
         ],
-        "version": "1.0.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-24",
@@ -10979,8 +10996,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1125,
-    "edges_skill_sources": 254,
+    "edges_skill_related": 1134,
+    "edges_skill_sources": 260,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -10994,18 +11011,18 @@
     "commands_with_test": 15,
     "research_files_cited": 71,
     "skills_with_assets": 9,
-    "skills_with_contract_test": 142,
+    "skills_with_contract_test": 141,
     "skills_with_domain": 189,
-    "skills_with_evals": 47,
-    "skills_with_examples": 47,
+    "skills_with_evals": 48,
+    "skills_with_examples": 48,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 46,
-    "skills_with_scripts": 43,
-    "skills_with_sources": 48,
+    "skills_with_resources": 47,
+    "skills_with_scripts": 44,
+    "skills_with_sources": 49,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 45
+    "skills_with_templates": 46
   },
   "edges": {
     "agent_produces": [
@@ -15336,7 +15353,19 @@
         "skill": "jtbd-analysis"
       },
       {
+        "related": "adr-authoring",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "message-broker-selection"
+      },
+      {
         "related": "event-driven-patterns",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "glossary-management",
         "skill": "message-broker-selection"
       },
       {
@@ -15357,6 +15386,30 @@
       },
       {
         "related": "integration-design",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "python-amqp-consumer",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "python-amqp-publisher",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "sdlc-config-management",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "workflow-orchestration",
         "skill": "message-broker-selection"
       },
       {
@@ -17944,6 +17997,30 @@
       {
         "skill": "jtbd-analysis",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/rabbitmq-in-depth-roy.md"
       },
       {
         "skill": "moscow-prioritization",
