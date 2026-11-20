@@ -86,6 +86,8 @@ self-check: true
 
 ## Trade-off Points
 
+Each ADR's Trade-off line names the characteristics traded (for example, security traded against latency).
+
 | ID | Property | Raises | Lowers | Carried from | Resolution |
 |---|---|---|---|---|---|
 | T-1 | the broker exists in one UK region only | UK-only data residency (BR-5) | recoverability after a region loss | TP-1 | the user decides: the cost of a second-region broker against relaxing the 15-minute RPO; ADR-0008 follows |
@@ -99,6 +101,8 @@ self-check: true
 | RT-1 | R-2, R-3 | isolation between councils depends on application discipline, not on the platform | the councils' contractual trust in tenant separation |
 
 ## Fitness Functions
+
+These fitness functions are objective automated checks that run continuously and keep each rule true as the system changes; they complement this one-time evaluation and do not replace it.
 
 | Characteristic | Rule that must stay true | Check | Where it runs | Owner |
 |---|---|---|---|---|

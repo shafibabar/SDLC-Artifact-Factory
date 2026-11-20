@@ -72,6 +72,8 @@ self-check: true
 
 ## Fitness Functions
 
+These fitness functions are objective automated checks that run continuously and keep each rule true as the system changes; they complement this one-time evaluation and do not replace it.
+
 | Characteristic | Rule that must stay true | Check | Where it runs | Owner |
 |---|---|---|---|---|
 | confidentiality | a non-steward is refused in every scripted attempt | the scripted access test | every release build | backend-engineer |

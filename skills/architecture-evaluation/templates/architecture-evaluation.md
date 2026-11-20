@@ -58,6 +58,8 @@ self-check: true
 
 ## Trade-off Points
 
+Each ADR's Trade-off line names the characteristics traded (for example, security traded against latency).
+
 | ID | Property | Raises | Lowers | Carried from | Resolution |
 |---|---|---|---|---|---|
 | T-1 | [a property that is a sensitivity point for two attributes] | [attribute pushed up] | [attribute pushed down] | [TP-n from the NFR handoff, or "found here"] | [ADR-n, or "accepted, no ADR: the reason", or "the user decides: the cost or scope question"] |
@@ -71,6 +73,8 @@ self-check: true
 | RT-1 | [R-1, R-2] | [the shared cause] | [the driver or key result at stake] |
 
 ## Fitness Functions
+
+These fitness functions are objective automated checks that run continuously and keep each rule true as the system changes; they complement this one-time evaluation and do not replace it.
 
 | Characteristic | Rule that must stay true | Check | Where it runs | Owner |
 |---|---|---|---|---|

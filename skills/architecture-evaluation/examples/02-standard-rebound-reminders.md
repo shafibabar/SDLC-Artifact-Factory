@@ -79,11 +79,15 @@ self-check: true
 
 ## Trade-off Points
 
+Each ADR's Trade-off line names the characteristics traded (for example, security traded against latency).
+
 | ID | Property | Raises | Lowers | Carried from | Resolution |
 |---|---|---|---|---|---|
 | T-1 | replication mode of the standby (synchronous or asynchronous) | data safety | reply speed | TP-1 | ADR-0005 |
 
 ## Fitness Functions
+
+These fitness functions are objective automated checks that run continuously and keep each rule true as the system changes; they complement this one-time evaluation and do not replace it.
 
 | Characteristic | Rule that must stay true | Check | Where it runs | Owner |
 |---|---|---|---|---|
