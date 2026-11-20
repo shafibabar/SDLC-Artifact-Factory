@@ -1,171 +1,82 @@
 ---
 name: grpc-contract-design
 description: >
-  Teaches the enterprise-architect to design gRPC service contracts —
-  protobuf3 service and message definition, field numbering and the
-  backward/forward compatibility rules (never reuse or renumber a field
-  number, reserved, optional/repeated presence), the four communication
-  patterns (unary, server-streaming, client-streaming, bidirectional) and
-  when each fits, the gRPC status/error code model versus HTTP status,
-  deadlines and metadata, and the "gRPC internal vs REST public" boundary.
-  The contract-first gRPC analog of api-contract-design (which owns
-  REST/OpenAPI). Covers .proto authoring, enum/oneof/well-known-types,
-  breaking-vs-nonbreaking change classification, and CI breaking-change
-  linting. Used during Design for internal service-to-service gRPC APIs.
-version: 1.0.0
+  Decide whether a service boundary should be gRPC at all, then design its
+  contract first as a protobuf3 file: gRPC chosen per boundary for a named
+  reason (internal service-to-service, a strictly typed contract, streaming,
+  throughput) with REST and OpenAPI kept for browser, public and partner
+  callers and no gRPC inside one deployable; field numbers as the permanent
+  wire identity (never reuse or renumber, reserved on removal, new fields with
+  fresh numbers, optional where set differs from zero); a package that carries
+  the major version; unary by default and a streaming shape only when the data
+  flow is a stream; gRPC's own status codes mapped from domain errors in one
+  place; a deadline on every call; the token verified by every service; and a
+  breaking-change check that gates the proto in CI. Use when designing,
+  reviewing or changing a .proto contract or choosing gRPC over REST. Used by
+  enterprise-architect.
+version: 2.0.0
 phase: design
 owner: enterprise-architect
 created: 2026-07-31
-tags: [design, architecture, grpc, protobuf, contract-first, streaming, api]
+tags: [design, architecture, grpc, protobuf, contract-first, streaming, compatibility]
 produces: grpc-service-contract
 domain: architecture
 status: stable
-related: [api-contract-design, go-grpc-handler, go-openapi-codegen, integration-design]
+related: [api-contract-design, integration-design, container-diagram, go-grpc-handler, python-grpc-handler, multi-tenancy-design, api-gateway-design, glossary-management, methodology-review]
+sources:
+  - research/software-architecture/grpc-up-and-running.md
+  - research/software-architecture/software-architecture-hard-parts-ford.md
 ---
 
 # gRPC Contract Design
 
 ## Purpose
 
-gRPC is contract-first by construction: the API *is* a `.proto` file. `service` blocks declare RPC methods, `message` blocks declare request/response types, and both server stubs and client stubs are generated from it by `protoc`. The generated code cannot drift from the schema because it is compiled from the schema — a breaking proto change surfaces as a compile break, not a production error.
+A gRPC API is a `.proto` file: the service and message definitions are the contract, and the client and server stubs are generated from it, so code cannot drift from the schema. The strictness cuts both ways: a typed contract couples producer and consumer more tightly than loose JSON (Ford's static coupling), and a careless edit to a field number silently corrupts deployed peers. This skill decides whether a boundary should be gRPC, then makes the contract a reviewed, gated artifact. **Readers:** enterprise-architect, backend-engineer, the product owner (what a contract change costs its callers). **Question:** for this boundary, is gRPC justified, and what may and may not change in the contract?
 
-This is the gRPC analog of `api-contract-design`, which owns REST/OpenAPI. Where OpenAPI is *authored as* the contract and handlers are hand-written against it, the proto is the single source of truth and the strongly-typed Go client/server is generated. Use this skill during Design for **internal service-to-service** APIs; keep public and browser-facing surfaces on REST+OpenAPI (see the boundary section).
+The output is `design/<service>/<name>.proto` per service that exposes gRPC (`./templates/service.proto`); it is optional, and normally absent at lean. REST with OpenAPI is `api-contract-design`; the server and client code are `go-grpc-handler` and `python-grpc-handler`.
 
----
-
-## Write the Proto First
-
-Author `service` + `message` before any implementation. Every proto declares `syntax = "proto3";`, a `package`, and `option go_package`. Message field names come from the Ubiquitous Language (`tenant_id`, `data_asset`, `sensitivity_level`), never from storage columns.
-
-```protobuf
-syntax = "proto3";
-package dataestate.asset.v1;
-option go_package = "github.com/acme/dataestate/gen/asset/v1;assetv1";
-
-service DataAssetService {
-  rpc GetDataAsset(GetDataAssetRequest) returns (DataAsset);
-}
-
-message GetDataAssetRequest {
-  string tenant_id = 1;
-  string data_asset_id = 2;
-}
-```
-
-The proto is reviewed with the same seriousness as an OpenAPI spec — field numbering is treated as permanent from the first review. Full worked `DataAssetService`, enum/oneof/well-known-types, and the versioning package convention: `references/protobuf-design-and-compat.md`.
-
----
-
-## Field Numbers Are the Wire Contract
-
-The integer tag on each field — `string tenant_id = 2;` — is the actual wire identifier. The **name** is not encoded; the number is. Every compatibility rule follows from this:
-
-| Rule | Why |
+| Profile | What this holds |
 |---|---|
-| **Never reuse** a field number for a different field | Old clients decode the new field into the old field's slot — silent data corruption |
-| **Never renumber** an existing field | Changes its wire identity; every deployed peer breaks |
-| **Never change a field's type** except within the wire-compatible set | The decoder mis-parses the bytes |
-| **`reserved`** the number (and name) of any removed field | Prevents a future edit from silently re-homing that number |
-| **Add new fields with fresh numbers** and a sane zero-value | Unknown fields are preserved on the wire → forward compatibility; new fields default cleanly → backward compatibility |
+| Lean | Normally nothing: one deployable has no service boundary, so a plain call is enough. A proto only if a boundary really is separate, and then one short service |
+| Standard | A proto for each internal service that earns gRPC, with the call pattern and error mapping for each method |
+| Enterprise | As standard, plus the compatibility gate in CI, the version policy per package, and the consumers that must be told of a change |
 
-House rule: reserve field numbers 1–15 (one wire byte) for hot, frequently-set fields; leave intentional gaps. proto3 scalars are non-presence-tracking by default — `optional` restores explicit presence (distinguish set-to-zero from unset), `repeated` denotes a list. The full breaking-vs-nonbreaking change table and the `reserved` mechanics live in `references/protobuf-design-and-compat.md`.
+## Procedure
 
----
+1. **Read** the container diagram (which arrows cross a service boundary and who calls them), the Integration Design (its contract strictness column), the Command Catalog and Read Models, the NFR specification (throughput, latency), and `sdlc-config.json`.
+2. **Decide whether the boundary is gRPC** (`./references/when-grpc-and-boundaries.md`): REST is the default; gRPC only for an internal service-to-service call with a named reason (a strict typed contract, streaming, throughput). Browser, public and partner callers stay on REST and OpenAPI. Inside one deployable there is no boundary. Record the contract's strictness in the Integration Design.
+3. **Write the proto first.** `syntax = "proto3"`, a package ending `.vN`, services and messages named from the Ubiquitous Language, not storage columns (`./references/protobuf-design-and-compat.md`).
+4. **Number the fields deliberately:** the number is the wire identity and permanent from the first review. 1 to 15 for hot fields, gaps left on purpose, `optional` where "not set" differs from the zero value, an `_UNSPECIFIED` zero value on every enum.
+5. **Choose each method's shape** (`./references/streaming-and-errors.md`): unary unless the data flow is a stream (a large or open-ended result, a chunked upload, a live channel).
+6. **Map errors** to gRPC status codes from one place: `INVALID_ARGUMENT` for a request wrong in any state, `FAILED_PRECONDITION` for the wrong state, `NOT_FOUND`, `ALREADY_EXISTS`, `PERMISSION_DENIED`; `INTERNAL` only for a real bug. Structured details carry the machine-readable reason; internal error text never crosses the boundary.
+7. **Set deadlines:** every client call has a deadline, and a server honours it by passing the incoming context on; a deadline is not a client-local timeout.
+8. **Identity:** metadata carries the token and trace context; every service verifies the token itself (a mesh or gateway is only the first check), and the caller's identity, and tenant if the product is multi-tenant, come from the verified token, never the request body.
+9. **Gate compatibility:** a breaking-change check against the main branch in CI (Buf is the example tool). A breaking redesign is a new `.v2` package beside `.v1`.
+10. **Validate and loop:** run `./scripts/validate-proto.sh <file.proto> [baseline.proto]`, fix every FAIL, re-run until clean; then `./resources/checklist.md`.
+11. **Present** with the reason for every request declined (§ Gotchas). Always state: the proto is the contract, written first; field numbers are permanent (never reused or renumbered, `reserved` on removal); gRPC is for internal boundaries and REST for browser and public callers; a strict typed contract couples producer and consumer more tightly than loose JSON read by a tolerant reader (static coupling), so compatibility is enforced by a breaking-change check in CI, naming the consuming teams or services it protects; domain errors map to status codes through one place, with a stable `ErrorInfo` reason in the details and no internal text; and no implementation code appears in the answer. Answering in a reply: the declined requests and their reasons once, then the proto fragments once.
 
-## Choose the Communication Pattern from the Data Flow
+Examples: `./examples/01-lean-gift-registry-declined.md` (two modules in one deployable asking for gRPC), `./examples/02-standard-order-tracking-unary-and-stream.md` (an internal unary service plus a server-streaming feed), `./examples/03-enterprise-mixed-rest-and-grpc.md` (a public REST API over internal gRPC, a field removed safely and a breaking redesign as `.v2`).
 
-gRPC exposes exactly four method shapes, selected per method with the `stream` keyword:
+## Gotchas
 
-| Pattern | Shape | Use when | Data-estate example |
-|---|---|---|---|
-| **Unary** | 1 req → 1 resp | Request/response commands, point reads. The default. | `GetDataAsset`, `ClassifyDataAsset` |
-| **Server streaming** | 1 req → stream of resp | Large or open-ended result sets emitted as produced | Estate scan streaming assets as discovered |
-| **Client streaming** | stream of req → 1 resp | Large uploads assembled server-side | Chunked document ingest |
-| **Bidirectional** | independent read + write streams | Live, concurrent progress or control channels | Live scan-progress channel |
-
-Default to unary unless streaming earns its keep — streaming complicates load balancing and retries. Worked proto for each pattern and the selection reasoning: `references/streaming-and-errors.md`.
-
----
-
-## The Status-Code Model Is gRPC's Own, Not HTTP's
-
-Every call completes with a gRPC status **code** (an enum), a message, and optional structured details. These are transport-independent and finer-grained than HTTP status — `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, and `OUT_OF_RANGE` all collapse to `400` in REST but are distinct here.
-
-| gRPC code | Use for |
-|---|---|
-| `OK` | Success |
-| `INVALID_ARGUMENT` | Malformed request, independent of system state |
-| `FAILED_PRECONDITION` | Request invalid for the current system state |
-| `NOT_FOUND` | Resource does not exist |
-| `ALREADY_EXISTS` | Create conflicts with an existing resource |
-| `PERMISSION_DENIED` | Authenticated but not authorized |
-| `UNAUTHENTICATED` | Missing/invalid credentials |
-| `RESOURCE_EXHAUSTED` | Quota / rate limit |
-| `DEADLINE_EXCEEDED` | Deadline passed before completion |
-| `UNAVAILABLE` | Transient — client may retry with backoff |
-| `INTERNAL` | Genuine server bug (reserve for this) |
-
-Map domain errors to codes through **one** status writer, never leaking internal error strings; reserve `INTERNAL` for real bugs and prefer `INVALID_ARGUMENT`/`FAILED_PRECONDITION`/`NOT_FOUND` for domain conditions. The full code taxonomy, structured error details (`google.rpc.Status`/`ErrorInfo`), and deadline/metadata conventions: `references/streaming-and-errors.md`.
-
----
-
-## Deadlines and Metadata Are Part of the Call
-
-- **Deadline** — an absolute time propagated to the server, which sees `DEADLINE_EXCEEDED` and should stop work. Set one on every client call; honor it server-side by deriving downstream `context.Context` from the incoming one so cancellation propagates. A deadline is not an ad-hoc client-local timeout.
-- **Metadata** — the key/value header/trailer channel (the analog of HTTP headers) carrying the auth token, the tenant claim, and OpenTelemetry trace context. Read and written via context.
-
----
-
-## gRPC Internal vs REST Public — the Boundary
-
-| Use gRPC when | Use REST + OpenAPI when |
-|---|---|
-| Internal service-to-service traffic | Public or browser-facing API |
-| Streaming (any of the four patterns) is needed | Simple request/response over the public edge |
-| Strong typing across a Go↔Go boundary matters | Third-party/partner consumers expect JSON |
-| High-throughput internal chatter | A human or PM must review the contract as a spec |
-
-Browsers cannot speak native gRPC without a gRPC-Web proxy; this product's external/data-estate API stays REST+OpenAPI (`api-contract-design`). Adopt gRPC per-boundary where typing/streaming earns its cost — not as a wholesale migration. **Mesh caveat:** gRPC multiplexes many requests over one long-lived HTTP/2 connection, so a plain Kubernetes `Service` (L4/connection balancing) pins all traffic to one backend pod. Linkerd's proxy does per-*request* L7 balancing over HTTP/2 — this is precisely why the mesh matters for gRPC.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Ubiquitous Language messages | Message/field names from domain language | Storage column names |
-| Field numbers permanent | No reuse/renumber; removed fields `reserved` | A number silently re-homed |
-| Presence explicit where it matters | `optional` used where set-vs-unset differs from zero | Zero-value ambiguity on a meaningful field |
-| Pattern fits the data flow | Streaming only where it earns its keep; unary default | Streaming by habit; unary for an open-ended result set |
-| Errors mapped deliberately | Domain errors → specific gRPC codes via one writer | `INTERNAL` for domain conditions; leaked error strings |
-| Deadlines honored | Downstream context derived from incoming; done = hard stop | Ad-hoc timeouts; ignored cancellation |
-| Boundary respected | gRPC internal, REST public/browser | Public browser API on native gRPC |
-| Breaking changes gated | Buf (or equivalent) breaking-change lint in CI | Compatibility remembered, not enforced |
-
----
-
-## Codify Compatibility as a CI Check
-
-Run a schema-diff/breaking-change linter (e.g. **Buf** — `buf lint` and `buf breaking` against the `main` baseline) in CI so the field-number rules are enforced, not remembered. The per-edit checklist — reuse/renumber? reserved on removal? type change within the wire-compatible set? additive with a sane default? — and the exact Buf rule categories are in `references/protobuf-design-and-compat.md`.
-
----
-
-## Anti-Patterns
-
-| Anti-pattern | Why it fails | Correction |
-|---|---|---|
-| **Renumbering to "tidy" fields** | Field numbers are the wire identity; every peer breaks | Numbers are permanent; only append with fresh numbers |
-| **Reusing a removed field's number** | Old clients decode into the wrong slot — silent corruption | `reserved` the number and name on removal |
-| **Streaming by default** | Complicates balancing, retries, backpressure for no gain | Unary unless the data flow genuinely streams |
-| **HTTP status thinking** | Collapses `INVALID_ARGUMENT`/`FAILED_PRECONDITION`/`OUT_OF_RANGE` into `400`, losing RPC semantics | Map domain errors to specific gRPC codes |
-| **`INTERNAL` for domain errors** | Hides real bugs among expected conditions; clients can't react | Reserve `INTERNAL` for bugs; use domain-specific codes |
-| **Client-local timeout instead of deadline** | Server keeps working after the client gave up | Set a deadline; propagate context; stop on cancellation |
-| **gRPC on the public browser edge** | Browsers need a gRPC-Web proxy; partners expect JSON | REST+OpenAPI for public/browser; gRPC internal |
-| **Plain K8s Service for gRPC** | L4 balancing pins one HTTP/2 connection to one pod | Linkerd per-request L7 balancing (or a gRPC-aware LB) |
-
----
+- **"Renumber field 3 to tidy the file."** *Reason:* the number is the wire identity; every deployed peer keeps decoding the old number into the old meaning. *Instead:* never renumber; only append with a fresh number.
+- **"Delete the field; nobody uses it."** *Reason:* a later edit can reuse its number and silently corrupt old peers. *Instead:* delete it and `reserved` its number and its name.
+- **"Change the field's type in place."** *Reason:* an incompatible type breaks decoding, and even a wire-compatible one can truncate values. *Instead:* a new field with a fresh number, or a new `.v2` package for a breaking redesign.
+- **"Return INTERNAL for not-found."** *Reason:* it hides real bugs among expected conditions and tells the client nothing it can act on. *Instead:* `NOT_FOUND`; `INTERNAL` only for a genuine bug.
+- **"Set a 2-second timeout in the client."** *Reason:* the server never learns it, and keeps working after the caller gave up. *Instead:* a deadline on the call, honoured server-side.
+- **"Make every list call a streaming RPC."** *Reason:* streaming complicates retries, load balancing and back-pressure. *Instead:* unary by default; a stream only for a genuinely large, open-ended or live flow.
+- **"Use gRPC for the browser app and the partner API."** *Reason:* browsers need a gRPC-Web proxy and partners expect JSON. *Instead:* REST and OpenAPI for public callers; gRPC internally.
+- **"gRPC between the modules; it's faster."** *Reason:* modules of one deployable are one process, not a service boundary; a plain call has none of the cost. *Instead:* a plain call; revisit when a module becomes its own service.
+- **"The metadata tenant key drives isolation."** *Reason:* isolation is not a plugin requirement, and a tenant taken from the request body can be forged. *Instead:* take identity and any tenant from the verified token, only for a multi-tenant product (`multi-tenancy-design`).
+- **"The mesh balances gRPC for us."** *Reason:* gRPC keeps one long HTTP/2 connection, so connection-level balancing pins all traffic to one backend. *Instead:* per-request balancing is a platform requirement; state it in the design and hand it to the platform skills.
 
 ## References
 
-- `references/protobuf-design-and-compat.md` — worked `.proto` for a `DataAssetService`, field-numbering and `reserved` mechanics, the breaking-vs-nonbreaking change classification table, `enum`/`oneof`/well-known-types, package/versioning convention, and the Buf CI lint rule categories.
-- `references/streaming-and-errors.md` — the four communication patterns with worked proto and a selection guide, the full gRPC status-code taxonomy, structured error details (`google.rpc.Status`, `ErrorInfo`), and the deadline/metadata conventions with Go snippets.
+| Question | File |
+|---|---|
+| Choosing gRPC over REST, boundaries, contract strictness, balancing and identity | `./references/when-grpc-and-boundaries.md` |
+| Authoring the proto, field numbers, presence, breaking versus non-breaking, packages, the CI gate | `./references/protobuf-design-and-compat.md` |
+| Call shapes, status codes, error details, deadlines, metadata | `./references/streaming-and-errors.md` |
+| The artifact | `./templates/service.proto` |
+| Checking before hand-off | `./resources/checklist.md` |

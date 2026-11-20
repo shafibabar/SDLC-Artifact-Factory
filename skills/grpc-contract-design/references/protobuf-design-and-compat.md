@@ -1,206 +1,107 @@
-# protobuf3 Design and Compatibility
+# Protobuf Design and Compatibility
 
-Reference material for `grpc-contract-design`. Covers a full worked `.proto` for a data-estate `DataAssetService`, the field-numbering and `reserved` mechanics, the breaking-vs-nonbreaking change classification, `enum`/`oneof`/well-known-types, the package/versioning convention, and the Buf CI lint rule categories.
+Reference for `grpc-contract-design` steps 3, 4 and 9. Grounded in `grpc-up-and-running` (protobuf3, field numbers as the wire contract, the compatibility checklist, a schema-diff linter in CI). The `.proto` fragments below are the contract itself, not implementation code.
 
----
-
-## Worked Proto — `DataAssetService`
+## A worked contract
 
 ```protobuf
 syntax = "proto3";
 
-package dataestate.asset.v1;
-
-option go_package = "github.com/acme/dataestate/gen/asset/v1;assetv1";
+package shop.orders.v1;
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/field_mask.proto";
 
-// DataAssetService is an INTERNAL service-to-service API. Public and
-// browser-facing traffic stays on REST+OpenAPI (see api-contract-design).
-service DataAssetService {
-  // Unary: point read.
-  rpc GetDataAsset(GetDataAssetRequest) returns (DataAsset);
-
-  // Unary: command. Returns the updated aggregate.
-  rpc ClassifyDataAsset(ClassifyDataAssetRequest) returns (DataAsset);
-
-  // Server streaming: emit assets as an estate scan discovers them.
-  rpc StreamEstateScan(StreamEstateScanRequest) returns (stream DataAsset);
+// An INTERNAL service-to-service API. Public and browser callers use REST (api-contract-design).
+service OrderService {
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
 }
 
-// A DataAsset is the aggregate root of the asset bounded context.
-message DataAsset {
-  string data_asset_id = 1;   // 1-15 => one wire byte; hot fields go here
-  string tenant_id = 2;
-  string display_name = 3;
-  SensitivityLevel sensitivity_level = 4;
-  StorageLocation location = 5;
-  repeated string tags = 6;
-  google.protobuf.Timestamp classified_at = 7;
+message Order {
+  string order_id = 1;            // 1 to 15 take one wire byte: hot fields go here
+  string customer_id = 2;
+  OrderStatus status = 3;
+  google.protobuf.Timestamp placed_at = 4;
+  repeated OrderLine lines = 5;
+  optional string cancel_reason = 6;   // optional: unset differs from ""
 
-  // optional restores explicit presence: distinguishes "no reviewer yet"
-  // (unset) from the empty string (set to zero value).
-  optional string last_reviewed_by = 8;
-
-  // 9 was `legacy_owner_email` (string), removed 2026-07. Never reuse.
-  reserved 9;
-  reserved "legacy_owner_email";
+  // 7 was `legacy_ref` (string), removed. Never reuse it.
+  reserved 7;
+  reserved "legacy_ref";
 }
 
-enum SensitivityLevel {
-  // proto3 enums MUST have a zero value; make it the safe/unknown default.
-  SENSITIVITY_LEVEL_UNSPECIFIED = 0;
-  SENSITIVITY_LEVEL_PUBLIC = 1;
-  SENSITIVITY_LEVEL_INTERNAL = 2;
-  SENSITIVITY_LEVEL_CONFIDENTIAL = 3;
-  SENSITIVITY_LEVEL_RESTRICTED = 4;
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;   // the zero value is a safe "unknown"
+  ORDER_STATUS_PLACED = 1;
+  ORDER_STATUS_SHIPPED = 2;
+  ORDER_STATUS_CANCELLED = 3;
 }
 
-// oneof: exactly one storage backend identifies an asset's location.
-message StorageLocation {
-  oneof backend {
-    GoogleDriveLocation google_drive = 1;
-    S3Location s3 = 2;
-  }
+message OrderLine {
+  string sku = 1;
+  int32 quantity = 2;
 }
 
-message GoogleDriveLocation {
-  string file_id = 1;
-  string drive_id = 2;
-}
-
-message S3Location {
-  string bucket = 1;
-  string key = 2;
-}
-
-message GetDataAssetRequest {
-  string tenant_id = 1;
-  string data_asset_id = 2;
-}
-
-message ClassifyDataAssetRequest {
-  string tenant_id = 1;
-  string data_asset_id = 2;
-  SensitivityLevel sensitivity_level = 3;
-  // Partial update: only the paths named in update_mask are written.
-  google.protobuf.FieldMask update_mask = 4;
-}
-
-message StreamEstateScanRequest {
-  string tenant_id = 1;
-  string storage_source_id = 2;
-}
+message GetOrderRequest { string order_id = 1; }
+message GetOrderResponse { Order order = 1; }
+message CancelOrderRequest { string order_id = 1; string reason = 2; }
+message CancelOrderResponse { Order order = 1; }
 ```
 
----
+The messages are named from the Ubiquitous Language, not storage columns. Each method has its own request and response message so it can grow without a break. A language-specific option (a Go package path, a Java package) is added per stack by the code skills, not decided here.
 
-## Field Numbers Are Permanent
+## Field numbers are permanent
 
-The field number — the integer after `=` — is the wire identifier. protobuf encodes each field as a tag `(field_number << 3) | wire_type`; the field **name** never appears on the wire. Two consequences drive every rule below:
+The number after `=` is the wire identifier: a field is encoded as its number and wire type, and the name never appears on the wire. So:
+- a peer keys entirely on the number; if a number's meaning changes, every deployed peer mis-decodes;
+- a number a peer does not recognise is an unknown field, preserved so it can be re-emitted, which gives forward compatibility.
 
-1. A peer decoding a message keys entirely on the number. If a number's meaning changes, every already-deployed peer silently mis-decodes.
-2. A number it does not recognize is an *unknown field* — preserved (not dropped) so it can be re-emitted. This is what gives proto3 its forward compatibility.
+Numbering conventions: 1 to 15 encode in one byte, so keep them for hot, always-set fields; 16 to 2047 take two; 19000 to 19999 are reserved by protobuf and never used; leave deliberate gaps between logical groups.
 
-### Numbering conventions
+**`reserved`:** when a field is removed, reserve its number and its name in the same message. The number stops a later edit from re-homing that tag onto a new field (corrupting old peers); the name stops the old name returning with a new number and breaking source and JSON consumers.
 
-- **1–15** encode in one byte — reserve them for the hot, always-present fields.
-- **16–2047** encode in two bytes — everything else.
-- **19000–19999** are reserved by protobuf itself; never use them.
-- Leave intentional gaps between logical groups so related fields can be added contiguously later.
+## Presence
 
-### `reserved`
+| Declaration | Tracks presence | Use for |
+|---|---|---|
+| `string x = 1;` | No (unset equals `""`) | the zero value is a fine default |
+| `optional string x = 1;` | Yes | "not set" means something different from the zero value |
+| `repeated string x = 1;` | n/a | lists (empty list equals unset) |
+| `map<string, string> x = 1;` | n/a | keyed collections |
 
-When a field is removed, add its number **and** its name to a `reserved` statement in the same message:
+Adding or removing `optional` on a scalar is wire-compatible but changes generated code: a source-compatibility review, not a wire break.
 
-```protobuf
-reserved 9, 11, 12 to 15;
-reserved "legacy_owner_email", "old_status";
-```
-
-Reserving the **number** stops a future edit from re-homing that tag onto a new field (which would corrupt old peers). Reserving the **name** stops a future edit from re-introducing the old name with a new number (which breaks source-level consumers and JSON mappings). Reserve both.
-
----
-
-## Presence: default vs `optional` vs `repeated`
-
-| Declaration | Presence tracking | Zero value | Use for |
-|---|---|---|---|
-| `string x = 1;` (proto3 default) | No — cannot tell unset from zero | `""` / `0` / `false` | Fields where the zero value is a fine default |
-| `optional string x = 1;` | Yes — `has_x()` distinguishes unset | `""` but `has_x()==false` | Fields where "not set" is semantically different from the zero value |
-| `repeated string x = 1;` | N/A (list) | empty list | Lists; an empty list and "unset" are the same |
-| `map<string,string> x = 1;` | N/A (map) | empty map | Keyed collections |
-
-Adding `optional` to an existing non-optional scalar (or removing it) is **wire-compatible** but changes generated code — treat as a source-compatibility review, not a wire break.
-
----
-
-## Breaking vs Non-Breaking Change Classification
+## Breaking or not
 
 | Change | Breaking? | Notes |
 |---|---|---|
-| Add a new field with a fresh number | **No** | Old peers treat it as an unknown field |
-| Add a new method to a service | **No** | Old clients simply do not call it |
-| Add a value to an `enum` | **No (usually)** | Old peers map it to the field's default/unknown; ensure the zero value is a safe unknown |
-| Remove a field (and `reserved` its number+name) | **No, on the wire** | Old peers see the field as unset; coordinate if a consumer required it |
-| Rename a field (same number) | **No, on the wire** / **Yes, in source** | Wire keys on the number; generated code and JSON names change |
-| Reuse a `reserved`/removed number for a new field | **YES** | Old peers decode new bytes into the old field — silent corruption |
-| Renumber an existing field | **YES** | Changes wire identity for every peer |
-| Change a field's type incompatibly | **YES** | e.g. `string` → `int32`; decoder mis-parses |
-| Change `int32` ↔ `int64` ↔ `uint32` ↔ `bool` (all varint) | **Wire-compatible, value-risky** | Same wire type but truncation/sign surprises; treat as breaking unless proven safe |
-| Change a singular field to `repeated` of the same type | **Wire-compatible** | Decodes as a length-1 list; still review consumers |
-| Move a field into/out of a `oneof` | **YES** | Changes presence/wire semantics |
-| Delete a service method | **YES** | Callers break |
-| Change a method's request/response message type | **YES** | Signature change |
+| Add a field with a fresh number | No | old peers treat it as unknown |
+| Add a method to a service | No | old clients never call it |
+| Add an enum value | Usually no | old peers map it to the zero value; make the zero value a safe "unknown" |
+| Remove a field and `reserved` its number and name | No on the wire | coordinate if a consumer required it |
+| Rename a field (same number) | No on the wire, yes in source and JSON | the wire keys on the number |
+| Reuse a removed or reserved number | **Yes** | old peers decode new bytes into the old field: silent corruption |
+| Renumber a field | **Yes** | changes the wire identity |
+| Change a type incompatibly (`string` to `int32`) | **Yes** | the decoder mis-parses |
+| Change among varint types (`int32`, `int64`, `uint32`, `bool`) | Value-risky | same wire type but truncation and sign surprises; treat as breaking unless proven safe |
+| Move a field into or out of a `oneof` | **Yes** | changes presence semantics |
+| Delete a method | **Yes** | callers break |
+| Change a method's request or response type | **Yes** | signature change |
 
-Wire-type families (for judging "incompatible type change"): **varint** (`int32/int64/uint32/uint64/sint*/bool/enum`), **64-bit** (`fixed64/sfixed64/double`), **length-delimited** (`string/bytes/message/repeated`), **32-bit** (`fixed32/sfixed32/float`). A type change *within the same family* is wire-safe but may change values; a change *across families* is always a hard break.
+Wire families, for judging an incompatible type change: varint (`int32`, `int64`, `uint32`, `uint64`, `sint*`, `bool`, enums), 64-bit (`fixed64`, `sfixed64`, `double`), length-delimited (`string`, `bytes`, messages, `repeated`), 32-bit (`fixed32`, `sfixed32`, `float`).
 
----
+## Enums, oneof, well-known types
 
-## Enums, oneof, and Well-Known Types
+- **Enum:** declare a zero value named `*_UNSPECIFIED` so an unset or unknown value is a safe default, not an accidental real state; prefix values with the enum name.
+- **`oneof`:** at most one member set; member numbers share the message's number space; moving a field in or out is breaking.
+- **Well-known types:** prefer `Timestamp` for instants (never a raw epoch integer), `Duration` for spans, `FieldMask` for partial updates, and use `Struct` or `Any` only for a genuinely dynamic shape, since they defeat static typing.
 
-- **`enum`** — must declare a zero value (proto3 requirement); make it `*_UNSPECIFIED = 0` so an unset or unknown value is a safe default rather than an accidental real state. Enum value names are conventionally prefixed with the enum name (protobuf does not scope them). Adding values is non-breaking; never renumber existing values.
-- **`oneof`** — at most one member field is set; setting one clears the others. Field numbers inside a oneof share the message's number space. Moving a field in or out of a oneof is a breaking change.
-- **Well-known types** — prefer the standard imports over ad-hoc fields:
-  - `google.protobuf.Timestamp` for instants (never a raw `int64` epoch).
-  - `google.protobuf.Duration` for spans.
-  - `google.protobuf.FieldMask` for partial updates (the gRPC analog of the REST field-mask pattern in `api-contract-design`).
-  - `google.protobuf.Struct` / `Any` only when the shape is genuinely dynamic — they defeat static typing, so justify them.
+## Packages and versions
 
----
+The package carries the major version as its last segment (`shop.orders.v1`). A breaking redesign is a new package, `shop.orders.v2`, run beside `v1` until `v1` is retired. Within a major version only additive, non-breaking changes are allowed; anything marked breaking above forces a new package. One service per file is the default, and shared messages go in their own file and are imported. Generated code is never hand-edited.
 
-## Package and Versioning Convention
+## The CI gate
 
-- Package name carries the **major version** as the last segment: `dataestate.asset.v1`. A breaking redesign becomes `dataestate.asset.v2` — a *new* package that can run in parallel with `v1`, exactly like the `/v1` → `/v2` REST path bump in `api-contract-design`.
-- `option go_package = ".../gen/asset/v1;assetv1"` — the path before `;` is the import path of the generated code; the token after `;` is the Go package name.
-- One service per file is the default; co-locate the messages it owns. Shared messages go in their own `.proto` and are `import`ed.
-- Generated Go is checked in (or built in CI) under a `gen/` tree, never hand-edited.
+Compatibility is enforced, not remembered. A breaking-change check runs in CI against the main branch's protos and fails the build on a breaking change; **Buf** is the example tool (a lint step for style and a `breaking` step against the baseline, with rule categories from strictest, which flags source breaks and renames, to loosest, wire breaks only). A strict category is the safe default for an internal API with many consumers.
 
-Within a major version, **only additive, non-breaking changes are allowed** — the same additive-only discipline OpenAPI evolution follows. Anything in the "breaking" column above forces a new `vN` package.
-
----
-
-## Buf CI Lint Rule Categories
-
-Enforce the rules mechanically with [Buf](https://buf.build) so compatibility is gated, not remembered. Two commands run in CI:
-
-- **`buf lint`** — style/structure rules. Relevant categories:
-  - `MINIMAL` — the smallest set (e.g. package defined, no C++/Java keyword collisions).
-  - `BASIC` — adds naming: `ENUM_ZERO_VALUE_SUFFIX` (zero value ends `_UNSPECIFIED`), `FIELD_LOWER_SNAKE_CASE`, `SERVICE_SUFFIX` (services end `Service`).
-  - `STANDARD` (default) — adds `PACKAGE_VERSION_SUFFIX` (package ends `.vN`), `ENUM_VALUE_PREFIX`, `RPC_REQUEST_RESPONSE_UNIQUE`, `RPC_REQUEST_STANDARD_NAME` / `RPC_RESPONSE_STANDARD_NAME` (`GetFooRequest`/`GetFooResponse`).
-- **`buf breaking --against '.git#branch=main'`** — diffs the current protos against the `main` baseline and fails on any breaking change. Categories:
-  - `FILE` (strictest — flags wire *and* generated-source breaks, including field renames and file/package moves).
-  - `PACKAGE` (wire + source within a package, tolerant of file moves).
-  - `WIRE_JSON` (wire and JSON compatibility).
-  - `WIRE` (loosest — only wire-format breaks; permits renames).
-
-A typical `buf.yaml` uses `lint: use: [STANDARD]` and `breaking: use: [FILE]`. Wiring `buf breaking` into the PR check is what turns "never reuse a field number" from a code-review hope into an enforced gate — the field-number rules become a red build, not a production incident.
-
-Per-edit checklist (run before every proto PR):
-
-1. Am I reusing or renumbering an existing field number? → forbidden.
-2. Did I `reserved` the number **and** name of anything I removed? → required.
-3. Am I changing a field's type? → only within the same wire-type family, and only if values are proven safe.
-4. Is every new field additive with a fresh number and a sane zero-value default?
-5. Does `buf breaking` pass against `main`? → the build gate, not a memory test.
+Per-edit checklist: (1) reusing or renumbering a field number: forbidden; (2) a removed field's number and name reserved: required; (3) a type change: only within a wire family and only if values are proven safe; (4) a new field additive, with a fresh number and a sane zero value; (5) the breaking-change check passes against main.
