@@ -2269,7 +2269,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.4.0"
+        "version": "2.4.1"
       },
       {
         "created": "2026-06-24",
@@ -3169,14 +3169,14 @@
         "dir": "skills/api-gateway-design",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "api-gateway-design",
         "owner": "platform-engineer",
         "phase": "deploy",
@@ -3184,24 +3184,33 @@
           "api-gateway-design"
         ],
         "related": [
+          "access-control-model",
+          "api-contract-design",
+          "container-diagram",
           "environment-config",
           "gitops-workflow",
+          "glossary-management",
           "kubernetes-manifest",
+          "methodology-review",
+          "multi-tenancy-design",
           "zero-trust-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/api-gateway-patterns.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
           "api-gateway",
+          "authentication",
+          "declarative-config",
           "deploy",
           "edge",
-          "kong",
-          "mesh",
           "platform",
           "rate-limiting",
           "routing"
         ],
-        "version": "1.0.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-20",
@@ -11017,8 +11026,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1146,
-    "edges_skill_sources": 266,
+    "edges_skill_related": 1152,
+    "edges_skill_sources": 268,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -11032,18 +11041,18 @@
     "commands_with_test": 15,
     "research_files_cited": 72,
     "skills_with_assets": 8,
-    "skills_with_contract_test": 139,
+    "skills_with_contract_test": 138,
     "skills_with_domain": 189,
-    "skills_with_evals": 50,
-    "skills_with_examples": 50,
+    "skills_with_evals": 51,
+    "skills_with_examples": 51,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 49,
-    "skills_with_scripts": 45,
-    "skills_with_sources": 51,
+    "skills_with_resources": 50,
+    "skills_with_scripts": 46,
+    "skills_with_sources": 52,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 48
+    "skills_with_templates": 49
   },
   "edges": {
     "agent_produces": [
@@ -13102,6 +13111,18 @@
         "skill": "api-contract-design"
       },
       {
+        "related": "access-control-model",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "api-contract-design",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "api-gateway-design"
+      },
+      {
         "related": "environment-config",
         "skill": "api-gateway-design"
       },
@@ -13110,7 +13131,19 @@
         "skill": "api-gateway-design"
       },
       {
+        "related": "glossary-management",
+        "skill": "api-gateway-design"
+      },
+      {
         "related": "kubernetes-manifest",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "multi-tenancy-design",
         "skill": "api-gateway-design"
       },
       {
@@ -17574,6 +17607,14 @@
       {
         "skill": "api-contract-design",
         "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "api-gateway-design",
+        "source": "research/devops-and-delivery/api-gateway-patterns.md"
+      },
+      {
+        "skill": "api-gateway-design",
+        "source": "research/software-architecture/system-design-interview-xu.md"
       },
       {
         "skill": "beta-program-design",
