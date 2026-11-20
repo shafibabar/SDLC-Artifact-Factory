@@ -1,155 +1,84 @@
 ---
 name: api-gateway-design
 description: >
-  Design an edge API gateway for a microservices system: the gateway role at
-  the north-south boundary — routing/dispatch to upstreams, authentication
-  offload (validate the JWT/API key once at the edge), rate limiting and quota
-  enforcement, request/response transformation, and edge observability. Covers
-  the crucial gateway-vs-service-mesh distinction (north-south vs east-west;
-  complementary, not alternatives — the gateway is the ingress that terminates
-  TLS and applies edge policy before traffic enters the Linkerd mesh), the Kong
-  specifics (plugin model, declarative decK and Kong Ingress Controller CRDs,
-  DB-less mode), gateway-vs-BFF, and when a gateway is warranted. Used by the
-  platform-engineer during Deploy when a system needs a managed edge entry point.
-version: 1.0.0
+  Configure the edge API gateway that the container diagram placed, at Deploy:
+  start from the diagram's gateway section (gateway or none; a single
+  application needs no gateway, only an ingress); routes to upstreams; token
+  validation at the edge that proves who the caller is while every service still
+  verifies identity and decides authorization itself; rate limits chosen by
+  named algorithm (token bucket, leaky bucket, fixed or sliding window) at the
+  edge and again at the service, with an atomic shared store and a 429 with a
+  retry hint; generic header and body hygiene only, never business rules or
+  aggregation (that is a backend-for-frontend behind the gateway); edge
+  telemetry into the existing stack; configuration as reviewed declarative
+  files in version control on a stateless gateway, never edited live. The
+  gateway complements the service mesh; neither replaces the other. Kong is one
+  worked example. Use when configuring, reviewing or changing the gateway.
+  Used by platform-engineer.
+version: 2.0.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-31
-tags: [deploy, platform, api-gateway, kong, edge, routing, rate-limiting, mesh]
+tags: [deploy, platform, api-gateway, edge, routing, rate-limiting, authentication, declarative-config]
 produces: api-gateway-design
 domain: architecture
 status: stable
-related: [kubernetes-manifest, gitops-workflow, zero-trust-design, environment-config]
+related: [container-diagram, zero-trust-design, access-control-model, kubernetes-manifest, gitops-workflow, api-contract-design, multi-tenancy-design, environment-config, glossary-management, methodology-review]
+sources:
+  - research/devops-and-delivery/api-gateway-patterns.md
+  - research/software-architecture/system-design-interview-xu.md
 ---
 
 # API Gateway Design
 
 ## Purpose
 
-An API gateway is the single **north-south** entry point: the one front door through
-which all client-to-cluster traffic passes before it reaches any service. It collapses
-cross-cutting *edge* concerns into one policy-enforcement layer instead of smearing them
-across every service. This skill teaches the platform-engineer what the gateway does,
-where it sits relative to Ingress and the Linkerd mesh, and how to configure it
-declaratively under this repo's GitOps model.
+A gateway collapses edge concerns (routing, token validation, rate limits, edge telemetry) into one reviewed policy layer instead of repeating them in every service. Done badly it becomes an unowned service full of business rules, or a false comfort that lets services skip their own checks. **Readers:** platform-engineer, enterprise-architect, security-engineer, the product owner (what the edge protects and what it does not). **Question:** what does the gateway route, check and limit, what stays out of it, and how is its configuration changed safely?
 
-Kong is the concrete illustration because the platform names it, but the *role*
-generalizes to any gateway (Envoy/Contour, Traefik, NGINX Ingress, Gateway-API
-implementations). Nothing here commits the repo to Kong — the frugality rule applies if a
-lighter gateway meets the same edge-policy and declarative-config needs.
+The research behind this skill is a synthesis of Kong's documentation, Newman and Xu, not one book; the role is vendor-neutral and Kong is one example (`./references/kong-example.md`). Whether there is a gateway at all, where it sits and what it may hold is decided at Design on the container diagram (`container-diagram`, § Gateway Placement); this skill configures what that diagram placed. The output is `artifacts/<product>/deploy/api-gateway-design.md` (`./templates/api-gateway-design.md`); the default stack names no gateway, so the product is the one agreed, or a proposal pending an ADR.
 
-## The Gateway's Responsibilities — Edge Policy, Configured Not Coded
+| Profile | What this holds |
+|---|---|
+| Lean | Usually nothing: one application, so the ingress routes to it and it validates tokens itself. A short note says so |
+| Standard | Routes, token validation, rate limits, generic transforms, telemetry, and how configuration is changed |
+| Enterprise | As standard, plus the gateway per region, an owner, the shared limit store, and the rollout and rollback of a config change |
 
-The gateway owns exactly the client-agnostic cross-cutting concerns at the outer boundary:
+## Procedure
 
-- **Routing / dispatch** — match the request and forward it to the correct upstream service.
-- **Authentication offload** — validate the JWT / API key **once**, at the edge, and reject
-  anonymous traffic, so downstream services trust an already-authenticated request. The
-  gateway proves *who*; it is **not** the authorization authority (see below).
-- **Rate limiting and quota enforcement** — cap throughput per client/tenant so one caller
-  cannot exhaust shared edge capacity.
-- **Request/response transformation** — add/strip/rename headers, reshape bodies at the edge
-  (generic reshaping only — client-specific aggregation belongs in a BFF).
-- **Edge observability** — request logs, latency, and status-code metrics for all ingress
-  traffic, emitted into the existing stack.
+1. **Read** the container diagram's gateway section (gateway or none, what it holds, where client-specific shaping lives), the API contracts (routes and their auth), the NFR specification (traffic, abuse risk), the tenancy model, and `sdlc-config.json`.
+2. **Confirm there is a gateway.** The diagram says none (a single application): configure the ingress only, with TLS, routing and logs, and stop; the application validates tokens itself. Say what would change that (several deployables behind one public API, per-key limits).
+3. **Choose the product** from what is agreed; with none agreed, name one as a proposal pending an ADR. The role does not change with the product.
+4. **Define the routes** (`./references/edge-policy.md`): path or host to upstream, the owner, and the auth requirement of each, taken from the API contracts.
+5. **Set authentication at the edge:** validate the token, reject anonymous traffic, and forward verified claims. It proves *who* only: authorization, ABAC and any tenant rule stay in each service, and every service verifies identity itself; a header the gateway adds is never trusted on its own.
+6. **Design the rate limits** (`./references/rate-limiting.md`): name the algorithm and why, the key (caller, API key, partner), the limit, the layer (edge and again at the service for endpoint-specific limits), the shared store and its atomic operation, and the `429` with a retry hint.
+7. **Keep transforms generic:** add a request id, strip internal headers, normalise. No business rule, and no aggregation of several services for one screen (a backend-for-frontend behind the gateway does that).
+8. **Wire edge telemetry** into the existing observability stack: request logs, latency, 4xx and 5xx, throughput per caller.
+9. **Manage configuration as files** (`./references/configuration-and-operations.md`): declarative, in version control, a diff against the running gateway reviewed before a change ships, a stateless gateway, never a live edit in an admin UI or API.
+10. **Validate and loop:** run `./scripts/validate-api-gateway-design.sh <file>`, fix every FAIL, re-run until clean; then `./resources/checklist.md`.
+11. **Present** with the reason for every request declined (§ Gotchas). Always state: whether there is a gateway at all, and where it sits (per region too), is a Design decision made by the enterprise-architect on the container diagram, and configuring it is the platform-engineer's task at Deploy, so "install Kong" is first a design decision; the default tech stack names no gateway, so the product is an agreed choice or a proposal pending an ADR, never "because the platform names it"; the gateway holds client-agnostic edge policy only: TLS termination, routing, token validation that rejects anonymous traffic, rate limits, generic header hygiene and edge logs and metrics (no business rules, no aggregation, no authorization); every service still verifies identity, and a gateway-added header is never trusted alone; each rate limit names its algorithm, layers and shared store; configuration lives in version control as a reviewed diff, and the gateway or ingress is stateless and disposable (database-less in Kong); the gateway and the mesh are complementary, not alternatives; Kong is an example, not a default; tenant isolation is never stated as a given unless the product is stated multi-tenant; and no implementation code appears in the answer. Answering in a reply: the declined requests and their reasons once, then the design once, without its YAML frontmatter block.
 
-The load-bearing principle: edge policy is **declared, not reimplemented per service**. Full
-plugin catalog, config, and worked examples are in `references/kong-configuration.md`.
+Examples: `./examples/01-lean-no-gateway.md` (a single application asking for Kong), `./examples/02-standard-gateway-and-backend-for-frontend.md` (business logic and aggregation kept out of the gateway), `./examples/03-enterprise-regional-gateways.md` (per-region gateways, a named rate-limit algorithm and reviewed config changes).
 
-## The Distinction That Governs Everything — Gateway vs. Service Mesh
+## Gotchas
 
-This is the single most-confused distinction and the most important one for this repo.
-
-| Plane | Traffic | Governs | Enforced by (here) |
-|---|---|---|---|
-| **North-South** | client → cluster (crossing the outer boundary) | routing, edge authn, rate limit, TLS termination, edge telemetry | the **gateway** |
-| **East-West** | service → service (already inside the cluster) | mTLS identity, retries, per-call telemetry between pods | the **mesh** (Linkerd) |
-
-They solve **different planes** — you do not pick one *or* the other, you run **both**. A
-request hits the gateway first (TLS termination, authn, rate limit), then travels the mesh
-(mTLS, retries) between services.
-
-**The category error to prevent:** treating "we have Linkerd" as a reason to skip a gateway,
-or "we have a gateway" as a reason to skip the mesh. Equally wrong: doing edge authn in the
-mesh sidecar, or inter-service mTLS in the gateway. Edge policy belongs at the gateway;
-service identity belongs in the mesh; neither substitutes for the other. The full two-plane
-treatment, placement topology, and TLS-termination-then-handoff flow are in
-`references/gateway-vs-mesh-and-placement.md`.
-
-## Where the Gateway Sits — It *Is* the Ingress in Front of the Mesh
-
-In a Kubernetes + Linkerd topology the gateway **is the ingress**: it terminates client TLS,
-applies edge policy (authn, rate limit, transform), and only then hands traffic into the mesh
-— where Linkerd re-encrypts with mTLS and manages east-west calls. The gateway is the
-outermost trust-boundary crossing; the mesh is the internal identity fabric.
-
-This resolves the `kubernetes-manifest` "ingress-gateway" NetworkPolicy peer: that opaque box
-is the gateway/ingress-controller workload — Kong as a Kong Ingress Controller (KIC) — with
-its own config, plugins, and TLS-termination responsibility. Placement diagram in
-`references/gateway-vs-mesh-and-placement.md`.
-
-## Authn at the Edge, Authz in the App
-
-Use a gateway auth plugin (jwt / OIDC) to **validate** the token and reject anonymous traffic,
-then forward verified claims downstream (e.g., as trusted headers). Do **not** move ABAC /
-tenant authorization into the gateway — those stay in application code (this repo's
-`zero-trust-design` stance: the edge proves *who*, the app decides *what they may do*).
-Pushing authz into gateway plugins recreates the "smart gateway" anti-pattern and splits the
-authorization model across two layers. The gateway thins the attack surface; it is not the
-authorization authority.
-
-## Gateway vs. BFF
-
-- A **gateway** is *generic*, client-agnostic edge policy shared by all clients.
-- A **BFF** (Backend-for-Frontend) is a *per-client-experience* service — one for web, one for
-  mobile — that aggregates and reshapes multiple downstream calls into exactly what that one
-  frontend needs.
-
-Rule of thumb (Newman): put cross-cutting, client-agnostic concerns (authn, rate limit, TLS)
-in the gateway; put client-specific aggregation and payload shaping in a **BFF behind** the
-gateway. Overloading the gateway with client-specific response shaping recreates a monolithic,
-hard-to-change edge — the "smart gateway" anti-pattern. Keep the gateway's plugin set small and
-generic. Extended contrast in `references/gateway-vs-mesh-and-placement.md`.
-
-## When a Gateway Is Warranted
-
-- **Warranted** when: multiple services need one managed front door; edge authn/rate-limit/TLS
-  would otherwise be duplicated across services; a single reviewed edge-policy surface in Git is
-  wanted; per-tenant edge quotas are needed as defense in depth alongside per-namespace limits.
-- **Not yet** when: a single service with no cross-cutting edge concerns — a plain Ingress may
-  suffice until a second consumer or an edge policy appears. Do not stand up a gateway as
-  ceremony; stand it up when a client-agnostic edge concern exists to house.
-
-## Declarative, GitOps-Managed, DB-less
-
-The gateway's entire routing-and-policy surface is a **reviewed file in version control**, never
-clicks in an admin UI. In-cluster: express routes and plugins as Kong Ingress Controller CRDs
-(`KongPlugin`, `KongConsumer`) reconciled from Git the same way Helm/OpenTofu state is.
-Off-cluster: **decK** diffs/syncs a YAML of the whole config against a running Kong. Run
-**DB-less** so a gateway pod carries no state a restore plan must cover — config *is* the
-manifest, and the pod is disposable and reproducible. Full plugin families, decK/KIC config,
-DB-less boot, and per-Consumer rate limiting are in `references/kong-configuration.md`.
-
-## Edge Telemetry Into the Existing Stack
-
-Turn on Kong's request logging/metrics and export to **Prometheus** (and traces to **Tempo** via
-OpenTelemetry) so edge latency, 4xx/5xx rates, and per-Consumer throughput land in the same
-**Grafana** the mesh and services already use — one pane, edge plus interior.
+- **"Put the loyalty discount calculation in the gateway."** *Reason:* a gateway with business rules becomes an unowned service every context depends on. *Instead:* the rule lives in the owning service; the gateway only routes to it.
+- **"Compose the dashboard payload from three services in the gateway."** *Reason:* client-specific aggregation makes the edge a monolith that changes with every screen. *Instead:* a backend-for-frontend behind the gateway.
+- **"The gateway validated the token, so services can skip the check."** *Reason:* a request can reach a service without passing the gateway, and no actor is trusted by position. *Instead:* every service verifies identity and decides authorization; the gateway is the first check.
+- **"Trust the user-id header the gateway adds."** *Reason:* a header is only as trustworthy as the path it travelled. *Instead:* services read identity from the verified token, never from a header alone.
+- **"Check which partner may see which record in a gateway plugin."** *Reason:* that splits the authorization model across two layers that drift. *Instead:* authorization stays in the services; the gateway proves who.
+- **"Just add a rate limiter."** *Reason:* "a limiter" is not a decision; algorithms differ in burst tolerance and memory cost, and a check-then-increment can race. *Instead:* name the algorithm, the layers, the key, and the shared store with an atomic operation.
+- **"Edit the route in the admin UI during the incident."** *Reason:* a live edit is unreviewed, unrecorded and lost at the next deploy. *Instead:* a change to the files in version control, with the diff reviewed, applied the normal way; in an incident, an expedited review or a rollback to the previous reviewed files.
+- **"Install Kong to be safe" for one application.** *Reason:* a gateway in front of one application is another system to run with nothing to house. *Instead:* the ingress routes to the application, which validates tokens; add a gateway when several deployables share a public API or per-key limits appear.
+- **"We have a mesh, so no gateway" (or the reverse).** *Reason:* they cover different planes: the gateway guards traffic entering the cluster, the mesh guards service-to-service traffic. *Instead:* both where both exist.
+- **"One rate limit per tenant."** *Reason:* tenancy is not a plugin default. *Instead:* limit per caller or key; limit per tenant only for a multi-tenant product (`multi-tenancy-design`).
 
 ## References
 
-- `references/gateway-vs-mesh-and-placement.md` — the north-south/east-west split in depth, the
-  gateway-as-ingress-in-front-of-mesh topology, TLS termination + edge-auth handoff to app ABAC,
-  and the BFF distinction with a worked aggregation example.
-- `references/kong-configuration.md` — the Kong plugin model (auth / traffic-control /
-  transformation families), declarative decK config + Kong Ingress Controller CRDs on Kubernetes,
-  DB-less mode, and GitOps-managed gateway config with per-tenant Consumer rate limiting.
-
-## Quality Criteria
-
-- Exactly one north-south arrow on the Container Diagram (client → gateway/ingress); every
-  in-cluster arrow is east-west (mesh). An edge concern on an east-west arrow, or an internal
-  concern (mTLS, retries) on the north-south arrow, is a misplacement to fix before shipping.
-- Gateway config lives in Git as KIC CRDs or a decK YAML — no live admin-API mutation.
-- The gateway validates *who* only; ABAC/tenant authz stays in the application.
-- The gateway does not replace the mesh, and the mesh does not replace the gateway.
+| Question | File |
+|---|---|
+| Routes, authentication versus authorization, identity, generic transforms, the backend-for-frontend boundary | `./references/edge-policy.md` |
+| Rate-limit algorithms, layers, the shared store, the `429` response | `./references/rate-limiting.md` |
+| Declarative config in version control, the reviewed diff, a stateless gateway, telemetry, rollout | `./references/configuration-and-operations.md` |
+| One worked example (Kong) | `./references/kong-example.md` |
+| The artifact | `./templates/api-gateway-design.md` |
+| Checking before hand-off | `./resources/checklist.md` |
