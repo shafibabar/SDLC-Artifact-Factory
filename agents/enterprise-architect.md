@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.10.6
+version: 1.10.7
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -83,7 +83,7 @@ The enterprise-architect does not produce domain models, implementation code, or
 - Event-driven pattern decisions per flow, written as a section of the Integration Design: classification, publication, ordering and delivery (`event-driven-patterns`)
 - Workflow orchestration design for each flow Richardson's rule says to orchestrate: one pivot per saga, a written compensation for each step before it, a persisted coordinator that does no business work, timeouts and a semantic lock (`workflow-orchestration`)
 - Message broker selection: whether a broker is needed at all, then the replay question per workload, one broker unless two workloads differ, and an ADR for the choice (`message-broker-selection`)
-- gRPC contracts, where a service exposes gRPC
+- gRPC contracts, only for an internal service-to-service boundary with a named reason (REST stays the public and browser interface): written first, field numbers permanent, errors and deadlines specified, compatibility gated in CI (`grpc-contract-design`)
 - The CQRS read-side decision per Bounded Context (`cqrs-pattern`), made before the domain-modeler designs Read Models
 - Architecture evaluation against the NFR scenarios
 
