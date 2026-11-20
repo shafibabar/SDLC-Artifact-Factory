@@ -2122,7 +2122,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.6"
+        "version": "1.10.7"
       },
       {
         "created": "2026-06-25",
@@ -6481,14 +6481,14 @@
         "dir": "skills/grpc-contract-design",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "grpc-contract-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -6497,22 +6497,30 @@
         ],
         "related": [
           "api-contract-design",
+          "api-gateway-design",
+          "container-diagram",
+          "glossary-management",
           "go-grpc-handler",
-          "go-openapi-codegen",
-          "integration-design"
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "python-grpc-handler"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/grpc-up-and-running.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md"
+        ],
         "status": "stable",
         "tags": [
-          "api",
           "architecture",
+          "compatibility",
           "contract-first",
           "design",
           "grpc",
           "protobuf",
           "streaming"
         ],
-        "version": "1.0.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-24",
@@ -11009,8 +11017,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 198,
     "edges_skill_produces": 194,
-    "edges_skill_related": 1141,
-    "edges_skill_sources": 264,
+    "edges_skill_related": 1146,
+    "edges_skill_sources": 266,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 189,
@@ -11022,20 +11030,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 71,
+    "research_files_cited": 72,
     "skills_with_assets": 8,
-    "skills_with_contract_test": 140,
+    "skills_with_contract_test": 139,
     "skills_with_domain": 189,
-    "skills_with_evals": 49,
-    "skills_with_examples": 49,
+    "skills_with_evals": 50,
+    "skills_with_examples": 50,
     "skills_with_produces": 189,
     "skills_with_references": 184,
-    "skills_with_resources": 48,
-    "skills_with_scripts": 44,
-    "skills_with_sources": 50,
+    "skills_with_resources": 49,
+    "skills_with_scripts": 45,
+    "skills_with_sources": 51,
     "skills_with_status": 189,
     "skills_with_steps": 0,
-    "skills_with_templates": 47
+    "skills_with_templates": 48
   },
   "edges": {
     "agent_produces": [
@@ -15138,15 +15146,35 @@
         "skill": "grpc-contract-design"
       },
       {
+        "related": "api-gateway-design",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "grpc-contract-design"
+      },
+      {
         "related": "go-grpc-handler",
         "skill": "grpc-contract-design"
       },
       {
-        "related": "go-openapi-codegen",
+        "related": "integration-design",
         "skill": "grpc-contract-design"
       },
       {
-        "related": "integration-design",
+        "related": "methodology-review",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "python-grpc-handler",
         "skill": "grpc-contract-design"
       },
       {
@@ -17946,6 +17974,14 @@
       {
         "skill": "go-repository-pattern",
         "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+      },
+      {
+        "skill": "grpc-contract-design",
+        "source": "research/software-architecture/grpc-up-and-running.md"
+      },
+      {
+        "skill": "grpc-contract-design",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
       },
       {
         "skill": "gtm-strategy",

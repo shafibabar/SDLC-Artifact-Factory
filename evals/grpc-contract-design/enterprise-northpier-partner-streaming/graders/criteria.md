@@ -1,0 +1,16 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It keeps the partner API on REST with OpenAPI, not gRPC: the public, browser-facing or partner-facing surface stays REST because partners integrate with JSON tooling and browsers need a gRPC-Web proxy; gRPC is for internal service-to-service calls and is chosen per boundary for a named reason, not as one style everywhere (`grpc-up-and-running.md`, Actionable Techniques, "Reserve gRPC for internal service-to-service traffic"; Caveats, "gRPC is not a REST replacement"; Applies To, `api-contract-design` row).
+2. It rejects server streaming for every list call: unary is the default; streaming is used only when the data flow is a stream (large or open-ended results emitted as produced, such as a live tide or vessel-position feed), because streaming complicates retries, load balancing and back-pressure. Bounded lists such as berths or invoices are unary, with pagination (`grpc-up-and-running.md`, Actionable Techniques, "Choose the method shape from the data flow, not habit").
+3. It treats the `draft_cm` int32 to `draft_m` double change in place as a breaking, wire-incompatible type change on field 6 and refuses it: instead add a new field with a fresh number (and deprecate the old one, then `reserved` its number and name once consumers have moved), or publish the redesign as a new `.v2` package run beside `.v1` (`grpc-up-and-running.md`, Core Concepts, "never change a field's type in an incompatible way"; Actionable Techniques, compatibility checklist). The package carries the major version.
+4. It says compatibility is gated by a breaking-change check in CI (for example Buf), not remembered, and ties this to a strict typed contract coupling the 12 services more tightly than a tolerant-reader JSON contract would (`grpc-up-and-running.md`, Actionable Techniques; `software-architecture-hard-parts-ford.md`, Core Concepts, static coupling versus loose contracts).
+5. It rejects "the mesh authenticates callers, so no token checks": every service verifies the caller's token itself, taken from metadata, and the mesh or gateway is only a first check; identity comes from the verified token, not the request body (D047-12; `grpc-up-and-running.md`, Core Concepts, metadata and interceptors).
+6. It raises the gRPC load-balancing caveat for the Kubernetes deployment: gRPC multiplexes many requests over one long-lived HTTP/2 connection, so connection-level (L4) balancing pins traffic to one backend, and per-request balancing is needed, which is a platform concern to hand to the platform engineer (`grpc-up-and-running.md`, Applies To, service mesh row; Caveats, "The Linkerd L7-balancing point").
+7. It uses the standard proto discipline in any `.proto` fragment it shows: a version in the package (`.v1`), an enum with a zero value named `*_UNSPECIFIED`, and no reused or renumbered field numbers (`grpc-up-and-running.md`, Core Concepts, "Field numbers are the wire contract").
+8. It does not assume per-tenant physical isolation or a tenant metadata key, since the request does not say Northpier Marine is multi-tenant (D047-7).
+9. The reply contains no Go, Python or other implementation code. `.proto` fragments and example status codes are the contract and are allowed, and are not counted as code (D047-10).
+Fail if any of the 9 is missing.
