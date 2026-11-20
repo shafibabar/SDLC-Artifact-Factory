@@ -1,0 +1,15 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It refuses to renumber `weekly_rate_cents` and `horse_id`: the field number, not the name, is the wire identity, and renumbering an existing field silently corrupts data for deployed Billing and Stable-Hands clients (`grpc-up-and-running.md`, Core Concepts, "Field numbers are the wire contract"; Actionable Techniques, compatibility checklist; `wave-2-findings.md`, grpc-contract-design eval idea (a)). It offers to leave the numbers as they are, or add a new field with a fresh number if grouping is wanted.
+2. It says that `legacy_rate_code` must be deleted with both its number (4) and its name added to a `reserved` clause, so no later edit reuses them, and does not accept "leave nothing behind" (`grpc-up-and-running.md`, Actionable Techniques, "Did I `reserved` the number (and name) of anything I removed? required").
+3. It rejects `INTERNAL` for a missing stall: the answer is `NOT_FOUND`, because `INTERNAL` is reserved for genuine bugs, and domain conditions use `NOT_FOUND`, `INVALID_ARGUMENT` or `FAILED_PRECONDITION` (`grpc-up-and-running.md`, Actionable Techniques, "Map domain errors to gRPC codes through one status writer"; `wave-2-findings.md`, grpc-contract-design eval idea (b)).
+4. It rejects returning the database error text: internal error strings are never leaked to callers, and the machine-readable reason goes in structured error details (a reason code, field violations), with domain errors mapped through one place (`grpc-up-and-running.md`, Actionable Techniques, same bullet).
+5. It rejects the client-local 2-second timeout as the deadline mechanism: a gRPC deadline is an absolute time set on every call, propagated to the server, which honours it by deriving its work from the incoming context and stopping on `DEADLINE_EXCEEDED`; Billing sets the deadline and Boarding propagates it downstream (`grpc-up-and-running.md`, Core Concepts, "Deadlines, cancellation, and metadata"; Actionable Techniques, "Set a deadline on every client call and honor it server-side").
+6. It gives a safe edit of the proto as a `.proto` fragment: field 3 and 5 keep their meaning, `reserved 4;` and `reserved "legacy_rate_code";` are present, and any new field takes a fresh number (6 or higher) (`grpc-up-and-running.md`, Core Concepts, field numbers).
+7. It says the compatibility rules must be enforced by a breaking-change check in CI (for example Buf), because two separate teams consume the proto, and that a strict typed contract couples producer and consumer more tightly than loose JSON, so the check is not left to memory (`grpc-up-and-running.md`, Actionable Techniques, "Run a schema-diff/breaking-change linter (e.g. Buf) in CI"; `software-architecture-hard-parts-ford.md`, Core Concepts, static coupling).
+8. The reply contains no Go, Python or other implementation code. `.proto` fragments and example status codes are the contract and are allowed, and are not counted as code (D047-10).
+Fail if any of the 8 is missing.
