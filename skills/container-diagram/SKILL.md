@@ -16,7 +16,7 @@ description: >
   carried unchanged from the system context. Use when drawing, reviewing or
   changing a container diagram, deciding services or a modular monolith,
   placing a gateway, or drawing a deployment view. Used by enterprise-architect.
-version: 3.1.0
+version: 3.1.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -24,7 +24,7 @@ tags: [design, architecture, c4-model, container-diagram, service-decomposition,
 produces: container-diagram
 domain: architecture
 status: stable
-related: [system-context-diagram, component-diagram, bounded-context-mapping, multi-tenancy-design, integration-design, api-gateway-design, cqrs-pattern, adr-authoring, nfr-specification, sdlc-config-management, kubernetes-manifest, go-project-structure, glossary-management, methodology-review]
+related: [system-context-diagram, component-diagram, bounded-context-mapping, multi-tenancy-design, integration-design, api-gateway-design, cqrs-pattern, adr-authoring, nfr-specification, sdlc-config-management, kubernetes-manifest, go-project-structure, glossary-management, methodology-review, architecture-evaluation]
 sources:
   - research/software-architecture/c4-model-brown.md
   - research/software-architecture/documenting-software-architectures-clements.md
@@ -107,7 +107,7 @@ Detail and vocabulary: `./references/deployment-view.md`. Why the two views stay
 
 - **Title** `Container diagram for <System>`, **readers and question**, **key** (types, solid sync, dashed async, what an arrow means) (Brown).
 - **ASCII primary** inside a system boundary box, with the catalog tables; **Mermaid `C4Container` optional**, never at lean (D047-13); the deployment view in ASCII or a table, Mermaid `C4Deployment` optional.
-- **Catalog:** containers; communication matrix (from, to, what flows, protocol, sync or async); context to deployable mapping. **Rationale:** why this shape. **Fitness functions** (Richards & Ford): the automated check that keeps each rule true (a module import test, no cross-schema queries, one writer per table).
+- **Catalog:** containers; communication matrix (from, to, what flows, protocol, sync or async); context to deployable mapping. **Rationale:** why this shape. **Fitness functions** (Richards & Ford): the automated check that keeps each rule true (a module import test, no cross-schema queries, one writer per table); the evaluation of the whole design against its scenarios is `architecture-evaluation`.
 
 ## Procedure
 

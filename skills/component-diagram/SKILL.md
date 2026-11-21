@@ -15,7 +15,7 @@ description: >
   fitness function that keeps the domain free of frameworks. Use when drawing,
   reviewing or deciding whether to draw a component diagram, or checking a
   service's layering and dependency direction. Used by enterprise-architect.
-version: 3.0.0
+version: 3.0.1
 phase: design
 owner: enterprise-architect
 created: 2026-06-25
@@ -23,7 +23,7 @@ tags: [design, architecture, c4-model, component-diagram, module-view, layering,
 produces: component-diagram
 domain: architecture
 status: stable
-related: [container-diagram, system-context-diagram, go-project-structure, go-service-layer, go-repository-pattern, go-makefile, context-map-patterns, cqrs-pattern, read-model-design, workflow-orchestration, integration-design, multi-tenancy-design, sdlc-config-management, adr-authoring, glossary-management, methodology-review]
+related: [container-diagram, system-context-diagram, go-project-structure, go-service-layer, go-repository-pattern, go-makefile, context-map-patterns, cqrs-pattern, read-model-design, workflow-orchestration, integration-design, multi-tenancy-design, sdlc-config-management, adr-authoring, glossary-management, methodology-review, architecture-evaluation]
 sources:
   - research/software-architecture/c4-model-brown.md
   - research/software-architecture/documenting-software-architectures-clements.md
@@ -76,7 +76,7 @@ A departure adds a role (an anti-corruption adapter, a projector, a coordinator)
 - Domain depends on nothing but the language's standard library; use cases on the domain; entry points on use cases; adapters on the domain, by **implementing ports the domain declares**.
 - That last crossing uses **Dependency Inversion**: the inner ring owns the interface, the outer ring conforms. Dependency Inversion is one mechanism of the Dependency Rule, not a synonym for it.
 - **Forbidden:** the domain importing a framework or driver (database, HTTP router, broker client); an entry point reaching the database directly, even "just for a read" (it skips use cases, authorization and idempotency).
-- **A fitness function enforces it** (Richards & Ford, `fundamentals-of-software-architecture-richards-ford.md`): an automated import check in the build that fails when the domain imports outside the standard library (default stack: `go-makefile`'s `arch` target). The diagram names it; without it the arrows are a wish.
+- **A fitness function enforces it** (Richards & Ford, `fundamentals-of-software-architecture-richards-ford.md`): an automated import check in the build that fails when the domain imports outside the standard library (default stack: `go-makefile`'s `arch` target). The diagram names it; without it the arrows are a wish. The practice of proposing fitness functions across the design is `architecture-evaluation`'s.
 
 Rings, port ownership, forbidden dependencies, violations and fixes: `./references/layering-and-dependency-rules.md`.
 

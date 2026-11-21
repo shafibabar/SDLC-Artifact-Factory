@@ -15,7 +15,7 @@ description: >
   task spans agents, the owner or order of a decision is unclear, an agent
   finds a defect in another agent's artifact, or a phase resumes after an
   interruption. Used by every agent that hands DDD work on.
-version: 3.0.0
+version: 3.0.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-22
@@ -23,7 +23,7 @@ tags: [design, ddd, cross-cutting, governance, handoff, agents, ownership]
 produces: handoff-record
 domain: domain-modeling
 status: stable
-related: [subdomain-distillation, event-storming-facilitation, ubiquitous-language, bounded-context-mapping, context-map-patterns, aggregate-design, domain-event-catalog, event-schema-design, command-catalog, cqrs-pattern, read-model-design, container-diagram, multi-tenancy-design, workflow-orchestration, glossary-management]
+related: [subdomain-distillation, event-storming-facilitation, ubiquitous-language, bounded-context-mapping, context-map-patterns, aggregate-design, domain-event-catalog, event-schema-design, command-catalog, cqrs-pattern, read-model-design, container-diagram, multi-tenancy-design, workflow-orchestration, glossary-management, architecture-evaluation]
 sources:
   - research/devops-and-delivery/platform-engineering-fournier-nowland.md
   - research/domain-driven-design/learning-ddd-khononov.md
@@ -55,7 +55,7 @@ Which agent owns a concern, what must be decided before it, and how the work pas
 | Components (only for services that differ from the default) | enterprise-architect | `component-diagram` | containers |
 | Choreography, outbox, consumers; orchestration and sagas; broker | enterprise-architect | `event-driven-patterns`; `workflow-orchestration` (D047-3); `message-broker-selection` | the event catalog |
 | External integrations; HTTP and gRPC contracts | enterprise-architect | `integration-design`; `api-contract-design`, `grpc-contract-design` | Commands and Read Models |
-| ADRs; architecture evaluation | enterprise-architect | `adr-authoring`; `architecture-evaluation` (being built, #1411) | the decisions they record |
+| ADRs; architecture evaluation | enterprise-architect | `adr-authoring`; `architecture-evaluation` | the decisions they record |
 | Physical data model, canonical data model | data-architect | `data-model-design`, `canonical-data-model` | Aggregates and Read Models |
 | Threats, access control, privacy, compliance design | security-architect | `access-control-model`, `privacy-design`, `compliance-design` | the domain model |
 | Code: Aggregates, handlers, publishers, consumers, projectors | backend-engineer | the stack's skills (`go-*` or `python-*`) | Design approved |

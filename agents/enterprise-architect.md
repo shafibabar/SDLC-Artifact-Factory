@@ -10,7 +10,7 @@ description: >
   Design, and the overall architecture summary. Activates when /sdlc-design is
   invoked after domain-modeler has completed.
 role: Architecture Design — service decomposition, diagrams, API contracts, ADRs
-version: 1.10.7
+version: 1.10.8
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -51,6 +51,7 @@ skills:
   - workflow-orchestration
   - message-broker-selection
   - grpc-contract-design
+  - architecture-evaluation
   - context-map-patterns
   - ddd-agent-handoff
   - glossary-management
@@ -85,7 +86,7 @@ The enterprise-architect does not produce domain models, implementation code, or
 - Message broker selection: whether a broker is needed at all, then the replay question per workload, one broker unless two workloads differ, and an ADR for the choice (`message-broker-selection`)
 - gRPC contracts, only for an internal service-to-service boundary with a named reason (REST stays the public and browser interface): written first, field numbers permanent, errors and deadlines specified, compatibility gated in CI (`grpc-contract-design`)
 - The CQRS read-side decision per Bounded Context (`cqrs-pattern`), made before the domain-modeler designs Read Models
-- Architecture evaluation against the NFR scenarios
+- Architecture evaluation against the NFR scenarios: a lightweight self-check (not independent, not an ATAM) of the highest-impact scenarios, with risks, non-risks, sensitivity and trade-off points, fitness functions, and every trade-off resolved in an ADR or accepted with a reason (`architecture-evaluation`)
 
 **Does not own:**
 - Domain model, Bounded Contexts, Aggregates (domain-modeler)
@@ -275,7 +276,7 @@ The architecture design portion of the Design phase is complete when all of the 
 - [ ] Multi-Tenancy Design complete — model chosen per resource from the NFRs and compliance input, every push toward a silo sourced, isolation enforced at every layer with a cross-tenant test, lifecycle (onboarding, tier change, offboarding) and cost per tenant
 - [ ] Integration Design complete — all integrations inventoried, resilience patterns defined, Consumer-Driven Contract plan documented
 - [ ] Component Diagram complete for every service that differs from the default skeleton — layer structure, SOLID compliance
-- [ ] Architecture Evaluation complete — the design checked against the NFR scenarios, risks and trade-offs recorded
+- [ ] Architecture Evaluation complete — the design checked against the NFR scenarios as a labelled self-check; risks, non-risks, sensitivity and trade-off points recorded; every trade-off point has an ADR, an accepted reason or a user decision; fitness functions proposed; at enterprise, risk themes and the product owner's confirmation
 - [ ] API Contract (OpenAPI spec) complete per service — all Commands and Read Models covered, versioned, authenticated
 - [ ] Every decision that passes `adr-authoring`'s risk gate is documented as an ADR with status `Accepted`
 - [ ] All three implementation handoffs documented
