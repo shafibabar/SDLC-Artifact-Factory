@@ -1,109 +1,41 @@
 # Legacy Transformation Guidance
 
-Per *Domain-Driven Transformation* (Lilienthal & Schwentner). Self-contained
-— loadable without reading `SKILL.md` first, though it assumes the
-Core/Supporting/Generic classification from there. Applies specifically to
-an **existing, already-built system** — greenfield subdomain distillation
-doesn't need this file; the sequencing question it answers ("which
-subdomain do we touch first") only exists once there's a legacy system with
-real risk and organizational inertia to work around.
+The detail behind `SKILL.md` § 7. Applies only to a system that already exists; a new product doesn't need it. Grounded in Evans (*Domain-Driven Design*, Ch. 15: Segregated Core), Khononov (*Learning Domain-Driven Design*: types change over time) and Newman (*Building Microservices*: the Strangler Fig and its mechanics), as summarised in `research/`. The sequencing rules in § 1 are this plugin's own guidance, built on those sources; they are labelled as such.
 
----
+## 1. Classification decides the order
 
-## Classification Drives Sequencing, Not Just Investment
+For a new product, the type mainly decides effort. For an existing system it also decides **which subdomain is touched first**. Getting that wrong either spends credibility on a change nobody values, or takes on large risk before anyone trusts the new approach.
 
-For a greenfield product, Core/Supporting/Generic classification mainly
-answers an investment question (how much modeling effort). For a legacy
-transformation, it also answers a **sequencing** question: which subdomain
-gets touched first. Get this wrong and a transformation effort either burns
-credibility on a low-value change or takes on unacceptable risk before
-anyone trusts the new approach.
+**This plugin's sequencing rules:**
 
-**Prioritize a subdomain for transformation when it is:**
+1. **Start with a Core subdomain.** Its value secures the funding and attention a transformation needs. A transformation that starts with something Generic struggles to justify itself.
+2. **…whose risk is bounded.** Not the most tangled, riskiest part of the system, even if it is Core. A failed first step kills appetite for the rest. Choose a Core piece where a mistake has a contained blast radius.
+3. **…and where people already feel the pain.** A subdomain the business already complains about builds momentum faster than one chosen on technical grounds.
+4. **Replace Generic subdomains; don't migrate them.** If a product now exists for something the old system built by hand (a common result of a type changing over time, Khononov), replacing it is usually cheaper and safer than untangling and preserving custom code that never needed to be custom.
+5. **Supporting subdomains wait**, and are migrated when the Core work needs them or when they block something.
 
-1. Genuinely **Core** — real business value, which secures stakeholder buy-in
-   and sustained funding for the effort (a transformation that starts with a
-   Generic subdomain struggles to justify itself to leadership).
-2. **Bounded technical risk** — don't start with the most tangled, highest-
-   risk part of the system even if it's Core. A failed first transformation
-   attempt kills appetite for the rest. Start where the Core Domain value is
-   real but the blast radius of getting it wrong is contained.
-3. Backed by **existing organizational pain** — a subdomain stakeholders
-   already feel friction with builds momentum faster than one chosen on
-   pure technical merit.
+## 2. Moving a piece: the Strangler Fig
 
-**Generic subdomains in a legacy system are usually replace, not migrate**
-candidates — if a bought solution exists, replacing a legacy Generic
-subdomain outright is often lower-risk and lower-effort than painstakingly
-untangling and preserving custom legacy code for something that was never
-supposed to be custom-built. Reserve migration effort for Core and
-Supporting subdomains.
+Once the first subdomain is chosen, it moves while the old system keeps running (Newman). A new implementation grows around the old capability and gradually takes its traffic until the old code path can be deleted. Newman's three mechanics:
 
-## Strangler Fig, Sequenced by Classification
+| Mechanic | What it does | Use when |
+|---|---|---|
+| **Intercepting at the edge** | A routing layer in front of the old system sends specific requests to the new implementation and everything else to the old one | The capability is reachable through distinct requests or URLs |
+| **Branch by Abstraction** | An interface is introduced inside the old system in front of the capability; callers depend on the interface while the implementation behind it is swapped | The capability is called from inside the old code, not from outside |
+| **Parallel Run** | Old and new run side by side on the same input; outputs are compared before traffic moves | Getting it wrong is costly (money, compliance), so equivalence must be shown, not assumed |
 
-Once a Core subdomain is chosen, extract it into its own Bounded Context
-incrementally while the legacy system keeps running (the Strangler Fig
-pattern) — classification tells you *which* piece to strangle first (the
-chosen Core subdomain) and which pieces can safely wait longest (Generic —
-least valuable to touch, and per above, often a replace-not-migrate
-candidate rather than something worth strangling at all).
+Where the edge-routing layer goes is an architecture decision for `container-diagram`.
 
-If the chosen Core subdomain's code is currently tangled with Generic or
-Supporting concerns (a common legacy state), apply **Segregated Core** (see
-`classification-techniques.md`) as the concrete first step — the Strangler
-Fig extraction target *is* the segregated Core once separated.
+If the chosen Core subdomain's code is tangled with generic or supporting concerns (common in old systems), **Segregated Core** (`./classification-techniques.md` § 5) is the first step: the separated Core is what the Strangler Fig then moves.
 
-## Classification Is Organizationally Political
+## 3. Classification is contested in an existing organisation
 
-Unlike a greenfield product where classification is mostly a modeling
-judgment call, in a legacy transformation **different stakeholders
-genuinely disagree about what's Core** — engineering, product, leadership,
-and different business units carry different histories and incentives.
-Treat classification as a **collaborative workshop outcome**, not a
-unilateral technical ruling. Where `ddd-agent-handoff`'s conflict resolution
-gives domain-modeler final say on Context Map disputes (a modeling-
-correctness question), subdomain-classification disagreements in a
-transformation are a **business prioritization** question — resolve them by
-facilitation and stakeholder sign-off, not by one agent's authority.
+In a new product, classification is mostly a modelling judgement. In an existing organisation, people disagree about what is Core: departments, leaders and engineers carry different histories and incentives. The domain-modeler drafts the classification with its evidence, but a disputed label is a **business priority** decision for the product owner, not something the agent settles on its own authority. Present the disagreement, the evidence on each side and what each choice would mean for the order of work.
 
-## Domain Vision Board
+## 4. Transformation order table
 
-A lightweight, single-page artifact for socializing *why* a subdomain is
-classified Core and prioritized, aimed at stakeholders beyond engineering —
-expressed as a Miro board spec per `miro-board-notation`, since it's meant
-to be built and reviewed collaboratively in a workshop, not read as prose.
+Recorded in the classification artifact for an existing system:
 
-Color Legend: `blue` = filled-in content, `gray` = section label.
-
-**Items:**
-
-| ID | Type | Content | Frame | Color |
+| Subdomain | Type | Tangle and risk | Order | Why |
 |---|---|---|---|---|
-| F1 | frame | Domain Vision Board — `<subdomain name>` | — | — |
-| L1 | sticky_note | Target users/stakeholders | F1 | gray |
-| V1 | sticky_note | `<who actually uses or is affected by this>` | F1 | blue |
-| L2 | sticky_note | Needs addressed | F1 | gray |
-| V2 | sticky_note | `<what problem this solves for them>` | F1 | blue |
-| L3 | sticky_note | Why this is Core | F1 | gray |
-| V3 | sticky_note | `<the specific competitive/business reason>` | F1 | blue |
-| L4 | sticky_note | Transformation priority + rationale | F1 | gray |
-| V4 | sticky_note | `<tier and why, per the sequencing rules above>` | F1 | blue |
-| L5 | sticky_note | Explicitly out of scope | F1 | gray |
-| V5 | sticky_note | `<what this transformation effort will not touch>` | F1 | blue |
-
-**Connectors:** none — this board is a filled-in form, not a relationship
-diagram.
-
-## Transformation Prioritization Table
-
-Once classification (per `SKILL.md`) is done for every identifiable
-subdomain in the legacy system, sequence the transformation:
-
-| Subdomain | Classification | Current tangle/risk | Priority tier | Rationale |
-|---|---|---|---|---|
-| `<name>` | Core / Supporting / Generic | Low / Medium / High | 1st / 2nd / Replace-not-migrate | `<one line>` |
-
-Tier 1 goes to Core subdomains with bounded risk (per the sequencing rules
-above). Generic subdomains default to "Replace-not-migrate" rather than a
-numbered tier at all, unless a specific reason argues for preserving the
-legacy implementation.
+| [name] | Core / Supporting / Generic | Low / Medium / High | 1st, 2nd, … / Replace / Later | [one line, citing the rule in § 1] |

@@ -11,11 +11,8 @@ tiers can perform.
 
 ## 1. Why Two Tiers Is Not Enough
 
-`command-catalog` (design phase) already names two validation layers: Layer 1,
-Structural — "checks that the Command payload is well-formed... this is the API
-handler's responsibility... these checks never touch the database" — and Layer 2,
-Business Rule — "checks invariants that require domain state — enforced by the
-Aggregate Root." Read literally, those two definitions leave a gap: a check that
+Two validation layers — structural input checks that never touch the database, and
+business rules the Aggregate Root enforces — leave a gap: a check that
 *does* require the database (so it cannot be Layer 1) but is *not* an invariant of the
 Aggregate this Command targets (so it does not belong inside that Aggregate's method
 either) has no named home. That gap is real, not theoretical — "does the user this
@@ -24,7 +21,8 @@ business rule to enforce about `User` rows; asking `DataAsset.AssignOwner` to re
 into a `users` table to check would make the Aggregate impure (`go-domain-model`'s
 Purity Rule: domain imports only stdlib, `uuid`, `time` — no repository, no I/O of any
 kind). This skill names that gap explicitly as this layer's own tier, sitting between
-the other two.
+the other two; `command-catalog` records it per rejection as the kind *reference
+invalid*, checked in the application.
 
 ---
 

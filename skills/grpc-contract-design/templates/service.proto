@@ -1,0 +1,33 @@
+// Path: artifacts/<product>/design/<service>/<name>.proto — one service per file by default.
+// Optional at lean (one deployable has no service boundary). Names come from the Ubiquitous Language.
+// The package carries the major version; a breaking redesign is a new .vN package beside the old one.
+// Field numbers are permanent: never reuse or renumber; reserve the number AND name of a removed field.
+// Language-specific options (a Go package path, a Java package) are added by the code skills, not here.
+syntax = "proto3";
+
+package [product].[context].v1;
+
+// [One line: who calls this service, and why it is gRPC and not REST (see the Integration Design row).]
+service [Name]Service {
+  // Unary is the default. Use a stream only when the data flow is a stream.
+  rpc Get[Thing](Get[Thing]Request) returns (Get[Thing]Response);
+}
+
+message [Thing] {
+  string [thing]_id = 1;        // 1 to 15 take one wire byte: hot fields first
+  // ... leave deliberate gaps; add new fields with fresh numbers
+  optional string [note] = 8;   // optional where unset differs from the zero value
+
+  // A removed field: reserve its number and its name, never reuse them.
+  // reserved 9;
+  // reserved "[old_name]";
+}
+
+enum [Thing]Status {
+  [THING]_STATUS_UNSPECIFIED = 0;   // the zero value is a safe "unknown"
+  [THING]_STATUS_[STATE] = 1;
+}
+
+// One request and one response message per method, so each can grow without a break.
+message Get[Thing]Request { string [thing]_id = 1; }
+message Get[Thing]Response { [Thing] [thing] = 1; }

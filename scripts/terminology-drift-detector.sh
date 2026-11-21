@@ -2,7 +2,8 @@
 # terminology-drift-detector.sh — PostToolUse hook, matcher: Write|Edit
 # Purpose: warn (never block) when a written or edited artifact uses a drifted form of
 #          a canonical glossary term, per the Drift Quick Reference table in
-#          skills/glossary-management/SKILL.md.
+#          skills/glossary-management/SKILL.md, or a synonym banned in the
+#          product's own per-Bounded-Context ubiquitous-language.md (D047-9).
 # Contract: JSON on stdin (PostToolUse schema). Exit 0 = clean. Exit 1 =
 #           non-blocking warning (message on stderr) — work is never stopped
 #           for terminology; it's reported for a human/agent to fix.
@@ -56,6 +57,61 @@ hits = []
 for pattern, canonical in DRIFT_PATTERNS:
     for m in pattern.finditer(content):
         hits.append(f"'{m.group(0)}' found — canonical form is '{canonical}'")
+
+# --- The product's own banned synonyms (D047-9) ---
+# Each Bounded Context's artifacts/<product>/design/<context>/ubiquitous-language.md
+# carries a "## Banned Synonyms" table: banned word(s), comma-separated, then the
+# term to use instead. A file inside design/<context>/ is checked against that
+# context's bans; any other file in the product against every context's bans,
+# except a word that is canonical in some context (a homonym, legitimate there).
+import glob, os
+
+def table_rows(text, heading):
+    rows, inside = [], False
+    for line in text.splitlines():
+        if line.startswith("## "):
+            inside = line[3:].strip().lower().startswith(heading)
+            continue
+        if inside and line.strip().startswith("|"):
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if cells and not set(cells[0]) <= set("-: "):
+                rows.append(cells)
+    return rows[1:]  # drop the header row
+
+def clean(word):
+    return word.strip().strip("*`'\"").strip()
+
+norm = file_path.replace("\\", "/")
+m = re.match(r"(.*/artifacts/[^/]+)/(.*)$", norm)
+if m and not norm.endswith("/ubiquitous-language.md"):
+    product_dir, rel = m.groups()
+    bans, canonical_terms = {}, set()
+    for doc in sorted(glob.glob(os.path.join(product_dir, "design", "*", "ubiquitous-language.md"))):
+        context = os.path.basename(os.path.dirname(doc))
+        try:
+            text = open(doc, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        for cells in table_rows(text, "terms"):
+            canonical_terms.add(clean(cells[0]).lower())
+        for cells in table_rows(text, "banned synonyms"):
+            if len(cells) < 2:
+                continue
+            use = clean(cells[1])
+            canonical_terms.add(use.lower())
+            for word in re.split(r"[,;]", cells[0]):
+                if clean(word):
+                    bans.setdefault(context, []).append((clean(word), use))
+    in_context = re.match(r"design/([^/]+)/", rel)
+    if in_context and in_context.group(1) in bans:
+        applicable = [(w, u, in_context.group(1)) for w, u in bans[in_context.group(1)]]
+    else:
+        applicable = [(w, u, c) for c, pairs in bans.items() for w, u in pairs
+                      if w.lower() not in canonical_terms]
+    for word, use, context in applicable:
+        pattern = re.compile(r"(?<![\w-])" + re.escape(word) + r"(?:s|es)?(?![\w-])", re.I)
+        for hit in pattern.finditer(content):
+            hits.append(f"'{hit.group(0)}' is banned in the {context} Ubiquitous Language — use '{use}'")
 
 if not hits:
     sys.exit(0)

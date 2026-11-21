@@ -9,7 +9,7 @@ description: >
   scanning, penetration test coordination, and the compliance evidence pipeline.
   Activates during the Implement and Quality phases.
 role: Security Implementation — Go security controls, compliance tests, evidence pipeline
-version: 1.4.0
+version: 1.4.1
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -87,7 +87,7 @@ Security controls are not optional features — they are load-bearing components
 | Access Control Model | `artifacts/[product]/design/security/access-control-model.md` | Required |
 | Secrets Management Design | `artifacts/[product]/design/security/secrets-management.md` | Required |
 | Compliance Design | `artifacts/[product]/design/security/compliance-design.md` | Required |
-| Component Diagrams | `artifacts/[product]/design/[service]/component-diagram.md` | Required — package structure |
+| Component Diagrams | `artifacts/[product]/design/[service]/component-diagram.md` | Only for services that differ from the default skeleton — package structure; a default service follows `go-project-structure` (or the configured stack's equivalent) |
 | API Contracts | `artifacts/[product]/design/[service]/openapi.yaml` | Required — endpoints to protect |
 
 ---

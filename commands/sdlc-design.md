@@ -3,16 +3,17 @@ description: Run the Design phase — domain model, architecture, UX, data, secu
 disable-model-invocation: true
 ---
 
-Drive the Design phase of the SDLC Artifact Factory. This phase invokes five agents in a strict dependency order — do not reorder or parallelize the first two steps.
+Drive the Design phase of the SDLC Artifact Factory. This phase invokes five agents in a strict dependency order — do not reorder or parallelize steps 3 to 5.
 
 Invoke every agent named below via the Agent tool with `subagent_type: "sdlc-artifact-factory:<agent-name>"`; each agent's definition is `${CLAUDE_PLUGIN_ROOT}/agents/<agent-name>.md` — never search the filesystem for it.
 
 1. Run `"${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py" status`. If no product exists, tell the user to run `/sdlc-start` first and stop. Confirm `phases.ideate.status` is `approved`; if not, tell the user in plain language what the Ideate phase still needs (the output lists it) and that `/sdlc-ideate` finishes it, and stop.
 2. Check which Design artifacts already exist per agent. Do not re-produce approved artifacts unless the user explicitly asks for a revision.
-3. **Invoke `domain-modeler` first.** It Event Storms the domain(s) and produces the Ubiquitous Language, Context Map, Aggregate designs, Domain Event catalog, Command catalog, and Read Model designs. Everything downstream depends on this. Wait for it to complete and be approved.
-4. **Invoke `enterprise-architect` second**, giving it domain-modeler's output plus the NFR specification. It produces the System Context Diagram, Container Diagram, Component Diagrams, ADRs, API contracts, Integration Design, and Multi-Tenancy Design. Wait for it to complete and be approved.
-5. **Invoke `ux-architect`, `data-architect`, and `security-architect`**, each given the domain model and container diagram they depend on. These three can be run in either order relative to each other — each declares its own inputs and will surface a blocker if something it needs is missing.
-6. When all five agents report completion, ask the user to approve the Design phase and record it (see **Approvals** below), and tell the user the next step is `/sdlc-implement`. Remind them `/sdlc-event-storm` can be re-run standalone later if a new subdomain needs modelling.
+3. **Invoke `domain-modeler` first.** It runs Event Storming and classifies the subdomains, then produces the Ubiquitous Language, Context Map, Aggregate designs, Domain Event catalog and Command catalog (lean: one domain-model document). Everything downstream depends on this. Wait for it to complete and be approved, up to the point where it hands over for the read-side decision.
+4. **Invoke `enterprise-architect` for the read-side decision**, giving it the domain-modeler's output. It decides the read side for each Bounded Context with `cqrs-pattern` and writes `design/architecture/cqrs-decisions.md` (skipped at lean). Then **invoke `domain-modeler` again** to design the Read Models that decision calls for.
+5. **Invoke `enterprise-architect` for the architecture**, giving it the domain model plus the NFR specification. It produces the System Context Diagram, the Container Diagram (service decomposition, gateway placement and the deployment view), the Multi-Tenancy Design, Integration Design, any orchestration, broker and gRPC decisions, Component Diagrams for services that differ from the default, ADRs, API contracts, the Architecture Evaluation and the Architecture Summary. Wait for it to complete and be approved.
+6. **Invoke `ux-architect`, `data-architect`, and `security-architect`**, each given the domain model and container diagram they depend on. These three can be run in either order relative to each other — each declares its own inputs and will surface a blocker if something it needs is missing.
+7. When all five agents report completion, ask the user to approve the Design phase and record it (see **Approvals** below), and tell the user the next step is `/sdlc-implement`. Remind them `/sdlc-event-storm` can be re-run standalone later if a new subdomain needs modelling.
 
 ## What to produce
 

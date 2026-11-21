@@ -10,7 +10,7 @@ description: >
   enterprise, writing evals under evals/<skill>/, or choosing a version bump.
   Consulted at the start of every skill-refactor session. Cross-cutting
   governance skill alongside glossary-management and methodology-review.
-version: 2.1.0
+version: 2.2.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-23
@@ -83,6 +83,20 @@ Where a book in `research/` informs the content, draw on it. Name it in the pros
 
 Give as many examples as the variety of real use demands: none for a lookup skill, several for a skill used across products. Order them from the simplest real case to the hardest the skill will meet: multi-tenant isolation, high availability, multi-tier, multi-region, scale. Each example is a self-contained input → output pair, so the agent can generalise from it rather than fall back on generic knowledge.
 
+## The Body: Procedures, Gotchas and Loops
+
+How the body is written matters as much as where its files sit. The product owner set these practices for every rebuilt skill (2026-11-02), following Anthropic's published guidance on authoring Agent Skills. Each applies where the skill has the shape it fits, and the rubric (Q15–Q20) checks it.
+
+- **Coherent units.** Each folder file covers one job that is loaded for one reason (a stage, a lookup, a template). It isn't a chunk cut to length. A file the agent must read alongside another file every time is one unit split in two.
+- **Procedures over declarations.** Where the skill drives work, write the numbered steps the agent follows ("1. Read X. 2. Split until … 3. Check …"), not only statements of what is true. Keep declarations for criteria and rules the steps apply.
+- **Gotchas.** A `## Gotchas` section lists the non-obvious traps where a capable model goes wrong, each stated as the wrong move, why it is wrong, and what to do instead. It is fed by evidence, above all failing eval replies. It differs from Anti-Patterns, which name general bad designs a reviewer would recognise. Keep it short and specific.
+- **Templates for output formats.** Every artifact the skill produces has a copy-and-fill file in `templates/`, and the body points to it at the step that writes the artifact.
+- **Checklists for multi-step workflows.** A workflow of more than a few steps gets a checklist in `resources/`, which the agent copies and ticks as it goes.
+- **Validation loops.** The procedure ends with a loop, not a single check: validate → fix → validate again, until clean. Where the check is mechanical, it is a script.
+- **Plan, validate, execute.** For a change that is costly to undo (a rename across media, a migration, a published contract), the agent first writes the plan as a reviewable list, validates the plan (a script or the checklist), and only then carries it out.
+- **Bundled scripts.** A check or calculation that is deterministic goes in `scripts/` with a test, not in prose for the model to redo each time. Running a script costs only its output in context; prose costs its full length on every load.
+- **Spend context wisely.** The body holds only what the agent needs on every use. Detail sits behind a pointer that says when to open it. Don't explain what a capable model already knows; spend the words on what it gets wrong.
+
 ## Testing: Behaviour, Not Coherence
 
 - **Evals.** Write cases at `evals/<skill>/<case>/prompt.md` with `graders/*.md`. Each asks something only the skill's content answers well, ideally content behind a pointer, so passing also proves progressive disclosure works. Run `tests/run-skill-evals.sh <skill>`. It passes only if every case passes **and** the skill beats the no-plugin baseline. A skill that scores the same without the plugin adds nothing Claude didn't already know.
@@ -110,7 +124,8 @@ List every skill the prose names in the optional `related:` field. A prose "see 
 **Refactoring a skill:**
 - **Move files.** Run `python3 scripts/arch/migrate-skill-layout.py <skill>`. It does a dry run by default; add `--apply` to execute. It moves only unambiguous templates and examples, rewrites every pointer, and lists mixed files for you to split.
 - **Augment.** Add research where it applies, and add examples at the scales the skill meets.
-- **Test.** Have a fresh subagent write its evals, freeze them, then run them (see Testing above).
+- **Apply the body practices.** Procedures, a Gotchas section, templates, checklists, a validation loop, plan-validate-execute where changes are costly, and scripts for mechanical checks (see The Body above).
+- **Test.** Have a fresh subagent write its evals, freeze them, then run them (see Testing above). Feed what the failing replies show into Gotchas.
 
 **Before calling it done:** cross-check the skill against every row of `./resources/skill-quality-rubric.md`, not just the gap that motivated the work, then run the checks:
 - `bash scripts/validate-skill-structure.sh skills/<name>/SKILL.md` — frontmatter, body length, and the full folder spec via `scripts/lint-skill-layout.py`;

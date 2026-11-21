@@ -1,0 +1,11 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It keeps patient identity and consent in the design and security reviews. It says security sensitivity is a separate axis from Core / Supporting / Generic: identity and consent can be Generic (buying a product is fine) and still be highly security-sensitive, so it gets Core-level design scrutiny, with the consent and access rules the hospital owns still modelled even if the identity product is bought (secure-by-design, Core Concepts: "Security sensitivity is an axis orthogonal to Core/Supporting/Generic", Ch. 3; Actionable: tag each subdomain with a sensitivity rating and review the two ratings side by side).
+2. It rejects the single-weekend big-bang cutover and proposes replacing the monolith incrementally with the Strangler Fig, naming at least one concrete mechanic and how it applies here: Branch by Abstraction (an interface inside the monolith in front of the capability being extracted), Parallel Run (old and new produce outputs for the same referrals and are compared before cutover), or routing at the edge (a proxy sends chosen routes to the new code) (building-microservices-newman, Core Concepts: Strangler Fig execution techniques, Ch. 2 "Splitting the Monolith").
+3. It addresses the triage rules being tangled with letters and scheduling code in the legacy module by naming an Evans distillation technique for pulling the Core out and making it visible, such as Segregated Core (refactor the Core concepts out of the mixed module into their own part, separate from the supporting code), Highlighted Core, or a Domain Vision Statement for the Core (strategic-design supplement, Core Concepts: "Distillation tools make the Core visible", Evans Ch. 15; domain-driven-design-evans).
+4. It rejects splitting triage into six microservices straight away. It says the Core's model is the least stable, so boundaries round a Core subdomain start wide and are split once the model settles, because splitting early and wrongly costs far more than splitting late, and that a Bounded Context need not be a microservice (strategic-design supplement, Core Concepts: "Contexts are not microservices, and are not meant to be as small as possible", Khononov's start-wide heuristic).
+Fail if any of the 4 is missing.

@@ -39,7 +39,9 @@
       ]
     },
     "api-gateway-design": {
-      "agents": [],
+      "agents": [
+        "platform-engineer"
+      ],
       "skills": [
         "api-gateway-design"
       ]
@@ -48,6 +50,12 @@
       "agents": [],
       "skills": [
         "adr-authoring"
+      ]
+    },
+    "architecture-evaluation": {
+      "agents": [],
+      "skills": [
+        "architecture-evaluation"
       ]
     },
     "assumption-test": {
@@ -169,7 +177,8 @@
     "context-map": {
       "agents": [],
       "skills": [
-        "bounded-context-mapping"
+        "bounded-context-mapping",
+        "context-map-patterns"
       ]
     },
     "cqrs-design": {
@@ -287,6 +296,12 @@
       "agents": [],
       "skills": [
         "domain-event-catalog"
+      ]
+    },
+    "domain-model": {
+      "agents": [],
+      "skills": [
+        "aggregate-design"
       ]
     },
     "domain-story": {
@@ -744,12 +759,6 @@
       "agents": [],
       "skills": [
         "opportunity-solution-tree"
-      ]
-    },
-    "pattern-selection-rationale": {
-      "agents": [],
-      "skills": [
-        "context-map-patterns"
       ]
     },
     "performance-regression-gate": {
@@ -1274,6 +1283,7 @@
       "artifacts": [
         "api-gateway-design",
         "architecture-decision-record",
+        "architecture-evaluation",
         "broker-selection-rationale",
         "component-diagram",
         "container-diagram",
@@ -1289,11 +1299,12 @@
         "enterprise-architect",
         "platform-engineer"
       ],
-      "skill_count": 12,
+      "skill_count": 13,
       "skills": [
         "adr-authoring",
         "api-contract-design",
         "api-gateway-design",
+        "architecture-evaluation",
         "component-diagram",
         "container-diagram",
         "event-driven-patterns",
@@ -1430,7 +1441,7 @@
         "data-architect",
         "data-engineer"
       ],
-      "skill_count": 14,
+      "skill_count": 15,
       "skills": [
         "analytics-requirements",
         "canonical-data-model",
@@ -1444,6 +1455,7 @@
         "data-retention-policy",
         "data-storytelling",
         "document-data-modeling",
+        "event-schema-design",
         "metrics-instrumentation-plan",
         "reporting-spec"
       ]
@@ -1492,21 +1504,20 @@
         "context-map",
         "cqrs-design",
         "domain-event-catalog",
+        "domain-model",
         "domain-story",
-        "event-schema",
         "event-storming-session",
         "handoff-record",
-        "pattern-selection-rationale",
         "read-model",
         "subdomain-classification",
         "ubiquitous-language"
       ],
       "owners": [
-        "backend-engineer",
         "domain-modeler",
+        "enterprise-architect",
         "factory-governance"
       ],
-      "skill_count": 13,
+      "skill_count": 12,
       "skills": [
         "aggregate-design",
         "bounded-context-mapping",
@@ -1516,7 +1527,6 @@
         "ddd-agent-handoff",
         "domain-event-catalog",
         "domain-storytelling",
-        "event-schema-design",
         "event-storming-facilitation",
         "read-model-design",
         "subdomain-distillation",
@@ -1634,6 +1644,7 @@
       ],
       "artifacts": [
         "alerting-rules-design-document",
+        "api-gateway-design",
         "blameless-postmortem",
         "canary-rollout-plan",
         "cd-pipeline-config",
@@ -1981,7 +1992,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.3.0"
+        "version": "2.4.1"
       },
       {
         "created": "2026-07-20",
@@ -2030,7 +2041,7 @@
         "created": "2026-06-25",
         "domain": null,
         "file": "agents/domain-modeler.md",
-        "has_acceptance_test": false,
+        "has_acceptance_test": true,
         "name": "domain-modeler",
         "phase": "design",
         "produces": [],
@@ -2070,7 +2081,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.4.0"
+        "version": "1.9.0"
       },
       {
         "created": "2026-06-25",
@@ -2084,6 +2095,7 @@
         "skills": [
           "adr-authoring",
           "api-contract-design",
+          "architecture-evaluation",
           "component-diagram",
           "container-diagram",
           "context-map-patterns",
@@ -2091,11 +2103,14 @@
           "ddd-agent-handoff",
           "event-driven-patterns",
           "glossary-management",
+          "grpc-contract-design",
           "integration-design",
           "memory-recall",
+          "message-broker-selection",
           "methodology-review",
           "multi-tenancy-design",
-          "system-context-diagram"
+          "system-context-diagram",
+          "workflow-orchestration"
         ],
         "status": null,
         "tags": [
@@ -2116,7 +2131,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.6.0"
+        "version": "1.10.8"
       },
       {
         "created": "2026-06-25",
@@ -2197,6 +2212,7 @@
         "phase": "deploy",
         "produces": [
           "alerting-rules-design-document",
+          "api-gateway-design",
           "canary-rollout-plan",
           "cd-pipeline-config",
           "ci-pipeline-workflow",
@@ -2218,6 +2234,7 @@
         "role": "Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks",
         "skills": [
           "alerting-rules-design",
+          "api-gateway-design",
           "blue-green-deployment",
           "canary-deployment",
           "cd-pipeline",
@@ -2261,7 +2278,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.3.0"
+        "version": "2.4.1"
       },
       {
         "created": "2026-06-24",
@@ -2454,7 +2471,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.4.0"
+        "version": "1.4.1"
       },
       {
         "created": "2026-06-25",
@@ -2975,44 +2992,58 @@
         "created": "2026-06-25",
         "dir": "skills/aggregate-design",
         "domain": "domain-modeling",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "aggregate-design",
         "owner": "domain-modeler",
         "phase": "design",
         "produces": [
-          "aggregate-design"
+          "aggregate-design",
+          "domain-model"
         ],
         "related": [
           "access-control-model",
           "bounded-context-mapping",
+          "command-catalog",
           "cqrs-pattern",
           "domain-event-catalog",
+          "event-driven-patterns",
+          "event-storming-facilitation",
           "go-domain-model",
           "go-repository-pattern",
-          "skill-authoring-standards",
-          "subdomain-distillation"
+          "read-model-design",
+          "subdomain-distillation",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/security/secure-by-design.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/microservices-patterns-richardson.md"
+        ],
         "status": "stable",
         "tags": [
           "aggregate",
+          "concurrency",
+          "consistency-boundary",
           "ddd",
           "design",
+          "domain-modeling",
           "entity",
           "event-sourcing",
-          "go",
           "invariants",
           "value-object"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -3097,15 +3128,15 @@
         "created": "2026-06-25",
         "dir": "skills/api-contract-design",
         "domain": "architecture",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "api-contract-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -3113,11 +3144,23 @@
           "openapi-specification"
         ],
         "related": [
+          "api-gateway-design",
           "command-catalog",
-          "read-model-design",
-          "skill-authoring-standards"
+          "cqrs-pattern",
+          "glossary-management",
+          "go-contract-test",
+          "grpc-contract-design",
+          "integration-design",
+          "methodology-review",
+          "python-contract-test",
+          "read-model-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/api-design-patterns-geewax.md",
+          "research/software-architecture/api-first-transformation-lane.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/testing/testing-web-apis-winteringham.md"
+        ],
         "status": "stable",
         "tags": [
           "api-first",
@@ -3125,23 +3168,24 @@
           "contract-first",
           "design",
           "openapi",
-          "rest"
+          "rest",
+          "versioning"
         ],
-        "version": "2.3.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-31",
         "dir": "skills/api-gateway-design",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "api-gateway-design",
         "owner": "platform-engineer",
         "phase": "deploy",
@@ -3149,22 +3193,79 @@
           "api-gateway-design"
         ],
         "related": [
+          "access-control-model",
+          "api-contract-design",
+          "container-diagram",
           "environment-config",
           "gitops-workflow",
+          "glossary-management",
           "kubernetes-manifest",
+          "methodology-review",
+          "multi-tenancy-design",
           "zero-trust-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/api-gateway-patterns.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
           "api-gateway",
+          "authentication",
+          "declarative-config",
           "deploy",
           "edge",
-          "kong",
-          "mesh",
           "platform",
           "rate-limiting",
           "routing"
+        ],
+        "version": "2.0.0"
+      },
+      {
+        "created": "2026-11-20",
+        "dir": "skills/architecture-evaluation",
+        "domain": "architecture",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": true,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "architecture-evaluation",
+        "owner": "enterprise-architect",
+        "phase": "design",
+        "produces": [
+          "architecture-evaluation"
+        ],
+        "related": [
+          "adr-authoring",
+          "component-diagram",
+          "container-diagram",
+          "event-storming-facilitation",
+          "glossary-management",
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "nfr-specification"
+        ],
+        "sources": [
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md",
+          "research/software-architecture/software-architecture-in-practice-bass.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "architecture",
+          "design",
+          "evaluation",
+          "fitness-functions",
+          "quality-attributes",
+          "risks",
+          "tactics",
+          "trade-offs"
         ],
         "version": "1.0.0"
       },
@@ -3197,7 +3298,7 @@
           "registry",
           "traceability"
         ],
-        "version": "2.6.0"
+        "version": "2.8.0"
       },
       {
         "created": "2026-06-25",
@@ -3337,14 +3438,14 @@
         "dir": "skills/bounded-context-mapping",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "bounded-context-mapping",
         "owner": "domain-modeler",
         "phase": "design",
@@ -3353,23 +3454,32 @@
         ],
         "related": [
           "aggregate-design",
+          "container-diagram",
           "context-map-patterns",
+          "domain-storytelling",
           "event-storming-facilitation",
-          "glossary-management",
-          "subdomain-distillation"
+          "subdomain-distillation",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/domain-storytelling-hofer-schwentner.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/strategic-design-supplement.md",
+          "research/software-architecture/building-microservices-newman.md"
+        ],
         "status": "stable",
         "tags": [
+          "agent-run",
+          "boundary",
           "bounded-context",
           "context-map",
           "ddd",
           "design",
-          "domain-modeling",
-          "subdomain",
-          "team-topology"
+          "domain-modeling"
         ],
-        "version": "2.1.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-24",
@@ -3585,14 +3695,14 @@
         "dir": "skills/command-catalog",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "command-catalog",
         "owner": "domain-modeler",
         "phase": "design",
@@ -3600,23 +3710,35 @@
           "command-catalog"
         ],
         "related": [
+          "access-control-model",
           "aggregate-design",
           "api-contract-design",
           "cqrs-pattern",
-          "domain-event-catalog"
+          "domain-event-catalog",
+          "event-storming-facilitation",
+          "go-chi-handler",
+          "go-domain-model",
+          "go-service-layer",
+          "read-model-design",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/software-architecture/api-design-patterns-geewax.md"
+        ],
         "status": "stable",
         "tags": [
-          "aggregates",
-          "command-handler",
+          "command-catalog",
           "commands",
           "cqrs",
           "design",
           "domain-modeling",
+          "idempotency",
           "validation"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -3755,14 +3877,14 @@
         "dir": "skills/component-diagram",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "component-diagram",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -3771,25 +3893,43 @@
         ],
         "related": [
           "adr-authoring",
+          "architecture-evaluation",
           "container-diagram",
+          "context-map-patterns",
+          "cqrs-pattern",
+          "glossary-management",
+          "go-makefile",
           "go-project-structure",
           "go-repository-pattern",
           "go-service-layer",
-          "system-context-diagram"
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "read-model-design",
+          "sdlc-config-management",
+          "system-context-diagram",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/c4-model-brown.md",
+          "research/software-architecture/clean-architecture-martin.md",
+          "research/software-architecture/documenting-software-architectures-clements.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
           "c4-model",
           "clean-architecture",
           "component-diagram",
-          "dependency-direction",
+          "dependency-rule",
           "design",
-          "documentation",
-          "layering"
+          "fitness-function",
+          "layering",
+          "module-view"
         ],
-        "version": "2.1.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-31",
@@ -3834,14 +3974,14 @@
         "dir": "skills/container-diagram",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "container-diagram",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -3850,103 +3990,141 @@
         ],
         "related": [
           "adr-authoring",
+          "api-gateway-design",
+          "architecture-evaluation",
+          "bounded-context-mapping",
           "component-diagram",
+          "cqrs-pattern",
           "glossary-management",
+          "go-project-structure",
           "integration-design",
+          "kubernetes-manifest",
           "methodology-review",
+          "multi-tenancy-design",
+          "nfr-specification",
+          "sdlc-config-management",
           "system-context-diagram"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/api-gateway-patterns.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/c4-model-brown.md",
+          "research/software-architecture/documenting-software-architectures-clements.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
+          "api-gateway",
           "architecture",
           "c4-model",
           "container-diagram",
-          "deployment",
+          "deployment-view",
           "design",
-          "documentation",
-          "runtime-topology",
-          "viewtype"
+          "modular-monolith",
+          "service-decomposition"
         ],
-        "version": "2.1.0"
+        "version": "3.1.1"
       },
       {
         "created": "2026-06-25",
         "dir": "skills/context-map-patterns",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
         "has_templates": false,
         "name": "context-map-patterns",
         "owner": "domain-modeler",
         "phase": "design",
         "produces": [
-          "pattern-selection-rationale"
+          "context-map"
         ],
         "related": [
+          "api-contract-design",
           "bounded-context-mapping",
-          "event-driven-patterns",
+          "event-schema-design",
           "go-contract-test",
-          "integration-design"
+          "integration-design",
+          "subdomain-distillation",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/strategic-design-supplement.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/testing/contract-testing-in-action-cruz-prescott.md"
+        ],
         "status": "stable",
         "tags": [
-          "acl",
+          "anticorruption-layer",
           "conformist",
           "context-map",
+          "contract-tests",
           "design",
           "domain-modeling",
-          "integration-patterns",
           "open-host-service",
-          "partnership"
+          "relationship-patterns",
+          "shared-kernel"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
         "dir": "skills/cqrs-pattern",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "cqrs-pattern",
-        "owner": "backend-engineer",
-        "phase": "implement",
+        "owner": "enterprise-architect",
+        "phase": "design",
         "produces": [
           "cqrs-design"
         ],
         "related": [
           "aggregate-design",
+          "api-contract-design",
+          "command-catalog",
+          "container-diagram",
           "domain-event-catalog",
-          "go-domain-model",
+          "event-driven-patterns",
+          "go-event-consumer",
+          "go-service-layer",
           "read-model-design",
-          "subdomain-distillation"
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/microservices-patterns-richardson.md"
+        ],
         "status": "stable",
         "tags": [
+          "api-composition",
           "cqrs",
-          "domain-modeling",
-          "event-sourcing",
-          "implement",
+          "design",
+          "eventual-consistency",
           "projections",
           "read-model",
+          "read-side",
           "write-model"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-22",
@@ -4352,23 +4530,44 @@
         "created": "2026-07-22",
         "dir": "skills/ddd-agent-handoff",
         "domain": "domain-modeling",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "ddd-agent-handoff",
         "owner": "factory-governance",
         "phase": "cross-cutting",
         "produces": [
           "handoff-record"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "aggregate-design",
+          "architecture-evaluation",
+          "bounded-context-mapping",
+          "command-catalog",
+          "container-diagram",
+          "context-map-patterns",
+          "cqrs-pattern",
+          "domain-event-catalog",
+          "event-schema-design",
+          "event-storming-facilitation",
+          "glossary-management",
+          "multi-tenancy-design",
+          "read-model-design",
+          "subdomain-distillation",
+          "ubiquitous-language",
+          "workflow-orchestration"
+        ],
+        "sources": [
+          "research/devops-and-delivery/platform-engineering-fournier-nowland.md",
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/learning-ddd-khononov.md"
+        ],
         "status": "stable",
         "tags": [
           "agents",
@@ -4376,9 +4575,10 @@
           "ddd",
           "design",
           "governance",
-          "handoff"
+          "handoff",
+          "ownership"
         ],
-        "version": "2.1.1"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-20",
@@ -4532,14 +4732,14 @@
         "dir": "skills/domain-event-catalog",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "domain-event-catalog",
         "owner": "domain-modeler",
         "phase": "design",
@@ -4548,38 +4748,50 @@
         ],
         "related": [
           "aggregate-design",
-          "bounded-context-mapping",
+          "command-catalog",
+          "context-map-patterns",
           "cqrs-pattern",
-          "glossary-management",
+          "data-retention-policy",
+          "event-driven-patterns",
+          "event-schema-design",
+          "event-storming-facilitation",
+          "go-event-consumer",
           "go-event-publisher",
-          "read-model-design"
+          "read-model-design",
+          "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/software-architecture/microservices-patterns-richardson.md"
+        ],
         "status": "stable",
         "tags": [
-          "cdc",
           "design",
           "domain-events",
           "domain-modeling",
+          "event-catalog",
           "event-naming",
-          "event-storming",
-          "outbox"
+          "integration-events",
+          "policies"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
         "dir": "skills/domain-storytelling",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "domain-storytelling",
         "owner": "domain-modeler",
         "phase": "design",
@@ -4590,20 +4802,27 @@
           "acceptance-criteria",
           "bounded-context-mapping",
           "event-storming-facilitation",
-          "ubiquitous-language"
+          "subdomain-distillation",
+          "ubiquitous-language",
+          "user-journey-mapping"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/domain-storytelling-hofer-schwentner.md",
+          "research/domain-driven-design/strategic-design-supplement.md"
+        ],
         "status": "stable",
         "tags": [
           "actor",
+          "agent-run",
           "design",
           "domain-modeling",
           "domain-storytelling",
-          "facilitation",
-          "ubiquitous-language",
+          "hofer-schwentner",
+          "scope-factors",
           "work-object"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-31",
@@ -4740,14 +4959,14 @@
         "dir": "skills/event-driven-patterns",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "event-driven-patterns",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -4759,10 +4978,25 @@
           "context-map-patterns",
           "cqrs-pattern",
           "data-pipeline-design",
+          "domain-event-catalog",
           "event-schema-design",
-          "integration-design"
+          "glossary-management",
+          "go-event-consumer",
+          "go-event-publisher",
+          "integration-design",
+          "message-broker-selection",
+          "methodology-review",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/microservices-patterns-richardson.md",
+          "research/software-architecture/rabbitmq-in-depth-roy.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
@@ -4771,64 +5005,76 @@
           "dead-letter-queue",
           "design",
           "event-driven",
+          "eventual-consistency",
           "idempotency",
-          "orchestration",
-          "saga",
+          "partitioning",
           "transactional-outbox"
         ],
-        "version": "2.0.1"
+        "version": "3.0.3"
       },
       {
         "created": "2026-06-25",
         "dir": "skills/event-schema-design",
-        "domain": "domain-modeling",
+        "domain": "data",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "event-schema-design",
-        "owner": "domain-modeler",
+        "owner": "data-architect",
         "phase": "design",
         "produces": [
           "event-schema"
         ],
         "related": [
-          "cqrs-pattern",
+          "aggregate-design",
+          "canonical-data-model",
           "data-retention-policy",
+          "distributed-tracing-design",
           "domain-event-catalog",
-          "go-domain-model"
+          "event-driven-patterns",
+          "go-contract-test",
+          "go-event-consumer",
+          "go-event-publisher"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/versioning-event-sourced-system-young.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/cloudevents-spec.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+        ],
         "status": "stable",
         "tags": [
-          "backward-compatibility",
           "cloudevents",
+          "compatibility",
+          "data",
           "design",
-          "domain-modeling",
           "event-schema",
+          "schema-evolution",
           "schema-registry",
-          "schema-versioning"
+          "upcasting"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
         "dir": "skills/event-storming-facilitation",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "event-storming-facilitation",
         "owner": "domain-modeler",
         "phase": "design",
@@ -4840,22 +5086,31 @@
           "bounded-context-mapping",
           "command-catalog",
           "domain-event-catalog",
+          "domain-storytelling",
           "read-model-design",
           "subdomain-distillation",
           "ubiquitous-language"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/strategic-design-supplement.md"
+        ],
         "status": "stable",
         "tags": [
-          "bounded-context",
+          "agent-run",
+          "big-picture",
           "brandolini",
           "design",
-          "domain-events",
           "domain-modeling",
           "event-storming",
-          "facilitation"
+          "facilitation",
+          "hotspot",
+          "process-modelling",
+          "software-design"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -5057,7 +5312,7 @@
           "governance",
           "ubiquitous-language"
         ],
-        "version": "1.19.0"
+        "version": "1.20.0"
       },
       {
         "created": "2026-07-31",
@@ -5404,7 +5659,7 @@
           "receiver-type",
           "value-object"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -5547,7 +5802,7 @@
           "redpanda",
           "worker-pool"
         ],
-        "version": "3.0.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-06-25",
@@ -5597,7 +5852,7 @@
           "redpanda",
           "relay"
         ],
-        "version": "2.0.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-07-31",
@@ -6153,7 +6408,7 @@
           "tenant",
           "transactions"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -6201,7 +6456,7 @@
           "transaction-boundary",
           "validation-boundary"
         ],
-        "version": "3.0.0"
+        "version": "3.2.0"
       },
       {
         "created": "2026-06-25",
@@ -6295,14 +6550,14 @@
         "dir": "skills/grpc-contract-design",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "grpc-contract-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -6311,22 +6566,30 @@
         ],
         "related": [
           "api-contract-design",
+          "api-gateway-design",
+          "container-diagram",
+          "glossary-management",
           "go-grpc-handler",
-          "go-openapi-codegen",
-          "integration-design"
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "python-grpc-handler"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/grpc-up-and-running.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md"
+        ],
         "status": "stable",
         "tags": [
-          "api",
           "architecture",
+          "compatibility",
           "contract-first",
           "design",
           "grpc",
           "protobuf",
           "streaming"
         ],
-        "version": "1.0.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-24",
@@ -6588,14 +6851,14 @@
         "dir": "skills/integration-design",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "integration-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -6603,28 +6866,45 @@
           "integration-design"
         ],
         "related": [
+          "adr-authoring",
           "api-contract-design",
+          "api-gateway-design",
+          "container-diagram",
           "context-map-patterns",
           "data-model-design",
           "event-driven-patterns",
           "event-schema-design",
-          "go-contract-test"
+          "glossary-management",
+          "go-contract-test",
+          "grpc-contract-design",
+          "methodology-review",
+          "nfr-specification",
+          "opentelemetry-instrumentation",
+          "read-model-design",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/software-architecture/software-architecture-in-practice-bass.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
           "anti-corruption-layer",
           "architecture",
           "asynchronous",
-          "bulkhead",
           "circuit-breaker",
+          "consumer-driven-contract",
           "design",
+          "idempotency",
           "integration",
           "resilience",
-          "synchronous",
-          "timeout"
+          "synchronous"
         ],
-        "version": "2.1.0"
+        "version": "3.0.4"
       },
       {
         "created": "2026-06-24",
@@ -6797,14 +7077,14 @@
         "dir": "skills/message-broker-selection",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "message-broker-selection",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -6812,26 +7092,43 @@
           "broker-selection-rationale"
         ],
         "related": [
+          "adr-authoring",
+          "container-diagram",
           "event-driven-patterns",
+          "glossary-management",
           "go-amqp-consumer",
           "go-amqp-publisher",
           "go-event-consumer",
           "go-event-publisher",
-          "integration-design"
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "python-amqp-consumer",
+          "python-amqp-publisher",
+          "sdlc-config-management",
+          "workflow-orchestration"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/implementing-ddd-vernon.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/rabbitmq-in-depth-roy.md"
+        ],
         "status": "stable",
         "tags": [
-          "amqp",
           "architecture",
           "broker",
+          "competing-consumers",
+          "consumer-group",
           "design",
-          "kafka",
-          "log-vs-queue",
+          "log-based",
           "messaging",
-          "rabbitmq"
+          "queue-based",
+          "replay"
         ],
-        "version": "1.0.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-24",
@@ -6933,7 +7230,7 @@
           "module-federation",
           "vite"
         ],
-        "version": "1.0.1"
+        "version": "1.0.2"
       },
       {
         "created": "2026-07-22",
@@ -7069,14 +7366,14 @@
         "dir": "skills/multi-tenancy-design",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "multi-tenancy-design",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -7084,27 +7381,46 @@
           "multi-tenancy-design"
         ],
         "related": [
+          "access-control-model",
+          "adr-authoring",
+          "api-gateway-design",
+          "canary-deployment",
+          "compliance-design",
+          "container-diagram",
+          "data-classification",
           "data-model-design",
           "data-pipeline-design",
           "environment-config",
           "event-driven-patterns",
+          "event-schema-design",
           "gitops-workflow",
+          "glossary-management",
+          "methodology-review",
+          "nfr-specification",
+          "opentelemetry-instrumentation",
           "opentofu-module",
+          "secrets-management",
           "zero-trust-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/building-multi-tenant-saas-golding.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md",
+          "research/software-architecture/system-design-interview-xu.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
-          "data-isolation",
+          "data-partitioning",
           "design",
           "multi-tenancy",
-          "physical-isolation",
-          "provisioning",
-          "soc2",
-          "tenant-isolation"
+          "pool",
+          "saas",
+          "silo",
+          "tenant-isolation",
+          "tiering"
         ],
-        "version": "2.1.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-06-24",
@@ -7993,7 +8309,7 @@
           "relay",
           "tenant"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-07-31",
@@ -9246,14 +9562,14 @@
         "dir": "skills/read-model-design",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "read-model-design",
         "owner": "domain-modeler",
         "phase": "design",
@@ -9262,12 +9578,25 @@
         ],
         "related": [
           "aggregate-design",
+          "api-contract-design",
+          "command-catalog",
           "cqrs-pattern",
           "data-model-design",
           "domain-event-catalog",
-          "go-repository-pattern"
+          "event-schema-design",
+          "go-event-consumer",
+          "go-repository-pattern",
+          "multi-tenancy-design"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/versioning-event-sourced-system-young.md",
+          "research/software-architecture/designing-backend-systems-go-campbell.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/software-architecture/microservices-patterns-richardson.md"
+        ],
         "status": "stable",
         "tags": [
           "cqrs",
@@ -9275,10 +9604,10 @@
           "design",
           "domain-modeling",
           "projections",
-          "query-optimization",
-          "read-model"
+          "read-model",
+          "rebuild"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -9697,7 +10026,7 @@
           "progressive-disclosure",
           "skill-authoring"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-07-20",
@@ -9926,48 +10255,66 @@
         "created": "2026-07-22",
         "dir": "skills/subdomain-distillation",
         "domain": "domain-modeling",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "subdomain-distillation",
         "owner": "domain-modeler",
         "phase": "design",
         "produces": [
           "subdomain-classification"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "access-control-model",
+          "aggregate-design",
+          "bounded-context-mapping",
+          "container-diagram",
+          "ddd-agent-handoff",
+          "event-storming-facilitation",
+          "strategy-kernel",
+          "ubiquitous-language",
+          "vision-statement"
+        ],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/strategic-design-supplement.md",
+          "research/security/secure-by-design.md",
+          "research/software-architecture/building-microservices-newman.md"
+        ],
         "status": "stable",
         "tags": [
+          "build-vs-buy",
           "core-domain",
           "ddd",
           "design",
           "distillation",
+          "legacy",
           "security",
           "strategic-design",
           "subdomain"
         ],
-        "version": "2.0.0"
+        "version": "3.1.1"
       },
       {
         "created": "2026-06-25",
         "dir": "skills/system-context-diagram",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "system-context-diagram",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -9975,14 +10322,20 @@
           "system-context-diagram"
         ],
         "related": [
+          "bounded-context-mapping",
           "component-diagram",
           "container-diagram",
           "event-storming-facilitation",
           "glossary-management",
+          "integration-design",
           "nfr-specification",
           "user-persona"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/c4-model-brown.md",
+          "research/software-architecture/documenting-software-architectures-clements.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
@@ -9993,7 +10346,7 @@
           "system-boundary",
           "system-context"
         ],
-        "version": "2.1.2"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10287,14 +10640,14 @@
         "dir": "skills/ubiquitous-language",
         "domain": "domain-modeling",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "ubiquitous-language",
         "owner": "domain-modeler",
         "phase": "design",
@@ -10303,23 +10656,36 @@
         ],
         "related": [
           "aggregate-design",
+          "api-contract-design",
+          "bdd-feature-file",
           "bounded-context-mapping",
           "context-map-patterns",
           "domain-storytelling",
+          "event-schema-design",
           "event-storming-facilitation",
-          "glossary-management"
+          "glossary-management",
+          "subdomain-distillation"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/domain-driven-design-evans.md",
+          "research/domain-driven-design/domain-storytelling-hofer-schwentner.md",
+          "research/domain-driven-design/introducing-eventstorming-brandolini.md",
+          "research/domain-driven-design/learning-ddd-khononov.md",
+          "research/domain-driven-design/strategic-design-supplement.md"
+        ],
         "status": "stable",
         "tags": [
+          "agent-run",
+          "bounded-context",
           "ddd",
           "design",
           "domain-modeling",
-          "glossary",
+          "homonym",
+          "synonym",
           "terminology-drift",
           "ubiquitous-language"
         ],
-        "version": "2.1.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -10625,14 +10991,14 @@
         "dir": "skills/workflow-orchestration",
         "domain": "architecture",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "workflow-orchestration",
         "owner": "enterprise-architect",
         "phase": "design",
@@ -10640,23 +11006,35 @@
           "workflow-orchestration-design"
         ],
         "related": [
+          "command-catalog",
           "conductor-workflow-authoring",
+          "container-diagram",
           "cqrs-pattern",
+          "domain-event-catalog",
           "event-driven-patterns",
-          "integration-design"
+          "glossary-management",
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "nfr-specification"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md",
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/microservices-patterns-richardson.md",
+          "research/software-architecture/software-architecture-hard-parts-ford.md"
+        ],
         "status": "stable",
         "tags": [
           "architecture",
-          "choreography",
+          "compensation",
           "design",
           "orchestration",
           "process-manager",
           "saga",
           "workflow"
         ],
-        "version": "1.0.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10702,39 +11080,39 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 186,
+    "artifacts": 187,
     "commands": 15,
     "domains": 14,
-    "edges_agent_produces": 72,
-    "edges_agent_skills": 194,
-    "edges_skill_produces": 193,
-    "edges_skill_related": 1000,
-    "edges_skill_sources": 156,
+    "edges_agent_produces": 73,
+    "edges_agent_skills": 199,
+    "edges_skill_produces": 195,
+    "edges_skill_related": 1164,
+    "edges_skill_sources": 271,
     "hooks": 11,
     "orphan_skills": 0,
-    "skills": 189,
+    "skills": 190,
     "unresolved_skill_related": 0
   },
   "coverage": {
-    "agents_with_acceptance_test": 5,
+    "agents_with_acceptance_test": 6,
     "agents_with_domain": 5,
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 52,
-    "skills_with_assets": 12,
-    "skills_with_contract_test": 161,
-    "skills_with_domain": 189,
-    "skills_with_evals": 27,
-    "skills_with_examples": 27,
-    "skills_with_produces": 189,
-    "skills_with_references": 184,
-    "skills_with_resources": 26,
-    "skills_with_scripts": 24,
-    "skills_with_sources": 28,
-    "skills_with_status": 189,
+    "research_files_cited": 72,
+    "skills_with_assets": 8,
+    "skills_with_contract_test": 137,
+    "skills_with_domain": 190,
+    "skills_with_evals": 52,
+    "skills_with_examples": 52,
+    "skills_with_produces": 190,
+    "skills_with_references": 185,
+    "skills_with_resources": 51,
+    "skills_with_scripts": 47,
+    "skills_with_sources": 53,
+    "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 26
+    "skills_with_templates": 50
   },
   "edges": {
     "agent_produces": [
@@ -10921,6 +11299,10 @@
       {
         "agent": "platform-engineer",
         "artifact": "alerting-rules-design-document"
+      },
+      {
+        "agent": "platform-engineer",
+        "artifact": "api-gateway-design"
       },
       {
         "agent": "platform-engineer",
@@ -11286,6 +11668,10 @@
       },
       {
         "agent": "enterprise-architect",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "agent": "enterprise-architect",
         "skill": "component-diagram"
       },
       {
@@ -11314,11 +11700,19 @@
       },
       {
         "agent": "enterprise-architect",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "agent": "enterprise-architect",
         "skill": "integration-design"
       },
       {
         "agent": "enterprise-architect",
         "skill": "memory-recall"
+      },
+      {
+        "agent": "enterprise-architect",
+        "skill": "message-broker-selection"
       },
       {
         "agent": "enterprise-architect",
@@ -11331,6 +11725,10 @@
       {
         "agent": "enterprise-architect",
         "skill": "system-context-diagram"
+      },
+      {
+        "agent": "enterprise-architect",
+        "skill": "workflow-orchestration"
       },
       {
         "agent": "frontend-engineer",
@@ -11415,6 +11813,10 @@
       {
         "agent": "platform-engineer",
         "skill": "alerting-rules-design"
+      },
+      {
+        "agent": "platform-engineer",
+        "skill": "api-gateway-design"
       },
       {
         "agent": "platform-engineer",
@@ -11827,6 +12229,10 @@
         "skill": "aggregate-design"
       },
       {
+        "artifact": "domain-model",
+        "skill": "aggregate-design"
+      },
+      {
         "artifact": "alerting-rules-design-document",
         "skill": "alerting-rules-design"
       },
@@ -11841,6 +12247,10 @@
       {
         "artifact": "api-gateway-design",
         "skill": "api-gateway-design"
+      },
+      {
+        "artifact": "architecture-evaluation",
+        "skill": "architecture-evaluation"
       },
       {
         "artifact": "product-manifest",
@@ -11911,7 +12321,7 @@
         "skill": "container-diagram"
       },
       {
-        "artifact": "pattern-selection-rationale",
+        "artifact": "context-map",
         "skill": "context-map-patterns"
       },
       {
@@ -12657,11 +13067,23 @@
         "skill": "aggregate-design"
       },
       {
+        "related": "command-catalog",
+        "skill": "aggregate-design"
+      },
+      {
         "related": "cqrs-pattern",
         "skill": "aggregate-design"
       },
       {
         "related": "domain-event-catalog",
+        "skill": "aggregate-design"
+      },
+      {
+        "related": "event-driven-patterns",
+        "skill": "aggregate-design"
+      },
+      {
+        "related": "event-storming-facilitation",
         "skill": "aggregate-design"
       },
       {
@@ -12673,11 +13095,15 @@
         "skill": "aggregate-design"
       },
       {
-        "related": "skill-authoring-standards",
+        "related": "read-model-design",
         "skill": "aggregate-design"
       },
       {
         "related": "subdomain-distillation",
+        "skill": "aggregate-design"
+      },
+      {
+        "related": "ubiquitous-language",
         "skill": "aggregate-design"
       },
       {
@@ -12713,7 +13139,39 @@
         "skill": "analytics-requirements"
       },
       {
+        "related": "api-gateway-design",
+        "skill": "api-contract-design"
+      },
+      {
         "related": "command-catalog",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "cqrs-pattern",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "go-contract-test",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "grpc-contract-design",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "integration-design",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "api-contract-design"
+      },
+      {
+        "related": "python-contract-test",
         "skill": "api-contract-design"
       },
       {
@@ -12721,8 +13179,16 @@
         "skill": "api-contract-design"
       },
       {
-        "related": "skill-authoring-standards",
-        "skill": "api-contract-design"
+        "related": "access-control-model",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "api-contract-design",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "api-gateway-design"
       },
       {
         "related": "environment-config",
@@ -12733,12 +13199,60 @@
         "skill": "api-gateway-design"
       },
       {
+        "related": "glossary-management",
+        "skill": "api-gateway-design"
+      },
+      {
         "related": "kubernetes-manifest",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "api-gateway-design"
+      },
+      {
+        "related": "multi-tenancy-design",
         "skill": "api-gateway-design"
       },
       {
         "related": "zero-trust-design",
         "skill": "api-gateway-design"
+      },
+      {
+        "related": "adr-authoring",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "component-diagram",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "integration-design",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "architecture-evaluation"
       },
       {
         "related": "acceptance-sign-off",
@@ -12837,7 +13351,15 @@
         "skill": "bounded-context-mapping"
       },
       {
+        "related": "container-diagram",
+        "skill": "bounded-context-mapping"
+      },
+      {
         "related": "context-map-patterns",
+        "skill": "bounded-context-mapping"
+      },
+      {
+        "related": "domain-storytelling",
         "skill": "bounded-context-mapping"
       },
       {
@@ -12845,11 +13367,11 @@
         "skill": "bounded-context-mapping"
       },
       {
-        "related": "glossary-management",
+        "related": "subdomain-distillation",
         "skill": "bounded-context-mapping"
       },
       {
-        "related": "subdomain-distillation",
+        "related": "ubiquitous-language",
         "skill": "bounded-context-mapping"
       },
       {
@@ -12953,6 +13475,10 @@
         "skill": "ci-pipeline"
       },
       {
+        "related": "access-control-model",
+        "skill": "command-catalog"
+      },
+      {
         "related": "aggregate-design",
         "skill": "command-catalog"
       },
@@ -12966,6 +13492,30 @@
       },
       {
         "related": "domain-event-catalog",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "go-chi-handler",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "go-domain-model",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "go-service-layer",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "command-catalog"
+      },
+      {
+        "related": "ubiquitous-language",
         "skill": "command-catalog"
       },
       {
@@ -13057,7 +13607,27 @@
         "skill": "component-diagram"
       },
       {
+        "related": "architecture-evaluation",
+        "skill": "component-diagram"
+      },
+      {
         "related": "container-diagram",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "context-map-patterns",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "cqrs-pattern",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "go-makefile",
         "skill": "component-diagram"
       },
       {
@@ -13073,7 +13643,31 @@
         "skill": "component-diagram"
       },
       {
+        "related": "integration-design",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "sdlc-config-management",
+        "skill": "component-diagram"
+      },
+      {
         "related": "system-context-diagram",
+        "skill": "component-diagram"
+      },
+      {
+        "related": "workflow-orchestration",
         "skill": "component-diagram"
       },
       {
@@ -13097,7 +13691,23 @@
         "skill": "container-diagram"
       },
       {
+        "related": "api-gateway-design",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "architecture-evaluation",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "bounded-context-mapping",
+        "skill": "container-diagram"
+      },
+      {
         "related": "component-diagram",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "cqrs-pattern",
         "skill": "container-diagram"
       },
       {
@@ -13105,7 +13715,15 @@
         "skill": "container-diagram"
       },
       {
+        "related": "go-project-structure",
+        "skill": "container-diagram"
+      },
+      {
         "related": "integration-design",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "kubernetes-manifest",
         "skill": "container-diagram"
       },
       {
@@ -13113,15 +13731,31 @@
         "skill": "container-diagram"
       },
       {
+        "related": "multi-tenancy-design",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "sdlc-config-management",
+        "skill": "container-diagram"
+      },
+      {
         "related": "system-context-diagram",
         "skill": "container-diagram"
+      },
+      {
+        "related": "api-contract-design",
+        "skill": "context-map-patterns"
       },
       {
         "related": "bounded-context-mapping",
         "skill": "context-map-patterns"
       },
       {
-        "related": "event-driven-patterns",
+        "related": "event-schema-design",
         "skill": "context-map-patterns"
       },
       {
@@ -13133,7 +13767,27 @@
         "skill": "context-map-patterns"
       },
       {
+        "related": "subdomain-distillation",
+        "skill": "context-map-patterns"
+      },
+      {
+        "related": "ubiquitous-language",
+        "skill": "context-map-patterns"
+      },
+      {
         "related": "aggregate-design",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "api-contract-design",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "command-catalog",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "container-diagram",
         "skill": "cqrs-pattern"
       },
       {
@@ -13141,7 +13795,15 @@
         "skill": "cqrs-pattern"
       },
       {
-        "related": "go-domain-model",
+        "related": "event-driven-patterns",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "cqrs-pattern"
+      },
+      {
+        "related": "go-service-layer",
         "skill": "cqrs-pattern"
       },
       {
@@ -13149,7 +13811,7 @@
         "skill": "cqrs-pattern"
       },
       {
-        "related": "subdomain-distillation",
+        "related": "workflow-orchestration",
         "skill": "cqrs-pattern"
       },
       {
@@ -13381,6 +14043,70 @@
         "skill": "data-storytelling"
       },
       {
+        "related": "aggregate-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "architecture-evaluation",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "bounded-context-mapping",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "command-catalog",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "context-map-patterns",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "cqrs-pattern",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "domain-event-catalog",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "event-schema-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "subdomain-distillation",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "ubiquitous-language",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "workflow-orchestration",
+        "skill": "ddd-agent-handoff"
+      },
+      {
         "related": "go-event-consumer",
         "skill": "distributed-tracing-design"
       },
@@ -13421,7 +14147,11 @@
         "skill": "domain-event-catalog"
       },
       {
-        "related": "bounded-context-mapping",
+        "related": "command-catalog",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "context-map-patterns",
         "skill": "domain-event-catalog"
       },
       {
@@ -13429,7 +14159,23 @@
         "skill": "domain-event-catalog"
       },
       {
-        "related": "glossary-management",
+        "related": "data-retention-policy",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "event-driven-patterns",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "event-schema-design",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "go-event-consumer",
         "skill": "domain-event-catalog"
       },
       {
@@ -13438,6 +14184,10 @@
       },
       {
         "related": "read-model-design",
+        "skill": "domain-event-catalog"
+      },
+      {
+        "related": "ubiquitous-language",
         "skill": "domain-event-catalog"
       },
       {
@@ -13453,7 +14203,15 @@
         "skill": "domain-storytelling"
       },
       {
+        "related": "subdomain-distillation",
+        "skill": "domain-storytelling"
+      },
+      {
         "related": "ubiquitous-language",
+        "skill": "domain-storytelling"
+      },
+      {
+        "related": "user-journey-mapping",
         "skill": "domain-storytelling"
       },
       {
@@ -13557,7 +14315,23 @@
         "skill": "event-driven-patterns"
       },
       {
+        "related": "domain-event-catalog",
+        "skill": "event-driven-patterns"
+      },
+      {
         "related": "event-schema-design",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "go-event-publisher",
         "skill": "event-driven-patterns"
       },
       {
@@ -13565,7 +14339,23 @@
         "skill": "event-driven-patterns"
       },
       {
-        "related": "cqrs-pattern",
+        "related": "message-broker-selection",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "workflow-orchestration",
+        "skill": "event-driven-patterns"
+      },
+      {
+        "related": "aggregate-design",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "canonical-data-model",
         "skill": "event-schema-design"
       },
       {
@@ -13573,11 +14363,27 @@
         "skill": "event-schema-design"
       },
       {
+        "related": "distributed-tracing-design",
+        "skill": "event-schema-design"
+      },
+      {
         "related": "domain-event-catalog",
         "skill": "event-schema-design"
       },
       {
-        "related": "go-domain-model",
+        "related": "event-driven-patterns",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "go-contract-test",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "event-schema-design"
+      },
+      {
+        "related": "go-event-publisher",
         "skill": "event-schema-design"
       },
       {
@@ -13594,6 +14400,10 @@
       },
       {
         "related": "domain-event-catalog",
+        "skill": "event-storming-facilitation"
+      },
+      {
+        "related": "domain-storytelling",
         "skill": "event-storming-facilitation"
       },
       {
@@ -14485,15 +15295,35 @@
         "skill": "grpc-contract-design"
       },
       {
+        "related": "api-gateway-design",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "grpc-contract-design"
+      },
+      {
         "related": "go-grpc-handler",
         "skill": "grpc-contract-design"
       },
       {
-        "related": "go-openapi-codegen",
+        "related": "integration-design",
         "skill": "grpc-contract-design"
       },
       {
-        "related": "integration-design",
+        "related": "methodology-review",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "grpc-contract-design"
+      },
+      {
+        "related": "python-grpc-handler",
         "skill": "grpc-contract-design"
       },
       {
@@ -14621,7 +15451,19 @@
         "skill": "information-architecture"
       },
       {
+        "related": "adr-authoring",
+        "skill": "integration-design"
+      },
+      {
         "related": "api-contract-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "api-gateway-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "container-diagram",
         "skill": "integration-design"
       },
       {
@@ -14641,7 +15483,35 @@
         "skill": "integration-design"
       },
       {
+        "related": "glossary-management",
+        "skill": "integration-design"
+      },
+      {
         "related": "go-contract-test",
+        "skill": "integration-design"
+      },
+      {
+        "related": "grpc-contract-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "integration-design"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "integration-design"
+      },
+      {
+        "related": "opentelemetry-instrumentation",
+        "skill": "integration-design"
+      },
+      {
+        "related": "read-model-design",
+        "skill": "integration-design"
+      },
+      {
+        "related": "workflow-orchestration",
         "skill": "integration-design"
       },
       {
@@ -14701,7 +15571,19 @@
         "skill": "jtbd-analysis"
       },
       {
+        "related": "adr-authoring",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "message-broker-selection"
+      },
+      {
         "related": "event-driven-patterns",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "glossary-management",
         "skill": "message-broker-selection"
       },
       {
@@ -14722,6 +15604,30 @@
       },
       {
         "related": "integration-design",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "python-amqp-consumer",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "python-amqp-publisher",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "sdlc-config-management",
+        "skill": "message-broker-selection"
+      },
+      {
+        "related": "workflow-orchestration",
         "skill": "message-broker-selection"
       },
       {
@@ -14789,6 +15695,34 @@
         "skill": "moscow-prioritization"
       },
       {
+        "related": "access-control-model",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "adr-authoring",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "api-gateway-design",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "canary-deployment",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "compliance-design",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "data-classification",
+        "skill": "multi-tenancy-design"
+      },
+      {
         "related": "data-model-design",
         "skill": "multi-tenancy-design"
       },
@@ -14805,11 +15739,35 @@
         "skill": "multi-tenancy-design"
       },
       {
+        "related": "event-schema-design",
+        "skill": "multi-tenancy-design"
+      },
+      {
         "related": "gitops-workflow",
         "skill": "multi-tenancy-design"
       },
       {
+        "related": "glossary-management",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "opentelemetry-instrumentation",
+        "skill": "multi-tenancy-design"
+      },
+      {
         "related": "opentofu-module",
+        "skill": "multi-tenancy-design"
+      },
+      {
+        "related": "secrets-management",
         "skill": "multi-tenancy-design"
       },
       {
@@ -15697,6 +16655,14 @@
         "skill": "read-model-design"
       },
       {
+        "related": "api-contract-design",
+        "skill": "read-model-design"
+      },
+      {
+        "related": "command-catalog",
+        "skill": "read-model-design"
+      },
+      {
         "related": "cqrs-pattern",
         "skill": "read-model-design"
       },
@@ -15709,7 +16675,19 @@
         "skill": "read-model-design"
       },
       {
+        "related": "event-schema-design",
+        "skill": "read-model-design"
+      },
+      {
+        "related": "go-event-consumer",
+        "skill": "read-model-design"
+      },
+      {
         "related": "go-repository-pattern",
+        "skill": "read-model-design"
+      },
+      {
+        "related": "multi-tenancy-design",
         "skill": "read-model-design"
       },
       {
@@ -16089,6 +17067,46 @@
         "skill": "strategy-kernel"
       },
       {
+        "related": "access-control-model",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "aggregate-design",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "bounded-context-mapping",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "ddd-agent-handoff",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "strategy-kernel",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "ubiquitous-language",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "vision-statement",
+        "skill": "subdomain-distillation"
+      },
+      {
+        "related": "bounded-context-mapping",
+        "skill": "system-context-diagram"
+      },
+      {
         "related": "component-diagram",
         "skill": "system-context-diagram"
       },
@@ -16102,6 +17120,10 @@
       },
       {
         "related": "glossary-management",
+        "skill": "system-context-diagram"
+      },
+      {
+        "related": "integration-design",
         "skill": "system-context-diagram"
       },
       {
@@ -16365,6 +17387,14 @@
         "skill": "ubiquitous-language"
       },
       {
+        "related": "api-contract-design",
+        "skill": "ubiquitous-language"
+      },
+      {
+        "related": "bdd-feature-file",
+        "skill": "ubiquitous-language"
+      },
+      {
         "related": "bounded-context-mapping",
         "skill": "ubiquitous-language"
       },
@@ -16377,11 +17407,19 @@
         "skill": "ubiquitous-language"
       },
       {
+        "related": "event-schema-design",
+        "skill": "ubiquitous-language"
+      },
+      {
         "related": "event-storming-facilitation",
         "skill": "ubiquitous-language"
       },
       {
         "related": "glossary-management",
+        "skill": "ubiquitous-language"
+      },
+      {
+        "related": "subdomain-distillation",
         "skill": "ubiquitous-language"
       },
       {
@@ -16545,7 +17583,15 @@
         "skill": "vision-statement"
       },
       {
+        "related": "command-catalog",
+        "skill": "workflow-orchestration"
+      },
+      {
         "related": "conductor-workflow-authoring",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "container-diagram",
         "skill": "workflow-orchestration"
       },
       {
@@ -16553,11 +17599,31 @@
         "skill": "workflow-orchestration"
       },
       {
+        "related": "domain-event-catalog",
+        "skill": "workflow-orchestration"
+      },
+      {
         "related": "event-driven-patterns",
         "skill": "workflow-orchestration"
       },
       {
+        "related": "glossary-management",
+        "skill": "workflow-orchestration"
+      },
+      {
         "related": "integration-design",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "workflow-orchestration"
+      },
+      {
+        "related": "nfr-specification",
         "skill": "workflow-orchestration"
       },
       {
@@ -16619,6 +17685,66 @@
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
       },
       {
+        "skill": "aggregate-design",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "aggregate-design",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "aggregate-design",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "aggregate-design",
+        "source": "research/security/secure-by-design.md"
+      },
+      {
+        "skill": "aggregate-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "aggregate-design",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/software-architecture/api-design-patterns-geewax.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/software-architecture/api-first-transformation-lane.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "api-contract-design",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "api-gateway-design",
+        "source": "research/devops-and-delivery/api-gateway-patterns.md"
+      },
+      {
+        "skill": "api-gateway-design",
+        "source": "research/software-architecture/system-design-interview-xu.md"
+      },
+      {
+        "skill": "architecture-evaluation",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "architecture-evaluation",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "architecture-evaluation",
+        "source": "research/software-architecture/software-architecture-in-practice-bass.md"
+      },
+      {
         "skill": "beta-program-design",
         "source": "research/product-strategy-and-gtm/crossing-the-chasm-moore.md"
       },
@@ -16637,6 +17763,30 @@
       {
         "skill": "beta-program-design",
         "source": "research/service-design/this-is-service-design-doing-stickdorn.md"
+      },
+      {
+        "skill": "bounded-context-mapping",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "bounded-context-mapping",
+        "source": "research/domain-driven-design/domain-storytelling-hofer-schwentner.md"
+      },
+      {
+        "skill": "bounded-context-mapping",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "bounded-context-mapping",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "bounded-context-mapping",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
+      },
+      {
+        "skill": "bounded-context-mapping",
+        "source": "research/software-architecture/building-microservices-newman.md"
       },
       {
         "skill": "business-model-canvas",
@@ -16671,6 +17821,22 @@
         "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
       },
       {
+        "skill": "command-catalog",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "command-catalog",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "command-catalog",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "command-catalog",
+        "source": "research/software-architecture/api-design-patterns-geewax.md"
+      },
+      {
         "skill": "competitive-analysis",
         "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
       },
@@ -16691,6 +17857,134 @@
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
       },
       {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/c4-model-brown.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/clean-architecture-martin.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/documenting-software-architectures-clements.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "component-diagram",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/devops-and-delivery/api-gateway-patterns.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/c4-model-brown.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/documenting-software-architectures-clements.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "container-diagram",
+        "source": "research/software-architecture/system-design-interview-xu.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "context-map-patterns",
+        "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "cqrs-pattern",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "ddd-agent-handoff",
+        "source": "research/devops-and-delivery/platform-engineering-fournier-nowland.md"
+      },
+      {
+        "skill": "ddd-agent-handoff",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "ddd-agent-handoff",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "domain-event-catalog",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "domain-storytelling",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "domain-storytelling",
+        "source": "research/domain-driven-design/domain-storytelling-hofer-schwentner.md"
+      },
+      {
+        "skill": "domain-storytelling",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
+      },
+      {
         "skill": "epic-definition",
         "source": "research/product-strategy-and-gtm/inspired-cagan.md"
       },
@@ -16709,6 +18003,70 @@
       {
         "skill": "epic-definition",
         "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/rabbitmq-in-depth-roy.md"
+      },
+      {
+        "skill": "event-driven-patterns",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/domain-driven-design/versioning-event-sourced-system-young.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/software-architecture/cloudevents-spec.md"
+      },
+      {
+        "skill": "event-schema-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "event-storming-facilitation",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
       },
       {
         "skill": "feedback-template",
@@ -16787,6 +18145,14 @@
         "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
       },
       {
+        "skill": "grpc-contract-design",
+        "source": "research/software-architecture/grpc-up-and-running.md"
+      },
+      {
+        "skill": "grpc-contract-design",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
         "skill": "gtm-strategy",
         "source": "research/product-strategy-and-gtm/challenger-customer-adamson-dixon.md"
       },
@@ -16843,6 +18209,30 @@
         "source": "research/requirements-and-user-stories/impact-mapping-adzic.md"
       },
       {
+        "skill": "integration-design",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/software-architecture-in-practice-bass.md"
+      },
+      {
+        "skill": "integration-design",
+        "source": "research/software-architecture/system-design-interview-xu.md"
+      },
+      {
         "skill": "jtbd-analysis",
         "source": "research/human-ai-collaboration/unleash-creativity-with-ai-bier.md"
       },
@@ -16871,6 +18261,30 @@
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
       },
       {
+        "skill": "message-broker-selection",
+        "source": "research/domain-driven-design/implementing-ddd-vernon.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "message-broker-selection",
+        "source": "research/software-architecture/rabbitmq-in-depth-roy.md"
+      },
+      {
         "skill": "moscow-prioritization",
         "source": "research/product-strategy-and-gtm/lean-product-playbook-olsen.md"
       },
@@ -16889,6 +18303,22 @@
       {
         "skill": "moscow-prioritization",
         "source": "research/requirements-and-user-stories/user-story-mapping-patton-economy.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/building-multi-tenant-saas-golding.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
+      },
+      {
+        "skill": "multi-tenancy-design",
+        "source": "research/software-architecture/system-design-interview-xu.md"
       },
       {
         "skill": "nfr-specification",
@@ -16973,6 +18403,34 @@
       {
         "skill": "pricing-and-packaging",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/domain-driven-design/versioning-event-sourced-system-young.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/designing-backend-systems-go-campbell.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "read-model-design",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
       },
       {
         "skill": "requirements-analysis",
@@ -17091,6 +18549,38 @@
         "source": "research/product-strategy-and-gtm/obviously-awesome-dunford.md"
       },
       {
+        "skill": "subdomain-distillation",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/security/secure-by-design.md"
+      },
+      {
+        "skill": "subdomain-distillation",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "system-context-diagram",
+        "source": "research/software-architecture/c4-model-brown.md"
+      },
+      {
+        "skill": "system-context-diagram",
+        "source": "research/software-architecture/documenting-software-architectures-clements.md"
+      },
+      {
+        "skill": "system-context-diagram",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
         "skill": "uat-plan",
         "source": "research/product-strategy-and-gtm/four-steps-to-the-epiphany-blank.md"
       },
@@ -17133,6 +18623,26 @@
       {
         "skill": "uat-scenario",
         "source": "research/testing/user-acceptance-testing-hambling.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/domain-driven-design-evans.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/domain-storytelling-hofer-schwentner.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/introducing-eventstorming-brandolini.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/learning-ddd-khononov.md"
+      },
+      {
+        "skill": "ubiquitous-language",
+        "source": "research/domain-driven-design/strategic-design-supplement.md"
       },
       {
         "skill": "user-persona",
@@ -17205,6 +18715,22 @@
       {
         "skill": "vision-statement",
         "source": "research/storytelling-and-narrative/the-best-story-wins.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann-part2-consistency-consensus.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/microservices-patterns-richardson.md"
+      },
+      {
+        "skill": "workflow-orchestration",
+        "source": "research/software-architecture/software-architecture-hard-parts-ford.md"
       }
     ]
   }

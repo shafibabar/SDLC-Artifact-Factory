@@ -23,6 +23,12 @@ Rows marked **(tool)** are checked mechanically; the rest need a reader's judgme
 | Q12a | Evals authored independently **(tool: `run-skill-evals.sh` prints the freeze status)** | A fresh subagent that never saw the rewritten skill wrote the suite; a `Freeze evals: <skill>` commit precedes the first run; every eval file changed since is logged in the PR with its reason | The rewriting session wrote its own exam, no freeze commit, or a grader loosened after the skill failed it |
 | Q13 | Declared composability | Every other skill named in prose is listed in `related:` | A prose "see `other-skill`" that no field backs, so a rename silently breaks it |
 | Q14 | Version bump matches change | `description` (trigger) change → MAJOR; body or folder content → MINOR; wording → PATCH | A trigger-surface change shipped as MINOR or PATCH |
+| Q15 | Coherent units | Each folder file covers one job loaded for one reason | A file cut to length, or two files always read together |
+| Q16 | Procedures over declarations | Where the skill drives work, the body gives numbered steps that apply its rules | Only statements of what is true; the agent must invent the steps |
+| Q17 | Gotchas section | `## Gotchas` lists the non-obvious traps (wrong move → why → instead), fed by evidence such as failing eval replies | No Gotchas, or generic advice any model already follows |
+| Q18 | Output templates and checklists | Every produced artifact has a `templates/` file; a multi-step workflow has a `resources/` checklist the agent ticks | An output format described only in prose; a long workflow with no checklist |
+| Q19 | Validation loop **(tool, where a script exists)** | The procedure ends validate → fix → re-validate until clean; mechanical checks are scripts with tests | A single "check it" with no loop, or a mechanical check left for the model to redo in prose |
+| Q20 | Plan, validate, execute | A costly-to-undo change (rename across media, migration, published contract) is planned as a list, validated, then executed | The change is made directly with no reviewable plan |
 
 ## Anti-Patterns
 

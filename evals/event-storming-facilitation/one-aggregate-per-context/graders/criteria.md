@@ -1,0 +1,11 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It rejects "one Aggregate per Bounded Context" and gives the reason: the two are different kinds of boundary shaped by different forces. A Bounded Context is a language and model boundary (where a term's meaning changes); an Aggregate is a transactional-consistency boundary around a rule that must hold atomically. So a Bounded Context normally holds several Aggregates, and treating a whole context as one Aggregate "to be safe" is a known mistake (Khononov research, Core Concepts: "Aggregate boundaries and Bounded Context boundaries are not the same kind of boundary ... shaped by fundamentally different forces"; Vernon research, Core Concepts: the anti-pattern of modelling "the whole Bounded Context" as a single Aggregate; Wave 2 findings, event-storming-facilitation eval idea (c)).
+2. It breaks the proposed `ChargingSession` up by asking which rules are true invariants, ones where even a moment of inconsistency would do real harm, and keeps only those inside one boundary. Things such as the station and its connectors, the tariff and the invoice become separate, smaller units referenced by identity, and they are brought up to date through Domain Events with eventual consistency rather than one big transaction (Vernon research, Core Concepts: Rule 1's true-invariant test, Rule 2 "Design Small Aggregates", Rule 3 "Reference Other Aggregates by Identity", Rule 4 "Use Eventual Consistency Outside the Boundary").
+3. It does not design roaming aggregates yet. It says the roaming flow has not been through Process Modelling, so Software Design should not run on it; roaming is modelled first, and any roaming units it mentions are labelled as provisional or assumptions (Brandolini research, Actionable Techniques: "Pick the format from the question ... Don't run Software Design on a process nobody has modelled").
+4. It keeps the design output stack-neutral: it does not give Go structs (or other language code) as part of the Event Storming design work, and says code belongs to the implementation step and its language-specific skills (decision D047-10: design skills are stack-neutral; Go code lives in the `go-*` skills).
+Fail if any of the 4 is missing.

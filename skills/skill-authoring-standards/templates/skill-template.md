@@ -43,6 +43,17 @@ Create only the folders the content needs — never an empty one.>
 
 ---
 
+## Producing the Output
+
+1. <Read the inputs>.
+2. <Do the work, step by step>.
+3. Fill `./templates/<artifact>.md`.
+4. Validate: run `./scripts/validate-<skill>.sh <file>` (or check against `./resources/<checklist>.md`); fix every failure and run it again until clean.
+
+## Gotchas
+
+- **<The wrong move a capable model makes>.** <Why it is wrong.> <What to do instead.>
+
 ## Quality Criteria
 
 | Criterion | Pass | Fail |

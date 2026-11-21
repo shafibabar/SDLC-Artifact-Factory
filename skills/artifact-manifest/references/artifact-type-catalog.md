@@ -15,7 +15,8 @@ One row per artifact type this plugin can produce: Artifact Type, Producing Agen
 | Event Storm Board | domain-modeler | `domain-modeling/event-storming-facilitation` | `artifacts/[product]/design/event-storms/[domain].md` | design | name, version, phase, owner, created, summary |
 | Bounded Context Map | domain-modeler | `domain-modeling/bounded-context-mapping` | `artifacts/[product]/design/context-map.md` | design | name, version, phase, owner, created, summary |
 | ADR | enterprise-architect | `architecture/adr-authoring` | `artifacts/[product]/design/decisions/ADR-[NNN]-[slug].md` | design | adr-id, title, status, date, deciders |
-| API Contract | enterprise-architect | `architecture/api-contract-design` | `artifacts/[product]/design/api/[service].openapi.yaml` | design | (OpenAPI `info` block; no SKILL.md frontmatter — see api-contract-design) |
+| Architecture Evaluation | enterprise-architect | `architecture-evaluation` | `artifacts/[product]/design/architecture/architecture-evaluation.md` | design | name, version, phase, owner, created, summary, self-check |
+| API Contract | enterprise-architect | `architecture/api-contract-design` | `artifacts/[product]/design/[service-name]/openapi.yaml` | design | (OpenAPI `info` block; no SKILL.md frontmatter — see api-contract-design) |
 | Event Schema | data-architect | `data-architecture/event-schema-design` | `artifacts/[product]/data/schemas/[event-name].json` | data | (JSON Schema envelope; see event-schema-design) |
 | Data Model | data-architect | `data-architecture/data-model-design` | `artifacts/[product]/data/data-model.md` | data | name, version, phase, owner, created, summary |
 | Go Service | backend-engineer | `backend-engineering/go-service-skeleton` + related | `artifacts/[product]/implement/services/[service]/` | implement | (source tree; design doc uses standard frontmatter) |

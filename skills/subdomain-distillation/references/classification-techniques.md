@@ -1,141 +1,83 @@
-# Subdomain Classification Techniques
+# Classification Techniques
 
-Deeper tools for applying and refining the Core/Supporting/Generic
-classification from `SKILL.md`, drawn from Vernon, Khononov, Kaiser, and
-Evans. Self-contained — loadable without reading `SKILL.md` first, though it
-assumes the three-way classification as a starting point. Board specs in
-this file follow `miro-board-notation`.
+The detail behind `SKILL.md` § 1–3 and § 6: the coarse-to-fine split, the three tests with the questions that probe them, sourcing by type, what the type means for modelling, and Evans's refactorings for a tangled Core. Grounded in Evans (*Domain-Driven Design*, Ch. 15), Vernon (*Implementing Domain-Driven Design*, Ch. 2) and Khononov (*Learning Domain-Driven Design*, Ch. 1, 10, 11), as summarised in `research/domain-driven-design/strategic-design-supplement.md`. Examples use several products on purpose.
 
----
+## 1. The coarse-to-fine split
 
-## Vernon's Outsource Test
+Start from capabilities, not from systems or teams. The Event Storming Big Picture gives them: pivotal events mark phase changes, swimlanes separate parallel flows, and each is a candidate capability.
 
-*Domain-Driven Design Distilled.* A sharper, more actionable Generic-subdomain
-test than "is it a solved problem": **would you outsource it?** If a
-competent third party could build or provide this identically well for any
-comparable organization, it's Generic — regardless of how technically
-non-trivial it is to build.
-
-Two corrections Vernon adds to how teams typically apply Core/Supporting/
-Generic:
-
-- **Most systems have only one or two genuine Core Domains.** Teams
-  habitually over-classify — everything feels important once you're building
-  it. If more than two or three subdomains are labeled Core, that's a signal
-  to re-run the classification more skeptically, not evidence the product is
-  unusually differentiated.
-- **A Core Domain can span multiple Bounded Contexts.** Classification is a
-  business-value question; Bounded Context boundaries are a modeling-boundary
-  question. They're related — Core Domain work usually gets its own
-  dedicated Bounded Context(s) — but one Core Domain classification does not
-  imply exactly one Bounded Context, and a Bounded Context boundary decision
-  should still go through `bounded-context-mapping`/`context-map-patterns` on
-  its own terms.
-
-## Khononov's Two Axes: Complexity vs. Strategic Importance
-
-*Learning Domain-Driven Design.* The single most load-bearing distinction in
-this reference: **complexity and strategic importance are separate axes.**
-"Hard to build" and "Core" are not synonyms.
-
-| | High strategic importance | Low strategic importance |
+| Level | Example (a route-planning SaaS for regional couriers) | Classifiable? |
 |---|---|---|
-| **High complexity** | **Core** — invest deeply, custom-built | **Complicated, not Core** — needs careful modeling, but the investment should match the complexity, not an assumed Core status. This is the danger zone: teams over-invest here because it's hard, mistaking difficulty for importance. |
-| **Low complexity** | **Core, simple** — rare but real (e.g. a small pricing rule that *is* the differentiator); don't under-invest just because it's simple |
-| **Low + Low** | — | **Generic** — buy it |
+| Department | Operations | No: mixed types |
+| Capability | Route planning | Not yet: contains route optimisation and address import |
+| Subdomain | Route optimisation | Yes: one type (Core) |
+| Subdomain | Address import and cleaning | Yes: one type (Generic: geocoding services exist) |
+| Use cases | "Re-optimise after a cancellation", "optimise for a van's capacity" | Same type as their parent: stop splitting |
 
-Khononov also ties classification to **pattern selection**, not just
-investment level: Core Domain subdomains often warrant full DDD tactical
-patterns (Aggregates, Domain Events, possibly Event Sourcing where
-justified — see `aggregate-design`, `cqrs-pattern`); Generic subdomains
-warrant the *simplest* viable approach — even a plain CRUD/Transaction
-Script, or a bought SaaS product, with no DDD tactical machinery at all.
-Applying rich tactical patterns uniformly regardless of classification is
-itself the named mistake — a Generic subdomain modeled with the same rigor
-as the Core Domain has wasted effort exactly where it was least needed.
+Stop when the next split yields only use cases of the same type. Splitting further adds labels, not decisions.
 
-*Note: this repo's `CLAUDE.md` currently states DDD tactical patterns as
-non-negotiable across every service. Khononov's guidance creates mild
-tension with that blanket rule for genuinely Generic subdomains — noted here
-as a real consideration for whoever applies this classification, not as a
-change to CLAUDE.md, which is outside this skill's scope to alter.*
+## 2. The three tests, with probing questions
 
-## Kaiser's Wardley Evolution Axis
+Ask all three of each subdomain; no single answer decides it.
 
-*Architecture for Flow.* Wardley Mapping's evolution axis gives a rigorous,
-visual classification tool, and — critically — captures that **subdomains
-evolve over time**. What's Genesis/Core today (cloud compute, decades ago)
-becomes Commodity/Generic later. This turns "classification is a hypothesis,
-revisit iteratively" (see `SKILL.md`) into an actual tool instead of a vague
-intention.
+**Competitive advantage**
+- Would a customer choose us over a competitor because of how we do this?
+- If we did it exactly as competitors do, would we lose deals?
+- Does the strategy kernel or vision name it as the bet? (`strategy-kernel`, `vision-statement`)
 
-This reference applies a **simplified, one-axis version** of Wardley
-Mapping — the evolution stage only, not the full value-chain/visibility
-dimension a complete Wardley Map also encodes. That's sufficient for
-subdomain classification; a full Wardley Map is a separate, broader
-strategic exercise outside this skill's scope.
+**Complexity**
+- Are there many rules, exceptions and interactions, or is it mostly storing and showing data?
+- Does it need domain experts to get right, or only careful engineering?
+- Note: technical difficulty (a hard parser, a fast sync) is not domain complexity. A capability can be technically hard and simple in business rules.
 
-The four evolution stages, each modeled as a Miro frame subdomains are
-placed into:
+**Solved elsewhere**
+- Is there a product, library, service or published model that does this the way any company would need it?
+- Would we use it as is, or would we have to bend it so far that we are really building our own?
 
-| Stage | Meaning | Roughly maps to |
-|---|---|---|
-| **Genesis** | Novel, uncertain, being invented for the first time | Core |
-| **Custom-Built** | Understood in principle, still built bespoke per organization | Core |
-| **Product/Rental** | Established products/services exist; some customization still needed | Supporting |
-| **Commodity** | Fully standardized utility — nobody differentiates on it anymore | Generic |
-
-**Board spec** — Wardley evolution placement for this product's subdomains:
-
-Color Legend: `green` = Core, `yellow` = Supporting, `gray` = Generic.
-
-**Items:**
-
-| ID | Type | Content | Frame | Color |
-|---|---|---|---|---|
-| F1 | frame | Genesis | — | — |
-| F2 | frame | Custom-Built | — | — |
-| F3 | frame | Product/Rental | — | — |
-| F4 | frame | Commodity | — | — |
-| S1 | sticky_note | Entity Extraction & Graph Engine | F2 | green |
-| S2 | sticky_note | Compliance Rule Engine | F2 | green |
-| S3 | sticky_note | Storage Connectors | F3 | yellow |
-| S4 | sticky_note | Authentication/Authorization | F4 | gray |
-
-**Connectors:**
-
-| From | To | Label | Style |
+| Advantage | Complex | Solved elsewhere | Type |
 |---|---|---|---|
-| S1 | S2 | feeds compliance rules | arrow |
-| S3 | S1 | supplies extracted content | arrow |
+| Yes | Yes | No | Core |
+| No | Yes | Yes | Generic |
+| No | No | No | Supporting |
+| No | Yes | No | Supporting, built with care. Revisit: a product may appear, making it Generic |
+| Yes | No | — | Not Core as stated: a simple capability is easy to copy (Khononov). The advantage usually lives in richer rules nearby; find and classify those. If none exist, it's Supporting, and the product's advantage lies outside software (service, brand, price) |
 
-Placement is a hypothesis, same as the base classification — re-run this
-placement whenever a subdomain's maturity in the industry changes, not only
-when this product changes.
+**How many Core subdomains?** Few. Most products have one or two (Khononov, Evans's advice to keep the Core small). Many Core labels mean the tests were answered with "it matters to us" rather than "customers choose us for it".
 
-## Evans' Segregated Core and Abstract Core
+## 3. Sourcing follows the type
 
-*Domain-Driven Design*, Part IV. Two concrete refactoring techniques for
-when classification reveals a problem in an *already-built* model, not just
-a greenfield planning tool:
+| Type | Usual sourcing | Notes |
+|---|---|---|
+| Core | In-house, the strongest people | Never outsourced: the advantage is the knowledge |
+| Generic | Buy or adopt: a product, a library, an open-source component, a published model | Evans also lists outsourcing and a minimal in-house build. Bending a bought product far out of shape is a sign the subdomain was misclassified |
+| Supporting | Build cheaply in-house, or outsource the build | Khononov pairs outsourcing with Supporting: specific enough that nothing can be bought, simple enough to hand to someone else |
 
-- **Segregated Core** — when Core Domain concepts have become tangled with
-  Generic or Supporting concepts inside an existing model (common after
-  organic growth), deliberately extract the Core parts into their own
-  module, even accepting some temporary duplication, so the Core Domain
-  becomes visible and cleanly bounded again. Apply when classification
-  reveals the Core Domain is *not currently distinguishable* in the code as
-  it stands.
-- **Abstract Core** — when the Core Domain itself has grown large, identify
-  the most fundamental abstractions that cut across its different parts
-  (the deepest shared concepts, expressed as interfaces or base types) and
-  pull them into a small, distinct abstract layer the more specific parts
-  depend on. Apply when the Core Domain is correctly identified but
-  internally incoherent — too large to reason about as one undifferentiated
-  mass.
+"Would you outsource it?" doesn't separate the types, because outsourcing fits Supporting and is among Evans's Generic options. Ask the three tests; sourcing is the consequence.
 
-Both techniques assume classification already happened (per `SKILL.md`'s
-checklist) and are triggered by what that classification reveals about the
-*current* state of the model — they are not alternatives to classification,
-they are what you do next when classification exposes a tangled or
-oversized Core Domain.
+## 4. What the type means for modelling
+
+| Type | Business-logic pattern (chosen per Aggregate in `aggregate-design`) | Design attention |
+|---|---|---|
+| Core | Domain Model, or Event-Sourced Domain Model only when its own justifying need exists | Full Event Storming to Software Design level; careful language; most review |
+| Supporting | Transaction Script or Active Record, usually | Enough to get the rules right; no more |
+| Generic | Whatever the bought or adopted component brings; a thin integration behind a translation (an Anti-Corruption Layer when its model doesn't fit) | Integration and translation, not modelling |
+
+Domain-Driven Design applies everywhere (CLAUDE.md): every subdomain gets its language and boundaries. What scales with the type is the tactical machinery, and that is decided per Aggregate, not per subdomain (Khononov). A Core subdomain often contains simple use cases that need no Aggregate.
+
+## 5. Evans's refactorings for a tangled Core
+
+For a system that already exists:
+
+- **Segregated Core:** Core concepts are tangled with generic or supporting code in one model, so nobody can see where the Core is. Pull the Core parts into their own module, accepting some temporary duplication, so the Core becomes visible and bounded. Use when the classification shows a Core that can't currently be told apart in the code.
+- **Abstract Core:** the Core is correctly identified but too large to reason about. Find the most fundamental concepts that run across its parts and pull them into a small abstract layer the specific parts depend on.
+- **Cohesive Mechanism:** a complex, purely computational piece inside the Core (a scheduling algorithm, a pricing calculation engine) moves behind an interface, leaving the Core expressing *what* is decided while the mechanism computes *how*.
+
+All three follow classification. They are what to do when the classification exposes a tangled or oversized Core.
+
+## 6. Domain Vision Statement and Highlighted Core
+
+**Domain Vision Statement** (Evans): about one page, written early and revised. It says what the Core Domain is and what value its model brings, in terms a domain expert would recognise. It is not the product vision (`vision-statement` covers market and customers); it is about the model.
+
+> *Example (route planning):* "The Core is re-planning a day's routes in minutes when jobs are added, cancelled or delayed, while keeping drivers within their hours and vans within capacity. Our model treats a route as a living plan that is revised many times a day, not a fixed sequence computed once."
+
+**Highlighted Core:** a short list of the Bounded Contexts, Aggregates and terms that carry the Core, so that anyone reading the design knows where the care goes.

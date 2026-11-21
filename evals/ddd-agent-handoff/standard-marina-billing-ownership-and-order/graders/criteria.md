@@ -1,0 +1,11 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It says the CQRS decision for Billing (and for each context) belongs to the enterprise architect (the architecture agent), is made in the Design phase, and comes **before** the Read Models are designed, not after; the domain-modelling agent then designs the Billing Read Models on whatever the decision chose (Decision D047-4: one read-side ladder in `cqrs-pattern`, "owner enterprise-architect, phase design, decided before `read-model-design` runs"; wave-2-findings W2-14: "decide CQRS before Read Model design"; `agents/domain-modeler.md` Does not own: "The CQRS read-side decision (enterprise-architect, `cqrs-pattern`) — Read Models are designed after it").
+2. It splits the event work: what each payload field of `BerthFeeInvoiced` **means** belongs to the domain-modelling agent in its Domain Event Catalog, while the envelope, serialization, versioning and schema registry belong to the data agent (the data-architect). So the data agent's field meanings do not stand as the source: they go back to the domain-modelling agent, who records the meaning in the catalog, and the data agent's schema follows it (Decisions D047-1 and D047-2: data-architect owns serialization and the schema registry, "the domain-modeler keeps payload meaning in `domain-event-catalog`"; `agents/domain-modeler.md` Owns: "The meaning of every Domain Event's payload").
+3. It rejects the `.v2` suffix: a change that breaks consumers is published as a **new event type** (a new name for the new fact), not a version-suffixed copy, with the rule owned by `event-schema-design` (Decision D047-1: "a breaking change is a new event type, never a `.vN` suffix").
+4. It separates the gateway work by agent and phase: where the gateway sits is decided by the enterprise architect at Design, as part of the container diagram; the platform agent writes the gateway's configuration later, at Deploy, not during Design (Decision D047-11: "gateway placement is decided at Design via `container-diagram`, gateway configuration by platform-engineer at Deploy (`api-gateway-design`)"; `agents/enterprise-architect.md` Does not own: "API gateway configuration (platform-engineer, Deploy) — but … decides where the gateway sits").
+Fail if any of the 4 is missing.

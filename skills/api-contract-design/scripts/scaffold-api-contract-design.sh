@@ -2,7 +2,7 @@
 # scripts/scaffold-api-contract-design.sh — skill-owned script for
 # skills/api-contract-design.
 # Purpose: generate a new API contract summary doc from
-#          assets/api-contract-summary-template.md, pre-filled with
+#          templates/api-contract-summary.md, pre-filled with
 #          product, service, and date metadata -- replaces hand-copying
 #          the template and hand-typing the service name into three
 #          separate places.
@@ -18,7 +18,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(dirname "$SCRIPT_DIR")"
-TEMPLATE="$SKILL_DIR/assets/api-contract-summary-template.md"
+TEMPLATE="$SKILL_DIR/templates/api-contract-summary.md"
 
 if [ $# -lt 2 ]; then
   echo "Usage: scaffold-api-contract-design.sh <product> <service-name>" >&2

@@ -1,0 +1,11 @@
+---
+type: llm
+weight: 1
+---
+
+The response satisfies ALL of the following:
+1. It drafts the language from the named documents but does not mark any term "confirmed by domain experts". It labels the terms as drafted by the agent from the vision statement and requirements (citing which document each comes from), says they are assumptions or document terms rather than the experts' own words, and that a session with the coordinators or volunteers stays optional but would replace the assumptions it confirms (decision D047-8; domain-storytelling-hofer-schwentner, "What agent-run mode can't claim": terms found in documents are not expert language; introducing-eventstorming-brandolini, agent-run mode).
+2. It does not silently pick winners among the inconsistent words. It flags at least two of the clusters in the documents (for example parcel / hamper / box, and household / client) as possible synonyms or possibly different concepts, and sends them to the product owner as open questions to answer at the gate, instead of resolving them itself (decision D047-8: open questions go to the product owner; introducing-eventstorming-brandolini: a hotspot that disputes a word is a language question, and none is marked resolved without an answer).
+3. It does not stop at a noun list. It says a glossary records only the nouns and the behaviour behind key terms must also be captured, and it gives at least one behaviour example for a key term, such as a Given/When/Then scenario (for example for the "misses two collections in a row" rule) or a behaviour column, while keeping the lean output short rather than dropping this (strategic-design supplement, Core Concepts: Khononov Ch. 2 "a glossary is a record of the language, not the language", and Actionable Techniques: at least one scenario per key term).
+4. It gives a concrete way to test the drafted terms with a person: say candidate sentences using the term and treat a sentence that sounds wrong as a sign the model is wrong ("modeling out loud", Evans Ch. 2, strategic-design supplement), or read a story back to the product owner or a coordinator using the proposed term and treat each correction as a vocabulary finding (domain-storytelling-hofer-schwentner, the retelling check).
+Fail if any of the 4 is missing.

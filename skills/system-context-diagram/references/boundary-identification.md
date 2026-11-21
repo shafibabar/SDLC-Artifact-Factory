@@ -1,176 +1,90 @@
-# Boundary Identification Procedure
+# Boundary Identification
 
-The step-by-step procedure for identifying the people and external systems on a
-System Context Diagram, and for drawing the boundary between what is *inside*
-the system being built and what is *outside* it. Self-contained: the "do we
-build and own it?" test, ambiguous-case rulings, and the boundary anti-patterns
-all live here.
+How to find every person and external system, and decide what is inside the one system box. Self-contained. Sources: `research/software-architecture/c4-model-brown.md` (software systems are owned by one team; the ownership rule for microservices and shared platforms), `research/software-architecture/documenting-software-architectures-clements.md` (rationale and constraints recorded with the view).
 
-The boundary decision is the single most consequential choice a Level 1 view
-makes. Get it wrong and every detailed diagram built on top of it is wrong.
+The boundary is the decision this view exists to make. A wrong boundary makes the container diagram, the integrations and the deployment view wrong with it.
 
 ---
 
-## Step 1 — Inventory the Personas
+## 1. Inventory the Candidates
 
-Read the personas produced by the `user-persona` skill and the Actors surfaced
-during Event Storming / Domain Storytelling. Each *distinct role* becomes one
-person element.
+List every candidate with where it came from, so the catalog can be traced and nothing is forgotten.
 
-For this repo's data-estate / compliance product the persona inventory is:
-
-| Persona / Actor | Becomes | Interaction |
+| Source | Gives you | Watch for |
 |---|---|---|
-| Data Steward | Person element | Configures estate scans, curates the data catalog |
-| Compliance Officer | Person element | Reviews compliance gaps, signs off reports |
-| IT Administrator | Person element | Provisions the tenant, connects storage credentials |
-| CISO / Security Lead | Person element | Receives risk alerts, sets policy thresholds |
+| `ideate/user-personas.md` | Persons | Two personas that are one role (collapse); one persona that is two roles (split) |
+| `design/event-storming/big-picture.md`, the *Actor or system* column | Persons and external systems that start or receive events | A system named only on a hotspot |
+| `design/context-map.md` | External systems upstream or downstream of our Bounded Contexts | An Anti-Corruption Layer always faces an external system |
+| The stories | Persons the stories name, and anything a story says is sent, received or checked | "…and the customer gets an email": an email service |
+| `ideate/nfr-specification.md` | Identity, payments, notifications, audit, regulators, data residency | Systems no story mentions: the identity provider, the regulator |
+| The problem statement and stakeholder notes | Partner organisations, legacy systems that stay | A system being replaced that still runs during the migration |
 
-Collapse duplicates: if "Data Owner" and "Data Steward" turn out to be the same
-role under the Ubiquitous Language, they are one element. Split lumps: a generic
-"Admin" that actually covers both tenant provisioning *and* compliance sign-off
-is two roles and two elements.
+Commonly forgotten: the identity provider, the email or SMS service, the payment provider, a regulator or auditor feed, and a downstream consumer that reads our webhooks or files.
 
----
+## 2. The Ownership Test
 
-## Step 2 — Inventory Upstream and Downstream Systems
+For each candidate, ask: **do we build and run it as part of the system we are shipping?**
 
-List every system the system-being-built exchanges data with, in either
-direction. Two categories:
-
-- **Upstream (we consume them):** systems the system calls out to. For this
-  product: Google Drive and Amazon S3 (source file storage the system scans), an
-  identity provider (Okta / Azure AD) for SSO.
-- **Downstream (they consume us):** systems that call the system or receive its
-  output. For this product: an alerting gateway (PagerDuty / email) that
-  receives compliance risk alerts; potentially a customer's SIEM pulling an
-  audit feed.
-
-Source this list from the External System (pink) cards in Event Storming, then
-cross-check the `nfr-specification` — data-residency and tenant-isolation
-constraints can move a system across the boundary or add one that Event Storming
-missed.
-
----
-
-## Step 3 — Apply the "Do We Build and Own It?" Test
-
-For every candidate element, ask one question:
-
-> **Do we build and operate this ourselves as part of the system we are
-> shipping?**
-
-The answer routes it to exactly one place:
-
-- **Yes, we build and own it** → it is an **internal container**, *inside* the
-  system box, therefore **invisible at Level 1**. It first appears at Level 2.
-  Examples: the DataAsset Management service, the Compliance service, the
-  Reporting service, the per-tenant PostgreSQL instance we provision, the
-  Redpanda broker we run, the React SPA we ship, Apache AGE.
-- **No — a human uses or operates it** → it is a **person element** (yellow).
-- **No — someone else owns and operates it, and we integrate with it** → it is
-  an **external system element** (grey).
-
-The decisive axis is **ownership and operational control, not network
-location**. A thing reached "over the network" can be internal (a PostgreSQL
-instance *we* provision per tenant) or external (a customer's own S3 bucket we
-read from). Distance on the wire tells you nothing; who runs it tells you
-everything.
-
----
-
-## Step 4 — Resolve the Ambiguous Cases
-
-Four recurring hard cases and how to rule on each:
-
-### A shared platform / internal service used by many products
-
-If *our team* builds and operates it, it is internal — hidden at L1 — even if
-other products also use it. If a *different team in the same company* owns it and
-we merely consume its API, it is an external system at L1 (grey box), because
-from this system's perspective we do not build or control it. Ownership is drawn
-at the team boundary, not the company boundary.
-
-### A third-party SaaS API (Google Drive, Stripe, PagerDuty)
-
-Always an **external system** (grey). We never build it, never operate it, and
-depend on its published contract. It appears at L1 with a label describing the
-capability it lends us — "customer's source file storage," "receives risk
-alerts." The fact that we write an Anti-Corruption Layer around it internally is
-a Level 2/3 detail; at L1 it is one grey box.
-
-### An identity provider (Okta, Azure AD, the customer's own IdP)
-
-Always an **external system**. Even though authentication feels "part of the
-system," the IdP is operated by the customer or a SaaS vendor and asserts
-identity to us over OIDC/SAML. Draw it grey, labelled "Verifies user identity."
-Omitting it is a classic forgotten-supporting-system defect — it carries auth,
-compliance, and availability consequences that surface late.
-
-### Customer-owned storage (their Google Drive, their S3 bucket)
-
-External. The customer owns the content store; the system reads from it and is
-never the system of record for that content. This is the ownership test's
-cleanest case: the data lives in *their* account under *their* control. Draw it
-grey and note in the Rationale that we read from it and do not become the store
-of record — this is exactly the kind of boundary the per-tenant physical
-isolation model depends on.
-
-### Tie-breaker
-
-When still genuinely unsure, ask: *"If this thing had an outage at 3 a.m., whose
-pager fires?"* If ours, it is internal. If theirs (the customer's or a vendor's),
-it is external.
-
----
-
-## Step 5 — Draw and Label the Relationships
-
-For each surviving actor, draw one connector to the system box:
-
-- Direction = initiator → target (who *starts* the exchange).
-- Label = what flows ("Uploads scan config," "Fetches file content," "Verifies
-  identity via OIDC," "Sends risk alert").
-- Never a bare "integrates with"; never a double-headed arrow (split into two).
-
----
-
-## Step 6 — Apply the Boundary Anti-Pattern Checklist
-
-Before presenting, sweep the diagram for these boundary-specific failures:
-
-| Anti-pattern | How to detect it | Fix |
+| Answer | Element | Shown here? |
 |---|---|---|
-| **Internal service drawn as external** | A grey box that *we* actually build and operate (e.g. the Compliance service shown next to Google Drive) | Move it inside the system box; it is a container, invisible at L1 |
-| **External-owned store drawn as internal** | Customer's S3 bucket hidden inside the blue box | Pull it out as a grey external system — we do not own it |
-| **Omitted human actor** | A role from the persona list with no element on the diagram (often the IT Administrator or CISO) | Add the person element; every persona maps to one |
-| **Data store shown at L1** | A database or broker box on the context diagram | Remove it — a store we own is an internal container; only an externally-owned store appears, and then as an external *system*, not a "database" |
-| **Split system** | Two blue boxes ("Frontend," "Backend") | Merge into one; frontend/backend is a Level 2 container split |
-| **Forgotten supporting system** | The IdP, alerting gateway, or monitoring SaaS absent | Cross-check Event Storming pink cards + NFR spec; add the grey box |
-| **Technology label leaking in** | "React," "PostgreSQL," "chi" on any element | Strip it; technology first appears at Level 2 |
+| Yes, we build and run it | A container inside the system box | No; at Level 2 |
+| No, a human uses it | Person | Yes |
+| No, another team or organisation owns and runs it, and we exchange data with it | External system | Yes |
+| No, it is where our containers run (cloud, cluster, CDN, DNS) | Infrastructure | No; the deployment view |
 
----
+Ownership and operational control decide, never network location. A database we provision in another region is ours; a customer's bucket we read from in the same region is theirs.
 
-## Worked Boundary Ruling — Data-Estate Platform
+**Tie-breaker:** whose pager fires when it fails at 3 a.m.? Ours: inside. Theirs: external.
 
-Applying the test across the candidate list:
+## 3. The Hard Cases
 
-| Candidate | Ownership question answer | Verdict | On the L1 diagram? |
-|---|---|---|---|
-| DataAsset Management service | We build & run it | Internal container | No (hidden in box) |
-| Compliance service | We build & run it | Internal container | No |
-| Reporting service | We build & run it | Internal container | No |
-| Per-tenant PostgreSQL (we provision) | We build & run it | Internal container | No |
-| Redpanda broker (we run) | We build & run it | Internal container | No |
-| React SPA | We build & ship it | Internal container | No |
-| Data Steward | A human uses it | Person | Yes (yellow) |
-| Compliance Officer | A human uses it | Person | Yes (yellow) |
-| IT Administrator | A human operates it | Person | Yes (yellow) |
-| Google Drive | Customer owns it | External system | Yes (grey) |
-| Amazon S3 (customer bucket) | Customer owns it | External system | Yes (grey) |
-| Identity Provider (Okta) | Vendor/customer owns it | External system | Yes (grey) |
-| Alerting gateway (PagerDuty) | Vendor owns it | External system | Yes (grey) |
+**Our frontend, mobile app or admin console.** Inside. A web app, a mobile app and an API are three containers of one software system. Users use the system, not "the frontend"; the split is Level 2.
 
-The result: **one blue box** (the platform), **three yellow person elements**,
-**four grey external systems**. Everything we build and run collapses into the
-single blue box, exactly as Level 1 requires.
+**Our database, broker, cache, scheduler or worker.** Inside: containers. They never appear at Level 1, even when the user asks to "show everything".
+
+**A service another team in our own company owns.** External. Brown's rule: a software system is owned by one team; if a separate team builds and runs the billing service, it is its own software system with its own context diagram, and here it is an external system with the owning team named. If our own team runs it, it is a container, even if other products use it too.
+
+**A third-party service (payments, email, maps).** External. The Anti-Corruption Layer we put in front of it is a container detail; at Level 1 it is one box with what it provides.
+
+**The identity provider.** External, whether the customer's own (Okta, Entra ID) or a vendor's. It verifies who users are; leaving it off hides authentication, availability and compliance consequences until late.
+
+**Customer-owned systems.** External. Their payroll system that receives our webhooks, their storage we read from: they own the content and the uptime. Say in the rationale when we read and never become the system of record.
+
+**A partner organisation's system.** External, named with the organisation (`Northline Rail's booking system`). Its people who log in to our system are persons; its system we exchange data with is an external system.
+
+**A regulator.** An external system when we exchange data with its service (a reporting portal, a submission API, a feed); a person when an inspector logs in to our system. The constraint it imposes goes in the boundary notes.
+
+**A legacy system being replaced.** External while it still runs and we exchange data with it, even if our team will retire it; the boundary notes say when it goes and what replaces it. Once retired, redraw.
+
+**A file drop or shared mailbox.** The external element is the system on the other side (the bank, the partner), not the SFTP server or the mailbox; the transport is the arrow's protocol.
+
+**Automation acting for a person** (a nightly job, a reminder sender). Inside: a container of our system, not a person.
+
+## 4. Draw the Arrows
+
+For each person and external system, one arrow per direction of exchange, each touching the system box:
+- from the party that starts it, to the other;
+- labelled with what flows ("Sends settlement files to", "Receives booking confirmations from");
+- protocol in plain words when it helps;
+- never "uses" or "integrates with", never two heads.
+
+An element with no arrow doesn't belong on the diagram; an exchange you can't label means the inventory is wrong.
+
+## 5. Record Why
+
+- **Rationale:** why each notable candidate is where it is: the containers you left inside ("the app, the API and the database are containers of this system"), the external systems and why they stay external.
+- **Boundary notes:** the constraints that force the boundary (data residency, a regulator, a contract, a system that must stay) and what is **out of scope**: things a reader might expect this system to do that another system does ("payroll stays in the customer's payroll system; we send hours, not pay").
+- **Assumptions:** every element inferred rather than read from a source is marked *assumed* and listed under *Open questions*.
+
+## 6. Boundary Defects to Sweep For
+
+| Defect | How it shows | Fix |
+|---|---|---|
+| Container drawn at Level 1 | A database, broker, app or worker box | Remove it; name it in the rationale as a container |
+| Split system | Two boxes for what we build | One box |
+| Another team's service hidden inside | A service we don't run, absent from the diagram | An external system, owning team named |
+| Customer- or partner-owned system drawn as ours | Their storage or system inside the box | An external system |
+| Missing person | A persona or actor with no box | Add it, or record why it doesn't use the system |
+| Forgotten supporting system | No identity provider, email or payment service when the stories need one | Add it |
+| Infrastructure as external | Cloud provider, Kubernetes, CDN | Remove; deployment view |
+| Generic person | "User", "Customer" covering several roles | One person per role |

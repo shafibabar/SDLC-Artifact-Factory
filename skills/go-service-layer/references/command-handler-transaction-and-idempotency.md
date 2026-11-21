@@ -47,8 +47,9 @@ port unchanged and is unaffected by anything in this file.
 
 ## 2. The `command_log` Idempotency Table
 
-`command-catalog` (design phase) already owns the idempotency contract this table
-implements — this skill does not redefine it, only implements it in Go/pgx:
+`command-catalog` (design phase) owns the idempotency contract this table implements —
+the key, the duplicate outcome (the first outcome, rejection included) and how long keys
+are kept; this skill does not redefine it, only implements it in Go/pgx:
 
 ```sql
 -- 00027_create_command_log.sql
@@ -67,9 +68,8 @@ DROP TABLE command_log;
 One table, shared across every command type in the service (`command_type`
 distinguishes rows; the key space is the client-generated `Idempotency-Key`, which is
 already global per user intent — `react-api-client`'s "stable across retries of one
-user intent" rule — not per-command-type). This is the exact shape
-`command-catalog`'s Command Idempotency section already specifies; this skill adds
-only where in the transaction it runs.
+user intent" rule — not per-command-type). `command-catalog` states
+the contract per Command; this skill adds the table and where in the transaction it runs.
 
 **Placement, stated as a rule — identical in shape to `go-event-consumer`'s
 `processed_events` placement (`references/idempotent-consumer-standard.md` in that

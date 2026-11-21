@@ -20,7 +20,7 @@ description: >
   references/value-objects-and-events.md and
   references/aggregate-invariant-enforcement.md. Used by the
   backend-engineer during Implement.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -177,3 +177,5 @@ internal/domain/dataasset_test.go   (table-driven: invariant match + immutabilit
 ```
 
 Full worked examples: `references/aggregate-invariant-enforcement.md` (failing constructors, method sets, error typing) and `references/value-objects-and-events.md` (Value Objects, Domain Events, emission checklist).
+
+Implementing a decision from `aggregate-design` (identity generation, optimistic or pessimistic concurrency, Factory vs plain constructor, a locally-identified child Entity, an event-sourced Aggregate with conditional append, snapshots, upcasting and internal-vs-published events): `./references/aggregate-implementation-patterns.md`.

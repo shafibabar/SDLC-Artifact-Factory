@@ -11,7 +11,7 @@ description: >
   organizational precondition every source book gates adoption on. Used by
   frontend-engineer during Implement, and by domain-modeler/enterprise-
   architect when Bounded Context boundaries double as fragment boundaries.
-version: 1.0.1
+version: 1.0.2
 phase: implement
 owner: frontend-engineer
 created: 2026-07-22
@@ -56,7 +56,7 @@ Vertical split, not horizontal — per Mezzalira, one team owns a business
 subdomain end-to-end (route, components, state, its own build/deploy),
 never "one team owns the header, another the footer." Boundaries come
 from **Bounded Context boundaries**, not arbitrary page splits — the same
-boundaries `ddd-agent-handoff`'s Agent Boundary Matrix and
+boundaries `ddd-agent-handoff`'s ownership matrix and
 `subdomain-distillation`'s classification already establish for backend
 decomposition. A frontend fragment and a backend Bounded Context should
 line up so one cross-functional team owns a capability top to bottom.

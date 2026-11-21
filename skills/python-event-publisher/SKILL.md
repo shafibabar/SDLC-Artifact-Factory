@@ -18,7 +18,7 @@ description: >
   references/outbox-poller.md; full producer config, keyed partitioning,
   delivery/ack handling, retry, and idempotent-producer settings in
   references/aiokafka-producer.md. Used by the backend-engineer during Implement.
-version: 1.0.0
+version: 1.0.1
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
@@ -57,7 +57,7 @@ A slow or unavailable broker is ordinary operation, not an incident, for this de
 
 ## The Envelope, Partition Key, and Idempotency Key
 
-Each outbox row becomes one Redpanda record carrying the standard envelope (`domain-event-catalog`) with W3C trace context injected into headers so the consumer continues the same trace. `aiokafka`'s `send_and_wait(topic, value=..., key=..., headers=...)` produces one record and awaits its ack.
+Each outbox row becomes one Redpanda record carrying the CloudEvents envelope (`event-schema-design`) with W3C trace context injected into headers so the consumer continues the same trace. `aiokafka`'s `send_and_wait(topic, value=..., key=..., headers=...)` produces one record and awaits its ack.
 
 - **Idempotency key = the outbox row's own `id`**, carried as the envelope's `event_id` — never a fresh `uuid4()` at publish time. This is what makes a crash-replay safe: the same row re-published after a rollback carries the *same* `event_id`, so the consumer's `processed_events` dedup insert (`python-event-consumer`) conflicts and the duplicate is a no-op. A fresh id per attempt would make every replay look like a new event and defeat Idempotency entirely.
 - **Partition key = `tenant_id`**, passed as `key=row.tenant_id.bytes` so `aiokafka`'s default hashing partitioner routes all of one tenant's events to the same partition — preserving per-tenant ordering and giving Competing Consumers a natural parallelism boundary. Random or absent keys scatter a tenant's events across partitions, destroying ordering and isolation in one stroke.
@@ -134,7 +134,7 @@ Python source built exactly to the standards above, plus integration tests run a
 ```
 infrastructure/messaging/outbox_relay.py            (OutboxRelay, run, drain_once, _to_record)
 infrastructure/messaging/producer.py                (AIOKafkaProducer construction — idempotent config)
-infrastructure/messaging/envelope.py                (Envelope dataclass — domain-event-catalog's shape)
+infrastructure/messaging/envelope.py                (Envelope dataclass — event-schema-design's CloudEvents shape)
 tests/infrastructure/test_outbox_relay.py           (written first — TDD)
 ```
 
