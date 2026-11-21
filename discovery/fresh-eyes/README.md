@@ -53,7 +53,7 @@ Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phases A and B a
 | B — pilot: vision-statement, adr-authoring, go-repository-pattern | #1238 | **done** — approved by Shafi, merged to main via #1245 (35a903f) |
 | C — domain waves (per-skill issues) | — | **started 2026-10-19** (Shafi's go; depth/eval budget/Go compile check decided 2026-10-12) |
 | C / Wave 1 — strategy + discovery + validation (21 skills + 2 new) | #1292 | **done** — merged to main via #1375 (53af4ce). Findings: [wave-1-findings.md](wave-1-findings.md) (50); 15 research files; decisions D045, D046; 23 skills rebuilt (PRs #1351–#1374), all clean on structure, layout and evals |
-| C / Wave 2 — domain-modeling + architecture (24 skills + 1 new) | #1376 | **started 2026-11-01** — discovery round in progress. Branch `fresh-eyes/wave-2-domain-modeling-architecture` |
+| C / Wave 2 — domain-modeling + architecture (24 skills + 1 new) | #1376 | **ready for review 2026-11-21** — 25 skills rebuilt (children #1387–#1411, #1423), 7 research files, pipeline D047; all 25 pass structure, layout and evals (positive Δ). Findings: [wave-2-findings.md](wave-2-findings.md). PR to `main` open for the product owner. Follow-up #1438 (stamp assumptions in platform/security skills) is outside the wave |
 
 Phase A facts a resuming session needs:
 - Evals live at ROOT `evals/<skill>/<case>/` — `claude plugin eval` refuses dirs inside `skills/`.
