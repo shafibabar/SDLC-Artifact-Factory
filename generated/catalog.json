@@ -52,6 +52,12 @@
         "adr-authoring"
       ]
     },
+    "architecture-evaluation": {
+      "agents": [],
+      "skills": [
+        "architecture-evaluation"
+      ]
+    },
     "assumption-test": {
       "agents": [],
       "skills": [
@@ -1277,6 +1283,7 @@
       "artifacts": [
         "api-gateway-design",
         "architecture-decision-record",
+        "architecture-evaluation",
         "broker-selection-rationale",
         "component-diagram",
         "container-diagram",
@@ -1292,11 +1299,12 @@
         "enterprise-architect",
         "platform-engineer"
       ],
-      "skill_count": 12,
+      "skill_count": 13,
       "skills": [
         "adr-authoring",
         "api-contract-design",
         "api-gateway-design",
+        "architecture-evaluation",
         "component-diagram",
         "container-diagram",
         "event-driven-patterns",
@@ -2087,6 +2095,7 @@
         "skills": [
           "adr-authoring",
           "api-contract-design",
+          "architecture-evaluation",
           "component-diagram",
           "container-diagram",
           "context-map-patterns",
@@ -2122,7 +2131,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.10.7"
+        "version": "1.10.8"
       },
       {
         "created": "2026-06-25",
@@ -3213,6 +3222,54 @@
         "version": "2.0.0"
       },
       {
+        "created": "2026-11-20",
+        "dir": "skills/architecture-evaluation",
+        "domain": "architecture",
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": true,
+        "has_steps": false,
+        "has_templates": true,
+        "name": "architecture-evaluation",
+        "owner": "enterprise-architect",
+        "phase": "design",
+        "produces": [
+          "architecture-evaluation"
+        ],
+        "related": [
+          "adr-authoring",
+          "component-diagram",
+          "container-diagram",
+          "event-storming-facilitation",
+          "glossary-management",
+          "integration-design",
+          "methodology-review",
+          "multi-tenancy-design",
+          "nfr-specification"
+        ],
+        "sources": [
+          "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md",
+          "research/software-architecture/just-enough-software-architecture-fairbanks.md",
+          "research/software-architecture/software-architecture-in-practice-bass.md"
+        ],
+        "status": "stable",
+        "tags": [
+          "architecture",
+          "design",
+          "evaluation",
+          "fitness-functions",
+          "quality-attributes",
+          "risks",
+          "tactics",
+          "trade-offs"
+        ],
+        "version": "1.0.0"
+      },
+      {
         "created": "2026-07-20",
         "dir": "skills/artifact-manifest",
         "domain": "governance",
@@ -3836,6 +3893,7 @@
         ],
         "related": [
           "adr-authoring",
+          "architecture-evaluation",
           "container-diagram",
           "context-map-patterns",
           "cqrs-pattern",
@@ -3871,7 +3929,7 @@
           "layering",
           "module-view"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-31",
@@ -3933,6 +3991,7 @@
         "related": [
           "adr-authoring",
           "api-gateway-design",
+          "architecture-evaluation",
           "bounded-context-mapping",
           "component-diagram",
           "cqrs-pattern",
@@ -3966,7 +4025,7 @@
           "modular-monolith",
           "service-decomposition"
         ],
-        "version": "3.1.0"
+        "version": "3.1.1"
       },
       {
         "created": "2026-06-25",
@@ -4488,6 +4547,7 @@
         ],
         "related": [
           "aggregate-design",
+          "architecture-evaluation",
           "bounded-context-mapping",
           "command-catalog",
           "container-diagram",
@@ -4518,7 +4578,7 @@
           "handoff",
           "ownership"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-07-20",
@@ -11020,17 +11080,17 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 186,
+    "artifacts": 187,
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 73,
-    "edges_agent_skills": 198,
-    "edges_skill_produces": 194,
-    "edges_skill_related": 1152,
-    "edges_skill_sources": 268,
+    "edges_agent_skills": 199,
+    "edges_skill_produces": 195,
+    "edges_skill_related": 1164,
+    "edges_skill_sources": 271,
     "hooks": 11,
     "orphan_skills": 0,
-    "skills": 189,
+    "skills": 190,
     "unresolved_skill_related": 0
   },
   "coverage": {
@@ -11042,17 +11102,17 @@
     "research_files_cited": 72,
     "skills_with_assets": 8,
     "skills_with_contract_test": 138,
-    "skills_with_domain": 189,
-    "skills_with_evals": 51,
-    "skills_with_examples": 51,
-    "skills_with_produces": 189,
-    "skills_with_references": 184,
-    "skills_with_resources": 50,
-    "skills_with_scripts": 46,
-    "skills_with_sources": 52,
-    "skills_with_status": 189,
+    "skills_with_domain": 190,
+    "skills_with_evals": 52,
+    "skills_with_examples": 52,
+    "skills_with_produces": 190,
+    "skills_with_references": 185,
+    "skills_with_resources": 51,
+    "skills_with_scripts": 47,
+    "skills_with_sources": 53,
+    "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 49
+    "skills_with_templates": 50
   },
   "edges": {
     "agent_produces": [
@@ -11605,6 +11665,10 @@
       {
         "agent": "enterprise-architect",
         "skill": "api-contract-design"
+      },
+      {
+        "agent": "enterprise-architect",
+        "skill": "architecture-evaluation"
       },
       {
         "agent": "enterprise-architect",
@@ -12183,6 +12247,10 @@
       {
         "artifact": "api-gateway-design",
         "skill": "api-gateway-design"
+      },
+      {
+        "artifact": "architecture-evaluation",
+        "skill": "architecture-evaluation"
       },
       {
         "artifact": "product-manifest",
@@ -13151,6 +13219,42 @@
         "skill": "api-gateway-design"
       },
       {
+        "related": "adr-authoring",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "component-diagram",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "container-diagram",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "event-storming-facilitation",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "integration-design",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "architecture-evaluation"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "architecture-evaluation"
+      },
+      {
         "related": "acceptance-sign-off",
         "skill": "beta-program-design"
       },
@@ -13503,6 +13607,10 @@
         "skill": "component-diagram"
       },
       {
+        "related": "architecture-evaluation",
+        "skill": "component-diagram"
+      },
+      {
         "related": "container-diagram",
         "skill": "component-diagram"
       },
@@ -13584,6 +13692,10 @@
       },
       {
         "related": "api-gateway-design",
+        "skill": "container-diagram"
+      },
+      {
+        "related": "architecture-evaluation",
         "skill": "container-diagram"
       },
       {
@@ -13932,6 +14044,10 @@
       },
       {
         "related": "aggregate-design",
+        "skill": "ddd-agent-handoff"
+      },
+      {
+        "related": "architecture-evaluation",
         "skill": "ddd-agent-handoff"
       },
       {
@@ -17615,6 +17731,18 @@
       {
         "skill": "api-gateway-design",
         "source": "research/software-architecture/system-design-interview-xu.md"
+      },
+      {
+        "skill": "architecture-evaluation",
+        "source": "research/software-architecture/fundamentals-of-software-architecture-richards-ford.md"
+      },
+      {
+        "skill": "architecture-evaluation",
+        "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "architecture-evaluation",
+        "source": "research/software-architecture/software-architecture-in-practice-bass.md"
       },
       {
         "skill": "beta-program-design",
