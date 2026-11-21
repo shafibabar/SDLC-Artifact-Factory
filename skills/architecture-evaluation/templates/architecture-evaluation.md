@@ -62,7 +62,7 @@ Each ADR's Trade-off line names the characteristics traded (for example, securit
 
 | ID | Property | Raises | Lowers | Carried from | Resolution |
 |---|---|---|---|---|---|
-| T-1 | [a property that is a sensitivity point for two attributes] | [attribute pushed up] | [attribute pushed down] | [TP-n from the NFR handoff, or "found here"] | [ADR-n, or "accepted, no ADR: the reason", or "the user decides: the cost or scope question"] |
+| T-1 | [a property that is a sensitivity point for more than one attribute, in opposite directions] | [attribute pushed up] | [attribute pushed down] | [TP-n from the NFR handoff, or "found here"] | [ADR-n, or "accepted, no ADR: the reason", or "the user decides: the cost or scope question"] |
 
 ## Risk Themes
 
