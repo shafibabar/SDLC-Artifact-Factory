@@ -125,6 +125,26 @@ research/<domain-cluster>/        Book-derived reference material informing futu
 
 ---
 
+## Work Record (GitHub issues and PRs)
+
+Applies to every skill refactor and every other issue-tracked change, in every session, auto mode included. **The issue is the detailed record; the commit message is a short summary that points at it.** Shafi reviews through GitHub, not the IDE, so what is not written there did not happen. Post each comment before the step it describes is closed (before `exec_complete.py`, which merges the PR with no review gate). Use `gh issue comment <n> --body-file …`; edit bodies only with `gh api … -X PATCH`, never `gh issue edit`.
+
+| Moment | Comment on the sub-issue (or parent, for wave-level work) |
+|---|---|
+| Issue created | Body states scope, out of scope, owning agent, `sources:` (and banned sources), decisions that apply, and "done when". |
+| Discovery or synthesis finished | What was read, what was found, what changed in the plan, and any decision awaiting the product owner. |
+| Rebuild finished | File inventory (new, moved, deleted-after-reading), validator, `lint-skill-layout` and `validate-skill-structure` results, owning-agent changes. |
+| Evals authored | Who wrote them (a separate subagent), the sources given, the case list, the `Freeze evals:` commit hash. |
+| **Each** eval run | Run number; per-case pass/fail; mean delta against the no-plugin baseline; cost; what failed and why; what was changed in the skill in response; "graders unchanged" or the logged grader change and the evidence that the grader was wrong. |
+| Interim decision approved | The decision, who approved it, the date, and what it changes. |
+| Before `exec_complete.py` | A real PR body (the script's boilerplate line is not enough): what changed, the eval history, decisions applied, and an **Eval changes after freeze** section, "none" included. |
+
+Also, per chunk: a dated `CHANGELOG.md` entry under `[Unreleased]` referencing the PR, and the README progress table kept current.
+
+**Commit messages** are a one-line summary (what changed and the issue number), plus at most a short paragraph. Do not restate eval results, file lists or reasoning in them; link the issue comment instead.
+
+---
+
 ## Running Tests
 
 Skills and agents are prose with no build step. Commands, hooks, and scripts are real mechanics, and `tests/` (mirroring `skills/agents/commands/hooks/scripts/schemas`) verifies them by live invocation, not by reading them for coherence.

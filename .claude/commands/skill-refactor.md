@@ -16,6 +16,8 @@ sub-issues are normally `skill`, plus `agent` if the row touches an
 (glossary/sdlc-context.json/CHANGELOG). PRs need no separate label choice —
 `exec_start.py` mirrors whatever labels are already on the sub-issue.
 
+**Work record (mandatory, every step below):** follow CLAUDE.md § Work Record — post the detailed comment on the sub-issue after discovery, after the rebuild, after authoring the evals, after *each* eval run (per-case result, delta, cost, fix, grader status), and for each approved decision; write a real PR body (with *Eval changes after freeze*) before `exec_complete.py`; keep commit messages to a short summary that links the issue.
+
 ## Wave 0 — Setup
 
 1. Read `CLAUDE.md` and `sdlc-context.json` in full (session-startup discipline applies here too, even mid-session).
