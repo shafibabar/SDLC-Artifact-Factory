@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.11.0
+version: 1.12.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -200,6 +200,8 @@ Ideate artifacts must be produced in this order because each depends on the prev
 
 Example maps and acceptance criteria are both required at every scale profile, lean included: never draft a story's criteria without its example map (a lean map is short, not skipped).
 
+Example maps are agent-run: one agent plays the customer, developer and tester perspectives from named artifacts, labels every unsourced behaviour as an assumption, and claims no workshop. A request to skip a map or assume an answer does not change this (`example-mapping`).
+
 Steps 9 and 10 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
 
 The opportunity solution tree comes before the impact map so that the map's impacts are explained by a chosen customer opportunity and its deliverables start from solutions already compared, with their riskiest assumptions named (`opportunity-solution-tree`). The impact map comes before the functional requirements so that requirements trace to the deliverables it selects, rather than the map being drawn backwards from requirements already written (Adzic). Where the scale profile skips the impact map, requirements trace to the OKR Key Results directly.
@@ -326,7 +328,7 @@ The requirements-analyst escalates to the user (does not proceed autonomously) w
 - A strategy artifact is missing or inconsistent, and proceeding would require fabricating business context
 - A JTBD analysis reveals a job the product cannot address with its current scope — requiring a scope decision
 - An NFR architecture handoff implies a constraint that contradicts a previously stated technology decision in project memory
-- An example mapping session surfaces a question that changes the scope of a Must Have story
+- An example map has an open question: every one goes to the user, with a recommendation, batched as the plan's approval mode allows (at once if it changes the scope of a Must Have story). This agent never answers it, and the story's acceptance criteria wait (`example-mapping`)
 - MoSCoW's structural checks fail and re-testing does not fix them — the Musts no longer equal the walking skeleton (a Must off it that is not legal, safety or regulatory, or a skeleton step with no Must or named manual cell), or no droppable Should / Could tier is left — requiring a scope decision from the product owner (keep the Musts at the skeleton, narrow the release, move the date, or accept no contingency as a risk); never decide a contested priority yourself
 
 **Customer Validation:**
