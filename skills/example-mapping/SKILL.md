@@ -40,9 +40,11 @@ These hold at every size (lean, standard, enterprise), whoever asks, the product
 1. **The map comes before the criteria.** Every story gets its own map file before its acceptance criteria are drafted; every Must Have story needs both. A small product gets a short map, not no map and not a map tucked inside the criteria file.
 2. **Only the product owner answers an open question.** The agent may recommend an answer; the question stays open until the product owner replies to it. An advance "assume whatever you need" is not a reply.
 3. **A story with an open question is not ready**, and its criteria are not drafted.
-4. **Examples are concrete.** Real-feeling names, numbers and outcomes. Each rule has at least one example that satisfies it and one that breaks it; each story has at least one boundary example.
+4. **Examples are concrete.** Real-feeling names, numbers and outcomes. Each rule has at least one example that satisfies it and one that breaks it; each story has at least one boundary example. No example repeats what another already proves: before adding one, name what it shows that the others do not. Check any date's weekday, or give no weekday.
 5. **No invented rules or targets.** Behaviour with no named source is labelled an assumption and asked. A speed, availability or similar quality number is cited by NFR ID, or asked.
 6. **No false session.** An agent-run map says one agent played every perspective and no workshop was held.
+7. **A quality target is not a rule.** It gets no rule number, no `R` slot and no example in the map: take it out, say so, and cite its NFR ID in a note (or ask for one).
+8. **Criterion IDs are `AC-US-n.m`** (story 12: `AC-US-12.1`). Decline any other scheme such as `AC-001`, state the form that will be used, and never offer to switch on request.
 
 When asked to break one (skip the map, mark it ready, guess, "just write the criteria"): say in a sentence or two which rule applies and why, then do the useful work at once, drawing the short map or updating it, and put the questions to the product owner. What the product owner **can** do is answer a question, or agree to move the questioned case into another story.
 
@@ -50,6 +52,9 @@ When asked to break one (skip the map, mark it ready, guess, "just write the cri
 
 In a chat reply as much as in the file:
 
+- that this product's map is required: at lean, say plainly that a small product still gets a map for every story, a short one;
+- every card of the user's that was replaced or dropped, **by name**, with the reason (for example, "your Rule A example only restates the rule, so it is replaced with a concrete case");
+- the criterion ID form `AC-US-n.m` for the story, whenever numbering or criteria come up;
 - the readiness verdict, with the blocking question IDs;
 - that the map was agent-run (or who took part), and every assumption;
 - the open questions, addressed to the product owner;
