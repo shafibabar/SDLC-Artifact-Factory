@@ -10,7 +10,7 @@ Self-contained input and output. The point: a very small product still plans all
 
 ## What is declined, and why
 
-Dropping layers and an 80% gate: the product owner decided full testing at every size and 100% line and branch coverage. The strategy is short instead.
+Dropping layers and an 80% gate: full testing applies at every size and the target is 100% line and branch coverage, whoever asks. Nothing is waived in advance. The strategy is short instead.
 
 ## Output
 
@@ -102,6 +102,14 @@ traces-to: [ideate/acceptance-criteria/US-1.md, ideate/acceptance-criteria/US-2.
 |---|---|---|---|
 | go | Gremlins, all operators | each mutation status in the JSON output | statement removal |
 | typescript | StrykerJS | each mutant status in the JSON report | anything the register excludes |
+
+## Waivers
+
+**Waiver rule:** line coverage, branch coverage and the mutation result are each judged separately; more than 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below cannot be waived; testing layers can never be waived.
+
+| Measure | Language | Run | Measured | Product owner comments | Reviewed on |
+|---|---|---|---|---|---|
+| none | none | none | none | none | none |
 
 ## Flaky Tests
 

@@ -117,8 +117,10 @@ Create and change them with Write and Edit so the manifest registers them; after
 - Strongly-typed, **generated** mocks (`moq`/`mockgen`) against consumer-defined interfaces; prefer fakes/stubs for state. No hand-rolled string matchers; no over-mocking. (`mock-generation`)
 
 ### 5. Quality measured, not assumed
+- Policy is not set by the request: instructions given in advance, even by the user, never drop a layer, lower a figure or waive a result; say where the work differs and why. (`test-pyramid`)
 - Coverage gate: **100% of lines and branches**; only machine-generated code is excluded automatically, every other exclusion is listed with a reason for the user's approval. Go: 100% of statement blocks plus `gobco` branch coverage after a trial, unmeasured cases stated in each report; a failed trial goes back to the user. Coverage proves execution, not correctness. (`test-pyramid`)
-- **Mutation:** every planted mutant is caught by a test or recorded with why it cannot be (behaviour unchanged); no percentage target. A timeout or type-checker rejection counts as caught only after each one is individually checked and recorded with a one-line reason, never automatically. (`test-pyramid`)
+- **Mutation:** every planted mutant is caught by a test or recorded with why it cannot be (behaviour unchanged); no lower target. A timeout or type-checker rejection counts as caught only after each one is individually checked and recorded with a one-line reason, never automatically. (`test-pyramid`)
+- **Waivers:** line, branch and mutation results are judged separately; a measured result more than 90% and under 100% fails unless the user reviews the gap and waives it with recorded comments; none at 90% or below, none for a testing layer. (`test-pyramid`)
 - **Flaky tests:** one automatic retry at end-to-end only; tagged non-blocking quarantine with a deadline; deletion only with a record. (`test-pyramid`)
 - **Every production bug gets a failing regression test before the fix.**
 
@@ -208,8 +210,8 @@ Before declaring testing complete for a product:
 - [ ] Unit suites are fast, isolated, table-driven, fuzzed where apt, race-clean, parallel-safe
 - [ ] Integration suites use Testcontainers, run real migrations, prove concurrency + idempotency
 - [ ] Contract tests verify provider conformance + event-schema compatibility at build time
-- [ ] Coverage is 100% lines and branches (Go limits stated); every exclusion is approved
-- [ ] Every planted mutant is caught or recorded with a reason; timeouts and type-checker rejections checked one by one
+- [ ] Coverage is 100% lines and branches (Go limits stated), or a result above 90% carries a recorded waiver; every exclusion is approved
+- [ ] Every planted mutant is caught or recorded with a reason, or the result above 90% carries a recorded waiver; timeouts and type-checker rejections checked one by one
 - [ ] Critical user journeys have stable e2e tests with trace correlation (no arbitrary sleeps)
 - [ ] Performance baselines gate regressions; load tests verify SLOs; chaos validates resilience patterns
 - [ ] Every known production bug has a regression test that reproduces it
@@ -223,7 +225,7 @@ Before declaring testing complete for a product:
 Escalate to the user — do not decide unilaterally — when:
 
 - An acceptance criterion is untestable as written (ambiguous, unmeasurable) — it goes back to the requirements-analyst with a concrete rewrite proposal, and the user arbitrates scope
-- A quality gate (coverage, mutation, performance) would need lowering to ship, a coverage exclusion needs approval, or a gate cannot be measured (such as a failed Go branch-coverage trial)
+- A measured coverage or mutation result is above 90% and under 100% (ask for waiver review), a gate fails with no waiver possible or would need lowering to ship (gates are never lowered), a coverage exclusion needs approval, or a gate cannot be measured (such as a failed Go branch-coverage trial)
 - Heavier tooling than the frugal default appears justified (Pact broker, chaos platform, paid load infrastructure) — budget decision, needs an ADR and the user's approval
 - Chaos or load testing reveals an SLO cannot be met by the current architecture — the fix is upstream, not a relaxed test
 - A flaky test cannot be stabilised and quarantining it would hide a real defect

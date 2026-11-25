@@ -7,9 +7,11 @@ Self-contained input and output. The points: tenant isolation and region failove
 - Request: "gobco panics on our platform-specific files, so keep statements only; the mutation timeouts can count as kills."
 - Profile enterprise. Go services `filing`, `tariff` and `gateway`, events between them; a Python document classifier; React shell and remotes; many broker firms as tenants; two regions.
 - NFR-SEC-01: no tenant reads another's filing. NFR-AVL-01: recover in the second region within 15 minutes. NFR-PERF-02: submit within 3 s at p99 at 80 filings per second. NFR-USE-02: WCAG 2.2 AA. SOC 2 in scope.
+- A first classifier run measured 1,940 of 2,000 Python lines. The product owner, shown the gap, waived it with comments.
 
 ## What is declined, and why
 
+- A waiver for the Go branch gate: the trial failed, so there is no measured result to waive.
 - Statements only: a failed trial returns to the product owner with options; the branch gate shows as not met until decided.
 - Timeouts as kills: each is checked and recorded with a one-line reason first.
 
@@ -23,7 +25,7 @@ version: 2.0.0
 phase: implement
 owner: test-strategist
 created: 2026-11-25
-summary: Eight layers across three Go services, a classifier and a web app; isolation and failover first; Go branch gate unmet after a failed trial.
+summary: Eight layers across three Go services, a classifier and a web app; isolation and failover first; Go branch gate unmet after a failed trial; one Python waiver.
 traces-to: [ideate/nfr-specification.md, design/architecture/container-diagram.md, design/event-schemas.md]
 ---
 
@@ -110,6 +112,14 @@ traces-to: [ideate/nfr-specification.md, design/architecture/container-diagram.m
 | go | Gremlins, all operators, per module | each mutation status, including timed out and not viable | statement removal |
 | python | mutmut 3 | every line of results --all, including type-check rejections | module-level code, most decorated functions |
 | typescript | StrykerJS | each mutant status, including timeout and compile error | anything the register excludes |
+
+## Waivers
+
+**Waiver rule:** line coverage, branch coverage and the mutation result are each judged separately; more than 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below cannot be waived; testing layers can never be waived.
+
+| Measure | Language | Run | Measured | Product owner comments | Reviewed on |
+|---|---|---|---|---|---|
+| line coverage | python | classifier coverage report 2026-11-23 | 1,940/2,000 | I reviewed the 60 uncovered lines in the vendor-format fallback; tests are due before the next release | 2026-11-24 |
 
 ## Flaky Tests
 

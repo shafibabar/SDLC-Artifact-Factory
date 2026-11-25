@@ -18,6 +18,8 @@ Run after `validate-test-strategy.sh` (the skill's script) is clean. The script 
 - [ ] Every non-generated exclusion, including tool defaults, ignore comments and packages left out of mutation, has a reason and is shown to the product owner.
 - [ ] Mutation rows read per-mutant results and state what is never planted.
 - [ ] No gate is described as met without a run.
+- [ ] Each waiver row follows a real, valid run: counts match its report, the comments are the product owner's own, and nothing was waived in advance. Line, branch and mutation are judged separately; no layer is waived.
+- [ ] Where the strategy differs from what was asked, the answer says so and why, with no offer to go outside the policy.
 
 ## Operation
 - [ ] Browser journeys with mocks run as their own pull-request job; full end-to-end nightly and before release.

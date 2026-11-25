@@ -88,6 +88,17 @@ Every Must Have criterion has at least one executable scenario. Smoke is read-on
 |---|---|---|---|
 | [language] | [tool] | [per-mutant report] | [limits] |
 
+## Waivers
+
+**Waiver rule:** line coverage, branch coverage and the mutation result are each judged separately; more than 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below cannot be waived; testing layers can never be waived.
+
+<!-- Before any run, keep the single "none" row. Add a row only after the product owner has reviewed a measured result.
+     Measured is exact counts, covered/total. Mutation counts caught plus individually recorded over all planted. -->
+
+| Measure | Language | Run | Measured | Product owner comments | Reviewed on |
+|---|---|---|---|---|---|
+| none | [none, or the language] | [none, or the run's report] | [none, or covered/total] | [none, or the comments as given] | [none, or YYYY-MM-DD] |
+
 ## Flaky Tests
 
 | Layer | Automatic retries |

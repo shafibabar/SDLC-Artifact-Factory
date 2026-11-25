@@ -77,7 +77,7 @@
         "unit_test_coverage_minimum": {
           "type": "number",
           "const": 100,
-          "description": "The coverage gate is 100% of lines and branches (test-pyramid; decision D048) and cannot be lowered. Optional; if present it may only be 100."
+          "description": "The coverage gate is 100% of lines and branches (test-pyramid; decision D048) and cannot be lowered; a waiver of a measured result is a per-result review, not a setting. Optional; if present it may only be 100."
         },
         "perf_regression_threshold_pct": {
           "type": "number",

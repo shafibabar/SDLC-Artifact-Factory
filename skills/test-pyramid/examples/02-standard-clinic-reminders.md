@@ -109,6 +109,14 @@ traces-to: [ideate/acceptance-criteria/, ideate/nfr-specification.md, design/eve
 | python | mutmut 3 | every line of results --all | module-level code, most decorated functions |
 | typescript | StrykerJS | each mutant status in the JSON report | anything the register excludes |
 
+## Waivers
+
+**Waiver rule:** line coverage, branch coverage and the mutation result are each judged separately; more than 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below cannot be waived; testing layers can never be waived.
+
+| Measure | Language | Run | Measured | Product owner comments | Reviewed on |
+|---|---|---|---|---|---|
+| none | none | none | none | none | none |
+
 ## Flaky Tests
 
 | Layer | Automatic retries |

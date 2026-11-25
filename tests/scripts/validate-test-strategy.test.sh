@@ -126,6 +126,14 @@ traces-to: [ideate/nfr-specification.md]
 | python | mutmut | results --all | module-level code |
 | typescript | StrykerJS | JSON report | excluded mutators |
 
+## Waivers
+
+**Waiver rule:** line coverage, branch coverage and the mutation result are each judged separately; more than 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below cannot be waived; testing layers can never be waived.
+
+| Measure | Language | Run | Measured | Product owner comments | Reviewed on |
+|---|---|---|---|---|---|
+| none | none | none | none | none | none |
+
 ## Flaky Tests
 
 | Layer | Automatic retries |
@@ -185,5 +193,24 @@ bad "retry in a grouped row" "retries: no other layer retries" "| Performance, L
 bad "blocking quarantine" "quarantine is non-blocking" "non-blocking, " ""
 bad "silent deletion" "deletion needs a record" "only with a record." "when slow."
 bad "no compliance gate" "delegated security and compliance" "| Compliance verification |" "| Other |"
+
+NONE="| none | none | none | none | none | none |"
+ROW="| mutation | go | mutation-report 2026-11-20 | 1,860/1,900 | the 40 survivors are in logging; revisit next release | 2026-11-21 |"
+mutate waived.md "$NONE" "$ROW"
+expect "a complete waiver above 90 passes" 0 "0 check(s) failed" waived.md
+waiver() { # waiver <label> <substring> <old> <new>
+  bad "$1" "$2" "$NONE" "${ROW/"$3"/"$4"}"
+}
+waiver "waiver at exactly 90" "waiver 'mutation go': result is more than 90%" "1,860/1,900" "1,710/1,900"
+waiver "waiver below 90" "waiver 'mutation go': result is more than 90%" "1,860/1,900" "1,500/1,900"
+waiver "waiver with nothing to waive" "waiver 'mutation go': result is more than 90%" "1,860/1,900" "1,900/1,900"
+waiver "waiver given as a bare percentage" "waiver 'mutation go': measured is given" "1,860/1,900" "97%"
+waiver "waiver without comments" "waiver 'mutation go': has the product owner's comments" "the 40 survivors are in logging; revisit next release" ""
+waiver "waiver without a date" "waiver 'mutation go': has a review date" "2026-11-21" "pending"
+waiver "waiver without a run" "waiver 'mutation go': names the run" "mutation-report 2026-11-20" "none"
+waiver "waived layer" "waiver 'chaos go': measure is" "| mutation |" "| chaos |"
+waiver "waiver for another language" "waiver 'mutation rust': language" "| go |" "| rust |"
+bad "waiver rule weakened" "waiver rule: none at 90%" "90% or below cannot be waived" "any figure may be waived"
+bad "waivers section missing a row" "waivers are listed" "$NONE" ""
 
 smoke_test_summary

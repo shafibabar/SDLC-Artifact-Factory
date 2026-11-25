@@ -8,7 +8,8 @@
 #          citing an NFR, SLO or open question; chaos hypotheses; the 100% line
 #          and branch gate with per-language measurement; exclusions with
 #          reasons; the mutation rule including timeouts and type-checker
-#          rejections; retries only at end-to-end; quarantine, deletion and
+#          rejections; the waiver rule and each recorded waiver (measure,
+#          language, run, counts above 90% and under 100%, comments, date); retries only at end-to-end; quarantine, deletion and
 #          regression rules; delegated checks; open questions. Judgement stays
 #          with the agent.
 # Usage:   validate-test-strategy.sh <file.md>
@@ -187,6 +188,37 @@ for l in langs:
     r = mrows.get(l)
     check("mutation row for %s" % l, r is not None and all(
         filled(r.get(c, "")) for c in ("tool", "gate reads", "never planted (stated limit)")))
+
+wv = secs.get("waivers", "")
+wr = bold("Waiver rule", wv).lower()
+check("waiver rule: judged separately, more than 90%, reviewed with comments",
+      all(w in wr for w in ("separately", "more than 90%", "product owner", "comments")))
+check("waiver rule: none at 90% or below and none for layers",
+      "90% or below cannot be waived" in wr and "layers can never be waived" in wr)
+wrows = table(wv)
+check("waivers are listed (or a 'none' row)", bool(wrows))
+for r in wrows:
+    measure = r.get("measure", "").lower()
+    if measure == "none":
+        check("waivers: a 'none' row records nothing",
+              all(v.strip().lower() == "none" for v in r.values()))
+        continue
+    n = "%s %s" % (measure[:20], r.get("language", "?"))
+    check("waiver '%s': measure is line coverage, branch coverage or mutation" % n,
+          measure in ("line coverage", "branch coverage", "mutation"))
+    check("waiver '%s': language is one of the product's" % n, r.get("language", "").lower() in langs)
+    check("waiver '%s': names the run" % n, filled(r.get("run", "")) and r.get("run", "").lower() != "none")
+    m = re.match(r"^\s*(\d+)\s*/\s*(\d+)\b", r.get("measured", "").replace(",", ""))
+    check("waiver '%s': measured is given as covered/total counts" % n, bool(m))
+    if m:
+        c, tot = int(m.group(1)), int(m.group(2))
+        check("waiver '%s': result is more than 90%% and under 100%%" % n,
+              c < tot and c * 10 > tot * 9)
+    com = r.get("product owner comments", "")
+    check("waiver '%s': has the product owner's comments" % n,
+          filled(com) and com.strip().lower() not in ("none", "n/a", "pending", "ok"))
+    check("waiver '%s': has a review date" % n,
+          bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", r.get("reviewed on", "").strip())))
 
 fl = secs.get("flaky tests", "")
 retries = {}
