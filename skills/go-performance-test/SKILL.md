@@ -17,7 +17,7 @@ description: >
   slo-definition's 800ms ClassifyDataAsset latency SLO and multi-tenancy-
   design's physical-isolation model (references/performance-budgets.md).
   Used by the test-strategist during Quality.
-version: 2.0.0
+version: 2.1.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -121,4 +121,4 @@ Tracked benchmarks are judged against concrete numeric budgets, not left to "wha
 - **`internal/**/*_bench_test.go`** — table-driven, named tracked benchmarks (per the enrollment convention above), `b.ReportAllocs()` always on. Never a bare, unnamed `BenchmarkX` when the operation has more than one meaningful case.
 - **`testdata/perf/baseline.txt`** — the committed statistical baseline, `benchstat`-formatted output of a `-count=10` run. Regenerated only via a reviewed PR or the scheduled release-tagged cadence — never by an automatic script on merge.
 - **`.github/workflows/perf-gate.yml`** — the dedicated CI job: `-count=10` sweep, `benchstat` against the committed baseline, fails on threshold-and-significance, never wired into `make ci`. Exact YAML: `references/benchmark-and-regression-gate-standard.md`.
-- **`docs/quality/perf-budgets.md`** — the tracked-operations table with each budget's numeric target and its SLO/domain derivation, reviewed on the same cadence `slo-definition`'s SLO document already undergoes.
+- **`artifacts/<product>/quality/test-reports/perf-budgets.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — the tracked-operations table with each budget's numeric target and its SLO/domain derivation, reviewed on the same cadence `slo-definition`'s SLO document already undergoes.

@@ -15,7 +15,7 @@ description: >
   scripts/scaffold-bdd-feature-file.sh / scripts/validate-bdd-feature-file.sh.
   BDD is a mandatory methodology. Used by the test-strategist during Implement
   and Quality.
-version: 2.0.1
+version: 2.1.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -51,7 +51,7 @@ The examples a feature file's scenarios are built from should come from a **Thre
 ## Gherkin Structure
 
 ```gherkin
-# features/classify_data_asset.feature
+# artifacts/<product>/implement/features/classify_data_asset.feature
 Feature: Classify a data asset
   As a Data Steward
   I want to set a data asset's sensitivity level
@@ -154,7 +154,7 @@ Journey-level scenarios bind to Playwright e2e steps (see `react-e2e-testing`), 
 
 ## Living Documentation
 
-Feature files live in the repo (`features/`), are reviewed in PRs, and run in CI. They are always current because a stale scenario fails the build. This makes them trustworthy documentation — unlike a wiki page, a feature file cannot quietly drift from the system, because it *is* tested against the system.
+Feature files live in the repo (`artifacts/<product>/implement/features/`, registered in the product manifest so the user can approve them; point godog and other runners there), are reviewed in PRs, and run in CI. They are always current because a stale scenario fails the build. This makes them trustworthy documentation — unlike a wiki page, a feature file cannot quietly drift from the system, because it *is* tested against the system.
 
 This is half of what "living documentation" actually requires. `references/collaborative-specification-and-living-documentation.md` covers the other half: mechanically deriving a browsable documentation artifact from the executed spec suite, so what a PM reads is generated from verified results — not a raw `.feature` file browsed in a repo.
 
@@ -191,11 +191,11 @@ This is half of what "living documentation" actually requires. `references/colla
 Produces Gherkin feature files plus their step definitions (written before implementation — BDD):
 
 ```
-features/*.feature                         (Gherkin scenarios — readable by the user)
+artifacts/<product>/implement/features/*.feature   (Gherkin scenarios — readable by the user)
 internal/test/bdd/steps_*.go               (godog step definitions)
 tests/e2e/*.spec.ts                         (journey scenarios bound to Playwright)
 ```
 
-- **Starting a new feature file** — copy `assets/bdd-feature-file-template.md`, or run `scripts/scaffold-bdd-feature-file.sh` to generate one pre-filled with the Golden Triangle's three tagged placeholder scenarios.
+- **Starting a new feature file** — copy `assets/bdd-feature-file-template.md`, or run `scripts/scaffold-bdd-feature-file.sh <product> <feature-title>` to generate one pre-filled with the Golden Triangle's three tagged placeholder scenarios.
 - **Checking a feature file mechanically** — run `scripts/validate-bdd-feature-file.sh` to check Golden Triangle tag presence, imperative/HTTP-mechanics leakage in step text, and multiple-`When`-per-scenario.
 - **Going deeper on collaborative authorship, living documentation, or example minimality** — read `references/collaborative-specification-and-living-documentation.md`.

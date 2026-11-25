@@ -18,7 +18,7 @@ description: >
   in place of code. Does not design the UX, the API contract, or the Bounded Context boundaries; it
   implements them. Activates on /sdlc-implement for frontend work.
 role: React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI
-version: 3.3.0
+version: 3.4.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -260,8 +260,9 @@ the substance — read that skill before acting on the directive.
   by role is a component a screen reader cannot use. (`react-accessibility`, `react-component-testing`)
 
 ### 8. The UI proves itself (TDD is non-negotiable)
-- **Write the failing behaviour test first**, then the component — Red, Green, Refactor. Enforced by
-  the `tdd-gate` hook. (`react-component-testing`)
+- **Write the failing behaviour test first**, then the component — Red, Green, Refactor. The `tdd-gate` hook refuses an
+  implementation file until a matching test file exists (existence only, not timestamps), with narrow
+  exemptions. (`react-component-testing`)
 - Component tests assert **behaviour, not implementation**, and are hermetic: **MSW** intercepts the
   network so no test reaches a real service. (`react-component-testing`)
 - **Playwright** covers the journey-level acceptance criteria that only a real browser can prove —
@@ -352,7 +353,7 @@ hook registers each in the product manifest.
 | Methodology | Application | Carried by |
 |---|---|---|
 | **DDD** | Ubiquitous Language in labels, types, routes and permission strings; fragment boundaries mirror Bounded Context boundaries rather than arbitrary page splits | `microfrontend-architecture`, `typescript-types`, `glossary-management` |
-| **TDD** | The failing behaviour test precedes every component file (the `tdd-gate` hook verifies) | `react-component-testing` |
+| **TDD** | The failing behaviour test precedes every component file (the `tdd-gate` hook checks only that a matching test file exists) | `react-component-testing` |
 | **BDD** | The acceptance criteria (Gherkin, from requirements-analyst) are realised as component tests and journey-level Playwright specs | `react-component-testing`, `react-e2e-testing` (with test-strategist) |
 | **SOLID** | Single-responsibility components; composition over inheritance and prop-drilling; small typed interfaces at every boundary | `react-component-design`, `typescript-types` |
 | **Event Storming** | Consumed, not run here — the Read Models and Commands the UI binds to come from domain-modeler's session | `microfrontend-architecture` |
@@ -389,7 +390,7 @@ A frontend implementation is complete when all of the following hold:
 - [ ] `npm run ci` is green for the shell and every touched remote: typecheck under the strict config,
       lint including no-`any` (`typescript-types`) and the `eslint-plugin-boundaries` gate at zero
       violations (`react-project-structure`), unit and e2e, bundle budget, API-client freshness.
-- [ ] The `tdd-gate` hook confirms every component file has an earlier-or-equal test file.
+- [ ] Every component file that is not exempt has a matching test file (the `tdd-gate` existence check).
 - [ ] Every fragment boundary matches a Bounded Context and passes the independent-deployability
       litmus test. (`microfrontend-architecture`)
 - [ ] Module Federation `shared` config carries identical `singleton`/`requiredVersion`/`strictVersion`

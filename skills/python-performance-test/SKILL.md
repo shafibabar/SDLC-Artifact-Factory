@@ -7,7 +7,7 @@ description: >
   serialization path), and the distinction from
   python-performance-optimization (this GUARDS against regression; that
   IMPROVES). The Python analog of go-performance-test.
-version: 1.0.0
+version: 1.1.0
 phase: quality
 owner: backend-engineer
 created: 2026-07-31
@@ -122,4 +122,4 @@ Both divergences are stated plainly rather than papered over: the Python gate is
 - **`tests/benchmarks/test_*_bench.py`** — tracked micro-benchmarks using the `benchmark` fixture (or `benchmark.pedantic`), async paths wrapped in a sync runner, one meaningful case per benchmark function (per the enrollment convention above).
 - **`.benchmarks/<machine>/baseline.json`** — the committed `pytest-benchmark` baseline. Regenerated only via a reviewed PR or the scheduled release cadence — never automatically on merge.
 - **`.github/workflows/perf-gate.yml`** — the dedicated CI job: a multi-round sweep, a median-12% regression gate against the committed baseline, never wired into the fast unit-test loop. Exact YAML: `references/throughput-and-ci.md`.
-- **`docs/quality/perf-budgets.md`** — the tracked-operations table with each benchmark's unit and why it is gated, reviewed on the same cadence `slo-definition`'s SLO document undergoes.
+- **`artifacts/<product>/quality/test-reports/perf-budgets.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — the tracked-operations table with each benchmark's unit and why it is gated, reviewed on the same cadence `slo-definition`'s SLO document undergoes.

@@ -156,7 +156,7 @@ Neither substitutes for the other. Assert, once offered load exceeds capacity:
 cannot prove a 28-day figure. The gate's actual claim is narrower and precise: *at this offered load,
 over this run's window, against this `staging` sizing, the SLI met or exceeded the 28-day target
 rate.* Because `staging` runs at **reduced sizing** relative to production (a legitimate, declared
-`environment-config` difference), every capacity finding in `docs/quality/load-report.md` states the
+`environment-config` difference), every capacity finding in `artifacts/<product>/quality/test-reports/load-report.md` states the
 replica counts, `asyncpg`-pool sizes, and resource requests the run used, so a reader can scale the
 observed ceiling toward production sizing rather than mistake a staging number for a production
 promise. A single passing run is evidence the target is *achievable* under realistic load — not a

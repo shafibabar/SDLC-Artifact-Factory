@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.3.0
+version: 2.4.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -233,8 +233,9 @@ carries the substance — read that skill before acting on the directive.
   probe causes cascading failure. (`health-check-design`)
 
 ### 6. The code proves itself (TDD is non-negotiable)
-- **Write the failing test first**, then the code — Red, Green, Refactor. Enforced by the `tdd-gate`
-  hook. (`go-unit-test`)
+- **Write the failing test first**, then the code — Red, Green, Refactor. The `tdd-gate` hook refuses an
+  implementation file until a matching test file exists (existence only, not timestamps), with narrow
+  exemptions. (`go-unit-test`)
 - Unit tests are table-driven, hermetic (no filesystem, network, database, or uncontrolled clock),
   and follow the classical mocking school — mock only unmanaged dependencies, through the
   consumer-defined port. (`go-unit-test`)
@@ -327,7 +328,7 @@ Outputs are real Go source files under the service's module; the `post-artifact-
 | Methodology | Application | Carried by |
 |---|---|---|
 | **DDD** | Aggregates enforce invariants; Ubiquitous Language in type and method names; one Bounded Context per service | `go-domain-model`, `go-project-structure`, `glossary-management` |
-| **TDD** | The failing test precedes every implementation file (the `tdd-gate` hook verifies) | `go-unit-test`, `go-integration-test` |
+| **TDD** | The failing test precedes every implementation file (the `tdd-gate` hook checks only that a matching test file exists) | `go-unit-test`, `go-integration-test` |
 | **BDD** | Acceptance criteria are realised as integration tests aligned to the Gherkin scenarios | `go-integration-test` (with test-strategist) |
 | **SOLID** | Small consumer-defined interfaces (ISP, DIP); single-responsibility packages; composition by embedding | `go-project-structure` |
 | **Event Storming** | Consumed, not run here — the Domain Events implemented come from domain-modeler's session | `go-domain-model` |
@@ -356,7 +357,7 @@ The backend-engineer escalates to the user — it does not decide unilaterally �
 A service implementation is complete when all of the following hold:
 
 - [ ] `make ci` is green: tidy, generate, vet, lint, arch, vuln, cover — with `-race` on. (`go-makefile`)
-- [ ] The `tdd-gate` hook confirms every implementation file has an earlier-or-equal test file.
+- [ ] Every implementation file that is not exempt has a matching test file (the `tdd-gate` existence check).
 - [ ] Every goroutine is owned, bounded, and terminating; no leak under load. (`go-concurrency-patterns`)
 - [ ] The domain layer imports no framework and every Aggregate invariant is enforced. (`go-project-structure`, `go-domain-model`)
 - [ ] Every state change writes its Domain Event to the outbox in the same transaction. (`go-event-publisher`)

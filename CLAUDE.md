@@ -391,7 +391,7 @@ A phase does not advance until the user has approved it. A product's state lives
 Every artifact is also checked as it is written **or edited** (#1288): `validate-artifact-structure` (frontmatter, on the post-edit text for an Edit), terminology drift by `terminology-drift-detector` (warning-only), and methodology review by a `type: "agent"` hook that loads `methodology-review` through the Skill tool (hook subagents can't Read plugin files from a product repo, and hook prompts don't expand `${CLAUDE_PLUGIN_ROOT}`), runs only for writes under `artifacts/`, and fails closed if it can't load its criteria (#1255).
 
 The `tdd-gate` hook checks:
-- For every implementation file, a corresponding test file must exist with a date/commit earlier than or equal to the implementation file.
+- Before a Go, TypeScript or Python implementation file is written or edited, a matching test file must already exist. It is an existence check only: it compares no dates, commits or test contents. Narrow exemptions (test-support folders, configuration, type declarations, thin entry and index files, `conftest.py`, `__init__.py`, migrations) are listed in `scripts/tdd-gate.sh`.
 
 ---
 

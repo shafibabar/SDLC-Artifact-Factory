@@ -219,5 +219,5 @@ discipline covered in `references/criteria-and-analysis.md`.
 4. **Spike** with `SpikeBurst`, enqueuing a 10,000-document burst in under 60s, then verifying the
    pipeline drains and freshness/correctness SLOs still hold post-drain (PromQL — see
    `references/criteria-and-analysis.md`).
-5. **Verify** the two async SLOs post-drain and record the run in `docs/quality/load-report.md` with
+5. **Verify** the two async SLOs post-drain and record the run in `artifacts/<product>/quality/test-reports/load-report.md` with
    the model used per profile, the `staging` sizing, and P95/P99 per gate.

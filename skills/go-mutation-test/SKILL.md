@@ -22,7 +22,7 @@ description: >
   insufficient (references/survived-mutant-triage-and-coverage-
   relationship.md). Authored and run by the test-strategist as a periodic
   Quality-phase gate.
-version: 2.0.0
+version: 2.1.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -89,7 +89,7 @@ Mutation testing reruns the **entire targeted test suite once per surviving-cand
    - **Yes → real gap.** Write the missing assertion — usually a boundary case the table is missing a row for. Rerun Gremlins to confirm the kill.
    - **No → equivalent mutant.** Annotate it explicitly (a `//gremlins:disable-next-line` comment naming why, not a silent exclude) so it doesn't resurface as noise on the next run.
 4. **Prioritize domain-layer survivors first** — that's where an undetected bug is most expensive.
-5. **Record the outcome** in the mutation report (`docs/quality/mutation-report.md`) — score trend, survivors triaged, equivalents annotated this run.
+5. **Record the outcome** in the mutation report (`artifacts/<product>/quality/test-reports/mutation-report.md`) — score trend, survivors triaged, equivalents annotated this run.
 
 Two fully worked triage examples — a real gap traced to a missing boundary row, and a genuine equivalent mutant — plus the complete 100%-coverage-with-survived-mutant example: `references/survived-mutant-triage-and-coverage-relationship.md`.
 
@@ -129,4 +129,4 @@ Two fully worked triage examples — a real gap traced to a missing boundary row
 - **`.gremlins.yaml`** — the committed tool configuration: package scope (`internal/domain/...`, `internal/application/...`), the 60% `threshold-efficacy`, and any named, commented mutant exclusions. Never edited ad hoc via CLI flags that bypass the committed scope. Exact shape: `references/tool-configuration-and-targeting.md`.
 - **`.github/workflows/mutation.yml`** — the scheduled CI job: monthly cron plus a `release`-triggered run, posting the score and survivor list as a build artifact. Never triggered on `pull_request`. Exact shape: `references/tool-configuration-and-targeting.md`.
 - **`internal/domain/**/*_test.go`, `internal/application/**/*_test.go`** — new boundary/assertion tests written specifically to kill a triaged real-gap survivor, added to the existing table (`go-unit-test`'s struct shape), never a new ad hoc test function bolted on beside it.
-- **`docs/quality/mutation-report.md`** — one entry per scheduled run: date, score, killed/survived/equivalent counts, each survivor's triage disposition (real gap → test added, or equivalent → annotated), and the score trend versus the previous run. A run with no entry did not happen as far as the factory's audit trail is concerned.
+- **`artifacts/<product>/quality/test-reports/mutation-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — one entry per scheduled run: date, score, killed/survived/equivalent counts, each survivor's triage disposition (real gap → test added, or equivalent → annotated), and the score trend versus the previous run. A run with no entry did not happen as far as the factory's audit trail is concerned.

@@ -6,7 +6,7 @@ description: >
   running OUTSIDE the target, closed-vs-open workload models, ramp/soak/spike
   profiles, and pass criteria tied to SLOs (P95 latency, error rate under
   load). The Python analog of go-load-test.
-version: 1.0.1
+version: 1.1.0
 phase: quality
 owner: backend-engineer
 created: 2026-07-31
@@ -177,6 +177,6 @@ assertions: `references/criteria-and-analysis.md`.
   sleep). Exits non-zero on either SLO miss.
 - **CI wiring** — Smoke in the fast PR loop; Ramp/Soak/Spike on a nightly/pre-release/on-demand
   cadence, never per-PR. Runs `verify-async-slos.sh` after the load step; either failure blocks release.
-- **`docs/quality/load-report.md`** — one entry per run: run id, profile, `staging` sizing, P95/P99
+- **`artifacts/<product>/quality/test-reports/load-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — one entry per run: run id, profile, `staging` sizing, P95/P99
   and error rate per gate, backpressure outcome. Reviewable-by-the-user, a pointer into the observability
   stack, never a duplicate data dump.

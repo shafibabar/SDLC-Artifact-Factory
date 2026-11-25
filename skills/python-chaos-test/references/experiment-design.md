@@ -165,7 +165,7 @@ when the automatic path is insufficient.
 | Idempotency breaks under redelivery (double-apply) | Dedup key/store is wrong | Fix the dedup key; DR runbook notes the reconciliation procedure for any duplicates that already landed |
 
 The durable record of an experiment is the test code plus the telemetry it ran
-against; `docs/quality/resilience-report.md` is the reviewable summary — which
+against; `artifacts/<product>/quality/test-reports/resilience-report.md` is the reviewable summary — which
 patterns were validated, at which blast-radius stage, and which findings fed a
 new or updated `disaster-recovery-plan` procedure.
 

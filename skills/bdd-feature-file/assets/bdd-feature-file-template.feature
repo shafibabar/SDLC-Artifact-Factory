@@ -1,4 +1,4 @@
-# features/[feature-slug].feature
+# artifacts/[product]/implement/features/[feature-slug].feature
 Feature: [Feature Title]
   As a [role]
   I want [capability]

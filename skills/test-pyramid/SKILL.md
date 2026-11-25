@@ -8,7 +8,7 @@ description: >
   (Statement Coverage, Branch Coverage, Path Coverage), flaky-test quarantine
   policy, regression discipline, and how security and compliance testing are
   delegated to security-engineer.
-version: 2.1.0
+version: 2.2.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -181,4 +181,4 @@ The test-strategist ensures these layers exist and are gated, but the security-e
 
 ## Output Format
 
-See `references/test-strategy-template.md` for the complete, fill-in test-strategy document format — frontmatter fields, Pyramid Targets table, Shift-Left Plan, Shift-Right Plan, Coverage and Flaky Policy, and Delegated Testing sections.
+Write the document to `artifacts/<product>/implement/test-strategy.md` (the path the product manifest registers for approval). See `references/test-strategy-template.md` for the complete, fill-in test-strategy document format — frontmatter fields, Pyramid Targets table, Shift-Left Plan, Shift-Right Plan, Coverage and Flaky Policy, and Delegated Testing sections.
