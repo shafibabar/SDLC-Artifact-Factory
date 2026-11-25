@@ -10,6 +10,7 @@ Format: [Semantic Version] — Date — Description
 
 ### Added
 
+- 2026-11-25 — **Wave 3 research: official documentation for front-end test tools (#1458, PR #1468).** Seven `research/testing/` notes (Testing Library, MSW, Vitest, Stryker, jest-axe and axe-core, Playwright, WCAG and ARIA Authoring Practices).
 - 2026-11-25 — **Wave 3 research: official documentation for Python test tools (#1457, PR #1467).** Nine `research/testing/` notes (coverage, mutmut, pytest, pytest-asyncio, pytest-benchmark, testcontainers-python, jsonschema, oasdiff, Hypothesis); D048 records the Go coverage decision.
 - 2026-11-25 — **Wave 3 research: official documentation for Go test tools (#1456, PR #1466).** Ten `research/testing/` notes (toolchain, coverage, benchstat, godog, moq, Testcontainers-go, Gremlins, pact-go, Chaos Mesh, kind). Key result: Go's tooling measures statement blocks, not branches.
 - 2026-11-25 — **Wave 3 research: official documentation for shared test tools (#1459, PR #1465).** `research/testing/` notes for k6, Toxiproxy, GitHub Actions trigger and required-check behaviour, and the Gherkin reference.
