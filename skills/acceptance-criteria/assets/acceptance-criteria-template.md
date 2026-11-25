@@ -19,7 +19,7 @@ Example map: EM-[ID] ([N] rule cards, [N] example cards, 0 open question cards)
 
 ## Happy Path
 
-### AC-001: [Short title]
+### AC-US-[ID].1: [Short title]
 ```gherkin
 Given [precondition],
 When [action],
@@ -28,7 +28,7 @@ Then [outcome].
 
 ## Error / Negative Scenarios
 
-### AC-002: [Short title]
+### AC-US-[ID].2: [Short title]
 ```gherkin
 Given [error precondition],
 When [action],
@@ -37,7 +37,7 @@ Then [error outcome visible to user].
 
 ## Boundary / Edge Cases
 
-### AC-003: [Short title]
+### AC-US-[ID].3: [Short title]
 ```gherkin
 Given [boundary condition],
 When [action at limit],
@@ -46,7 +46,7 @@ Then [expected behaviour at limit].
 
 ## Rule-Based Criteria
 
-### AC-004: [Rule name]
+### AC-US-[ID].4: [Rule name]
 **Rule:** [Statement]
 **Verify:** [How to verify]
 **Example:** [Concrete illustration]

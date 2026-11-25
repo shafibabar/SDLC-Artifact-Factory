@@ -22,7 +22,8 @@ One row per artifact type this plugin can produce: Artifact Type, Producing Agen
 | Go Service | backend-engineer | `backend-engineering/go-service-skeleton` + related | `artifacts/[product]/implement/services/[service]/` | implement | (source tree; design doc uses standard frontmatter) |
 | BDD Feature File | test-strategist | `test-engineering/bdd-feature-file` | `artifacts/[product]/implement/features/[story-id].feature` | implement | (Gherkin; traceability tag references story-id) |
 | React Component | frontend-engineer | `frontend-engineering/react-component-design` + related | `artifacts/[product]/implement/web/src/components/[Name]/` | implement | (source tree; design doc uses standard frontmatter) |
-| Test Strategy | test-strategist | `test-engineering/test-pyramid` | `artifacts/[product]/quality/test-strategy.md` | quality | name, version, phase, owner, created, summary |
+| Test Strategy | test-strategist | `test-engineering/test-pyramid` | `artifacts/[product]/implement/test-strategy.md` | implement | name, version, phase, owner, created, summary |
+| Test Report | test-strategist | `go-load-test`, `go-mutation-test`, `go-performance-test`, `go-chaos-test` and their Python twins | `artifacts/[product]/quality/test-reports/[report].md` | quality | name, version, phase, owner, created, summary |
 | Helm Chart | platform-engineer | `platform/helm-chart` | `artifacts/[product]/deploy/charts/[service]/` | deploy | (chart tree; `Chart.yaml` carries chart-level metadata) |
 | Runbook | platform-engineer | `platform/runbook-authoring` | `artifacts/[product]/deploy/runbooks/[scenario].md` | deploy | name, version, phase, owner, created, summary |
 | UAT Plan | requirements-analyst | `validation/uat-plan` | `artifacts/[product]/validate/uat-plan.md` | customer-validation | name, version, phase, owner, created, summary |

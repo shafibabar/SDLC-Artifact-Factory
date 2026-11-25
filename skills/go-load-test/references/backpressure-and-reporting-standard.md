@@ -132,7 +132,7 @@ curl -s -X POST "$GRAFANA_URL/api/annotations" \
        "time":'"$(date -d "$RUN_START" +%s000)"',"timeEnd":'"$(date +%s000)"'}'
 ```
 
-**4. `docs/quality/load-report.md` stays, but as a pointer, not a data dump** — the run id, the
+**4. `artifacts/<product>/quality/test-reports/load-report.md` stays, but as a pointer, not a data dump** — the run id, the
 profile run, the Grafana dashboard link (with the time range pre-set to the run's window), the
 pass/fail verdict per SLO gate (`references/slo-gate-standard.md`), and the backpressure assertions'
 outcome. The durable record is the time series in Prometheus and the dashboard that reads it; the

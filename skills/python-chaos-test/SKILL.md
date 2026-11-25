@@ -7,7 +7,7 @@ description: >
   pass/fail against a stated resilience assumption (circuit breaker engages,
   consumer recovers, no data loss). The Python analog of go-chaos-test; frugal
   (toxiproxy, not a chaos platform).
-version: 1.0.1
+version: 1.1.0
 phase: quality
 owner: backend-engineer
 created: 2026-07-31
@@ -208,7 +208,7 @@ Produces chaos experiment files and the fault-injection harness:
 tests/chaos/conftest.py                    (toxiproxy + testcontainers chaos_stack fixture, toxic cleanup)
 tests/chaos/test_breaker_severed_db.py     (sever Postgres link → Circuit Breaker opens, recovers)
 tests/chaos/test_consumer_broker_kill.py   (kill Redpanda broker → consumer resumes, no data loss)
-docs/quality/resilience-report.md          (pointer: patterns validated, blast-radius stages, gaps → disaster-recovery-plan)
+artifacts/<product>/quality/test-reports/resilience-report.md          (pointer: patterns validated, blast-radius stages, gaps → disaster-recovery-plan; carries the artifact frontmatter)
 ```
 
 Full standards: `references/toxiproxy-fault-injection.md` (toxiproxy container +

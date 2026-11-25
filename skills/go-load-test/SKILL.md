@@ -21,7 +21,7 @@ description: >
   standard wiring k6 output into the OpenTelemetry/Prometheus/Grafana stack
   (references/backpressure-and-reporting-standard.md). Used by the
   test-strategist during Quality.
-version: 2.0.1
+version: 2.1.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -127,7 +127,7 @@ Results are plumbed into the **same** OpenTelemetry/Prometheus/Grafana stack tha
 product in production: k6's metrics stream to `staging`'s Prometheus via the native remote-write
 output, a reused Grafana dashboard overlays the client-side k6 view against the service's own RED
 recording rules and backpressure signals, and a Grafana annotation marks the run's window so a later
-reviewer sees "a load test happened here," not an anomaly. `docs/quality/load-report.md` is a
+reviewer sees "a load test happened here," not an anomaly. `artifacts/<product>/quality/test-reports/load-report.md` is a
 reviewable-by-the-user pointer (run id, dashboard link, verdict per gate) — never a second data copy.
 Full plumbing and dashboard contents: `references/backpressure-and-reporting-standard.md`.
 
@@ -179,5 +179,5 @@ Full plumbing and dashboard contents: `references/backpressure-and-reporting-sta
 - **Grafana `load-test` dashboard folder** (provisioned once, reused) — k6 percentiles over the
   service's RED recording rules, `429` rate, `db_pool_in_use`, `pipeline_consumer_lag`, annotated
   per run via the Annotations API.
-- **`docs/quality/load-report.md`** — one entry per run: run id, profile, `staging` sizing, dashboard
+- **`artifacts/<product>/quality/test-reports/load-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — one entry per run: run id, profile, `staging` sizing, dashboard
   link, pass/fail per gate, backpressure outcome. A pointer into the stack, never a duplicate dump.

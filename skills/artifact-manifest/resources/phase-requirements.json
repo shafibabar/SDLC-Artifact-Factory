@@ -1,7 +1,7 @@
 {
   "_meta": {
     "purpose": "What each SDLC phase must produce before it can be approved, and where each artifact lives. Read by scripts/product-state.py (phase completion) and the pre-phase-advance hook (via the manifest), and by phase commands and agents to know canonical paths.",
-    "how_to_use": "paths are globs relative to artifacts/<product>/. Each artifact has a level per scale profile (sdlc-config.json scale_profile; default enterprise): 'required' (the phase can't be approved without an approved copy), 'optional' (produce it when its note's trigger applies or the user asks), 'skip' (not produced at this profile). Phases with no required artifacts (implement, data, deploy produce code, verified by CI) are completed by the user's explicit phase approval alone. The five methodologies (DDD, Event Storming, TDD, BDD, SOLID) apply at every profile; lean produces fewer, shorter artifacts, never skips a methodology.",
+    "how_to_use": "paths are globs relative to artifacts/<product>/. Each artifact has a level per scale profile (sdlc-config.json scale_profile; default enterprise): 'required' (the phase can't be approved without an approved copy), 'optional' (produce it when its note's trigger applies or the user asks), 'skip' (not produced at this profile). Phases with no required artifacts (data and deploy produce code, verified by CI) are completed by the user's explicit phase approval alone. The five methodologies (DDD, Event Storming, TDD, BDD, SOLID) apply at every profile; lean produces fewer, shorter artifacts, never skips a methodology.",
     "profiles": [
       "lean",
       "standard",
@@ -304,7 +304,7 @@
         ],
         "agent": "requirements-analyst",
         "profiles": {
-          "lean": "optional",
+          "lean": "required",
           "standard": "required",
           "enterprise": "required"
         },
@@ -904,9 +904,49 @@
         "note": "Required when the product is in a compliance scope (sdlc-config.json compliance_frameworks)."
       }
     ],
-    "implement": [],
+    "implement": [
+      {
+        "artifact": "test-strategy",
+        "paths": [
+          "implement/test-strategy.md"
+        ],
+        "agent": "test-strategist",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "Written before feature work starts (test-pyramid)."
+      },
+      {
+        "artifact": "feature-files",
+        "paths": [
+          "implement/features/*.feature"
+        ],
+        "agent": "test-strategist",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "Gherkin from the acceptance criteria (bdd-feature-file); at least one required."
+      }
+    ],
     "data": [],
     "quality": [
+      {
+        "artifact": "test-report",
+        "paths": [
+          "quality/test-reports/*.md"
+        ],
+        "agent": "test-strategist",
+        "profiles": {
+          "lean": "required",
+          "standard": "required",
+          "enterprise": "required"
+        },
+        "note": "The family of test reports (load, performance budgets, mutation, resilience), one file each, with the artifact frontmatter; at least one required."
+      },
       {
         "artifact": "compliance-verification-report",
         "paths": [
@@ -978,15 +1018,15 @@
       "approval_mode": "batch",
       "approval_mode_note": "Produce the phase's artifacts together, then present one summary table for a single review.",
       "implement": "One deployable service (a modular monolith) unless the domain clearly needs more; TDD and SOLID unchanged.",
-      "deploy": "Single region, no service mesh, no chaos testing; a simple managed or single-cluster setup.",
-      "quality": "End-to-end tests for the Must Have journeys; performance and load checks only against stated NFRs; no chaos or mutation runs."
+      "deploy": "Single region, no service mesh; a simple managed or single-cluster setup.",
+      "quality": "Full Test Pyramid plus performance, load, chaos and mutation testing."
     },
     "standard": {
       "approval_mode": "key-decisions",
       "approval_mode_note": "Stop for approval only at the artifacts that change direction (e.g. vision, Context Map, Container Diagram); batch the rest into one review per phase.",
       "implement": "A few services from the Container Diagram's decomposition, never splitting a Bounded Context.",
       "deploy": "One region; service mesh optional; canary releases.",
-      "quality": "Full Test Pyramid; mutation testing on critical packages; chaos testing optional."
+      "quality": "Full Test Pyramid plus performance, load, chaos and mutation testing."
     },
     "enterprise": {
       "approval_mode": "per-artifact",

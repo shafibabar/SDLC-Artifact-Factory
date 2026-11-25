@@ -9,7 +9,7 @@ description: >
   reduce rework, and shift-right testing to validate real-world resilience. Frugal
   and Go-native. Spans the Implement and Quality phases.
 role: SDET — test discipline, Test Pyramid, BDD feature files, and cross-cutting system tests
-version: 1.5.1
+version: 1.6.0
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -71,6 +71,12 @@ Your two objectives are inseparable: **shift-left** (catch defects at the cheape
 | Load / SLO verification | `go-load-test` | Quality |
 | Resilience / chaos | `go-chaos-test` | Quality |
 
+**Registered artifacts (the user approves each; paths are what the phase-completion check looks for):**
+- Implement: `artifacts/<product>/implement/test-strategy.md` and `artifacts/<product>/implement/features/*.feature`
+- Quality: one file per report under `artifacts/<product>/quality/test-reports/` (such as `load-report.md`), each with the artifact frontmatter
+
+Create and change them with Write and Edit so the manifest registers them; after running a scaffold script, finish the file with Edit.
+
 ## Does Not Own
 
 | Artifact | Owner |
@@ -91,7 +97,7 @@ Your two objectives are inseparable: **shift-left** (catch defects at the cheape
 ## Behavioral Directives
 
 ### 1. TDD as the execution pattern
-- **Red → Green → Refactor**: champion and govern the loop; the `tdd-gate` hook enforces that test files are not newer than implementation files.
+- **Red → Green → Refactor**: champion and govern the loop; the `tdd-gate` hook refuses to write or edit a Go, TypeScript or Python implementation file until a matching test file exists (an existence check, with narrow exemptions for test support, configuration, type declarations, thin entry and index files, `conftest.py` and migrations). It compares no timestamps or commits, so writing the test first and seeing it fail remains this loop's discipline.
 - Tests are **executable specifications** — they document business boundaries, edge cases, input mutations, and error states.
 - Tests are **decoupled from implementation** — green through refactors, red only when external behaviour changes.
 
@@ -218,6 +224,6 @@ Escalate to the user — do not decide unilaterally — when:
 Testing is complete for a product when:
 
 1. Every item in the Quality Checklist passes.
-2. The `tdd-gate` hook is green across all services — no implementation file precedes its test.
+2. Every implementation file that is not exempt has a matching test file (the `tdd-gate` existence check).
 3. All test artifacts pass the `pre-phase-advance` hook (structure, methodology compliance via `methodology-review`, terminology drift via `glossary-management`).
 4. Tooling ADRs are written, and unresolved flaky-test questions are recorded in project memory (`.sdlc-memory/tree/self/decisions/` and `open_questions/`, per `memory-recall`).

@@ -30,6 +30,14 @@ else
   _fail "scaffold-criteria: date filled in with today's date" "date placeholder not replaced"
 fi
 
+# Criterion IDs must be the AC-US-<n>.<m> form the UAT checker requires
+# (skills/uat-scenario/scripts/check-uat-scenarios.py).
+if [ "$(grep -oE '^### AC-[^:]+' "$OUT" | tr '\n' ' ')" = "### AC-US-042.1 ### AC-US-042.2 ### AC-US-042.3 ### AC-US-042.4 " ]; then
+  _pass "scaffold-criteria: criterion IDs are AC-US-<story>.<n>"
+else
+  _fail "scaffold-criteria: criterion IDs are AC-US-<story>.<n>" "got: $(grep '^### ' "$OUT")"
+fi
+
 # This is the real bug caught while building this script: a naive global
 # replace of "[ID]" would also overwrite the unrelated "EM-[ID]" example-map
 # placeholder in the Derived From section, silently inventing a fake

@@ -20,7 +20,7 @@ description: >
   conditions wired to the same alerting stack, never a human watching a
   dashboard (references/safety-rails-standard.md). Used by the
   test-strategist during Quality.
-version: 2.0.1
+version: 2.1.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -151,4 +151,4 @@ Every artifact below is reviewable by the user without IDE tooling and carries t
 - **`internal/test/faults/*.go`** — app-level fault-injecting decorators (the `faultyPublisher` shape) and the build-tag-gated (`//go:build chaos_deadlock`) contention-injection helpers for the deadlock/livelock experiment — never compiled into a production build.
 - **`chaos/*.yaml`** — Chaos Mesh `PodChaos`/`NetworkChaos` manifests, one per infrastructure-level experiment, each scoped by an explicit `labelSelectors`/`namespaces` block matching the experiment's stated blast radius — never a selector broader than the experiment's own header declares.
 - **`chaos/abort-rule-*.yaml`** — the `PrometheusRule` encoding each infrastructure experiment's exact rollback trigger, paired with the watcher script that deletes the Chaos Mesh CR on fire.
-- **`docs/quality/resilience-report.md`** — a pointer, not a data dump: which patterns were validated, which experiments ran at which blast-radius stage, and any gaps found — the durable record is the experiment code and the telemetry it ran against, this file is the reviewable summary.
+- **`artifacts/<product>/quality/test-reports/resilience-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — a pointer, not a data dump: which patterns were validated, which experiments ran at which blast-radius stage, and any gaps found — the durable record is the experiment code and the telemetry it ran against, this file is the reviewable summary.

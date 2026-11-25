@@ -111,7 +111,8 @@ else
   _fail "status reports the current phase and what it still needs" "$out"
 fi
 
-# 11. a code phase with no required documents completes on the user's approval alone
+# 11. (D048) Implement needs the test strategy and feature files approved; a code
+#     phase with no required documents (data) completes on the user's approval alone
 python3 - "$P/artifacts/lunch/_manifest.json" <<'PY'
 import json, sys
 p = sys.argv[1]; m = json.load(open(p))
@@ -119,12 +120,30 @@ m["current_phase"] = "implement"; m["phases"]["design"] = {"status": "approved",
 json.dump(m, open(p, "w"), indent=2)
 PY
 out="$(ps complete implement)"; rc=$?
+[[ $rc -eq 1 && "$out" == *'"missing"'*'test-strategy'*'feature-files'* ]] && _pass "implement can't complete without a test strategy and feature files" || _fail "implement can't complete without a test strategy and feature files" "rc=$rc $out"
+mkdir -p "$P/artifacts/lunch/implement/features"
+write implement/test-strategy.md
+printf 'Feature: Order lunch\n' > "$P/artifacts/lunch/implement/features/order_lunch.feature"
+echo '{"tool_input":{"file_path":"'"$P/artifacts/lunch/implement/features/order_lunch.feature"'"},"cwd":"'"$P"'"}' \
+  | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
+out="$(ps approve implement/test-strategy.md implement/features/order_lunch.feature)"; rc=$?
+[[ $rc -eq 0 && -z "$(valid)" ]] && _pass "approve works on the test strategy and a feature file" || _fail "approve works on the test strategy and a feature file" "rc=$rc $out $(valid)"
+out="$(ps complete implement)"; rc=$?
 [[ $rc -eq 1 && "$out" == *'"needs_reapproval"'*'okrs.md'* ]] && _pass "a later phase can't complete while an earlier artifact awaits re-approval" || _fail "a later phase can't complete while an earlier artifact awaits re-approval" "rc=$rc $out"
 ps approve strategy/okrs.md >/dev/null
 read -r st reo <<<"$(okrs_entry)"
 [[ "$st" == "approved" && "$reo" == "-" ]] && _pass "re-approving clears reopened_on" || _fail "re-approving clears reopened_on" "$st $reo"
 out="$(ps complete implement)"; rc=$?
-[[ $rc -eq 0 && "$out" == *'"current_phase": "data"'* ]] && _pass "a code phase completes on the user's approval" || _fail "a code phase completes on the user's approval" "rc=$rc $out"
+[[ $rc -eq 0 && "$out" == *'"current_phase": "data"'* ]] && _pass "implement completes once its test artifacts are approved" || _fail "implement completes once its test artifacts are approved" "rc=$rc $out"
+out="$(ps complete data)"; rc=$?
+[[ $rc -eq 0 && "$out" == *'"current_phase": "quality"'* ]] && _pass "a code phase completes on the user's approval" || _fail "a code phase completes on the user's approval" "rc=$rc $out"
+out="$(ps complete quality 2>&1)"; rc=$?
+[[ $rc -eq 1 && "$out" == *'"missing"'*'test-report'* ]] && _pass "quality can't complete without a test report" || _fail "quality can't complete without a test report" "rc=$rc $out"
+write quality/test-reports/load-report.md
+out="$(ps approve quality/test-reports/load-report.md)"; rc=$?
+[[ $rc -eq 0 && -z "$(valid)" ]] && _pass "approve works on a test report" || _fail "approve works on a test report" "rc=$rc $out $(valid)"
+out="$(ps complete quality)"; rc=$?
+[[ $rc -eq 0 && "$out" == *'"current_phase": "deploy"'* ]] && _pass "quality completes with an approved test report" || _fail "quality completes with an approved test report" "rc=$rc $out"
 
 # 12. (proposal 14; D045) a lean product's Strategy needs only its 5 required artifacts: vision, strategy kernel,
 #     Lean Canvas, then OKRs before the roadmap
@@ -151,6 +170,13 @@ done
 lps approve strategy/vision-statement.md strategy/strategy-kernel.md strategy/lean-canvas.md strategy/okrs.md strategy/roadmap.md >/dev/null
 out="$(lps complete strategy)"; rc=$?
 [[ $rc -eq 0 && "$out" == *'"current_phase": "ideate"'* ]] && _pass "lean strategy completes with its 5 artifacts" || _fail "lean strategy completes with its 5 artifacts" "rc=$rc $out"
+
+# 12b. (D048) at lean, example maps and the test artifacts are required
+for pair in ideate:example-maps implement:test-strategy implement:feature-files quality:test-report; do
+  out="$(lps plan "${pair%%:*}")"
+  python3 -c "import json,sys; assert sys.argv[2] in [r['artifact'] for r in json.loads(sys.argv[1])['required']]" "$out" "${pair##*:}" 2>/dev/null \
+    && _pass "lean requires ${pair##*:}" || _fail "lean requires ${pair##*:}" "$out"
+done
 
 # 13. the lean set is not enough for an enterprise product
 out="$(ps plan strategy)"

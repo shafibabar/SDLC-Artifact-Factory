@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.10.8
+version: 1.11.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -197,6 +197,8 @@ Ideate artifacts must be produced in this order because each depends on the prev
 11. Story Map                 ← the persona's journey narrated with the user; the walking skeleton (= the Must set) and release slices by outcome
 12. MoSCoW Prioritisation     ← finalises provisional priority: Musts = the walking skeleton (workaround clause, story by story), contingency in cut order, Won't this time
 ```
+
+Example maps and acceptance criteria are both required at every scale profile, lean included: never draft a story's criteria without its example map (a lean map is short, not skipped).
 
 Steps 9 and 10 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
 

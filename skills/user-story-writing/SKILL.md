@@ -18,7 +18,7 @@ description: >
   requirements-analyst agent in Ideate (/sdlc-ideate) after the epic list and
   before example maps, acceptance criteria and the story map; required at every
   profile.
-version: 3.0.0
+version: 3.1.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24

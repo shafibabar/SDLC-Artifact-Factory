@@ -6,7 +6,7 @@ description: >
   the mutants, the mutation-score threshold as a PERIODIC gate (not per-PR,
   frugal), interpreting survivors to find weak tests, and scoping to the
   domain/service layer. The Python analog of go-mutation-test.
-version: 1.0.0
+version: 1.1.0
 phase: quality
 owner: backend-engineer
 created: 2026-07-31
@@ -89,7 +89,7 @@ Mutation testing reruns the **entire targeted test suite once per surviving-cand
    - **Yes → real gap.** Add the missing `@pytest.mark.parametrize` row — usually a boundary case the table is missing. Rerun to confirm the kill.
    - **No → equivalent mutant.** Annotate the source line with a `# pragma: no mutate` comment naming *why*, not a silent exclude, so it does not resurface as noise.
 4. **Prioritize domain-layer survivors first** — that is where an undetected bug is most expensive.
-5. **Record the outcome** in `docs/quality/mutation-report.md` — score trend, survivors triaged, equivalents annotated this run.
+5. **Record the outcome** in `artifacts/<product>/quality/test-reports/mutation-report.md` — score trend, survivors triaged, equivalents annotated this run.
 
 Two fully worked dispositions — a real gap traced to a missing boundary, and a genuine equivalent mutant with its `# pragma: no mutate` annotation — plus the complete 100%-coverage-with-survivor example: `references/interpreting-survivors.md`.
 
@@ -126,4 +126,4 @@ Two fully worked dispositions — a real gap traced to a missing boundary, and a
 - **`pyproject.toml` `[tool.mutmut]`** — committed tool configuration: `paths_to_mutate` scoped to `domain`/`service_layer`, the pytest `runner`, and the `tests_dir`. Never edited ad hoc via CLI flags that bypass the committed scope. Exact shape: `references/mutmut-setup-and-score.md`.
 - **`.github/workflows/mutation.yml`** — the scheduled CI job: nightly/weekly cron plus a `release`-triggered run, computing the score and failing below 60%, posting the survivor list as a build artifact. Never triggered on `pull_request`. Exact shape: `references/mutmut-setup-and-score.md`.
 - **`tests/unit/**/test_*.py`** — new boundary `@pytest.mark.parametrize` rows written specifically to kill a triaged real-gap survivor, added to the existing table (`python-unit-test`'s shape), never a new ad hoc test bolted on beside it.
-- **`docs/quality/mutation-report.md`** — one entry per scheduled run: date, score, killed/survived/equivalent counts, each survivor's triage disposition, and the score trend versus the previous run.
+- **`artifacts/<product>/quality/test-reports/mutation-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — one entry per scheduled run: date, score, killed/survived/equivalent counts, each survivor's triage disposition, and the score trend versus the previous run.

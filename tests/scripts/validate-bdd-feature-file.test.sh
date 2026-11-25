@@ -14,7 +14,7 @@ cd "$SCRATCH_DIR"
 # A fresh scaffold passes all checks -- none of the three are placeholder-
 # sensitive by design (they check structural/mechanical properties, not
 # whether bracket placeholders have been filled in).
-FRESH="$("$SCAFFOLD" "Classify a data asset")"
+FRESH="$("$SCAFFOLD" acme "Classify a data asset")"
 if "$VALIDATE" "$FRESH" >/dev/null 2>&1; then
   _pass "validate-bdd-feature-file: a fresh scaffold passes all checks"
 else

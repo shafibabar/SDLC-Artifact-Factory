@@ -18,7 +18,7 @@ Self-contained. **Toolshed** is a tool-loan tracker one volunteer is building fo
 
 - **US-4 fails three ways.** "A user" is no persona; "the system" texting is the product's action, not the member's; "so that I get reminded" restates the want and fails the "so what?" test. Rewritten: the member (P-1) gets a reminder, so that the tool is back before someone else needs it, which is JS-1.2 and moves KR-1.1.
 - **Lean traces.** There is no FRD and so no UR-n: each story traces to its epic heading, the job story and KR-1.1. US-7 (the import) also cites TR-1.
-- **Seed example, not Given/When/Then.** Each story gets one concrete case. Example maps are optional at lean; the acceptance criteria are drafted next from these seeds, and act as the stories' fit criteria.
+- **Seed example, not Given/When/Then.** Each story gets one concrete case. Example maps are required at every profile: each story's map is drawn next from its seed, and the acceptance criteria drafted from that map act as the stories' fit criteria.
 - **Intake: the gap is approved, the user's one big story is not.** "Manage loans" bundles create, update and delete of one entity: a **CRUD split** (Cohn). Record a loan (create) is US-8; record a return (update) is US-9; extend is already US-6; delete a mistaken loan has a workaround (record the return at once), so with the user's agreement it is not written now and goes in the intake log.
 - **The epic heading's size follows.** EPIC-2 now has six stories, so its size moves from S to M; nothing else in the heading changes.
 - **Priorities stay provisional** until the closing block. The block is the walking skeleton found by walking the spine (`story-mapping`): every journey step has a Must, every Won't has a workaround.

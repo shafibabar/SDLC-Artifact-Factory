@@ -9,7 +9,7 @@ Invoke every agent named below via the Agent tool with `subagent_type: "sdlc-art
 
 1. Run `"${CLAUDE_PLUGIN_ROOT}/scripts/product-state.py" status`. If no product exists, tell the user to run `/sdlc-start` first and stop. Confirm `phases.implement.status` is `approved`; if not, tell the user in plain language what the Implement phase still needs (the output lists it) and that `/sdlc-implement` finishes it, and stop.
 2. Check which Quality-phase suites already exist. Do not rebuild approved work unless the user explicitly asks for a revision.
-3. Invoke `test-strategist` for the shift-right suites: end-to-end journeys, performance baselines, load/SLO verification, chaos testing, and periodic mutation testing on critical packages.
+3. Invoke `test-strategist` for the shift-right suites: end-to-end journeys, performance baselines, load/SLO verification, chaos testing, and periodic mutation testing on critical packages. It writes one report per suite run under `artifacts/<product>/quality/test-reports/`; the user approves them, and the Quality phase cannot be completed without an approved test report.
 4. Invoke `security-engineer` for the compliance test suite, vulnerability scanning, and the compliance verification report.
 5. When both agents report completion, ask the user to approve the Quality phase and record it (see **Approvals** below), and tell the user the next step is `/sdlc-deploy`.
 
