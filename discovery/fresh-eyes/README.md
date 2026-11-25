@@ -45,7 +45,7 @@ A whole-repo traversal to find refactor ideas. It looks at the components **as t
 
 ## Refactor campaign progress (scope expanded 2026-10-11: discover + augment)
 
-Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phases A and B and Wave 1 are merged; Wave 2 is in progress.
+Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phases A and B and Waves 1 and 2 are merged; Wave 3 is in discovery review.
 
 | Phase | Parent | Status |
 |---|---|---|
@@ -53,7 +53,8 @@ Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phases A and B a
 | B — pilot: vision-statement, adr-authoring, go-repository-pattern | #1238 | **done** — approved by Shafi, merged to main via #1245 (35a903f) |
 | C — domain waves (per-skill issues) | — | **started 2026-10-19** (Shafi's go; depth/eval budget/Go compile check decided 2026-10-12) |
 | C / Wave 1 — strategy + discovery + validation (21 skills + 2 new) | #1292 | **done** — merged to main via #1375 (53af4ce). Findings: [wave-1-findings.md](wave-1-findings.md) (50); 15 research files; decisions D045, D046; 23 skills rebuilt (PRs #1351–#1374), all clean on structure, layout and evals |
-| C / Wave 2 — domain-modeling + architecture (24 skills + 1 new) | #1376 | **ready for review 2026-11-21** — 25 skills rebuilt (children #1387–#1411, #1423), 7 research files, pipeline D047; all 25 pass structure, layout and evals (positive Δ). Findings: [wave-2-findings.md](wave-2-findings.md). PR to `main` open for the product owner. Follow-up #1438 (stamp assumptions in platform/security skills) is outside the wave |
+| C / Wave 2 — domain-modeling + architecture (24 skills + 1 new) | #1376 | **done** — merged to main via #1448 (d845109); 25 skills rebuilt (#1387–#1411, #1423), 7 research files, pipeline D047. Findings: [wave-2-findings.md](wave-2-findings.md). Follow-up #1438 merged via #1449 (918b31f) |
+| C / Wave 3 — testing (24 skills) | #1450 | **discovery done 2026-11-25** (#1451) — [wave-3-findings.md](wave-3-findings.md), batch reports in [wave-3/](wave-3/). Awaiting the product owner's decisions (W3-D1 to D9) and a go for the rebuild round. Branch `fresh-eyes/wave-3-testing` |
 
 Phase A facts a resuming session needs:
 - Evals live at ROOT `evals/<skill>/<case>/` — `claude plugin eval` refuses dirs inside `skills/`.
