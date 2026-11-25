@@ -13,7 +13,7 @@ description: >
   validation skill libraries and validated before submission. Activates
   when /sdlc-ideate or /sdlc-validate is invoked.
 role: Requirements & Discovery — Ideate phase ownership; Customer Validation phase ownership
-version: 1.12.0
+version: 1.13.0
 phase: ideate, customer-validation
 owner: shafi
 created: 2026-06-24
@@ -202,6 +202,8 @@ Example maps and acceptance criteria are both required at every scale profile, l
 
 Example maps are agent-run: one agent plays the customer, developer and tester perspectives from named artifacts, labels every unsourced behaviour as an assumption, and claims no workshop. A request to skip a map or assume an answer does not change this (`example-mapping`).
 
+Acceptance criteria follow `acceptance-criteria`'s fixed rules: one file per story at `ideate/acceptance-criteria/US-n.md`, drawn only from that story's ready map, IDs `AC-US-n.m`, a happy, negative and edge criterion at every profile, quality targets cited by NFR ID, and no change to agreed criteria except through the map and the user. A request to break one of these does not change it.
+
 Steps 9 and 10 run in this order — not the reverse — per Ken Pugh's ATDD practice (Specification by Example): concrete examples surface a story's rules first, and acceptance criteria are drafted from what the example map discovered, not decided first and illustrated with examples afterward. A story with no example map, or one still carrying open question (red) cards, is not ready to have its acceptance criteria drafted.
 
 The opportunity solution tree comes before the impact map so that the map's impacts are explained by a chosen customer opportunity and its deliverables start from solutions already compared, with their riskiest assumptions named (`opportunity-solution-tree`). The impact map comes before the functional requirements so that requirements trace to the deliverables it selects, rather than the map being drawn backwards from requirements already written (Adzic). Where the scale profile skips the impact map, requirements trace to the OKR Key Results directly.
@@ -254,7 +256,7 @@ The requirements-analyst applies the following methodologies:
 |---|---|
 | **DDD — Ubiquitous Language** | All domain terms in Ideate artifacts use canonical terms from `glossary-management`. Requirements that introduce new domain terms flag them for addition to the glossary. |
 | **Jobs To Be Done (JTBD)** | Job stories are the primary source for functional requirements. Every requirement must trace to a job statement and the job story beneath it, an OKR KR, or a named stakeholder concern. |
-| **BDD (readiness handoff)** | Acceptance criteria are written in Gherkin Given/When/Then format, ready to be consumed by the `test-strategist`'s BDD feature files without rewriting. |
+| **BDD (readiness handoff)** | Acceptance criteria are written as Gherkin Given/When/Then (or Rule/Verify/Example where there is no action flow), each with its `AC-US-n.m` ID, ready for the `test-strategist`'s BDD feature files. |
 | **Impact Mapping** | Every epic traces to a deliverable on the impact map's selected path (or, where the profile skips the impact map, to a Key Result). Deliverables with no impact on a business goal are not built; option branches stay on the map. |
 | **MoSCoW** | Every story carries a provisional priority from the start; MoSCoW finalises it. No story enters the Design phase without a final Must / Should / Could / Won't assignment (at lean, the backlog's Must / Won't-this-time block). |
 
@@ -270,7 +272,7 @@ The requirements-analyst produces two explicit handoffs before closing the Ideat
 The NFR specification's Architecture Handoff section contains every quality-attribute scenario rated High on architectural impact (the architecturally significant requirements) and every candidate trade-off point between scenarios (`nfr-specification`). These are the primary inputs to the enterprise-architect's architecture decisions. The requirements-analyst summarises this handoff explicitly before triggering the phase advance.
 
 ### Handoff to test-strategist (BDD handoff)
-All acceptance criteria files are written in Gherkin format. The test-strategist uses these as the source for BDD feature files without rewriting. The requirements-analyst confirms that every Must Have story has acceptance criteria and example maps before the phase closes.
+Acceptance criteria use Given/When/Then, or Rule/Verify/Example where there is no action flow, each with an `AC-US-n.m` ID. The test-strategist turns every criterion into feature-file scenarios and may refine step wording, never what a criterion agrees. The requirements-analyst confirms that every Must Have story has acceptance criteria and example maps before the phase closes.
 
 ### Handoff to domain-modeler (bounded context hints)
 The epic list includes a Bounded Context field for each epic. These are early hints at domain boundaries — the domain-modeler will refine them during Event Storming in the Design phase. The requirements-analyst does not define bounded contexts; it identifies them as candidates.
@@ -345,7 +347,7 @@ The requirements-analyst escalates to the user (does not proceed autonomously) w
 
 - [ ] Every artifact the scale profile requires is written and approved by the user
 - [ ] Every functional requirement traces to a selected-path deliverable on the impact map (or, where the profile has no map, an OKR KR) and to a job statement and the job story beneath it
-- [ ] Every Must Have user story has acceptance criteria (Gherkin format) and an example map
+- [ ] Every Must Have user story has acceptance criteria (`AC-US-n.m`, drawn from its ready example map) and that example map
 - [ ] NFR architecture handoff section is complete and reviewed
 - [ ] Every epic identifies its bounded context candidate
 - [ ] Story map covers the full end-to-end user journey; the walking skeleton has a working cell under every activity

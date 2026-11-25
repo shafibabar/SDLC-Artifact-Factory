@@ -2387,7 +2387,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.12.0"
+        "version": "1.13.0"
       },
       {
         "created": "2026-06-25",
@@ -2815,15 +2815,15 @@
         "created": "2026-06-24",
         "dir": "skills/acceptance-criteria",
         "domain": "testing",
-        "has_assets": true,
+        "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "acceptance-criteria",
         "owner": "requirements-analyst",
         "phase": "ideate",
@@ -2831,20 +2831,36 @@
           "acceptance-criteria-document"
         ],
         "related": [
+          "bdd-feature-file",
           "example-mapping",
-          "skill-authoring-standards"
+          "glossary-management",
+          "methodology-review",
+          "nfr-specification",
+          "requirements-analysis",
+          "test-pyramid",
+          "uat-plan",
+          "uat-scenario",
+          "user-story-writing"
         ],
-        "sources": [],
+        "sources": [
+          "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md",
+          "research/testing/gherkin-official-reference.md",
+          "research/testing/specification-by-example-adzic.md"
+        ],
         "status": "stable",
         "tags": [
           "acceptance-criteria",
+          "atdd",
           "bdd",
           "gherkin",
           "ideate",
           "product-discovery",
           "testing"
         ],
-        "version": "2.3.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -11127,8 +11143,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1189,
-    "edges_skill_sources": 292,
+    "edges_skill_related": 1197,
+    "edges_skill_sources": 298,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11140,20 +11156,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 83,
-    "skills_with_assets": 8,
+    "research_files_cited": 84,
+    "skills_with_assets": 7,
     "skills_with_contract_test": 135,
     "skills_with_domain": 190,
     "skills_with_evals": 54,
-    "skills_with_examples": 54,
+    "skills_with_examples": 55,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 53,
+    "skills_with_resources": 54,
     "skills_with_scripts": 49,
-    "skills_with_sources": 55,
+    "skills_with_sources": 56,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 52
+    "skills_with_templates": 53
   },
   "edges": {
     "agent_produces": [
@@ -12992,11 +13008,43 @@
     ],
     "skill_related": [
       {
+        "related": "bdd-feature-file",
+        "skill": "acceptance-criteria"
+      },
+      {
         "related": "example-mapping",
         "skill": "acceptance-criteria"
       },
       {
-        "related": "skill-authoring-standards",
+        "related": "glossary-management",
+        "skill": "acceptance-criteria"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "acceptance-criteria"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "acceptance-criteria"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "acceptance-criteria"
+      },
+      {
+        "related": "test-pyramid",
+        "skill": "acceptance-criteria"
+      },
+      {
+        "related": "uat-plan",
+        "skill": "acceptance-criteria"
+      },
+      {
+        "related": "uat-scenario",
+        "skill": "acceptance-criteria"
+      },
+      {
+        "related": "user-story-writing",
         "skill": "acceptance-criteria"
       },
       {
@@ -17749,6 +17797,30 @@
       }
     ],
     "skill_sources": [
+      {
+        "skill": "acceptance-criteria",
+        "source": "research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md"
+      },
+      {
+        "skill": "acceptance-criteria",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "acceptance-criteria",
+        "source": "research/requirements-and-user-stories/software-requirements-wiegers-beatty.md"
+      },
+      {
+        "skill": "acceptance-criteria",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "acceptance-criteria",
+        "source": "research/testing/gherkin-official-reference.md"
+      },
+      {
+        "skill": "acceptance-criteria",
+        "source": "research/testing/specification-by-example-adzic.md"
+      },
       {
         "skill": "acceptance-sign-off",
         "source": "research/human-ai-collaboration/co-intelligence-mollick.md"

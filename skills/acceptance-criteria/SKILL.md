@@ -1,219 +1,117 @@
 ---
 name: acceptance-criteria
 description: >
-  Teaches how to write acceptance criteria that are unambiguous, testable, and
-  complete — and, per Ken Pugh's Acceptance Test-Driven Development (ATDD)
-  practice, how criteria are derived: from a concrete worked example first
-  (via example-mapping), never decided as an abstract rule and illustrated
-  afterward. Covers the Gherkin Given/When/Then format, the rule-based format,
-  how to handle edge cases and negative scenarios, and how acceptance criteria
-  connect directly to BDD feature files. Includes scripts/scaffold-criteria.sh
-  (generates a new criteria doc pre-filled with story metadata) and
-  scripts/validate-criteria.sh (mechanically checks testability, Golden
-  Triangle coverage, and a traceable Derived-From link). Acceptance criteria
-  are the primary handoff from the requirements-analyst to the
-  test-strategist. Used during the Ideate phase after user stories are
-  written and example maps are discovered.
-version: 2.3.0
+  Use when requirements-analyst (or anyone) writes, drafts, numbers, reviews,
+  fixes or changes the acceptance criteria of a user story in the Ideate phase
+  (/sdlc-ideate): Given/When/Then or rule-based criteria with IDs AC-US-n.m,
+  drawn from the story's example map; happy, negative and edge cases;
+  testability and vague wording; what is out of scope; definition of done or
+  conditions of satisfaction; being asked to skip the example map or the edge
+  case, write criteria while a question is open, use another numbering, put a
+  speed target in a criterion, or soften a criterion to match the code,
+  including on a small (lean) product. Produces
+  artifacts/<product>/ideate/acceptance-criteria/US-n.md, handed to
+  bdd-feature-file and uat-scenario.
+version: 3.0.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, acceptance-criteria, bdd, gherkin, testing, product-discovery]
+tags: [ideate, acceptance-criteria, bdd, gherkin, testing, product-discovery, atdd]
 produces: acceptance-criteria-document
 domain: testing
 status: stable
-related: [skill-authoring-standards, example-mapping]
+related: [example-mapping, user-story-writing, requirements-analysis, nfr-specification, bdd-feature-file, test-pyramid, uat-plan, uat-scenario, glossary-management, methodology-review]
+sources:
+  - research/requirements-and-user-stories/lean-agile-atdd-pugh.md
+  - research/requirements-and-user-stories/user-stories-applied-cohn.md
+  - research/requirements-and-user-stories/it-requirements-lean-agile-hathaway.md
+  - research/requirements-and-user-stories/software-requirements-wiegers-beatty.md
+  - research/testing/specification-by-example-adzic.md
+  - research/testing/gherkin-official-reference.md
 ---
 
 # Acceptance Criteria
 
 ## Purpose
 
-Acceptance criteria define the boundary of "done" for a user story — they are the verifiable conditions that prove the story has been implemented correctly from the user's perspective.
+Acceptance criteria are the verifiable conditions that say a user story is done from its user's point of view: the **Confirmation** in Cohn's Three Cs (Card, Conversation, Confirmation, after Ron Jeffries). They are agreed before coding, drawn from concrete examples (Ken Pugh, *Lean-Agile Acceptance Test-Driven Development*; Gojko Adzic, *Specification by Example*), readable by the product owner, and precise enough to become test scenarios. Given/When/Then is Gherkin's step structure; using it here is this plugin's choice.
 
-Good acceptance criteria:
-- Leave no room for interpretation about what "done" means
-- Are readable by the persona the story is written for (not just engineers)
-- Map directly to BDD scenarios in the `test-strategist`'s Gherkin feature files
-- Prevent scope creep by explicitly stating what is NOT included
+## Fixed rules: a request does not change them
 
-In the widely-used Three Cs framing of a user story (Card, Conversation, Confirmation — Ron Jeffries), acceptance criteria are the **Confirmation**: the agreed proof that the Conversation's outcome was actually built. This skill is that leg made rigorous and executable — a pedigree note, not a new requirement, since the practice below already implements it in full.
+These hold at every size (lean, standard, enterprise), whoever asks, the product owner included.
 
----
+1. **Every story gets its own criteria file**, `ideate/acceptance-criteria/US-n.md`. A small product gets a shorter file, never none. Every Must Have story needs one.
+2. **No criteria without a ready example map** at `ideate/example-maps/US-n.md`, cited by that path. No map: draw it first (`example-mapping`). Open question: ask and wait; no draft, partial or "provisional" criteria, not even for the settled rules.
+3. **Nothing new is decided here.** A behaviour, value or limit the map does not show goes back to the map as a question only the product owner answers.
+4. **IDs are `AC-US-n.m`** (story 12: `AC-US-12.1`). Never `AC-001` or another scheme.
+5. **Three angles, always:** at least one happy path, one negative and one edge criterion. There is no "no meaningful edge" exemption at any size.
+6. **Observable and testable:** a pass or fail outcome in business language, one action per Given/When/Then.
+7. **A quality target is not a criterion.** Speed, availability and the like are cited by NFR ID, or asked for.
+8. **Agreed criteria change only through the map and the product owner**, never to match what was built or to make a test pass.
+9. **No false session.** An agent-run file says one agent drafted it and no workshop was held.
 
-## Formats
+When asked to break one: name the rule in a sentence or two, then do the useful work at once (draw or update the map, ask the question, write the edge criterion the map supports, give the correct ID). Never offer to switch a fixed rule on request. What the product owner **can** do is answer a question, change an agreed rule through the map, or move a case to another story.
 
-### Format 1: Gherkin (Given/When/Then)
+## What every answer states
 
-Use for: all functional behaviour stories. This is the primary format because it directly generates BDD feature files.
+In a chat reply as much as in the file:
 
-```gherkin
-Given [a system state or precondition],
-When [an action is performed by the user or system],
-Then [a verifiable outcome occurs].
+- that criteria are required for this product; at lean, say plainly that a small product still gets a criteria file and an example map for each story, short ones;
+- the map used, by path, and whether it is ready;
+- the ID form `AC-US-n.m` with this story's number;
+- which IDs cover the happy, negative and edge angles;
+- everything of the user's that was replaced, removed or not written, **by name**, with the reason (for example, "your 'the page is fast' is removed: a quality target, cite its NFR");
+- the verdict: **Drafted, awaiting your approval**, or **Not drafted**, with the blocking question IDs;
+- the open questions, addressed to the product owner, or "none";
+- that it was agent-run (or who took part);
+- the next step: answers; or approval, then `bdd-feature-file`.
 
-And [additional outcome, if any].
-But [a related condition that must NOT occur].
-```
+## Procedure
 
-**Rules:**
-- "Given" describes the starting state, not the action — use past tense ("the user has connected...")
-- "When" names exactly one action — if you need two "Whens", split the criterion
-- "Then" describes a directly observable outcome — something the user can see, read, or measure
-- "And" extends the previous step; "But" adds a negative constraint to a "Then"
+1. **Read** the story (`ideate/user-stories.md`: card, rules, NFR IDs, notes), its example map, the fit criteria and business rules it traces to (at lean, the backlog's requirements header), the NFR specification and the glossary.
+2. **Check the gate:** the map exists, is this story's, says `readiness: ready` and has no open question. Otherwise stop here, go to `example-mapping`, and report **Not drafted**.
+3. **Create the file:** from the product repository root, run `./scripts/scaffold-criteria.sh <product> <story-id> <story-title>` (the path is relative to this skill), or copy `./templates/acceptance-criteria.md` with Write. Fill it with Edit or Write, never through the shell.
+4. **Draw the criteria from the cards.** Every rule gets at least one criterion with a `From:` line; one criterion may cite several examples that prove one behaviour. For the card-by-card mapping, fit criteria, lean, or changing agreed criteria, read `./references/deriving-and-changing.md`.
+5. **Write each one** as Given/When/Then, or as Rule/Verify/Example where there is no action flow. For wording, testability and quality targets, read `./references/writing-criteria.md`.
+6. **Cover the edges:** permission, empty state, scale and limits, concurrency, dependency down, and tenant isolation if there are tenants. Each is a criterion, an out-of-scope line or a question on the map (then back to step 2).
+7. **Name what is out of scope.** More than 12 criteria: propose a split; the product owner decides.
+8. **Validate:** run `./scripts/validate-criteria.sh <file>`, fix every FAIL, re-run until clean, read each WARN, then tick `./resources/checklist.md`. Never pass a check by deleting a rule or editing the map's status.
+9. **Present for approval** with the answer list above; run `methodology-review`. Approval is the product owner's.
 
-**Example:**
-```gherkin
-Given the Compliance Officer has connected a Google Drive with 10,000 files,
-When the initial scan is triggered,
-Then the scan completes within 30 minutes
-And all files are classified with a sensitivity level
-And the compliance dashboard reflects the updated classification counts
-But no file contents are transmitted outside the customer's infrastructure boundary.
-```
+## Boundary with neighbouring skills
 
----
-
-### Format 2: Rule-Based
-
-Use for: business rules, system constraints, non-functional rules, and conditions that don't map naturally to a user action flow.
-
-```
-Rule: [Statement of the rule]
-Verify: [How to verify the rule is enforced]
-Example: [Concrete example that illustrates the rule]
-```
-
-**Example:**
-```
-Rule:    No file content may be transmitted outside the customer's infrastructure boundary.
-Verify:  Network traffic analysis during scan shows zero outbound file content payloads.
-         Redpanda event stream shows file metadata only — never file content.
-Example: A Google Drive file containing personal data is scanned; only the file path,
-         size, type, and extracted metadata appear in the event stream.
-```
-
----
-
-## The Golden Triangle
-
-For every user story, acceptance criteria must cover three angles:
-
-| Angle | Covers | At least one criterion |
-|---|---|---|
-| Happy path | The primary success scenario where everything works as expected | Required |
-| Negative / error | What happens when input is invalid, the system errors, or the operation fails | Required |
-| Boundary / edge | Conditions at the limits of acceptable input or system state | Required for complex stories |
-
-A story with only happy-path criteria is not ready for the backlog. It guarantees that a passing test suite will miss real-world failure modes.
-
----
-
-## Deriving Criteria from a Worked Example
-
-Acceptance criteria are not drafted as abstract rules and illustrated afterward. Per Ken Pugh's Acceptance Test-Driven Development (ATDD) practice, they are **derived from at least one concrete, specific worked example**, with the general rule extracted from discussing it — not decided first and then illustrated. Working the other direction tends to produce rules nobody has actually stress-tested against a hard case yet.
-
-- **Start from real-feeling specifics.** A named persona, real numbers, a real edge value ("Maya, a Compliance Officer, connects a Google Drive with 3 files, one containing a Restricted-labeled document") — not a placeholder ("a user connects a source").
-- **Generalise only after two or three examples.** A criterion drafted from one example hasn't surfaced its exceptions yet.
-- **This is `example-mapping`'s job, run first.** Acceptance criteria are drafted *from* an example map's rule (blue) and example (green) cards, once the map has no open question (red) cards — not the reverse. `example-mapping` runs before this skill produces anything, not after.
-- **A story with no derivable worked example is not ready to leave Ideate.** This is a diagnostic for estimation readiness, not a formality to skip — if no concrete example of the story working can be produced, the story isn't understood well enough to write criteria for, let alone estimate.
-- **Solo-agent honesty note** (matching `example-mapping`'s own precedent): the "worked example" here is the requirements-analyst agent reasoning through Customer/Developer/Tester perspectives in sequence (the **Three Amigos** practice) — not evidence a real multi-person collaborative session occurred. State this plainly rather than implying a session that didn't happen.
-- **Criteria are a contract, not a moving target.** Once agreed, changing a criterion requires the same reasoning pass that produced it — a criterion doesn't get silently "fixed" later to match what got built.
-
----
-
-## Writing Criteria for Edge Cases
-
-For each story, identify:
-1. **Permission edge**: what happens if the user doesn't have access?
-2. **Empty state edge**: what happens if there is no data yet?
-3. **Scale edge**: what happens at the maximum expected data volume?
-4. **Concurrency edge**: what happens if two users perform the same action simultaneously?
-5. **Network/infrastructure edge**: what happens if a downstream service is unavailable?
-
-Not all edge cases require a separate criterion — but each must be considered, and those not covered must be explicitly documented as out of scope.
-
----
-
-## Criteria That Fail the Testability Check
-
-| Pattern | Problem | Fix |
-|---|---|---|
-| "The system should be fast" | Unmeasurable | "The page loads in under 2 seconds on a 4G connection" |
-| "The user can easily navigate" | Subjective | "The user can reach their compliance gap report in 3 clicks from the home screen" |
-| "The system handles errors gracefully" | Unmeasurable | "When a network error occurs, the user sees a message explaining what failed and how to retry" |
-| "All data is secure" | Unmeasurable | "File content is encrypted at rest with AES-256 and is never logged to stdout" |
-| "The feature works for all users" | Untestable | Specify the user type and the exact condition to test |
-
----
-
-## Criteria Count Guidelines
-
-| Story size | Expected criteria count |
+| Skill | Owns |
 |---|---|
-| Small (S) | 3-5 criteria |
-| Medium (M) | 5-8 criteria |
-| Large (L) | 8-12 criteria |
+| `user-story-writing` | The card, seed example, splitting |
+| `example-mapping` | Rules, examples, questions, readiness |
+| **This skill** (requirements-analyst, Ideate) | What "done" means: the criteria, their IDs, testable wording, scope; `ideate/acceptance-criteria/US-n.md` |
+| `bdd-feature-file` (test-strategist, Implement) | Feature files, scenario titles, tags and criterion coverage, Background and outlines, step definitions, automation. It may refine step wording; it never changes what a criterion agrees |
+| `uat-scenario` (Customer Validation) | Human scripts traced to `AC-US-n.m` |
 
-If a story requires more than 12 criteria to be fully specified, it should be split. Criteria bloat is usually a sign of a story that is doing too much.
+Use the product's terms (`glossary-management`).
 
----
+## Gotchas
 
-## Handoff to Test-Strategist
+- **"I'll draft the criteria for the rules that are settled."** *Reason:* a partial draft gets built from, and the open answer can change the settled rules. *Instead:* Not drafted; ask the question.
+- **"It's tiny, the criteria can go straight from the story."** *Reason:* the gaps live in examples nobody wrote. *Instead:* a short map first, then a short file.
+- **"This story has no real edge case."** *Reason:* a limit, an empty list, a second click or a wrong person nearly always exists. *Instead:* find it in the map, or add the question.
+- **"I'll add the obvious error message."** *Reason:* it is a rule nobody agreed. *Instead:* question on the map.
+- **"Then the results load within 2 seconds."** *Reason:* a target restated here drifts from its NFR. *Instead:* cite the NFR ID.
+- **"When she signs in and exports the report."** *Reason:* a failure names neither. *Instead:* "Given she is signed in, When she exports the report".
+- **"Then the record is saved."** *Reason:* nobody can observe it. *Instead:* say what the user sees or receives afterwards.
+- **"The build refunds £5, so I'll update the criterion."** *Reason:* the defect becomes the requirement. *Instead:* name the ID and the difference, and ask.
+- **"Renumber them after deleting one."** *Reason:* feature files and UAT scenarios trace to the old numbers. *Instead:* keep IDs; leave the gap.
 
-Acceptance criteria are the primary input to BDD feature files. For every Gherkin-format criterion, the test-strategist will create a corresponding `Scenario:` block in the feature file. The criteria written here become the verbatim source for those scenarios — the language must be precise enough to be executable.
+## Files
 
-When handing off to the test-strategist, include:
-- All Gherkin criteria (becomes Scenarios in the feature file)
-- All rule-based criteria (becomes background conditions or step definitions)
-- A list of explicitly out-of-scope edge cases (prevents uncontrolled test expansion)
-- A reference to the example map (`example-mapping`) each story's criteria were derived from — this is the traceable record of *why* the criteria say what they say, not just what they say
-
-`acceptance-criteria` and `bdd-feature-file` together are this repo's ATDD practice made executable — `uat-plan`/`uat-scenario` are a distinct, later, human-executed validation against a deployed system. Don't conflate the two: an "acceptance test" in this skill's sense is pre-code and collaboratively derived; "UAT" is post-deploy execution of already-agreed scenarios.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Derived from an example | Every story has a completed example map (no open red cards) before criteria are drafted | Criteria drafted with no preceding example map, or against a map still carrying open questions |
-| Testability | Every criterion can be evaluated as pass/fail | Any criterion containing "should", "easily", "properly", "well" |
-| Happy + negative + edge | All three angles covered | Only happy-path criteria |
-| Gherkin format for behaviour | Given/When/Then used for all behavioural criteria | Prose sentences with no verifiable structure |
-| Observer-friendly Then | "Then" statements describe observable outcomes | "Then the system processes the file" (not observable) |
-| Explicit scope boundary | Out-of-scope cases named | Implicit assumptions about what is not covered |
-| BDD handoff ready | Language is precise enough to become Gherkin scenarios verbatim | Criteria that would require interpretation to implement as scenarios |
-
----
-
-## Anti-Patterns
-
-**Criteria written after implementation:** documenting what was built instead of defining "done" before building. This inverts the entire BDD flow — the criteria become a mirror of the code, and every bug in the code is faithfully reflected as a "requirement."
-
-**UI-coupled criteria:** "Then the green Export button appears in the top-right corner." Brittle against every redesign and says nothing about the outcome. Describe what the user can now *do or know* ("Then the gap report can be exported as PDF"), not the pixels that enable it.
-
-**Compound When:** "When the user connects a source and triggers a scan…" — two actions means a failing test cannot tell you which action broke. One When, one action; the first action belongs in the Given as established state.
-
-**Implementation-observable Then:** "Then a row is inserted into the `classifications` table." No user can observe a table row. Then-statements must be observable at the persona's surface (UI, report, notification) or at an explicitly named operational surface (audit log, metrics endpoint).
-
-**Boundary-blind criteria:** happy path plus one error case, with the interesting limits unexamined — the 500,001st file, the empty Google Drive, the scan that hits the 30-minute mark exactly. The Golden Triangle requires the edge angle for a reason: production incidents live at the boundaries.
-
-**Rule-first drafting:** writing the abstract criterion first ("the system must validate file size limits") and inventing an example to match it afterward, rather than starting from a real example and generalising. This is the exact inversion ATDD exists to prevent — a rule invented before being tested against a concrete case is rarely stress-tested against the hard case that actually breaks it.
-
----
-
-## Scripts
-
-Per `skill-authoring-standards`, this skill owns two deterministic scripts — neither decides whether criteria are *good*, only whether they are structurally checkable, leaving judgment (is this Then actually observable, is the example real-feeling) to the requirements-analyst's own review.
-
-| Script | Does | Run when |
-|---|---|---|
-| `scripts/scaffold-criteria.sh <story-id> <story-title>` | Copies `assets/acceptance-criteria-template.md`, fills in the story ID/title and today's date, writes a new criteria doc under `artifacts/[product]/ideate/acceptance-criteria/` | Starting criteria for a new story, once its example map has no open red cards |
-| `scripts/validate-criteria.sh <path>` | Checks for testability red-flag words ("should", "easily", "properly", "well" with no accompanying metric), confirms at least one criterion touches each Golden Triangle angle (happy/negative/edge), and confirms a non-empty `Derived From` field pointing at an example map | Before treating a story's criteria as ready to hand off to `test-strategist` |
-
----
-
-## Output Format
-
-Fill-in-and-go: `assets/acceptance-criteria-template.md` (or generate it directly via `scripts/scaffold-criteria.sh`). Annotated template explaining each field, including the `Derived From` field that traces each story's criteria back to its example map: `references/output-format-template.md`. Mechanical check before treating criteria as done: `scripts/validate-criteria.sh`.
+| File | When to open it |
+|---|---|
+| `./templates/acceptance-criteria.md` | Writing the artifact |
+| `./scripts/scaffold-criteria.sh` | Starting a story's file once its map is ready |
+| `./scripts/validate-criteria.sh` | Before hand-off, and after every edit |
+| `./resources/checklist.md` | After the script passes |
+| `./references/writing-criteria.md` | Formats, testability, quality targets, edge cases, how many |
+| `./references/deriving-and-changing.md` | Turning cards into criteria; a change to agreed criteria; hand-off |
+| `./examples/01-lean-choir-rehearsals.md` | A small product, or a request to skip the edge case or renumber |
+| `./examples/02-standard-vet-repeat-prescription.md` | Rule format, a cited target, a fit criterion, out of scope |
+| `./examples/03-enterprise-returns-platform.md` | Tenants, a missing behaviour sent back to the map, changing agreed criteria |
