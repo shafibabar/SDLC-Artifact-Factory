@@ -1,210 +1,141 @@
 ---
 name: example-mapping
 description: >
-  Teaches how to run Example Mapping — a structured conversation technique (Matt
-  Wynne) for exploring a user story, discovering its rules, surfacing examples
-  that clarify those rules, and identifying questions that must be answered before
-  the story is ready. Per Ken Pugh's ATDD practice (examples before rules, not
-  after), this runs BEFORE acceptance criteria are finalized — the map's rule and
-  example cards inform what the criteria say, not the reverse. Bridges user
-  stories and BDD feature files by making implicit rules explicit through
-  concrete examples. Used by the requirements-analyst agent during the Ideate
-  phase, before acceptance criteria are drafted.
-version: 1.3.1
+  Use when requirements-analyst (or anyone) draws, runs, reviews or updates an
+  example map for a user story in the Ideate phase (/sdlc-ideate): finding the
+  story's business rules, concrete examples, counter-examples and edge cases,
+  and open questions for the product owner; judging whether a story is ready for
+  acceptance criteria; folding answers back; proposing a story split; being asked
+  to skip the map, assume an answer, mark a story ready, or write criteria for a
+  story that has no map, including on a small (lean) product; three amigos or
+  specification workshop, agent-run or with people. Produces
+  artifacts/<product>/ideate/example-maps/US-n.md.
+version: 2.0.0
 phase: ideate
 owner: requirements-analyst
 created: 2026-06-24
-tags: [ideate, example-mapping, bdd, acceptance-criteria, discovery, three-amigos]
+tags: [ideate, example-mapping, bdd, acceptance-criteria, discovery, three-amigos, readiness]
 produces: example-map
 domain: testing
 status: stable
+related: [user-story-writing, acceptance-criteria, bdd-feature-file, requirements-analysis, nfr-specification, domain-storytelling, test-pyramid, glossary-management, methodology-review]
+sources:
+  - research/requirements-and-user-stories/lean-agile-atdd-pugh.md
+  - research/testing/specification-by-example-adzic.md
+  - research/testing/agile-testing-crispin-gregory.md
+  - research/requirements-and-user-stories/user-stories-applied-cohn.md
+  - research/domain-driven-design/domain-storytelling-hofer-schwentner.md
 ---
 
 # Example Mapping
 
 ## Purpose
 
-Example Mapping is a structured technique for exploring user stories before they enter a sprint. It surfaces:
-- The **rules** the story must comply with
-- **Examples** that concretely illustrate each rule (and its exceptions)
-- **Questions** that must be answered before the story is ready
+An example map is the discovery step between a user story and its acceptance criteria: the story's **rules**, concrete **examples** of each, and the **questions** nobody has answered. It makes assumptions visible while they are still cheap to correct. It is the **Conversation** of Cohn's Three Cs (after Ron Jeffries), and it comes first because examples surface a rule before the rule is fixed in writing (Ken Pugh, *Lean-Agile Acceptance Test-Driven Development*; Gojko Adzic, *Specification by Example*). Example Mapping as a named format is Matt Wynne's; the library holds no primary source for it, so the card layout and the checks below are this plugin's own convention.
 
-An example map makes implicit assumptions explicit. It consistently reveals scope that was invisible in the story — catching it here, in discovery, is far cheaper than catching it in implementation or testing.
+## Fixed rules: a request does not change them
 
-**This runs before acceptance criteria are finalized, not after.** Per Ken Pugh's ATDD practice — examples surface first, and the rule is distilled from discussing them, not decided first and illustrated afterward — this map's rule (blue) and example (green) cards are the *input* `acceptance-criteria` drafts from, once the map has no open question (red) cards. See `acceptance-criteria`'s "Deriving Criteria from a Worked Example" section for the other half of this discovery-then-draft sequence.
+These hold at every size (lean, standard, enterprise), whoever asks, the product owner included.
 
----
+1. **The map comes before the criteria.** Every story gets its own map file before its acceptance criteria are drafted; every Must Have story needs both. A small product gets a short map, not no map and not a map tucked inside the criteria file.
+2. **Only the product owner answers an open question.** The agent may recommend an answer; the question stays open until the product owner replies to it. An advance "assume whatever you need" is not a reply.
+3. **A story with an open question is not ready**, and its criteria are not drafted.
+4. **Examples are concrete.** Real-feeling names, numbers and outcomes. Each rule has at least one example that satisfies it and one that breaks it; each story has at least one boundary example.
+5. **No invented rules or targets.** Behaviour with no named source is labelled an assumption and asked. A speed, availability or similar quality number is cited by NFR ID, or asked.
+6. **No false session.** An agent-run map says one agent played every perspective and no workshop was held.
 
-## The Four Card Types
+When asked to break one (skip the map, mark it ready, guess, "just write the criteria"): say in a sentence or two which rule applies and why, then do the useful work at once, drawing the short map or updating it, and put the questions to the product owner. What the product owner **can** do is answer a question, or agree to move the questioned case into another story.
 
-Example Mapping uses four coloured cards (or equivalent notation):
+## What every answer states
 
-| Card | What it captures |
-|---|---|
-| **Story (yellow)** | The user story being explored — one per session |
-| **Rule (blue)** | A business rule or acceptance criterion that must be true for the story |
-| **Example (green)** | A concrete, specific scenario that illustrates a rule (or its exception) |
-| **Question (red)** | An open question that must be answered before the story can be accepted |
+In a chat reply as much as in the file:
 
-A finished example map: one yellow card at the top; blue cards in a row beneath it; green cards beneath each blue card (one or more per rule); red cards collected separately.
+- the readiness verdict, with the blocking question IDs;
+- that the map was agent-run (or who took part), and every assumption;
+- the open questions, addressed to the product owner;
+- the next step: answers while not ready; once ready, the product owner's approval of the map, then `acceptance-criteria`.
 
----
+## The four cards
 
-## Structure Diagram
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ STORY (yellow): US-001 — Compliance Officer views gap report     │
-└──────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────┐  ┌──────────────────────┐  ┌────────────────────┐
-│ RULE (blue):        │  │ RULE (blue):          │  │ RULE (blue):       │
-│ Report shows all    │  │ Report prioritises    │  │ Report accessible  │
-│ gaps, not just      │  │ gaps by severity      │  │ within 30 min of  │
-│ critical ones       │  │ (Critical first)      │  │ initial scan       │
-└─────────────────────┘  └──────────────────────┘  └────────────────────┘
-│                         │                          │
-├─[Example] 100k files    ├─[Example] Mix of         ├─[Example] 100k files
-│  with 3 critical,       │  Critical, High, Med     │  scan completes in
-│  12 high, 200 low →     │  gaps → Critical          │  28 min → report
-│  all 215 shown          │  first in list            │  available at 28m
-│                         │                          │
-├─[Example] 0 gaps →      ├─[Example] All same       └─[Question] What if
-│  empty state shown,     │  severity → alpha         scan takes > 30 min?
-│  not error              │  by file name             (waiting for NFR-PERF)
-│                         │
-└─[Question] Are gaps     └─[Example] No gaps of
-  from prior scans         a severity → that
-  included or only         section hidden, not
-  the latest?              shown as empty
-
-┌──────────────────────────────────────────────────────────────────┐
-│ QUESTIONS (red — collected separately):                          │
-│ Q1: Are prior-scan gaps included or only latest?                 │
-│ Q2: What if the scan takes longer than 30 minutes?               │
-└──────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## How to Run Example Mapping
-
-### Participants (Three Amigos model)
-
-In a team context, example mapping is a "Three Amigos" session — product, development, and testing, each contributing their perspective. In solo mode, the requirements-analyst agent plays all three roles explicitly:
-
-- **Product perspective:** What is the user trying to accomplish? What would they expect?
-- **Development perspective:** What rules need to be implemented? What edge cases will arise?
-- **Test perspective:** What scenarios would expose a bug? What's the simplest example that proves the rule?
-
-### Steps
-
-1. **Place the story card.** Read the story aloud. Confirm the "as a / I want to / so that" is clear.
-2. **Surface rules.** For each business rule the story implies, create a blue rule card. Ask: "What must be true for this story to be considered correct?" and "Are there any implicit rules we haven't written down yet?" Add a blue card for each — acceptance criteria don't exist yet at this point; these rules are what the criteria will be drafted from, not derived from criteria already written.
-3. **Add examples per rule.** For each rule, ask: "What is the simplest example that proves this rule is satisfied?" Add a green card. Then: "What is a counter-example that would expose a bug?" Add another green card.
-4. **Capture questions.** When a disagreement or uncertainty arises about how a rule should work, stop and write a red question card. Do not resolve it through debate — record it and move on.
-5. **Assess readiness.** After the map is complete:
-   - A story with no red cards is ready for the sprint
-   - A story with red cards is not ready — resolve the questions first
-   - A story with too many blue cards for one sprint must be split
-
----
-
-## Reading the Map
-
-| Map state | Interpretation |
-|---|---|
-| Many rules, few examples | The rules are probably not yet understood in concrete terms — work through examples |
-| Many examples per rule | The rule may be too broad — consider splitting |
-| Many questions | The story is not ready — do not put it in a sprint |
-| No questions | Either the story is well-understood, or the team didn't probe hard enough — check by asking "what could go wrong?" |
-
----
-
-## From Examples to BDD Scenarios
-
-Once the map is clean (no red cards), each green example card becomes a BDD scenario in the `test-strategist`'s Gherkin feature file. The language of the example card is the starting point for the Given/When/Then language.
-
-**Example card text:** "100k files with 3 critical, 12 high, 200 low → all 215 shown in report"
-
-**Becomes Gherkin:**
-```gherkin
-Scenario: All gaps shown regardless of severity
-  Given the estate has been scanned and contains 3 critical gaps, 12 high gaps, and 200 low gaps
-  When the Compliance Officer opens the gap report
-  Then all 215 gaps are displayed in the report
-  And gaps are visible across all three severity levels
-```
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
+| Card | Holds | In the file |
 |---|---|---|
-| Concrete examples | Every rule has at least one concrete example with specific data | Rules stated as general principles without examples |
-| Counter-examples | Every rule has at least one counter-example or negative case | Only positive examples per rule |
-| Questions captured | All disagreements and uncertainties captured as questions | Debates resolved by authority with no record |
-| Readiness signal | Map is used to decide sprint readiness | Map produced but story pushed into sprint with red cards unresolved |
-| BDD linkage | Each green card maps to a named scenario in the feature file | Example maps that don't feed into test artifacts |
+| **Story** (yellow) | One user story; one map per story | `US-n`, card and seed example |
+| **Rule** (blue) | Something that must be true for the story to be right | `R1`, with its source |
+| **Example** (green) | One concrete case that shows one rule | `R1.E1`: Happy, Negative or Edge; case, outcome, source |
+| **Question** (red) | Something nobody has answered | `Q-1`: open, answered or moved |
 
----
+## Procedure
 
-## Anti-Patterns
+1. **Read** the story (`ideate/user-stories.md`: card, seed example, BR-n, NFR IDs, notes), and where they exist the persona, the requirements the story traces to with their fit criteria, the business rules, the NFR specification, domain stories (each variant story is a candidate example), earlier maps and the glossary. At lean the requirements header in the backlog holds the rules. A missing or unclear card goes back to `user-story-writing`.
+2. **Plant the seed example** as the first example, then ask what rule it shows.
+3. **Think as each perspective in turn** (Agent-run mode, below) and add rules and examples: the simplest case that satisfies each rule, a counter-example that would expose a bug, and the boundaries. Work from two or three examples to the rule's wording, not the reverse. For probing prompts, edge categories and pruning, read `./references/probing-for-rules-and-examples.md`.
+4. **Raise a question** wherever two readings are possible, a source is silent or two sources disagree. Record it; do not argue it to a conclusion.
+5. **Prune.** Keep an example only if removing it would change what the rule is proven to do (Adzic's key examples). One example shows one rule (Pugh).
+6. **Check the size.** Six or more rules, or many open questions, is a signal to propose a split or a spike (this plugin's rule of thumb, not a book's limit). The product owner decides; never split silently.
+7. **Write** the map: copy `./templates/example-map.md` to `artifacts/<product>/ideate/example-maps/US-n.md` with Write and fill every field.
+8. **Validate:** run `./scripts/validate-example-map.sh <file>`, fix every FAIL, re-run until clean, then tick `./resources/checklist.md`. Never make a check pass by closing a question or relabelling an assumption.
+9. **Ask and wait.** Put the open questions to the product owner, each with why it matters and your recommendation, batched as the phase plan's approval mode allows. When answers, splits or later changes arrive, read `./references/answers-splits-and-changes.md`, update the file and repeat step 8.
+10. **Hand off** only when the verdict is Ready: present the map for approval; `acceptance-criteria` then drafts from its rules and examples.
 
-**Abstract green cards:** examples that restate the rule in different words ("Example: the report shows all gaps"). A green card must contain concrete data — counts, file names, severities, timings ("3 critical, 12 high, 200 low → all 215 shown"). If you cannot write the concrete data, you do not yet understand the rule.
+## Agent-run mode
 
-**Debating instead of carding:** resolving a disagreement about how a rule should work through argument in the session. Write the red card and move on — the session's job is to *find* the questions, not to answer them under time pressure with whoever argues loudest winning.
+The usual mode: `requirements-analyst` runs the map alone, from named artifacts. State `run: agent-run`, list what was read, and record what each perspective raised:
 
-**Mapping after development:** running Example Mapping on a story that is already built, to document it. The technique's entire value is discovering scope *before* it is expensive; post-hoc maps are test documentation, not discovery.
-
-**Examples without rules:** a pile of green cards with no blue cards extracted. The rules are the acceptance criteria — examples that never generalise into rules leave the developer to infer the rule themselves, which is exactly the ambiguity the technique exists to remove.
-
-**The marathon session:** a single story taking more than about 25–30 minutes to map. That duration is itself a signal: the story is too big or too poorly understood for one sprint item. Stop mapping and split the story rather than pushing through.
-
----
-
-## Output Format
-
-```markdown
----
-name: example-map
-product: [product name]
-story-id: US-[ID]
-version: 1.0.0
-phase: ideate
-created: [date]
-summary: [one sentence, ≤ 200 chars — what this artifact establishes; indexed as its memory-engine abstract]
-owner: requirements-analyst
-ready-for-sprint: [yes / no — if no, list blocking questions]
----
-
-# Example Map: US-[ID] — [Story title]
-
-## Story
-As a [Persona], I want to [action], so that [outcome].
-
-## Rules and Examples
-
-### Rule 1: [Rule statement]
-| Example (green) | Type |
+| Perspective | Asks |
 |---|---|
-| [Concrete scenario with specific data] | Happy path |
-| [Counter-example or negative case] | Negative |
-| [Edge case at system boundary] | Edge |
+| **Customer** | What is the user trying to get done? What would they expect here? What would be wrong for the business? |
+| **Developer** | Which rules must be enforced? What happens in between, twice, or when something else is down? |
+| **Tester** | Which case would expose a bug? What sits exactly on the limit? Who must not be able to do this? |
 
-### Rule 2: [Rule statement]
-[Repeat]
+Playing the three in turn catches different gaps (Pugh's triad; Crispin and Gregory's collaboration before code), but it is not their agreement. Label any rule or outcome with no named source `assumption (Q-n)` and ask Q-n. Illustrative names and values in an example need no label; the behaviour it asserts does.
 
-## Open Questions (Red)
-| ID | Question | Impact | Owner | Target date |
-|---|---|---|---|---|
+A session with people is optional. If one is held, set `run: workshop`, name the participants, and apply the same rules.
 
-## Sprint Readiness
-[Ready / Not ready — if not ready, list the blocking question IDs]
+## Readiness
 
-## BDD Scenario Map
-| Example | Gherkin Scenario Name |
+| Map state | Meaning | Action |
+|---|---|---|
+| Open questions or assumptions | **Not ready** | Ask; draft no criteria |
+| A rule with no satisfying or no breaking example, or no boundary example | The rule is not yet understood | Find the example or ask |
+| Many examples under one rule | Redundant rows, or the rule hides several | Prune, or divide the rule |
+| Six or more rules | The story may be too big | Propose a split |
+| No questions at all | Well understood, or not probed | Ask "what could go wrong?" for each rule once more |
+| None of the blockers above | **Ready** | Present for approval |
+
+Ready means the story can have criteria drafted. It is not the product owner's approval.
+
+## Boundary with neighbouring skills
+
+| Skill | Owns |
 |---|---|
-| [Example card text] | [Scenario title in feature file] |
-```
+| `user-story-writing` | The card, seed example and story splitting patterns |
+| **This skill** | Rules, examples, questions, readiness; `ideate/example-maps/US-n.md` |
+| `acceptance-criteria` | Given/When/Then, criterion IDs `AC-US-n.m`, testability; `ideate/acceptance-criteria/US-n.md`, citing this map by path |
+| `bdd-feature-file` | Feature files, scenario titles, tags and outlines (Implement, test-strategist) |
+
+The map therefore contains no Given/When/Then, no criterion IDs and no scenario names. Not every example becomes its own scenario; the later skills decide that without dropping a rule. Use the product's own terms (`glossary-management`), and run `methodology-review` before hand-off.
+
+## Gotchas
+
+- **"I'll pick the sensible answer and note it."** *Reason:* a plausible guess reads as agreed and reaches code. *Instead:* leave Q-n open with your recommendation.
+- **"Show the criteria as a draft while the questions are open."** *Reason:* a draft gets built from. *Instead:* give the map and questions; criteria wait.
+- **"The example: the user can cancel in time."** *Reason:* it restates the rule and tests nothing. *Instead:* "booked for Sat 14:00, cancelled Thu 13:59 → refunded in full".
+- **"Only the happy path is in the story."** *Reason:* the gaps live in counter-examples and limits. *Instead:* test just under, on and just over each limit.
+- **"The page must load in 2 seconds" as a rule.** *Reason:* a quality target belongs to the NFR specification. *Instead:* cite the NFR ID; if none exists, ask.
+- **"The business rule is wrong here, so I'll reword it."** *Reason:* a cited BR-n or fit criterion is not the map's to change. *Instead:* show the conflicting example and ask.
+- **"It's built already; map what it does."** *Reason:* observed behaviour is not an agreed rule, and discovery is the point. *Instead:* mark unsourced behaviour as assumptions and ask whether it is intended.
+- **"Ready now, the last question can wait."** *Reason:* it blocks. *Instead:* get the answer, or the product owner's agreement to move that case to another story and remove it here.
+- **"Three amigos agreed."** *Reason:* nobody met. *Instead:* say one agent played all three.
+
+## Files
+
+| File | When to open it |
+|---|---|
+| `./templates/example-map.md` | Writing the artifact |
+| `./scripts/validate-example-map.sh` | Before hand-off, and after every edit |
+| `./resources/checklist.md` | After the script passes |
+| `./references/probing-for-rules-and-examples.md` | Finding rules, examples, edges; pruning |
+| `./references/answers-splits-and-changes.md` | Answers arrive, a split is needed, or an approved map must change |
+| `./examples/01-lean-village-hall.md` | A small product, or a request to skip the map |
+| `./examples/02-standard-parcel-locker.md` | Counter-examples, cited targets, a case moved to a new story |
+| `./examples/03-enterprise-subscription-refund.md` | Tenants, regulation, many questions, answers folded back |

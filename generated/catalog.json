@@ -2387,7 +2387,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.11.0"
+        "version": "1.12.0"
       },
       {
         "created": "2026-06-25",
@@ -5108,20 +5108,36 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
-        "has_references": false,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_examples": true,
+        "has_references": true,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "example-mapping",
         "owner": "requirements-analyst",
         "phase": "ideate",
         "produces": [
           "example-map"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "acceptance-criteria",
+          "bdd-feature-file",
+          "domain-storytelling",
+          "glossary-management",
+          "methodology-review",
+          "nfr-specification",
+          "requirements-analysis",
+          "test-pyramid",
+          "user-story-writing"
+        ],
+        "sources": [
+          "research/domain-driven-design/domain-storytelling-hofer-schwentner.md",
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/requirements-and-user-stories/user-stories-applied-cohn.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/specification-by-example-adzic.md"
+        ],
         "status": "stable",
         "tags": [
           "acceptance-criteria",
@@ -5129,9 +5145,10 @@
           "discovery",
           "example-mapping",
           "ideate",
+          "readiness",
           "three-amigos"
         ],
-        "version": "1.3.1"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-20",
@@ -11110,8 +11127,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1180,
-    "edges_skill_sources": 287,
+    "edges_skill_related": 1189,
+    "edges_skill_sources": 292,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11128,15 +11145,15 @@
     "skills_with_contract_test": 136,
     "skills_with_domain": 190,
     "skills_with_evals": 53,
-    "skills_with_examples": 53,
+    "skills_with_examples": 54,
     "skills_with_produces": 190,
-    "skills_with_references": 185,
-    "skills_with_resources": 52,
-    "skills_with_scripts": 48,
-    "skills_with_sources": 54,
+    "skills_with_references": 186,
+    "skills_with_resources": 53,
+    "skills_with_scripts": 49,
+    "skills_with_sources": 55,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 51
+    "skills_with_templates": 52
   },
   "edges": {
     "agent_produces": [
@@ -14401,6 +14418,42 @@
       {
         "related": "ubiquitous-language",
         "skill": "event-storming-facilitation"
+      },
+      {
+        "related": "acceptance-criteria",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "bdd-feature-file",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "domain-storytelling",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "requirements-analysis",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "test-pyramid",
+        "skill": "example-mapping"
+      },
+      {
+        "related": "user-story-writing",
+        "skill": "example-mapping"
       },
       {
         "related": "blue-green-deployment",
@@ -18115,6 +18168,26 @@
       {
         "skill": "event-storming-facilitation",
         "source": "research/domain-driven-design/strategic-design-supplement.md"
+      },
+      {
+        "skill": "example-mapping",
+        "source": "research/domain-driven-design/domain-storytelling-hofer-schwentner.md"
+      },
+      {
+        "skill": "example-mapping",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "example-mapping",
+        "source": "research/requirements-and-user-stories/user-stories-applied-cohn.md"
+      },
+      {
+        "skill": "example-mapping",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "example-mapping",
+        "source": "research/testing/specification-by-example-adzic.md"
       },
       {
         "skill": "feedback-template",
