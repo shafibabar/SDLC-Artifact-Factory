@@ -1,15 +1,16 @@
 ---
 name: python-performance-test
 description: >
-  Teaches the backend-engineer to write Python performance tests —
+  Teaches how to write Python performance tests —
   pytest-benchmark micro-benchmarks and throughput tests with regression
   thresholds in CI, measuring the right unit (a hot function, a
   serialization path), and the distinction from
   python-performance-optimization (this GUARDS against regression; that
-  IMPROVES). The Python analog of go-performance-test.
-version: 1.1.0
+  IMPROVES). The Python analog of go-performance-test. Authored and
+  applied by the test-strategist.
+version: 1.2.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, performance, benchmark, pytest-benchmark, regression, baseline, ci-gate, throughput, async]
 produces: performance-regression-gate

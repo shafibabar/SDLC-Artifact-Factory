@@ -1,14 +1,15 @@
 ---
 name: python-contract-test
 description: >
-  Teaches the backend-engineer to write Python consumer-driven contract tests —
+  Teaches how to write Python consumer-driven contract tests —
   the frugal schema-based default (OpenAPI + event-schema compatibility asserted
   in plain pytest, NO Pact broker, mirroring go-contract-test), parametrized
   schema-conformance cases, and provider/consumer compatibility checks in CI.
-  The Python analog of go-contract-test.
-version: 1.0.0
+  The Python analog of go-contract-test. Authored and
+  applied by the test-strategist.
+version: 1.1.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, contract-test, consumer-driven, openapi, event-schema, pytest, schema-conformance, no-broker]
 produces: python-contract-test

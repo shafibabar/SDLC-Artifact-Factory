@@ -1782,7 +1782,6 @@
         "test-strategy"
       ],
       "owners": [
-        "backend-engineer",
         "frontend-engineer",
         "requirements-analyst",
         "test-strategist"
@@ -1941,7 +1940,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.4.0"
+        "version": "2.5.0"
       },
       {
         "created": "2026-06-25",
@@ -2201,7 +2200,7 @@
           "Skill",
           "Write"
         ],
-        "version": "3.4.0"
+        "version": "3.5.0"
       },
       {
         "created": "2026-07-20",
@@ -2486,18 +2485,8 @@
           "bdd-feature-file",
           "ddd-agent-handoff",
           "glossary-management",
-          "go-chaos-test",
-          "go-contract-test",
-          "go-e2e-test",
-          "go-integration-test",
-          "go-load-test",
-          "go-mutation-test",
-          "go-performance-test",
-          "go-unit-test",
           "memory-recall",
           "methodology-review",
-          "mock-generation",
-          "test-fixture-design",
           "test-pyramid"
         ],
         "status": null,
@@ -2521,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.6.0"
+        "version": "1.7.0"
       },
       {
         "created": "2026-06-25",
@@ -2560,7 +2549,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.3.0"
+        "version": "2.4.0"
       }
     ],
     "commands": [
@@ -5707,7 +5696,7 @@
           "quarantine",
           "shift-right"
         ],
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "created": "2026-06-25",
@@ -6311,7 +6300,7 @@
           "quality",
           "regression"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -7988,7 +7977,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-chaos-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "python-chaos-test"
@@ -8014,7 +8003,7 @@
           "testcontainers",
           "toxiproxy"
         ],
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "created": "2026-07-31",
@@ -8030,7 +8019,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-contract-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "python-contract-test"
@@ -8054,7 +8043,7 @@
           "quality",
           "schema-conformance"
         ],
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "created": "2026-07-31",
@@ -8153,7 +8142,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-e2e-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "python-e2e-test-suite"
@@ -8179,7 +8168,7 @@
           "quality",
           "quarantine"
         ],
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "created": "2026-07-31",
@@ -8406,7 +8395,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-integration-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "python-integration-test"
@@ -8432,7 +8421,7 @@
           "tenant",
           "testcontainers"
         ],
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "created": "2026-07-31",
@@ -8448,7 +8437,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-load-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "load-test-suite"
@@ -8473,7 +8462,7 @@
           "slo",
           "throughput"
         ],
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "created": "2026-07-31",
@@ -8654,7 +8643,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-mutation-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "mutation-report"
@@ -8678,7 +8667,7 @@
           "survived-mutant",
           "test-quality"
         ],
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "created": "2026-07-31",
@@ -8776,7 +8765,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-performance-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "performance-regression-gate"
@@ -8800,7 +8789,7 @@
           "regression",
           "throughput"
         ],
-        "version": "1.1.0"
+        "version": "1.2.0"
       },
       {
         "created": "2026-07-31",
@@ -8976,7 +8965,7 @@
         "has_steps": false,
         "has_templates": false,
         "name": "python-unit-test",
-        "owner": "backend-engineer",
+        "owner": "test-strategist",
         "phase": "quality",
         "produces": [
           "pytest-suite"
@@ -9003,7 +8992,7 @@
           "tdd",
           "unit-test"
         ],
-        "version": "1.0.0"
+        "version": "1.1.0"
       },
       {
         "created": "2026-06-25",
@@ -9861,7 +9850,7 @@
           "sdlc-config",
           "tech-stack"
         ],
-        "version": "3.2.0"
+        "version": "3.3.0"
       },
       {
         "created": "2026-06-25",
@@ -11084,7 +11073,7 @@
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 73,
-    "edges_agent_skills": 199,
+    "edges_agent_skills": 189,
     "edges_skill_produces": 195,
     "edges_skill_related": 1164,
     "edges_skill_sources": 271,
@@ -12124,51 +12113,11 @@
       },
       {
         "agent": "test-strategist",
-        "skill": "go-chaos-test"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "go-contract-test"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "go-e2e-test"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "go-integration-test"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "go-load-test"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "go-mutation-test"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "go-performance-test"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "go-unit-test"
-      },
-      {
-        "agent": "test-strategist",
         "skill": "memory-recall"
       },
       {
         "agent": "test-strategist",
         "skill": "methodology-review"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "mock-generation"
-      },
-      {
-        "agent": "test-strategist",
-        "skill": "test-fixture-design"
       },
       {
         "agent": "test-strategist",

@@ -68,6 +68,18 @@
     "methodology_parameters": {
       "type": "object",
       "description": "Product-specific values for the narrow set of factory-wide tuning parameters individual skills define (e.g. mutation_test_cadence, unit_test_coverage_minimum). Never used to weaken one of the five non-negotiable methodologies themselves — only to tune a calibration point within one.",
+      "properties": {
+        "e2e_test_cadence": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How often the full end-to-end journey suite runs on its schedule (go-e2e-test, python-e2e-test; default nightly), e.g. 'twice-daily'. Pre-release and on-demand runs are unaffected."
+        },
+        "perf_regression_threshold_pct": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Percentage slowdown at which the performance regression gate fails (go-performance-test, python-performance-test; default 12), e.g. 8 to tighten it."
+        }
+      },
       "additionalProperties": {
         "description": "A parameter value — string or number depending on the parameter (e.g. a cadence is a string, a coverage threshold is a number)."
       }

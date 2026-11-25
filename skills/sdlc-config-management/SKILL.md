@@ -12,7 +12,7 @@ description: >
   tech-stack fact (api_framework, primary_database, graph_database,
   optional_database, deployment_model), by the /sdlc-start command that writes
   it, and by hooks checking an artifact matches the product's real config.
-version: 3.2.0
+version: 3.3.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-20
@@ -57,7 +57,7 @@ The four override categories are: **tech-stack overrides**, **compliance-framewo
 
 ## Methodology Parameters — Scope
 
-Most of CLAUDE.md's five non-negotiable methodologies (DDD, Event Storming, TDD, BDD, SOLID) are not parameterized — they apply in full, always, with no product-level dial. `methodology_parameters` exists only for the narrow set of factory-wide calibration points that individual skills (not CLAUDE.md itself) define and that a specific product has reason to tune — e.g. mutation-testing cadence, a hard unit-test coverage number, contract-testing scope.
+Most of CLAUDE.md's five non-negotiable methodologies (DDD, Event Storming, TDD, BDD, SOLID) are not parameterized — they apply in full, always, with no product-level dial. `methodology_parameters` exists only for the narrow set of factory-wide calibration points that individual skills (not CLAUDE.md itself) define and that a specific product has reason to tune — e.g. mutation-testing cadence, a hard unit-test coverage number, contract-testing scope, the end-to-end cadence (`e2e_test_cadence`) and the performance regression threshold (`perf_regression_threshold_pct`). Every parameter sits under `methodology_parameters`, never under another key.
 
 A methodology parameter is never used to weaken one of the five non-negotiables themselves — it tunes a calibration point *within* a methodology's implementation, never whether the methodology applies at all. The full parameter table with example overrides is in `references/config-field-reference.md`.
 

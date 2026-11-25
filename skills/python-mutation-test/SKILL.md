@@ -1,14 +1,15 @@
 ---
 name: python-mutation-test
 description: >
-  Teaches the backend-engineer to run mutation testing on Python code with
+  Teaches how to run mutation testing on Python code with
   mutmut (or cosmic-ray) — mutating source and asserting the test suite kills
   the mutants, the mutation-score threshold as a PERIODIC gate (not per-PR,
   frugal), interpreting survivors to find weak tests, and scoping to the
-  domain/service layer. The Python analog of go-mutation-test.
-version: 1.1.0
+  domain/service layer. The Python analog of go-mutation-test. Authored and
+  applied by the test-strategist.
+version: 1.2.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, mutation-testing, test-quality, mutation-score, mutmut, cosmic-ray, survived-mutant, coverage, pytest]
 produces: mutation-report

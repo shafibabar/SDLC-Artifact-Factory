@@ -1,14 +1,15 @@
 ---
 name: python-e2e-test
 description: >
-  Teaches the backend-engineer to write Python end-to-end tests — pytest
+  Teaches how to write Python end-to-end tests — pytest
   driving a fully running system (docker-compose or kind), the smallest
   critical-path set (e2e is the top of the pyramid, kept few), real HTTP +
   emitted-event assertions across services, flake control (ret/timeout/data
-  setup), and the e2e-vs-integration boundary. The Python analog of go-e2e-test.
-version: 1.0.0
+  setup), and the e2e-vs-integration boundary. The Python analog of go-e2e-test. Authored and
+  applied by the test-strategist.
+version: 1.1.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, e2e, end-to-end, kind, httpx, aiokafka, flakiness, quarantine, ci, pytest]
 produces: python-e2e-test-suite

@@ -17,7 +17,7 @@ description: >
   slo-definition's 800ms ClassifyDataAsset latency SLO and multi-tenancy-
   design's physical-isolation model (references/performance-budgets.md).
   Used by the test-strategist during Quality.
-version: 2.1.0
+version: 2.2.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25

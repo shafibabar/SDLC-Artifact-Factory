@@ -60,6 +60,22 @@ check("bad date format", {"_meta": {**base_meta, "last_updated": "not-a-date"}, 
 check("optional_database missing rationale", {"_meta": base_meta, "product": "x", "product_slug": "x", "tech_stack_overrides": {"optional_database": {"included": True, "value": "MongoDB"}}}, False)
 check("unknown top-level field", {"_meta": base_meta, "product": "x", "product_slug": "x", "made_up_field": "nope"}, False)
 
+base = {"_meta": base_meta, "product": "x", "product_slug": "x"}
+check("e2e cadence and performance threshold overrides", {**base, "methodology_parameters": {"e2e_test_cadence": "twice-daily", "perf_regression_threshold_pct": 8}}, True)
+check("e2e_test_cadence not a string", {**base, "methodology_parameters": {"e2e_test_cadence": 2}}, False)
+check("e2e_test_cadence empty", {**base, "methodology_parameters": {"e2e_test_cadence": ""}}, False)
+check("perf threshold not a number", {**base, "methodology_parameters": {"perf_regression_threshold_pct": "8"}}, False)
+check("perf threshold not above zero", {**base, "methodology_parameters": {"perf_regression_threshold_pct": 0}}, False)
+check("wrong parent key methodology_overrides", {**base, "methodology_overrides": {"e2e_test_cadence": "twice-daily"}}, False)
+for key in ("e2e_test_cadence", "perf_regression_threshold_pct"):
+    reference = (REPO_ROOT / "skills/sdlc-config-management/references/config-field-reference.md").read_text()
+    if key in reference and key in schema["properties"]["methodology_parameters"]["properties"]:
+        print(f"PASS: schemas/sdlc-config ({key} documented in schema and field reference)")
+        passed += 1
+    else:
+        print(f"FAIL: schemas/sdlc-config ({key} documented in schema and field reference)")
+        failed.append(key)
+
 print(f"\n--- Summary: {passed} passed, {len(failed)} failed ---")
 if failed:
     print("Failed:")

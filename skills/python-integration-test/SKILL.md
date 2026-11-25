@@ -1,15 +1,16 @@
 ---
 name: python-integration-test
 description: >
-  Teaches the backend-engineer to write Python integration tests —
+  Teaches how to write Python integration tests —
   testcontainers-python spinning a real Postgres and Redpanda, session-scoped
   async fixtures composing into per-test rolled-back transactions (or
   fresh-tenant isolation), running Alembic migrations against the container, and
   asserting real end-state for managed dependencies (repository, outbox,
-  consumer). The Python analog of go-integration-test.
-version: 1.0.0
+  consumer). The Python analog of go-integration-test. Authored by the
+  test-strategist; applied by the backend-engineer.
+version: 1.1.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, integration-test, testcontainers, postgres, redpanda, asyncpg, aiokafka, alembic, pytest-asyncio, tenant]
 produces: python-integration-test

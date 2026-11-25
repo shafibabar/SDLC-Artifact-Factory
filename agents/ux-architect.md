@@ -10,7 +10,7 @@ description: >
   React+TypeScript screens. Grounds all UX decisions in the Ubiquitous Language
   and domain model.
 role: UX design authority — journey maps, information architecture, user flows, and UI component specifications (Shared and Local)
-version: 2.3.0
+version: 2.4.0
 phase: design
 owner: shafi
 created: 2026-06-25
@@ -200,7 +200,7 @@ The component spec is the input to frontend test design:
 - Interaction behaviour → integration test scenarios
 - Accessibility requirements → automated accessibility test targets (axe-core)
 
-Ownership of accessibility testing is explicit: the ux-architect specifies the WCAG 2.1 AA requirements per component; the **frontend-engineer authors the accessibility tests** (via `react-accessibility` and `react-component-testing`), test-first; the test-strategist owns the testing standard those tests must meet. The ux-architect never writes tests.
+Ownership of accessibility testing is explicit: the ux-architect specifies the WCAG 2.1 AA requirements per component; the **frontend-engineer authors the accessibility tests** (via `react-accessibility` and `react-component-testing`), test-first, and owns the React testing standard those tests must meet, within the cross-stack test policy the test-strategist owns (`test-pyramid`). The ux-architect never writes tests.
 
 ---
 

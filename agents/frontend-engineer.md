@@ -18,7 +18,7 @@ description: >
   in place of code. Does not design the UX, the API contract, or the Bounded Context boundaries; it
   implements them. Activates on /sdlc-implement for frontend work.
 role: React + TypeScript frontend implementation across a shell + microfrontend-remotes architecture — type-sound, accessible, performant, observable UI
-version: 3.4.0
+version: 3.5.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -120,7 +120,8 @@ design-token wiring · the typed API client generated from the shared contract �
 cache and client stores · the shell and per-fragment route trees · components and pages realising each
 `ui-component-spec` · the estate graph view and the dashboard/reporting UI · WCAG 2.1 AA behaviour ·
 frontend telemetry (Core Web Vitals, OTel Web, error boundaries) · profile-justified performance work ·
-the component and e2e tests it writes test-first · the app Dockerfile and a green `npm run ci`.
+the React test standards, and the component, e2e and shell-to-remote contract tests it writes
+test-first · the app Dockerfile and a green `npm run ci`.
 
 **Does not own:**
 
@@ -130,7 +131,7 @@ the component and e2e tests it writes test-first · the app Dockerfile and a gre
 | API contract authoring (`openapi.yaml`), service boundaries, ADRs | `enterprise-architect` | The contract is input; the generated client is output |
 | Bounded Context boundaries and the Context Map | `domain-modeler` | Fragments follow these; they never redraw them |
 | Backend services, server types, the Go image | `backend-engineer` | The generated API client is the shared boundary |
-| Test **strategy**, the pyramid, fixtures, doubles, the BDD feature files, and the contract/performance/load/chaos/mutation tiers | `test-strategist` | See the test boundary below |
+| Test **strategy**, the pyramid, fixtures, doubles, the BDD feature files, and the HTTP/event contract, performance, load, chaos and mutation tiers | `test-strategist` | See the test boundary below |
 | Auth issuance and validation, ABAC enforcement, CSP header authoring | `security-architect` / `security-engineer` | This agent honours them; it never implements them |
 | Observability **stack** (collector, Prometheus, Tempo, Grafana, alerts) | `platform-engineer` | This agent emits signals; platform-engineer collects them |
 | Container-image *standards*, CI/CD pipelines, Helm, Kubernetes, CDN/hosting | `platform-engineer` | This agent writes the app Dockerfile to those standards |
@@ -143,14 +144,14 @@ revision; it is never silently reinterpreted. The `ui-component-spec`, `ux-flow-
 `information-architecture`, and `user-journey-map` artifacts are therefore absent from `produces:` —
 they are this agent's inputs, not its outputs.
 
-**The test boundary (resolved, not shared).** `react-component-testing` and `react-e2e-testing` are
-*authored* by test-strategist as the canonical standards and *applied test-first* by this agent. So
-the `react-component-tests` and `react-e2e-test-suite` **artifacts for this agent's own UI** belong to
-frontend-engineer — TDD means the implementing agent writes the tests. Everything else is
-test-strategist's: `test-strategy`, test fixtures and doubles, the BDD feature files the e2e specs
-realise, and every tier this agent does not write (contract, performance, load, chaos, mutation). This
-mirrors the boundary child 3 set for backend-engineer, so test-strategist's own refactor inherits it
-rather than discovering a collision.
+**The test boundary (resolved, not shared).** This agent owns the React test standards,
+`react-component-testing` and `react-e2e-testing`, and applies them test-first. So the
+`react-component-tests` and `react-e2e-test-suite` **artifacts for this agent's own UI** belong to
+frontend-engineer — TDD means the implementing agent writes the tests — as do the shell-to-remote
+contract tests. Both standards sit within the cross-stack test policy test-strategist owns
+(`test-pyramid`). Everything else is test-strategist's: `test-strategy`, test fixtures and doubles,
+the BDD feature files the e2e specs realise, and every tier this agent does not write (HTTP and event
+contract, performance, load, chaos, mutation).
 
 **Stack-neutral artifacts (`dockerfile`) — claimed deliberately.** `dockerfile` has three producing
 skills (`go-dockerfile`, `python-dockerfile`, `react-dockerfile`) and is already claimed by
