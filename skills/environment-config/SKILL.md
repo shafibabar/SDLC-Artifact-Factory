@@ -2,14 +2,14 @@
 name: environment-config
 description: >
   Teaches Environment Parity and Configuration as Code — the environment set
-  (kind-local, dev, staging, per-tenant production stamps), the rule that every
+  (kind-local, dev, staging, production, and a production stamp per tenant only where multi-tenancy-design chose a silo), the rule that every
   environment runs the same chart and the same image digest with differences
   only in values, the taxonomy of build-time versus deploy-time versus
   runtime-flag configuration, the config/secret split (values in Git, secrets
   only via Vault Agent), and the promotion invariance check that proves the
   artifact never changed between environments. Used by the platform-engineer
   during Deploy.
-version: 1.3.1
+version: 1.4.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -37,11 +37,12 @@ The second law is **Configuration as Code**: every value that shapes an environm
 | **kind-local** | Chart install tests in CI; engineer's laptop | Created and destroyed per run | CI (`helm-chart`'s kind gate), engineers |
 | **dev** | First real-cluster convergence after merge | Long-lived, disposable — rebuilt from Git at will | Auto-commit from CI on green main |
 | **staging** | Full-stack soak: nightly e2e/load suites, SLO soak, rollback and DR drills | Long-lived; mirrors production topology at reduced sizing | PR merged by platform-engineer |
-| **tenant-\<id\> prod stamps** | One physically isolated production environment per tenant — own namespace/cluster, own PostgreSQL, own Redpanda, per `multi-tenancy-design` | Long-lived; stamped from the same OpenTofu module and charts | PR per fleet wave; the product owner approves first production promotion |
+| **production** | The shared production environment; a pooled fleet serves its tenants here, with tenants as data | Long-lived; the same OpenTofu module and charts as staging | PR merged by platform-engineer; the product owner approves first production promotion |
+| **tenant-\<id\> silo stamps** | Only where `multi-tenancy-design` chose a silo for that tenant: its own namespace/cluster and backing services | Long-lived; stamped from the same OpenTofu module and charts | PR per wave; the product owner approves first production promotion |
 
 Two consequences of this set:
 
-- **Staging is one environment, not one per tenant.** Tenants differ only in values (sizing, endpoints, tenant id), so one staging proves the chart for all of them. A per-tenant staging fleet would double cost for zero additional proof — frugality says no.
+- **Staging is one environment, not one per tenant.** Tenants differ only in values (sizing, endpoints, tenant id) or, for a silo, in a stamp built from the same module, so one staging proves the chart for all of them. A per-tenant staging fleet would double cost for zero additional proof — frugality says no.
 - **dev must be rebuildable from Git alone.** If deleting the dev cluster and re-bootstrapping the reconciler does not reproduce it exactly, Configuration as Code is already broken somewhere — dev is the cheap place to find out.
 
 ---
@@ -54,7 +55,7 @@ Same chart, same digest. What *may* differ between environments is a closed list
 |---|---|---|
 | **Sizing** | resource requests/limits, storage sizes, HPA bounds | Staging need not pay for production capacity |
 | **Replicas** | replicaCount 1 in dev, 2 in staging, 3+ in prod | Availability is bought per environment |
-| **Endpoints** | PostgreSQL host, Redpanda brokers, OTLP collector, ingress host | Each environment/tenant has its own physically isolated backing services |
+| **Endpoints** | PostgreSQL host, Redpanda brokers, OTLP collector, ingress host | Each environment has its own backing services; a silo tenant has its own too, a pooled tenant shares production's |
 | **Flags** | feature flags per `feature-flag-design`, log level, canary weights | Progressive Delivery is *configured* per environment, never coded per environment |
 | **Identity** | `tenant.id`, environment label, alert routing receiver | Traceability and routing, not behaviour |
 
@@ -118,7 +119,7 @@ for tenant_file in deploy/clusters/tenants/*/"${service}".yaml; do
 done
 ```
 
-A digest may not enter any production stamp unless it is the digest staging soaked. Combined with `helm-chart`'s schema (digest required, tags forbidden), this closes the rebuild loophole: what was tested is what runs, byte for byte.
+A digest may not enter any production environment or silo stamp unless it is the digest staging soaked. Combined with `helm-chart`'s schema (digest required, tags forbidden), this closes the rebuild loophole: what was tested is what runs, byte for byte.
 
 ---
 
@@ -140,16 +141,16 @@ CI also runs `kind` for the chart-install gate in `helm-chart`: the same `make l
 
 ## Identical Provisioning Process
 
-Environment parity is not only about what runs — it is about *how* environments are built. Dev and staging must be provisioned by **the same automated OpenTofu + Helm process** as production tenant stamps, not merely styled to resemble production. "Mirrors production topology" is not enough if the mirror was assembled by hand.
+Environment parity is not only about what runs — it is about *how* environments are built. Dev and staging must be provisioned by **the same automated OpenTofu + Helm process** as production (and any tenant silo stamps), not merely styled to resemble production. "Mirrors production topology" is not enough if the mirror was assembled by hand.
 
 | Environment | Must be provisioned by | A hand-built environment is |
 |---|---|---|
 | kind-local | `make local-up` (automated, one command) | A defect — breaks golden path; fails the TVP test |
 | dev | CI auto-commit → GitOps reconciler (same OpenTofu + Helm path) | A defect — cannot verify the provisioning process itself |
 | staging | PR to env repo → Flux reconciler (same OpenTofu + Helm path) | A defect — staging cannot rehearse production provisioning |
-| tenant-* prod | PR per fleet wave → Flux reconciler | A defect — production diverges from what staging proved |
+| production, and tenant silo stamps if any | PR per wave → Flux reconciler | A defect — production diverges from what staging proved |
 
-A dev environment built by hand cannot demonstrate that the automated provisioning path works. That is the purpose of dev: the first real-cluster convergence after a merge verifies not just the image but the automated pipeline that will build staging and every production tenant stamp.
+A dev environment built by hand cannot demonstrate that the automated provisioning path works. That is the purpose of dev: the first real-cluster convergence after a merge verifies not just the image but the automated pipeline that will build staging, production and any tenant silo stamp.
 
 The same rule extends across cloud targets. The platform is cloud-agnostic by design, but product deployments land on AWS, Azure, or GCP — and each cloud is provisioned by the *same* automated OpenTofu + Helm process, never a per-cloud pipeline fork. Only the OpenTofu provider block, remote-state backend, managed-Kubernetes resource (GKE/EKS/AKS), managed-Postgres resource, and cloud secret backend differ per target, and every one of those differences lives in values and provider config, never in service code. Per-cloud provider/backend/managed-service specifics and how each cloud's secret backend relates to the Vault + SOPS story: `references/cloud-environments.md`.
 
@@ -170,7 +171,7 @@ clusters/
 
 Each leaf file is a Flux CRD: a `HelmRelease` for chart-based services (the standard path for this repo) or a `Kustomization` for raw or kustomize-processed manifests. Navigating the filesystem answers "what is deployed where" without querying any cluster or reading any pipeline log.
 
-Per-tenant production stamps follow the same layout:
+Where `multi-tenancy-design` chose silos, each silo stamp follows the same layout (a pooled fleet needs only the production entry):
 
 ```
 clusters/

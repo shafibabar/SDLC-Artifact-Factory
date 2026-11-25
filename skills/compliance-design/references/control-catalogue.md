@@ -2,7 +2,7 @@
 
 This catalogue decomposes the in-scope requirements into concrete, automatable
 controls for this data-estate / compliance platform (Go + chi + pgx + Redpanda,
-physical per-tenant isolation, Linkerd mTLS, OpenTelemetry/Prometheus/Tempo/
+the isolation layer the product's tenancy design chose, Linkerd mTLS, OpenTelemetry/Prometheus/Tempo/
 Grafana, GitHub Actions CI/CD). Each control names its **requirement** (a real,
 standard clause), its **behaviour**, its **enforcement mode** (gate / monitor /
 record), and the **automatable test** that `compliance-verification` implements.
@@ -46,9 +46,9 @@ when no longer required.
 | Cross-tenant isolation | A request scoped to tenant A cannot read tenant B data | gate | Integration test: tenant-A JWT against tenant-B resource → 403/404 |
 
 Cross-tenant isolation is the **highest-materiality** control in this product
-(see `materiality-and-risk-selection.md`). Physical per-tenant isolation
-provides the infrastructure layer; the ABAC tenant check is the independent
-second layer — both are tested (defence in depth).
+(see `materiality-and-risk-selection.md`). The infrastructure layer is whatever the product's `multi-tenancy-design` chose (a pool's
+row-level security, a silo's network boundary, or a mix); the ABAC tenant check is the independent
+second layer. Both are tested (defence in depth).
 
 ### CC7.2 / CC7.3 — System monitoring and evaluation
 

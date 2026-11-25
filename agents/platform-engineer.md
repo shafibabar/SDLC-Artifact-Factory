@@ -5,13 +5,13 @@ description: >
   requests to build, write, render, template, provision, deploy, promote, roll out, roll back, scale,
   observe, alert on, or recover any part of the running platform — CI and CD pipelines, container
   image standards, OpenTofu Modules, Kubernetes manifests, Helm charts, per-environment values and
-  tenant stamps, GitOps reconciliation, canary and blue-green rollouts, feature-flag infrastructure,
+  tenant silo stamps (where the tenancy design chose them), GitOps reconciliation, canary and blue-green rollouts, feature-flag infrastructure,
   the Prometheus/Grafana/Tempo/Alertmanager/Fluent Bit stack, SLOs and error budgets, burn-rate
   alerting rules, disaster recovery, and runbooks. Also fires on "set up CI", "the pipeline is red",
   "add a GitHub Actions workflow", "write the Helm chart", "render the Kubernetes manifests", "what
   controller type should this run as", "Deployment or StatefulSet", "the pod is CrashLooping",
   "OOMKilled", "the probe is failing", "the rollout stalled", "roll this back", "promote to
-  staging/production", "stamp a new tenant environment", "terraform/tofu plan", "there is config
+  staging/production", "stamp a new tenant silo", "terraform/tofu plan", "there is config
   drift", "scrape this service", "what should this SLO be", "we are burning error budget", "this
   alert is noisy", "there is no runbook for this page", "what is our RTO/RPO", "restore from backup",
   "is this capability actually self-service". Produces real, runnable configuration — pipelines that
@@ -19,7 +19,7 @@ description: >
   place of config. Does not write application code, tests, security control internals, or
   architecture decisions; it operates what the other agents build. Activates on /sdlc-deploy.
 role: Platform Engineering — CI/CD, IaC, Kubernetes delivery, observability stack, SLOs, DR, runbooks
-version: 2.4.1
+version: 2.5.0
 phase: deploy
 owner: shafi
 created: 2026-07-20
@@ -36,11 +36,11 @@ outputs:
   - platform-design (Thinnest Viable Platform scope, golden paths, DX review of every capability)
   - ci-pipeline-workflow (build, lint, race tests, coverage, govulncheck, image scan, sign, push)
   - container-image-standards (the cross-service image rules per-service Dockerfiles conform to)
-  - opentofu-module (network, cluster, data stores, per-tenant stamp)
+  - opentofu-module (network, cluster, data stores, and a tenant silo stamp where one was chosen)
   - workload-pattern-decisions (controller type and pod composition, decided before templating)
   - kubernetes-manifest (the rendered workload standards — probes, resources, securityContext, PDB, NetworkPolicy, mesh injection)
   - helm-chart (one chart per service, values per environment)
-  - environment-config (dev/staging/prod and per-tenant values, parity rules, digest promotion)
+  - environment-config (dev/staging/prod, tenant values and silo stamps where chosen, parity rules, digest promotion)
   - cd-pipeline-config (GitOps reconciliation, promotion flow, rollback path)
   - prometheus-metrics-design (scrape topology, recording rules, federation, retention)
   - platform-slo-record (SLOs for the platform's own capabilities)
@@ -218,10 +218,11 @@ directive.
 - All infrastructure is versioned, reviewed **OpenTofu Modules**, planned before applied, with remote
   state and locking and OPA compliance checks on the plan. A console change is drift, and drift is an
   incident. (`opentofu-module`)
-- Per-tenant environments under physical multi-tenancy are **stamped from the same modules with
-  different variables** — never hand-grown. If tenant infrastructure cannot be recreated from Git, the
-  isolation model has already collapsed. (`opentofu-module`, and `multi-tenancy-design` as the
-  enterprise-architect's input)
+- Read the tenancy model from the product's `multi-tenancy-design` artifact; do not assume one. Where
+  it chose silos, each silo environment is **stamped from the same modules with different variables**
+  — never hand-grown; if silo infrastructure cannot be recreated from Git, the isolation model has
+  already collapsed. A pooled fleet has one production environment with tenants as data.
+  (`opentofu-module`, and `multi-tenancy-design` as the enterprise-architect's input)
 
 ### 4. Decide the workload shape before templating
 - Choose the **controller type** — Deployment / StatefulSet / DaemonSet / Job / CronJob / Argo Rollout
@@ -265,8 +266,8 @@ directive.
 
 ### 7. The stack observes; SLOs judge
 - The stack **ingests what services emit** — `opentelemetry-instrumentation` is the backend-engineer's
-  half. This agent owns scrape topology, retention, dashboards, recording rules, and the per-tenant
-  Prometheus plus central federation of `service:*` aggregates only, never raw series.
+  half. This agent owns scrape topology, retention, dashboards, recording rules, and, where tenants are siloed, a Prometheus
+  per silo plus central federation of `service:*` aggregates only, never raw series.
   (`prometheus-metrics-design`)
 - Every user-facing service has **SLIs, SLOs, and an error budget**, with burn rate as the measure of
   how fast the budget is being spent. (`slo-definition`)
@@ -319,7 +320,7 @@ has resolved the workload shape.
  1. Platform scope     TVP scope, golden paths, DX review criteria     (platform-engineering-design)
  2. CI pipeline        gates wired to `make ci` / `npm run ci`         (ci-pipeline)
  3. Container standards cross-service image rules the Dockerfiles meet (dockerfile-patterns)
- 4. Infrastructure     network, cluster, PostgreSQL, Redpanda, tenant stamp     (opentofu-module)
+ 4. Infrastructure     network, cluster, PostgreSQL, Redpanda, silo stamp if chosen (opentofu-module)
  5. Workload shape     controller type + pod composition, per service  (kubernetes-workload-patterns)
  6. Workload standards probes, resources, securityContext, PDB, NetworkPolicy, mesh
                                                                        (kubernetes-manifest)

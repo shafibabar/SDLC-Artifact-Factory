@@ -14,7 +14,7 @@ Environment Parity, Configuration as Code, the config/secret split, and the
 The platform is cloud-agnostic by design; a product deployment targets AWS,
 Azure, or GCP. Every one of those targets is provisioned by the **same
 automated OpenTofu + Helm process** — the local `kind` golden path, dev,
-staging, and every tenant production stamp all run identical charts at
+staging, production and every tenant silo stamp (if the tenancy design chose any) all run identical charts at
 identical image digests regardless of cloud. There is no per-cloud pipeline,
 no per-cloud chart fork, and no `if cloud == "aws"` in any service. The cloud
 is not a code path; it is a set of values and OpenTofu provider configuration.
@@ -33,9 +33,9 @@ config or values — never in service code:
 Each row is a value substitution, not a rewrite. The Helm chart, the image
 digest, the Flux `HelmRelease`, the promotion-invariance gate, and the
 projected-volume secret pattern are byte-for-byte identical across all three.
-Per-tenant **physical** isolation holds on every cloud: each tenant stamp gets
+Where `multi-tenancy-design` chose a silo for a tenant, that isolation holds on every cloud: each silo stamp gets
 its own managed-Kubernetes cluster (or dedicated node pool), its own managed
-Postgres instance, and its own secret backend scope.
+Postgres instance, and its own secret backend scope. A pooled fleet needs one of each for production, with tenants as data.
 
 ---
 
@@ -116,8 +116,8 @@ The OpenTofu root module runs the same phased apply on every cloud; only the
 resource types in each phase differ (per the table above):
 
 1. **Networking + state** — VPC/VNet, subnets, the remote-state backend bucket/container.
-2. **Managed Kubernetes** — EKS / AKS / GKE cluster plus its node pool(s), one per tenant stamp for physical isolation.
-3. **Managed Postgres** — one RDS / Flexible Server / Cloud SQL instance per tenant, private-networked to that tenant's cluster.
+2. **Managed Kubernetes** — EKS / AKS / GKE cluster plus its node pool(s), one per silo stamp (one for a pooled production fleet).
+3. **Managed Postgres** — one RDS / Flexible Server / Cloud SQL instance per silo stamp (one for a pooled fleet), private-networked to its cluster.
 4. **Identity + secrets** — OIDC/workload-identity wiring, Vault auto-unseal KMS key, SOPS KMS key.
 5. **Helm delivery** — Flux reconciles the same `HelmRelease` charts that dev and staging soaked.
 

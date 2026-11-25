@@ -14,7 +14,7 @@ description: >
   frontmatter and that the Domain Primitives/Policies/Trust-Boundary tables
   actually have data, not just headers). Used by the security-architect
   agent during the Design phase.
-version: 2.3.0
+version: 2.4.0
 phase: design
 owner: security-architect
 created: 2026-06-25
@@ -161,7 +161,7 @@ The policy interface stays the same shape as any ABAC implementation — a `Subj
 
 ## Multi-Tenancy and Access Control
 
-For physical multi-tenancy (separate deployments per tenant), the tenant isolation check is partially redundant — the network routing already prevents cross-tenant requests. However, the tenant isolation policy check is still enforced as a defence-in-depth measure. If the routing layer is misconfigured, the policy check is the backstop. **This redundancy argument only covers the tenant-isolation policy.** Per *Secure by Design*'s "layered defense is not an excuse for shallow domain modeling," it does not extend to skipping Domain Primitives for `TenantID`/`Permission`/`Sensitivity` — those exist to make illegal states unrepresentable in the domain model itself, a property the network layer cannot provide regardless of deployment topology.
+The tenant isolation check is **always enforced**, whatever the tenancy model in the product's `multi-tenancy-design`. In a pool (shared application and database) it is a **primary control**: the tenant comes from the verified token, never from the request, and every query is scoped to it. In a silo (a separate deployment per tenant) it is partly redundant, since the network routing already prevents cross-tenant requests, but it stays as defence in depth: if the routing layer is misconfigured, the policy check is the backstop. **The silo redundancy argument only covers the tenant-isolation policy.** Per *Secure by Design*'s "layered defense is not an excuse for shallow domain modeling," it does not extend to skipping Domain Primitives for `TenantID`/`Permission`/`Sensitivity` — those exist to make illegal states unrepresentable in the domain model itself, a property the network layer cannot provide regardless of deployment topology.
 
 ---
 
