@@ -1,15 +1,16 @@
 ---
 name: python-chaos-test
 description: >
-  Teaches the backend-engineer to write Python chaos tests — fault injection
+  Teaches how to write Python chaos tests — fault injection
   via toxiproxy (latency, timeout, partition) or testcontainers dependency
   kills, hypothesis-driven experiments with a bounded blast radius, and
   pass/fail against a stated resilience assumption (circuit breaker engages,
   consumer recovers, no data loss). The Python analog of go-chaos-test; frugal
-  (toxiproxy, not a chaos platform).
-version: 1.1.0
+  (toxiproxy, not a chaos platform). Authored and
+  applied by the test-strategist.
+version: 1.2.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, chaos, resilience, toxiproxy, testcontainers, circuit-breaker, consumer-recovery, fault-injection, blast-radius, asyncio, tenant]
 produces: python-chaos-test

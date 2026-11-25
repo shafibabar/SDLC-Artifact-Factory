@@ -145,7 +145,7 @@ A delta fails the gate only when **both** conditions hold: the delta exceeds 12%
 `benchstat` reports significance (`p < 0.05`, not `~`-marked). Either condition alone is
 insufficient — a huge but insignificant delta is noise, and a small-but-significant delta under 12%
 is deliberately tolerated as within the gate's stated noise budget. `sdlc-config-management`
-documents a `perf_regression_threshold_pct` override key for a bounded context that needs it
+documents a `perf_regression_threshold_pct` override key (under `methodology_parameters`) for a bounded context that needs it
 tightened — a compliance-critical hot path where even an 8% regression matters more than the
 noise-tolerance trade-off above — following the identical override pattern `go-mutation-test`'s
 `mutation_test_cadence` and `go-makefile`'s `COVER_MIN` already establish.

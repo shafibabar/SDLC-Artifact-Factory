@@ -1,14 +1,15 @@
 ---
 name: python-load-test
 description: >
-  Teaches the backend-engineer to write Python load tests — locust
+  Teaches how to write Python load tests — locust
   (Python-native, user-behavior classes) or k6 as a black-box generator
   running OUTSIDE the target, closed-vs-open workload models, ramp/soak/spike
   profiles, and pass criteria tied to SLOs (P95 latency, error rate under
-  load). The Python analog of go-load-test.
-version: 1.1.0
+  load). The Python analog of go-load-test. Authored and
+  applied by the test-strategist.
+version: 1.2.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, load-test, locust, k6, slo, throughput, latency, backpressure, shift-right]
 produces: load-test-suite
@@ -28,7 +29,7 @@ those layers structurally cannot: real requests/sec, real P95/P99 under network/
 `asyncpg`-pool overhead, when the async service starts shedding, and whether it holds the Service
 Level Objectives `slo-definition` set — the **shift-right** proof closing the gap between "the
 coroutine's own logic is fast" and "the system holds up in production-like conditions." Authored and
-run by the backend-engineer during Quality.
+run by the test-strategist during Quality.
 
 ---
 

@@ -124,8 +124,8 @@ pytest tests/benchmarks --benchmark-only \
 regression (an accidental `O(n²)` sweep, a `json`-for-`orjson` swap, a `deepcopy` on a hot path),
 loose enough to absorb shared-CI-runner scheduling noise without becoming a flake factory. Gating on
 `median` rather than `mean` further hardens against that noise — a few descheduled slow rounds move
-`mean` but barely move `median`. The threshold is overridable per-product through
-`sdlc-config-management`'s established pattern (the same mechanism `COVER_MIN` and
+`mean` but barely move `median`. The threshold is overridable per-product with
+`methodology_parameters.perf_regression_threshold_pct`, through `sdlc-config-management`'s established pattern (the same mechanism `COVER_MIN` and
 `mutation_test_cadence` use), not edited per-repo.
 
 ---

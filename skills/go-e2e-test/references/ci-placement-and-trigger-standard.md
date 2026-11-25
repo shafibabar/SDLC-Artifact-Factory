@@ -60,7 +60,7 @@ A nightly failure does not page anyone at 2 a.m. — per `ci-pipeline`'s existin
 `sdlc-config-management` already documents this exact override pattern for `go-mutation-test` (`mutation_test_cadence`) as "the narrow set of factory-wide tuning parameters individual skills define." This skill defines its own parameter the same way:
 
 ```json
-{ "methodology_overrides": { "e2e_test_cadence": "twice-daily" } }
+{ "methodology_parameters": { "e2e_test_cadence": "twice-daily" } }
 ```
 
 A product whose compliance-critical journeys warrant tighter e2e coverage sets this once; the nightly `cron` line in `.github/workflows/e2e-nightly.yml` is the only line that changes — nothing else in this standard, in `.gremlins.yaml`'s sibling for e2e, or in the trigger table changes shape.

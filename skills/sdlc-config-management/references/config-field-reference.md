@@ -115,6 +115,8 @@ Object whose `additionalProperties` values may be **string or number** depending
 |---|---|---|
 | `mutation_test_cadence` | Periodic, not per-PR (per `go-mutation-test`, chosen for frugality) | `"weekly"` for a product with a compliance-critical rule engine |
 | `unit_test_coverage_minimum` | No fixed factory-wide percentage; reviewed qualitatively per `methodology-review` | `85` for a bounded context handling PII classification |
+| `e2e_test_cadence` (string) | Nightly, plus pre-release and on demand (per `go-e2e-test` and `python-e2e-test`) | `"twice-daily"` for a product with compliance-critical journeys |
+| `perf_regression_threshold_pct` (number above 0) | `12` percent (per `go-performance-test` and `python-performance-test`) | `8` for a compliance-critical hot path |
 | `contract_testing_scope` | Consumer-Driven Contracts on service-to-service boundaries only | `"all boundaries including third-party storage connectors"` |
 
 ---

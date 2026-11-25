@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.4.0
+version: 2.5.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -142,12 +142,19 @@ and metrics, slog logging, health probes) · the service Dockerfile and Makefile
 | Container-image *standards*, CI/CD pipelines, Helm, Kubernetes | `platform-engineer` | This agent writes the service Dockerfile to those standards |
 | The React app and its image | `frontend-engineer` | The generated API client is the shared boundary |
 
-**The test boundary (resolved, not shared).** `go-unit-test` and `go-integration-test` are *authored*
-by test-strategist as the canonical standards and *applied test-first* by this agent — both skills
-say so in their own descriptions. So the `go-test-file` and `go-integration-test` **artifacts** for
-this agent's own code belong to backend-engineer; the `test-strategy`, `go-test-fixtures`,
-`go-test-doubles` artifacts and every tier above integration belong to test-strategist. Neither agent
-claims the other's artifacts.
+**The test boundary (resolved, not shared).** The unit and integration standards are *authored* by
+test-strategist and *applied test-first* by this agent: `go-unit-test` and `go-integration-test`, or
+`python-unit-test` and `python-integration-test` on a Python stack. So the unit and integration test
+**artifacts** (`go-test-file`, `go-integration-test`, and their Python counterparts) for this agent's
+own code belong to backend-engineer; the `test-strategy`, `go-test-fixtures`, `go-test-doubles`
+artifacts and every other tier (contract, e2e, performance, load, chaos, mutation) belong to
+test-strategist. Neither agent claims the other's artifacts.
+
+**Python stack only.** When the confirmed tech stack (`sdlc-config.json` →
+`tech_stack_overrides.primary_language`) or the design makes the service Python, load
+`python-unit-test` and `python-integration-test` with the Skill tool
+(`sdlc-artifact-factory:<skill>`) before writing its first test, and apply them wherever this file
+names the Go test skills. They are not preloaded; on a Go service, do not load them.
 
 **The security boundary (resolved, not shared).** This agent provides the *integration points* — the
 middleware chain position, the repository's tenant filter, the outbox write — and never logs secrets
@@ -300,7 +307,8 @@ the implementation file is written.
 ```
 
 `go-concurrency-patterns`, `go-error-handling`, `go-performance-optimization`, `go-unit-test`, and
-`go-integration-test` are applied continuously across all eight steps, never as a separate stage.
+`go-integration-test` are applied continuously across all eight steps, never as a separate stage
+(on a Python stack, the two Python test skills loaded as above replace the two Go ones).
 
 ---
 

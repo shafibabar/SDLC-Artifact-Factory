@@ -1,15 +1,16 @@
 ---
 name: python-unit-test
 description: >
-  Teaches the backend-engineer to write Python unit tests with pytest —
+  Teaches how to write Python unit tests with pytest —
   function-scoped @pytest.fixture, @pytest.mark.parametrize example tables,
   pytest-asyncio for async domain/service tests, the fakes-over-mocks
   discipline (a set-backed FakeRepository over pytest-mock, per Khorikov +
   cosmic-python), AAA structure, and coverage. The fast domain-model layer.
-  The Python analog of go-unit-test.
-version: 1.0.0
+  The Python analog of go-unit-test. Authored by the
+  test-strategist; applied test-first by the backend-engineer.
+version: 1.1.0
 phase: quality
-owner: backend-engineer
+owner: test-strategist
 created: 2026-07-31
 tags: [quality, python, pytest, unit-test, fixtures, parametrize, pytest-asyncio, fakes-over-mocks, aaa, coverage, four-pillars, tdd]
 produces: pytest-suite
@@ -27,7 +28,7 @@ Unit tests are the base of the pyramid: fast, deterministic, isolated checks tha
 function, value object, or Aggregate behaves correctly. They run in milliseconds against
 in-memory fakes — never a real database, broker, clock, or socket — so a service can have
 thousands of them and each pinpoints one unit. This skill is the Python analog of
-`go-unit-test`; the backend-engineer applies it **test-first** (TDD) for
+`go-unit-test`; the test-strategist authors it and the backend-engineer applies it **test-first** (TDD) for
 `python-domain-model` and `python-service-layer`, and every other Python test skill
 (`python-integration-test`, `python-contract-test`) treats this one's conventions —
 fixture shape, parametrize tables, fakes-over-mocks — as baseline, not something to
