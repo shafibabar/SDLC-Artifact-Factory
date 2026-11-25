@@ -10,7 +10,7 @@ description: >
   and reclassification. Grounded in DAMA-DMBOK and the Secure-by-Design security-sensitivity axis.
   Used during Design for any dataset; feeds access-control-model, data-retention-policy, and
   privacy-design.
-version: 2.1.1
+version: 2.2.0
 phase: design
 owner: data-architect
 created: 2026-06-25

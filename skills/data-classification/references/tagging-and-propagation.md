@@ -41,7 +41,7 @@ Two invariants make this safe and auditable:
 |---|---|---|
 | **Column** | Postgres column comment / a `column_classifications` catalog table | Technical-metadata catalog keyed on `(table, column)` |
 | **Table / dataset** | A `dataset_classifications` row, or table comment | One row per governed dataset |
-| **`DataAsset`** (a crawled file) | `data_assets.sensitivity_level` + override columns | Per-tenant schema (physical isolation) |
+| **`DataAsset`** (a crawled file) | `data_assets.sensitivity_level` + override columns | Tenant-scoped: a schema or database per tenant where the tenancy model chose a silo or bridge, a `tenant_id` column with row-level security in a pool |
 | **`Entity`** (extracted) | `extracted_entities` provisional level | Feeds the asset's inherit-max |
 | **In flight** | Redpanda event envelope header/payload | Travels with every domain event |
 | **In the graph** | Apache AGE `DataAsset` / `Entity` vertex property `sensitivity_level` | Enables reachability queries |
@@ -53,7 +53,7 @@ CREATE TYPE sensitivity_level AS ENUM ('Public', 'Internal', 'Confidential', 'Re
 
 CREATE TABLE data_assets (
     id                    uuid PRIMARY KEY,
-    tenant_id             uuid NOT NULL,               -- physical isolation: separate schema/db per tenant
+    tenant_id             uuid NOT NULL,               -- scoped per tenant; the tenancy model decides the mechanism (separate schema/db, or row-level security)
     source_default_level  sensitivity_level NOT NULL DEFAULT 'Internal',
     sensitivity_level     sensitivity_level NOT NULL,  -- the computed EFFECTIVE level
     manual_override_level sensitivity_level,           -- nullable; steward decision sits OUTSIDE the max

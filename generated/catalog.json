@@ -2278,7 +2278,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.4.1"
+        "version": "2.5.0"
       },
       {
         "created": "2026-06-24",
@@ -2944,7 +2944,7 @@
           "rbac",
           "security"
         ],
-        "version": "2.3.0"
+        "version": "2.4.0"
       },
       {
         "created": "2026-06-25",
@@ -3571,7 +3571,7 @@
           "rollback",
           "traffic-split"
         ],
-        "version": "1.2.1"
+        "version": "1.3.0"
       },
       {
         "created": "2026-06-25",
@@ -3827,7 +3827,7 @@
           "separation-of-duties",
           "soc2"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -4238,7 +4238,7 @@
           "sensitivity",
           "tagging"
         ],
-        "version": "2.1.1"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -4897,7 +4897,7 @@
           "tenants",
           "values"
         ],
-        "version": "1.3.1"
+        "version": "1.4.0"
       },
       {
         "created": "2026-06-24",

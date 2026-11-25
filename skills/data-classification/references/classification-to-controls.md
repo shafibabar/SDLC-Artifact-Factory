@@ -6,7 +6,7 @@ the explicit handoff contract to `access-control-model` and `data-retention-poli
 scheme that no control consumes is documentation theatre; this file is what makes the scheme real.
 
 Grounded in DAMA-DMBOK's Data Security KA, Secure-by-Design, and this repo's stack (chi + pgx +
-Postgres, Linkerd mTLS, ABAC-over-JWT, physical per-tenant isolation).
+Postgres, Linkerd mTLS, ABAC-over-JWT, and the isolation layer the product's `multi-tenancy-design` chose).
 
 ---
 
@@ -50,9 +50,10 @@ func (p ABACPolicy) Evaluate(s Subject, r Resource, a Action, e Environment) Dec
 
 Handoff rules:
 
-- **Restricted always adds a tenant check** even though physical isolation already separates tenants —
-  this is deliberate defense-in-depth (Secure-by-Design: never let one layer's isolation excuse the
-  next layer's missing check). The ABAC tenant check is "partially redundant" *on purpose*.
+- **Restricted always adds a tenant check**, whatever the tenancy model provides underneath (a pool's
+  row-level security, a silo's network boundary): never let one layer's isolation excuse the next
+  layer's missing check (Secure-by-Design). In a pool it is a primary control; in a silo it is
+  partly redundant *on purpose*.
 - **Sensitivity and Clearance are Domain Primitives**, not bare strings/ints — a malformed level or a
   wrong-shape permission should be constructor-impossible, not a runtime hope (Secure-by-Design
   totality argument).
@@ -67,11 +68,11 @@ Handoff rules:
 |---|---|---|---|
 | Public / Internal | Not required | Linkerd mTLS | — |
 | Confidential | Required | Linkerd mTLS | Shared at-rest key |
-| Restricted | Required | Linkerd mTLS | **Per-tenant encryption key** — a key compromise is blast-radius-limited to one tenant, matching physical isolation |
+| Restricted | Required | Linkerd mTLS | **Per-tenant encryption key** — a key compromise is blast-radius-limited to one tenant, whichever isolation the tenancy model gives the infrastructure |
 
 In-transit encryption (Encryption in Transit) is automatic via Linkerd's mesh mTLS for everything;
 at-rest encryption (Encryption at Rest) is level-gated. The per-tenant key for Restricted data is the
-cryptographic complement to physical per-tenant isolation.
+cryptographic complement to whatever infrastructure isolation the tenancy model provides.
 
 ---
 

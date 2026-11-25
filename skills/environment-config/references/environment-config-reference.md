@@ -35,7 +35,7 @@ spec:
     ingress:
       host: acme.app.example.com                    # endpoint — tenant's own ingress host
     postgres:
-      host: estate-scanner-db.tenant-acme.svc.cluster.local  # endpoint — physically isolated DB
+      host: estate-scanner-db.tenant-acme.svc.cluster.local  # endpoint — this tenant's silo DB (a pooled tenant would use the shared production host)
     redpanda:
       brokers: redpanda.tenant-acme.svc.cluster.local:9092   # endpoint — tenant's own broker
     flags:
@@ -150,7 +150,7 @@ A new engineer runs `make local-up` from the service root on day one. No platfor
 
 | Criterion | Pass | Fail |
 |---|---|---|
-| Environment set | kind-local / dev / staging / tenant stamps, each with a stated purpose | Ad-hoc environments; "test2" nobody can explain |
+| Environment set | kind-local / dev / staging / production, plus silo stamps where the tenancy design chose them, each with a stated purpose | Ad-hoc environments; "test2" nobody can explain |
 | Parity | Same chart version + same digest fleet-wide (within skew window) | Per-environment builds, forked charts, env-conditional code |
 | Difference classes | Every env/tenant diff is sizing, replicas, endpoints, flags, or identity | Behavioural differences hidden in values; env checks in code |
 | Configuration as Code | Every setting reaches clusters via the environment repo | `kubectl edit`, `--set` flags, console changes |
@@ -224,5 +224,5 @@ clusters/tenants/[tenant-id]/namespaces/[tenant-id]/…
 [Path to the promotion-parity check script; CI job that runs it on production promotion PRs]
 
 ## Traceability
-[multi-tenancy-design stamp model; NFR IDs behind sizing tiers; feature-flag-design references]
+[multi-tenancy-design model (silo, pool, bridge or mixed); NFR IDs behind sizing tiers; feature-flag-design references]
 ```

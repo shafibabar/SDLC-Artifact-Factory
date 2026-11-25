@@ -10,7 +10,7 @@ description: >
   control mapping, and the Control Coverage Matrix artifact. Each control is
   designed to be verified automatically (handoff to compliance-verification).
   Used during Design for any regulated feature or the platform baseline.
-version: 2.1.0
+version: 2.2.0
 phase: design
 owner: security-architect
 created: 2026-06-25
@@ -92,7 +92,7 @@ or `record`.
 This is a design-time judgment made with the second line (risk/compliance) and
 third line (audit) rather than after the fact — the three-lines-of-defense
 collaboration. Threat severity feeds it directly: a high-severity modeled threat
-from `threat-modeling` (crossing the physical tenant-isolation boundary) forces
+from `threat-modeling` (crossing the tenant-isolation boundary) forces
 a `gate`-mode control. Full method, the materiality rubric, and the three-lines
 model: `references/materiality-and-risk-selection.md`.
 

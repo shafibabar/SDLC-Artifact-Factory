@@ -4,11 +4,11 @@ description: >
   Teaches Canary Deployment as the default progressive delivery strategy —
   staged traffic shifting on the Linkerd Service Mesh with weighted routing
   (5/25/50/100 with hold times), SLO burn-rate and error/latency gates per
-  stage that auto-rollback on breach, per-tenant canary waves under physical
-  multi-tenancy, and the boundary of what cannot canary (partitioned event
+  stage that auto-rollback on breach, canary by tenant under the product's
+  tenancy model (tenant waves for silos, cohorts or tiers for a pool), and the boundary of what cannot canary (partitioned event
   consumers, schema changes) with fallback strategies. Used by the
   platform-engineer during Deploy.
-version: 1.2.1
+version: 1.3.0
 phase: deploy
 owner: platform-engineer
 created: 2026-07-20
@@ -101,14 +101,16 @@ For full `Rollout` + `AnalysisTemplate` YAML, the step-by-step promotion sequenc
 
 ---
 
-## Per-Tenant Canary Under Physical Multi-Tenancy
+## Canary by Tenant: Read the Tenancy Model
 
-Two canary layers exist simultaneously, and they are not the same thing:
+Read `design/architecture/multi-tenancy-design.md` first; the second layer depends on it. **Pool:** one production fleet serves every tenant, so there is no tenant wave. Roll out by tenant cohort or tier through routing or feature flags (`feature-flag-design`): internal and friendly tenants first, then tier by tier, each stage under the same SLO gates. **Silo (or a mixed fleet):** the tenant waves below apply to the siloed tenants. **No tenancy design yet:** treat the product as a pool.
+
+For silos, two canary layers exist simultaneously, and they are not the same thing:
 
 1. **In-cluster traffic canary** (above) — within *one* tenant's namespace, shifting weight between stable and canary Pods of the same service.
 2. **Tenant-wave canary** (`cd-pipeline`'s fleet promotion model) — the designated canary tenant receives the new digest *before* the rest of the fleet, and only after that tenant's in-cluster canary rollout completes cleanly does the wave PR promote the remaining tenants.
 
-The two compose: a release ships in-cluster canary (5→25→50→100) inside `tenant-canary`'s namespace first; only once it reaches 100% and bakes does the fleet-wave PR carry the *same, already-proven* digest to `tenant-acme`, `tenant-globex`, and the rest — where it goes through its own in-cluster canary again, because per-tenant load profiles and data shapes differ enough that a clean canary tenant does not guarantee a clean fleet tenant. Skipping the second in-cluster canary "because the canary tenant already proved it" reintroduces the big-bang risk physical isolation was bought to prevent.
+The two compose: a release ships in-cluster canary (5→25→50→100) inside `tenant-canary`'s namespace first; only once it reaches 100% and bakes does the fleet-wave PR carry the *same, already-proven* digest to `tenant-acme`, `tenant-globex`, and the rest — where it goes through its own in-cluster canary again, because per-tenant load profiles and data shapes differ enough that a clean canary tenant does not guarantee a clean fleet tenant. Skipping the second in-cluster canary "because the canary tenant already proved it" reintroduces the big-bang risk that separate silos were chosen to avoid.
 
 ---
 
@@ -134,7 +136,7 @@ The rule in one line: **canary needs a dial; if the workload only has a switch, 
 | Gates read SLOs | Burn-rate, error-rate, latency gates use the same recorded series as `alerting-rules-design` | Ad-hoc thresholds invented per rollout |
 | Auto-rollback | Breach reverts weight to 0% without waiting for a human | Breach only pages; rollout continues by default |
 | Runbook linked | Every gate alert carries a `runbook_url` per `alerting-rules-design`'s hygiene rule | Gate alerts with no documented revert procedure |
-| Per-tenant waves | Canary tenant proves in-cluster canary before fleet wave promotes | Fleet-wide promotion skipping per-tenant canary |
+| Tenant stages | Silo: canary tenant proves in-cluster canary before the fleet wave promotes. Pool: cohorts or tiers go in order under the same gates | Fleet-wide promotion skipping the tenant stages |
 | Boundary respected | Partitioned consumers canary by partition share or fall back to blue-green; schema changes ride expand/contract | Partial-traffic canary attempted on a workload with no traffic dial |
 | Mesh-native | Linkerd `HTTPRoute`/`TrafficSplit` weights, no added ingress-layer canary controller unless justified by ADR | A second canary system duplicating what the mesh already provides |
 | GitOps-native gates | When Argo Rollouts is used, gate criteria live in `AnalysisTemplate` CRDs in Git — not CI scripts | Gate logic in a pipeline step that can be bypassed or modified without Git review |
@@ -188,8 +190,8 @@ charts/[service]/templates/canary-httproute.yaml
 prometheus/rules/canary-gate-[service]-[release].yaml
 [Fast-burn, error-vs-baseline, latency-vs-baseline, freshness thresholds]
 
-## Per-Tenant Wave
-[Canary tenant result; fleet wave PR reference]
+## Tenant Stages
+[Silo: canary tenant result, fleet wave PR reference. Pool: cohort or tier order, flag or routing rule, result per stage]
 
 ## Rollback Evidence
 [Last auto-rollback drill: trigger, time-to-revert]

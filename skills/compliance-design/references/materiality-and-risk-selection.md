@@ -70,7 +70,7 @@ is the reviewable rationale that goes in the Coverage Matrix's Materiality colum
 | Log-format consistency | Fully recoverable | Cosmetic | None | Low | record |
 
 Threat severity feeds this table directly: a high-severity threat from
-`threat-modeling` (e.g. an attacker crossing the physical tenant-isolation
+`threat-modeling` (e.g. an attacker crossing the tenant-isolation
 boundary via an attack tree on the crown-jewel goal) forces the mitigating
 control to **Critical / gate**. This is the concrete downstream consequence of
 threat modeling — a modeled threat's severity determines its control's
@@ -137,8 +137,8 @@ shared contract.
 - **Averaging the three axes.** The axes do not average — the *highest* axis
   dominates. A control that is fully recoverable and cosmetic but triggers a
   reportable breach is Critical, not Moderate.
-- **Letting infrastructure downgrade materiality.** Physical per-tenant
-  isolation already discharges some isolation risk, but the ABAC cross-tenant
+- **Letting infrastructure downgrade materiality.** The tenancy model's
+  infrastructure isolation (a silo's boundary, a pool's row-level security) already discharges some isolation risk, but the ABAC cross-tenant
   check is still Critical / gate: it is the independent second layer, and
   defence in depth means neither layer's existence lowers the other's weight.
 - **Confusing "low effort to test" with "low materiality."** Ease of automating
