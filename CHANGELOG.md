@@ -10,6 +10,7 @@ Format: [Semantic Version] — Date — Description
 
 ### Added
 
+- 2026-11-25 — **Wave 3 research: official documentation for Python test tools (#1457, PR #1467).** Nine `research/testing/` notes (coverage, mutmut, pytest, pytest-asyncio, pytest-benchmark, testcontainers-python, jsonschema, oasdiff, Hypothesis); D048 records the Go coverage decision.
 - 2026-11-25 — **Wave 3 research: official documentation for Go test tools (#1456, PR #1466).** Ten `research/testing/` notes (toolchain, coverage, benchstat, godog, moq, Testcontainers-go, Gremlins, pact-go, Chaos Mesh, kind). Key result: Go's tooling measures statement blocks, not branches.
 - 2026-11-25 — **Wave 3 research: official documentation for shared test tools (#1459, PR #1465).** `research/testing/` notes for k6, Toxiproxy, GitHub Actions trigger and required-check behaviour, and the Gherkin reference.
 - 2026-11-25 — **Fresh-Eyes Refactor, Wave 3 discovery: 24 testing skills audited (#1450, #1451, PR #1452).** Four audit batches and a verified synthesis in `discovery/fresh-eyes/wave-3-findings.md`: decisions for the product owner, live defects in plugin mechanics, documentation research needed, sizes and cost. No skill changed.
