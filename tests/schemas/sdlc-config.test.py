@@ -66,6 +66,9 @@ check("e2e_test_cadence not a string", {**base, "methodology_parameters": {"e2e_
 check("e2e_test_cadence empty", {**base, "methodology_parameters": {"e2e_test_cadence": ""}}, False)
 check("perf threshold not a number", {**base, "methodology_parameters": {"perf_regression_threshold_pct": "8"}}, False)
 check("perf threshold not above zero", {**base, "methodology_parameters": {"perf_regression_threshold_pct": 0}}, False)
+check("coverage minimum of 100", {**base, "methodology_parameters": {"unit_test_coverage_minimum": 100}}, True)
+check("coverage minimum lowered", {**base, "methodology_parameters": {"unit_test_coverage_minimum": 85}}, False)
+check("coverage minimum not a number", {**base, "methodology_parameters": {"unit_test_coverage_minimum": "100"}}, False)
 check("wrong parent key methodology_overrides", {**base, "methodology_overrides": {"e2e_test_cadence": "twice-daily"}}, False)
 for key in ("e2e_test_cadence", "perf_regression_threshold_pct"):
     reference = (REPO_ROOT / "skills/sdlc-config-management/references/config-field-reference.md").read_text()

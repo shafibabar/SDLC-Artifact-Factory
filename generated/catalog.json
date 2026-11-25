@@ -2510,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "1.7.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-06-25",
@@ -9838,7 +9838,8 @@
         "related": [
           "artifact-manifest",
           "methodology-review",
-          "skill-authoring-standards"
+          "skill-authoring-standards",
+          "test-pyramid"
         ],
         "sources": [],
         "status": "stable",
@@ -9850,7 +9851,7 @@
           "sdlc-config",
           "tech-stack"
         ],
-        "version": "3.3.0"
+        "version": "4.0.0"
       },
       {
         "created": "2026-06-25",
@@ -10386,12 +10387,12 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "test-pyramid",
         "owner": "test-strategist",
         "phase": "implement",
@@ -10399,7 +10400,9 @@
           "test-strategy"
         ],
         "related": [
+          "acceptance-criteria",
           "bdd-feature-file",
+          "ci-pipeline",
           "compliance-verification",
           "go-chaos-test",
           "go-contract-test",
@@ -10409,16 +10412,48 @@
           "go-mutation-test",
           "go-performance-test",
           "go-unit-test",
+          "health-check-design",
           "mock-generation",
+          "nfr-specification",
+          "python-chaos-test",
+          "python-contract-test",
+          "python-e2e-test",
+          "python-integration-test",
+          "python-load-test",
+          "python-mutation-test",
+          "python-performance-test",
+          "python-unit-test",
+          "react-component-testing",
+          "react-e2e-testing",
           "security-implementation",
+          "slo-definition",
           "test-fixture-design",
           "uat-plan"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/building-microservices-newman.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/contract-testing-in-action-cruz-prescott.md",
+          "research/testing/coverage-official-docs.md",
+          "research/testing/explore-it-hendrickson.md",
+          "research/testing/go-coverage-official-docs.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/gremlins-official-docs.md",
+          "research/testing/mutmut-official-docs.md",
+          "research/testing/playwright-official-docs.md",
+          "research/testing/software-testing-craftsman-jorgensen.md",
+          "research/testing/stryker-js-official-docs.md",
+          "research/testing/testing-vv-dictionary-quigley.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/unit-testing-khorikov.md",
+          "research/testing/vitest-official-docs.md"
+        ],
         "status": "stable",
         "tags": [
           "coverage",
+          "flaky",
           "implement",
+          "mutation",
           "quality",
           "shift-left",
           "shift-right",
@@ -10426,7 +10461,7 @@
           "test-pyramid",
           "testing"
         ],
-        "version": "2.2.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -11075,8 +11110,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1164,
-    "edges_skill_sources": 271,
+    "edges_skill_related": 1180,
+    "edges_skill_sources": 287,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11088,20 +11123,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 72,
+    "research_files_cited": 83,
     "skills_with_assets": 8,
     "skills_with_contract_test": 137,
     "skills_with_domain": 190,
     "skills_with_evals": 52,
-    "skills_with_examples": 52,
+    "skills_with_examples": 53,
     "skills_with_produces": 190,
     "skills_with_references": 185,
-    "skills_with_resources": 51,
-    "skills_with_scripts": 47,
-    "skills_with_sources": 53,
+    "skills_with_resources": 52,
+    "skills_with_scripts": 48,
+    "skills_with_sources": 54,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 50
+    "skills_with_templates": 51
   },
   "edges": {
     "agent_produces": [
@@ -16796,6 +16831,10 @@
         "skill": "sdlc-config-management"
       },
       {
+        "related": "test-pyramid",
+        "skill": "sdlc-config-management"
+      },
+      {
         "related": "cd-pipeline",
         "skill": "secrets-management"
       },
@@ -17100,7 +17139,15 @@
         "skill": "test-fixture-design"
       },
       {
+        "related": "acceptance-criteria",
+        "skill": "test-pyramid"
+      },
+      {
         "related": "bdd-feature-file",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "ci-pipeline",
         "skill": "test-pyramid"
       },
       {
@@ -17140,11 +17187,63 @@
         "skill": "test-pyramid"
       },
       {
+        "related": "health-check-design",
+        "skill": "test-pyramid"
+      },
+      {
         "related": "mock-generation",
         "skill": "test-pyramid"
       },
       {
+        "related": "nfr-specification",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-chaos-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-contract-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-e2e-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-integration-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-load-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-mutation-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-performance-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "python-unit-test",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "react-component-testing",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "react-e2e-testing",
+        "skill": "test-pyramid"
+      },
+      {
         "related": "security-implementation",
+        "skill": "test-pyramid"
+      },
+      {
+        "related": "slo-definition",
         "skill": "test-pyramid"
       },
       {
@@ -18528,6 +18627,70 @@
       {
         "skill": "system-context-diagram",
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/coverage-official-docs.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/explore-it-hendrickson.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/go-coverage-official-docs.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/gremlins-official-docs.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/mutmut-official-docs.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/playwright-official-docs.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/software-testing-craftsman-jorgensen.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/stryker-js-official-docs.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/testing-vv-dictionary-quigley.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/unit-testing-khorikov.md"
+      },
+      {
+        "skill": "test-pyramid",
+        "source": "research/testing/vitest-official-docs.md"
       },
       {
         "skill": "uat-plan",
