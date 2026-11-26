@@ -929,7 +929,7 @@
           "standard": "required",
           "enterprise": "required"
         },
-        "note": "Gherkin from the acceptance criteria (bdd-feature-file); at least one required."
+        "note": "Gherkin from the acceptance criteria (bdd-feature-file): one US-n.feature per story, covering every criterion of every Must Have story. The phase check needs at least one file; coverage is checked by the skill's validator."
       }
     ],
     "data": [],

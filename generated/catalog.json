@@ -2510,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.0.0"
+        "version": "2.1.0"
       },
       {
         "created": "2026-06-25",
@@ -3309,23 +3309,43 @@
         "created": "2026-06-25",
         "dir": "skills/bdd-feature-file",
         "domain": "testing",
-        "has_assets": true,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_assets": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
+        "has_resources": true,
         "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "bdd-feature-file",
         "owner": "test-strategist",
         "phase": "implement",
         "produces": [
           "gherkin-feature-file"
         ],
-        "related": [],
-        "sources": [],
+        "related": [
+          "acceptance-criteria",
+          "example-mapping",
+          "glossary-management",
+          "go-e2e-test",
+          "methodology-review",
+          "nfr-specification",
+          "python-e2e-test",
+          "react-e2e-testing",
+          "test-pyramid",
+          "uat-scenario"
+        ],
+        "sources": [
+          "research/requirements-and-user-stories/lean-agile-atdd-pugh.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/gherkin-official-reference.md",
+          "research/testing/godog-official-docs.md",
+          "research/testing/playwright-official-docs.md",
+          "research/testing/pytest-official-docs.md",
+          "research/testing/software-testing-craftsman-jorgensen.md",
+          "research/testing/specification-by-example-adzic.md"
+        ],
         "status": "stable",
         "tags": [
           "bdd",
@@ -3337,7 +3357,7 @@
           "implement",
           "quality"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-07-20",
@@ -7184,7 +7204,7 @@
           "solid",
           "tdd"
         ],
-        "version": "1.2.1"
+        "version": "1.2.2"
       },
       {
         "created": "2026-07-20",
@@ -11143,8 +11163,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1197,
-    "edges_skill_sources": 298,
+    "edges_skill_related": 1207,
+    "edges_skill_sources": 306,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11156,20 +11176,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 84,
-    "skills_with_assets": 7,
-    "skills_with_contract_test": 134,
+    "research_files_cited": 86,
+    "skills_with_assets": 6,
+    "skills_with_contract_test": 133,
     "skills_with_domain": 190,
-    "skills_with_evals": 55,
-    "skills_with_examples": 55,
+    "skills_with_evals": 56,
+    "skills_with_examples": 56,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 54,
+    "skills_with_resources": 55,
     "skills_with_scripts": 49,
-    "skills_with_sources": 56,
+    "skills_with_sources": 57,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 53
+    "skills_with_templates": 54
   },
   "edges": {
     "agent_produces": [
@@ -13302,6 +13322,46 @@
       {
         "related": "nfr-specification",
         "skill": "architecture-evaluation"
+      },
+      {
+        "related": "acceptance-criteria",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "example-mapping",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "go-e2e-test",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "methodology-review",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "nfr-specification",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "python-e2e-test",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "react-e2e-testing",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "test-pyramid",
+        "skill": "bdd-feature-file"
+      },
+      {
+        "related": "uat-scenario",
+        "skill": "bdd-feature-file"
       },
       {
         "related": "acceptance-sign-off",
@@ -17916,6 +17976,38 @@
       {
         "skill": "architecture-evaluation",
         "source": "research/software-architecture/software-architecture-in-practice-bass.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/requirements-and-user-stories/lean-agile-atdd-pugh.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/testing/gherkin-official-reference.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/testing/godog-official-docs.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/testing/playwright-official-docs.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/testing/pytest-official-docs.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/testing/software-testing-craftsman-jorgensen.md"
+      },
+      {
+        "skill": "bdd-feature-file",
+        "source": "research/testing/specification-by-example-adzic.md"
       },
       {
         "skill": "beta-program-design",

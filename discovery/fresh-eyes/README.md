@@ -54,7 +54,7 @@ Plan: `~/.claude/plans/now-that-opus-5-5-transient-blossom.md`. Phases A and B a
 | C — domain waves (per-skill issues) | — | **started 2026-10-19** (Shafi's go; depth/eval budget/Go compile check decided 2026-10-12) |
 | C / Wave 1 — strategy + discovery + validation (21 skills + 2 new) | #1292 | **done** — merged to main via #1375 (53af4ce). Findings: [wave-1-findings.md](wave-1-findings.md) (50); 15 research files; decisions D045, D046; 23 skills rebuilt (PRs #1351–#1374), all clean on structure, layout and evals |
 | C / Wave 2 — domain-modeling + architecture (24 skills + 1 new) | #1376 | **done** — merged to main via #1448 (d845109); 25 skills rebuilt (#1387–#1411, #1423), 7 research files, pipeline D047. Findings: [wave-2-findings.md](wave-2-findings.md). Follow-up #1438 merged via #1449 (918b31f) |
-| C / Wave 3 — testing (24 skills) | #1450 | **discovery done 2026-11-25** (#1451) — [wave-3-findings.md](wave-3-findings.md), batch reports in [wave-3/](wave-3/). Awaiting the product owner's decisions (W3-D1 to D9) and a go for the rebuild round. Branch `fresh-eyes/wave-3-testing` |
+| C / Wave 3 — testing (24 skills) | #1450 | **discovery done 2026-11-25** (#1451) — [wave-3-findings.md](wave-3-findings.md), batch reports in [wave-3/](wave-3/). Decisions D048; setup, 4 research tasks and the 4-skill pilot done (#1453, #1455–#1463). 20 skills remain, awaiting the product owner's go. Branch `fresh-eyes/wave-3-testing` |
 
 Phase A facts a resuming session needs:
 - Evals live at ROOT `evals/<skill>/<case>/` — `claude plugin eval` refuses dirs inside `skills/`.

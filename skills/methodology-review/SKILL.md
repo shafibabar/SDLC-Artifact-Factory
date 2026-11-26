@@ -6,7 +6,7 @@ description: >
   methodology-compliance-check hook and by any agent performing a self-review
   before submitting an artifact for phase gate validation. Defines what constitutes
   a pass, a warning, and a defect for each methodology in each phase.
-version: 1.2.1
+version: 1.2.2
 phase: cross-cutting
 owner: factory-governance
 created: 2026-06-24
@@ -133,7 +133,7 @@ All features with defined acceptance criteria (Ideate and Implement phases). All
 1. For every user story, locate its `.feature` file.
 2. Read each scenario — confirm it reads as a plain English description of behaviour.
 3. Confirm step definitions exist for all steps.
-4. Run `go test -v ./features/...` (godog) — all scenarios must pass.
+4. Run the scenario runner the test strategy names against `artifacts/<product>/implement/features/` (Go with godog: `go test -v ./internal/test/bdd/...`, strict mode) — all scenarios must run and pass.
 
 ---
 
