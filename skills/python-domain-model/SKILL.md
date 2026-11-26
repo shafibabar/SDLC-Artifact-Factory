@@ -7,7 +7,7 @@ description: >
   equality), invariant-guarding methods, and the honest encapsulation gap
   (Python _underscore/__mangled fall short of Go compiler-private fields). The
   Python analog of go-domain-model.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
@@ -31,7 +31,7 @@ The domain layer is where business rules live, expressed in the Ubiquitous Langu
 **A fallible constructor validates before it builds — raise a `DomainError` subclass so no half-built Aggregate escapes.** Python has no `(*T, error)` return pair; the idiom is a classmethod factory (`DataAsset.register(...)`) that raises on a violated invariant instead of returning a broken instance. State is private *by convention* (`_leading_underscore`), and the only way to change it is a method that validates first, mutates second, and records a Domain Event third — in that order, within one method call.
 
 ```python
-# app/domain/data_asset.py
+# src/classification/domain/dataasset.py  (excerpt)
 class DataAsset:
     def __init__(self, id: UUID, tenant_id: UUID, source_id: UUID, version_number: int):
         self._id = id
@@ -39,17 +39,21 @@ class DataAsset:
         self._source_id = source_id
         self._sensitivity = SensitivityLevel.UNCLASSIFIED  # a Value Object
         self._version_number = version_number              # optimistic concurrency
+        self._persisted_version = 0                        # version in the store; 0 == never saved
         self._events: list[DomainEvent] = []
 
     @classmethod
     def register(cls, id: UUID, tenant_id: UUID, source_id: UUID, now: datetime) -> "DataAsset":
-        if id is None or tenant_id is None:
-            raise MissingIdentityError(id=id, tenant_id=tenant_id)  # nothing half-built escapes
+        if id is None or tenant_id is None or source_id is None:
+            raise MissingIdentityError(id, tenant_id, source_id)  # nothing half-built escapes
         asset = cls(id, tenant_id, source_id, version_number=1)
-        asset._record(DataAssetRegistered(aggregate_id=id, tenant_id=tenant_id, occurred_at=now))
+        asset._record(DataAssetRegistered(aggregate_id=id, tenant_id=tenant_id,
+                                          occurred_at=now, source_id=source_id))
         return asset
 
     def classify(self, level: "SensitivityLevel", by: UUID, now: datetime) -> None:
+        if not level.is_valid_classification():
+            raise InvalidSensitivityError(level.name)
         if self._sensitivity.is_higher_than(level):     # True Invariant: no silent downgrade
             raise SensitivityDowngradeError(asset_id=self._id, from_=self._sensitivity, to=level)
         self._sensitivity = level
@@ -58,7 +62,7 @@ class DataAsset:
                                          sensitivity=level, classified_by=by, occurred_at=now))
 ```
 
-Because validation runs *before* any field is written, a rejected `classify` call leaves `self` unchanged — there is no partial-mutation state to roll back. `reconstitute` (rebuilding from a stored row) is a *separate* classmethod from `register` — it does not re-validate and does not record events, because the data was already valid when stored and it already exists. The `version_number` is the CAS token `python-repository-pattern` reads on save; bumping it inside every mutating method is what lets two concurrent transactions collide instead of silently interleaving. Full worked Aggregate (including `reconstitute`, the anti-pattern this replaces, and a `pytest` table proving the invariant): `references/aggregate-and-value-objects.md`.
+Because validation runs *before* any field is written, a rejected `classify` call leaves `self` unchanged — there is no partial-mutation state to roll back. `reconstitute` (rebuilding from a stored row) is a *separate* classmethod from `register` — it does not re-validate and does not record events, because the data was already valid when stored and it already exists. `version_number` and `persisted_version` are the CAS pair `python-repository-pattern` uses on save: the repository writes the new `version_number` only where the stored version still equals `persisted_version`, then calls `mark_persisted()`. Bumping `version_number` inside every mutating method is what lets two concurrent transactions collide instead of silently interleaving. Full worked Aggregate (including `reconstitute`, the anti-pattern this replaces, and a `pytest` table proving the invariant): `references/aggregate-and-value-objects.md`.
 
 ---
 
@@ -75,15 +79,20 @@ A frozen dataclass validates its own invariant in `__post_init__`; because norma
 
 ## Invariant-Guarding Methods and Domain Errors
 
-Every mutating method guards its invariant first and raises on violation. Errors are a `DomainError` hierarchy carrying the violating values as typed attributes — never a bare `raise Exception("...")` or a single stringly-typed bucket. `python-error-handling` owns the general hierarchy and the single FastAPI `@app.exception_handler(DomainError)` that maps the family to HTTP status at the transport edge; this skill owns the rule that the *domain* raises deep and never builds an HTTP response itself.
+Every mutating method guards its invariant first and raises on violation. Errors are a `DomainError` hierarchy (the taxonomy `python-error-handling` names) carrying the violating values as typed attributes — never a bare `raise Exception("...")` or a single stringly-typed bucket. `python-error-handling` owns the general hierarchy and the single FastAPI `@app.exception_handler(DomainError)` that maps the family to HTTP status at the transport edge; this skill owns the rule that the *domain* raises deep and never builds an HTTP response itself.
 
 ```python
 class DomainError(Exception): ...
 
-class SensitivityDowngradeError(DomainError):
+class ConflictError(DomainError):                 # 409 at the edge
+    def __init__(self, asset_id: UUID, reason: str):
+        self.asset_id, self.reason = asset_id, reason
+        super().__init__(f"conflict on data asset {asset_id}: {reason}")
+
+class SensitivityDowngradeError(ConflictError):
     def __init__(self, asset_id: UUID, from_: "SensitivityLevel", to: "SensitivityLevel"):
-        self.asset_id, self.from_, self.to = asset_id, from_, to
-        super().__init__(f"data asset {asset_id}: cannot downgrade sensitivity {from_} -> {to}")
+        super().__init__(asset_id, f"cannot downgrade sensitivity {from_.name} -> {to.name}")
+        self.from_, self.to = from_, to
 ```
 
 A caller catches `SensitivityDowngradeError` and reads `err.from_`/`err.to` as typed attributes for a 409 body or audit log — a `raise Exception("cannot downgrade")` throws that data away the instant the string is built. Full contrast, the `raise ... from cause` chaining rule, and every `DataAsset` invariant classified: `references/invariants-and-events.md`.
@@ -103,7 +112,7 @@ So a determined or careless caller can always reach around a Python Aggregate's 
 
 ## Purity Rule
 
-The domain package imports **only** the stdlib (`uuid`, `datetime`, `dataclasses`, `enum`) and nothing else — no `asyncpg`, no `fastapi`, no `pydantic`, no OTel. A domain method never calls `datetime.now(...)` or `uuid.uuid4()` itself — both are **passed in** — so invariant tests are deterministic. (Pydantic models belong at the FastAPI boundary, not in the domain — keeping the domain plain-object keeps it framework-free and fast to unit-test.)
+The domain package imports **only** the stdlib (`uuid`, `datetime`, `dataclasses`, `enum`, `typing`, and `contextvars` for the request context in `domain/context.py`) and its own modules — no `asyncpg`, no `fastapi`, no `pydantic`, no OTel. A domain method never calls `datetime.now(...)` or `uuid.uuid4()` itself — both are **passed in** — so invariant tests are deterministic. (Pydantic models belong at the FastAPI boundary, not in the domain — keeping the domain plain-object keeps it framework-free and fast to unit-test.)
 
 ---
 
@@ -122,14 +131,14 @@ The domain package imports **only** the stdlib (`uuid`, `datetime`, `dataclasses
 | Criterion | Pass | Fail | How to verify |
 |---|---|---|---|
 | Fallible constructor raises | Every invariant-checked factory raises a `DomainError` subclass before building | A factory returning a half-built instance with no raise path | Read every `@classmethod` factory and mutating method |
-| Encapsulation by convention | Aggregate state is `_underscore`; mutation only via methods; caveat stated | Public mutable attributes, or implied parity with Go's enforced privacy | `grep -n "self\.[a-z]" domain/*.py` — leading-underscore state only |
+| Encapsulation by convention | Aggregate state is `_underscore`; mutation only via methods; caveat stated | Public mutable attributes, or implied parity with Go's enforced privacy | `grep -n "self\.[a-z][a-z_]* =" src/<pkg>/domain/dataasset.py` — no hits; state is assigned only to `self._…` |
 | Validate-then-mutate order | Every mutating method's guards precede its first field write | A field written before its guarding check | Read method body top to bottom |
 | Value Objects immutable | `@dataclass(frozen=True)` or `Enum`; value equality; validated in `__post_init__` | A mutable class used as a Value Object, or `frozen=True` omitted | Read the VO decorator; `frozen=True` present |
 | Entity vs VO equality correct | Entities equal by identity; VOs equal by value | An entity with value equality, or a VO compared by identity | Read `__eq__`/decorator on each domain type |
 | Errors carry typed data | Named `DomainError` subclass per data-carrying invariant | A bare `raise Exception("...")` or a shared string-keyed bucket | Read the error module |
 | Events recorded in-method | State-changing methods record their event before returning | Events built in a service/handler layer | Grep `_record(` call sites — all inside `domain/` |
 | Construct != reconstitute | Separate `register`/`reconstitute`; only `register` validates and records | Loading from DB re-runs validation or re-fires creation events | Read `reconstitute`'s body |
-| Purity | Domain imports only stdlib; time/IDs injected | Framework import, or `datetime.now()`/`uuid.uuid4()` inside domain | `grep -rn "import" domain/` |
+| Purity | Domain imports only stdlib; time/IDs injected | Framework import, or `datetime.now()`/`uuid.uuid4()` inside domain | `grep -rn "import" src/<pkg>/domain/` |
 | Test asserts all three axes | Every method's table covers invariant-raise, immutability-on-reject, event-count-both-ways | A test asserting only `pytest.raises` or only the success path | Read the test against the three-item standard |
 
 ---
@@ -148,15 +157,14 @@ The domain package imports **only** the stdlib (`uuid`, `datetime`, `dataclasses
 
 ## Output Format
 
-Plain-object Python built exactly to the standards above, plus test-first `pytest` tests (TDD) covering all three axes for every mutating method:
+The layout is `python-project-structure`'s (`<pkg>` is `classification` in the examples). Plain-object Python built exactly to the standards above, plus test-first `pytest` tests (TDD) covering all three axes for every mutating method:
 
 ```
-app/domain/data_asset.py     (Aggregate Root: register, reconstitute, mutating methods, _record/pull_events)
-app/domain/sensitivity.py    (Value Object: Enum or frozen dataclass, is_valid/is_higher_than)
-app/domain/events.py         (Domain Events: past-tense frozen dataclasses)
-app/domain/errors.py         (DomainError hierarchy; typed subclass per data-carrying invariant)
-tests/domain/test_data_asset.py (parametrized: invariant-raise + immutability-on-reject + event count, per method)
+src/<pkg>/domain/dataasset.py    (Aggregate Root: register, reconstitute, mutating methods, pull_events, mark_persisted)
+src/<pkg>/domain/sensitivity.py  (Value Object: Enum or frozen dataclass, parse/is_valid_classification/is_higher_than)
+src/<pkg>/domain/events.py       (Domain Events: past-tense frozen dataclasses)
+src/<pkg>/domain/errors.py       (DomainError hierarchy; typed subclass per data-carrying invariant)
+tests/unit/domain/test_dataasset.py  (parametrized: invariant-raise + immutability-on-reject + event count, per method)
 ```
 
 Full worked examples: `references/aggregate-and-value-objects.md` (Aggregate, Value Objects, identity-vs-value equality) and `references/invariants-and-events.md` (invariant enforcement, domain events, the encapsulation-discipline conventions Python needs to compensate for weak privacy).
-</content>

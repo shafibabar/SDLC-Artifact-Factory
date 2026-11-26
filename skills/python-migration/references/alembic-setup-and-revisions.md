@@ -13,7 +13,7 @@ async `env.py` drives it through SQLAlchemy's async *engine* wrapper only (the e
 not the ORM — no declarative models are ever imported).
 
 ```bash
-uv add alembic sqlalchemy asyncpg     # sqlalchemy supplies the async engine wrapper only
+uv add alembic "sqlalchemy[asyncio]" asyncpg   # the asyncio extra installs greenlet; engine wrapper only
 alembic init -t async migrations      # the built-in async template scaffolds an asyncio env.py
 ```
 
@@ -42,14 +42,46 @@ inject it from the environment inside `env.py`, so the same image migrates any t
 database by swapping one env var.
 
 ```ini
-# alembic.ini (trimmed)
+# alembic.ini
 [alembic]
-script_location = migrations
-# sqlalchemy.url is intentionally blank — env.py reads DATABASE_URL at runtime.
+script_location = %(here)s/migrations
+# sqlalchemy.url is intentionally absent — env.py reads DATABASE_URL at runtime.
 prepend_sys_path = .
+path_separator = os
 
+# fileConfig() in env.py needs every section these keys name.
 [loggers]
 keys = root,sqlalchemy,alembic
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = WARNING
+handlers = console
+qualname =
+
+[logger_sqlalchemy]
+level = WARNING
+handlers =
+qualname = sqlalchemy.engine
+
+[logger_alembic]
+level = INFO
+handlers =
+qualname = alembic
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(levelname)-5.5s [%(name)s] %(message)s
 ```
 
 The DSN uses the async dialect prefix so SQLAlchemy selects the asyncpg driver:
@@ -83,11 +115,14 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 config = context.config
 
-# Inject the DSN from the environment (never committed to alembic.ini).
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+# A URL set by the caller (a test pointing at its throwaway database) wins.
+# Otherwise take it from the environment; it is never committed to alembic.ini.
+if not config.get_main_option("sqlalchemy.url"):
+    # "%" is configparser's interpolation character; a URL-encoded password has it.
+    config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"].replace("%", "%%"))
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # No target_metadata: we do NOT autogenerate. Hand-written SQL revisions only.
 target_metadata = None
@@ -139,10 +174,19 @@ Key points a reviewer checks:
   naive `context.run_migrations()` called directly on the async connection) is the
   classic "coroutine was never awaited" / "connection is not bound" failure.
 - `NullPool` — a one-shot migration Job should not hold a connection pool open.
+- URL precedence: `config.set_main_option("sqlalchemy.url", ...)` before the call, else
+  `DATABASE_URL`. A test sets the option, so a developer's `DATABASE_URL` is never used.
+- `env.py` calls `asyncio.run`, so `alembic.command.upgrade` cannot be called from inside
+  a running event loop. Call it from synchronous code (a sync fixture), or
+  `await asyncio.to_thread(command.upgrade, cfg, "head")`.
 
 ---
 
 ## 4. A worked hand-written revision (create + a second additive change)
+
+The columns are the ones `python-repository-pattern`'s adapter reads and writes (`tenant_id`
+only in a multi-tenant product); the `outbox`, `command_log` and consumer tables get
+revisions of their own, from the DDL in the skills that own them.
 
 `script.py.mako` generates a stub with `upgrade()`/`downgrade()`. Fill them with
 `op.execute()` raw SQL. No `sa.Column`, no `op.create_table` DSL — the SQL is the
@@ -174,13 +218,13 @@ def upgrade() -> None:
     op.execute(
         """
         CREATE TABLE data_assets (
-            id           UUID PRIMARY KEY,
-            tenant_id    UUID NOT NULL,
-            source       TEXT NOT NULL,
-            display_name TEXT NOT NULL,
-            version      BIGINT NOT NULL DEFAULT 1,
-            created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
-            deleted_at   TIMESTAMPTZ
+            id                UUID PRIMARY KEY,
+            tenant_id         UUID NOT NULL,
+            source_id         UUID NOT NULL,
+            sensitivity_level SMALLINT NOT NULL DEFAULT 0,
+            version           BIGINT NOT NULL DEFAULT 1,
+            created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+            deleted_at        TIMESTAMPTZ
         )
         """
     )
@@ -234,6 +278,8 @@ from alembic import op
 
 revision = "0003"
 down_revision = "0002"
+branch_labels = None
+depends_on = None
 
 
 def upgrade() -> None:
@@ -241,7 +287,7 @@ def upgrade() -> None:
         op.execute(
             "CREATE INDEX CONCURRENTLY IF NOT EXISTS "
             "idx_data_assets_tenant_sensitivity "
-            "ON data_assets (tenant_id, classification_status) "
+            "ON data_assets (tenant_id, sensitivity_level) "
             "WHERE deleted_at IS NULL"
         )
 
@@ -312,7 +358,8 @@ fails, and the release is aborted before any new pod serves traffic.
 - [ ] `alembic init -t async` (not the sync default) — asyncpg cannot use a sync `env.py`.
 - [ ] `target_metadata = None` — no ORM, autogenerate inert.
 - [ ] `connection.run_sync(do_run_migrations)` present — the async→sync bridge.
-- [ ] DSN injected from `DATABASE_URL`; `alembic.ini` holds no secret.
+- [ ] DSN from the caller or `DATABASE_URL`; `alembic.ini` holds no secret.
+- [ ] `sqlalchemy[asyncio]` installed (greenlet).
 - [ ] Every revision uses `op.execute("...SQL...")`, `--rev-id` pins a sortable id.
 - [ ] `alembic heads` prints exactly one head before merge.
 - [ ] CI runs `upgrade → downgrade -1 → upgrade`.

@@ -1,6 +1,6 @@
 # Aggregate and Value Objects — Worked Examples
 
-Full worked material referenced from `SKILL.md`'s "Aggregate Root: The Invariant-Enforcement Standard" and "Entity vs Value Object" sections. Self-contained — reads without the parent body already in context. All code targets Python 3.11+, the FastAPI + `asyncpg` stack, and the `DataAsset` domain with per-tenant physical isolation.
+Full worked material referenced from `SKILL.md`'s "Aggregate Root: The Invariant-Enforcement Standard" and "Entity vs Value Object" sections. Self-contained — reads without the parent body already in context. All code targets Python 3.11+, the FastAPI + `asyncpg` stack, and the `DataAsset` domain in the `classification` package. The example product is multi-tenant, so the Aggregate carries `tenant_id`; the isolation model is the product's tenancy design's choice, and a single-tenant product drops the field.
 
 ---
 
@@ -25,13 +25,14 @@ Nothing stops `DataAsset(None, None, None)` from constructing. The identity-less
 **Right** — a private `__init__` plus a validating `register` factory; state is private by convention:
 
 ```python
-# app/domain/data_asset.py
+# src/classification/domain/dataasset.py
 from datetime import datetime
 from uuid import UUID
 
-from app.domain.sensitivity import SensitivityLevel
-from app.domain.events import DomainEvent, DataAssetRegistered, DataAssetClassified
-from app.domain.errors import MissingIdentityError, SensitivityDowngradeError
+from classification.domain.errors import (
+    InvalidSensitivityError, MissingIdentityError, SensitivityDowngradeError)
+from classification.domain.events import DataAssetClassified, DataAssetRegistered, DomainEvent
+from classification.domain.sensitivity import SensitivityLevel
 
 
 class DataAsset:
@@ -45,16 +46,18 @@ class DataAsset:
         self._source_id = source_id
         self._sensitivity = SensitivityLevel.UNCLASSIFIED
         self._version_number = version_number
+        self._persisted_version = 0          # version held by the store; 0 == never saved
         self._events: list[DomainEvent] = []
 
     @classmethod
     def register(cls, id: UUID, tenant_id: UUID, source_id: UUID, now: datetime) -> "DataAsset":
         """Create a NEW asset. Validates the identity invariant, then records the
         creation event. Raises rather than returning a half-built instance."""
-        if id is None or tenant_id is None:
-            raise MissingIdentityError(id=id, tenant_id=tenant_id)
+        if id is None or tenant_id is None or source_id is None:
+            raise MissingIdentityError(id, tenant_id, source_id)
         asset = cls(id, tenant_id, source_id, version_number=1)
-        asset._record(DataAssetRegistered(aggregate_id=id, tenant_id=tenant_id, occurred_at=now))
+        asset._record(DataAssetRegistered(aggregate_id=id, tenant_id=tenant_id,
+                                          occurred_at=now, source_id=source_id))
         return asset
 
     @classmethod
@@ -65,12 +68,28 @@ class DataAsset:
         Called only by python-repository-pattern's row-to-Aggregate mapping."""
         asset = cls(id, tenant_id, source_id, version_number=version_number)
         asset._sensitivity = sensitivity
+        asset._persisted_version = version_number
         return asset
+
+    # --- identity equality: an Aggregate root is an entity ---
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, DataAsset) and self._id == other._id
+
+    def __hash__(self) -> int:
+        return hash(self._id)
 
     # --- read-only accessors (no setters) ---
     @property
     def id(self) -> UUID:
         return self._id
+
+    @property
+    def tenant_id(self) -> UUID:
+        return self._tenant_id
+
+    @property
+    def source_id(self) -> UUID:
+        return self._source_id
 
     @property
     def sensitivity(self) -> SensitivityLevel:
@@ -80,8 +99,19 @@ class DataAsset:
     def version_number(self) -> int:
         return self._version_number
 
+    @property
+    def persisted_version(self) -> int:
+        """The compare-and-swap token: the version the store held at load or last save."""
+        return self._persisted_version
+
+    def mark_persisted(self) -> None:
+        """Called by the repository, and only by it, after a successful write."""
+        self._persisted_version = self._version_number
+
     # --- the only mutation entry point for sensitivity ---
     def classify(self, level: SensitivityLevel, by: UUID, now: datetime) -> None:
+        if not level.is_valid_classification():
+            raise InvalidSensitivityError(level.name)
         if self._sensitivity.is_higher_than(level):   # True Invariant: no silent downgrade
             raise SensitivityDowngradeError(asset_id=self._id, from_=self._sensitivity, to=level)
         self._sensitivity = level
@@ -95,8 +125,9 @@ class DataAsset:
         self._events.append(event)
 
     def pull_events(self) -> list[DomainEvent]:
-        """Drain recorded events. The service layer calls this after commit and hands
-        them to the outbox (python-repository-pattern) / message bus (python-service-layer)."""
+        """Drain recorded events. The repository calls this inside save(), writes them to
+        the outbox in the same transaction (python-repository-pattern), and keeps them so
+        the Unit of Work can offer them to an in-process bus after commit."""
         drained, self._events = self._events, []
         return drained
 ```
@@ -114,8 +145,10 @@ A Value Object has no identity, is compared by value, and is immutable. Python g
 ### A closed set — `enum.Enum`
 
 ```python
-# app/domain/sensitivity.py
+# src/classification/domain/sensitivity.py
 from enum import Enum
+
+from classification.domain.errors import InvalidSensitivityError
 
 
 class SensitivityLevel(Enum):
@@ -124,6 +157,17 @@ class SensitivityLevel(Enum):
     INTERNAL = 2
     CONFIDENTIAL = 3
     RESTRICTED = 4
+
+    @classmethod
+    def parse(cls, raw: str) -> "SensitivityLevel":
+        """From a name arriving at an edge ("confidential") to an assignable member."""
+        try:
+            level = cls[raw.upper()]
+        except KeyError as cause:
+            raise InvalidSensitivityError(raw) from cause
+        if not level.is_valid_classification():
+            raise InvalidSensitivityError(raw)
+        return level
 
     def is_valid_classification(self) -> bool:
         # UNCLASSIFIED is the zero value / ordering floor, not a valid *assigned* class.
@@ -140,7 +184,7 @@ Enum members are singletons: `SensitivityLevel.PUBLIC is SensitivityLevel.PUBLIC
 When the Value Object holds several fields rather than a single closed choice, use a frozen dataclass. Because `frozen=True` blocks normal attribute assignment, invariant validation and any normalization in `__post_init__` must go through `object.__setattr__`:
 
 ```python
-# app/domain/retention.py
+# src/classification/domain/retention.py
 from dataclasses import dataclass
 
 
@@ -197,6 +241,7 @@ The tuple choice is the Python analog of `go-domain-model`'s "prefer a comparabl
 The distinction is entirely about equality, and Python expresses each half differently.
 
 ```python
+# Illustration (the full classes are above).
 # ENTITY — equal by identity. Two DataAssets are the same asset iff their ids match,
 # even if every other field differs (one may be a stale in-memory copy of the other).
 class DataAsset:
@@ -227,16 +272,16 @@ Two consequences worth stating explicitly, because getting them backwards is a d
 Per `SKILL.md`'s Domain-Model Unit-Test Standard, this parametrized test asserts all three axes — invariant raise, immutability-on-reject, event-count-both-ways — for `classify`:
 
 ```python
-# tests/domain/test_data_asset.py
+# tests/unit/domain/test_dataasset.py
 from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
 
-from app.domain.data_asset import DataAsset
-from app.domain.sensitivity import SensitivityLevel
-from app.domain.events import DataAssetClassified
-from app.domain.errors import SensitivityDowngradeError
+from classification.domain.dataasset import DataAsset
+from classification.domain.errors import SensitivityDowngradeError
+from classification.domain.events import DataAssetClassified
+from classification.domain.sensitivity import SensitivityLevel
 
 FIXED_NOW = datetime(2026, 7, 31, tzinfo=timezone.utc)
 
@@ -257,7 +302,8 @@ def _registered_asset(start: SensitivityLevel) -> DataAsset:
         (SensitivityLevel.CONFIDENTIAL, SensitivityLevel.INTERNAL, True), # invariant violation
     ],
 )
-def test_classify(start, target, expect_downgrade):
+def test_classify(start: SensitivityLevel, target: SensitivityLevel,
+                  expect_downgrade: bool) -> None:
     asset = _registered_asset(start)
 
     if expect_downgrade:
@@ -282,4 +328,3 @@ def test_classify(start, target, expect_downgrade):
 ```
 
 The rejected-call branch checks three things, not one: the exact typed error (with its carried `from_`/`to`), that `sensitivity` and `version_number` are unchanged, and that `pull_events()` drains zero events. A test that only asserted `pytest.raises(SensitivityDowngradeError)` would pass even if `classify` mutated state or bumped the version before raising — it is the immutability and event-count assertions that actually prove "validate before mutate" holds.
-</content>
