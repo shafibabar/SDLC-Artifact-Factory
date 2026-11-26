@@ -257,6 +257,9 @@ carries the substance — read that skill before acting on the directive.
   (tool failure or unmeasured file) blocks the build until the code is changed so it can be measured
   or the user approves a listed exception; never report unmeasured code as passing or statement
   coverage alone. These rules are not switched off on request. (`go-unit-test`)
+- Python stack: the same policy. 100% of lines and branches from the coverage gate script on the full
+  run, never `--cov-fail-under`; only generated code is excluded automatically; a "no result" blocks
+  the build until the code or tests change or the user approves a listed exception. (`python-unit-test`)
 - Repositories, the outbox relay, and consumers are verified with Testcontainers integration tests
   using transaction-rollback isolation and poll-not-sleep for async effects. (`go-integration-test`)
 - Performance-critical functions get a `BenchmarkXxx` with `b.ReportAllocs()` and setup outside the

@@ -1,16 +1,11 @@
 #!/bin/bash
 source "$(dirname "$0")/../lib/harness.sh"
 
-# Probes a references/-only fact: the complete worked parametrized domain test
-# (test_outranks) in references/fixtures-and-parametrize.md carries an explicit
-# pytest.param id for the guard case proving the lowest sensitivity level never
-# outranks the highest. That id string ("public-never-outranks-restricted")
-# lives only in references/fixtures-and-parametrize.md — the SKILL.md body
-# teaches parametrize + explicit id= but contains no worked case ids, so
-# answering requires the reference file, proving the progressive-disclosure
-# split is functional.
+# Probes a references/-only fact: the coverage gate's skippable suites are listed
+# in references/coverage-gate.md and the script, not in the SKILL.md body, so
+# answering requires the folder file. Retire when evals/python-unit-test passes.
 smoke_test_skill "python-unit-test" \
-  "In this skill's complete worked parametrized domain test for Sensitivity.outranks, what is the explicit pytest.param id of the case proving the lowest sensitivity level never outranks the highest?" \
-  "public-never-outranks-restricted"
+  "Which test suite folders may be passed to --skip-suite of check-python-coverage.sh?" \
+  "performance"
 
 smoke_test_summary

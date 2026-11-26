@@ -39,9 +39,11 @@ dependencies = [
 dev = [
     "ruff>=0.8",
     "mypy>=1.13",
-    "pytest>=8.3",
-    "pytest-asyncio>=0.24",
-    "pytest-cov>=6.0",
+    "pytest==9.2.0",          # test tools pinned (python-unit-test)
+    "pytest-asyncio==1.5.0",
+    "pytest-cov==7.1.0",
+    "coverage==7.17.5",
+    "hypothesis==6.170.17",
     "testcontainers>=4.8",
 ]
 
@@ -72,21 +74,31 @@ warn_redundant_casts = true
 module = ["aiokafka.*"]
 ignore_missing_imports = true
 
-# ---- pytest: coverage is a GATE, not a printed number -----------------------
+# ---- pytest: one table for every suite; no coverage flags here ---------------
 [tool.pytest.ini_options]
 asyncio_mode = "auto"         # pytest-asyncio drives async test functions
-addopts = "--cov=app --cov-report=term-missing --cov-fail-under=80 -q"
+asyncio_default_fixture_loop_scope = "function"
+asyncio_default_test_loop_scope = "function"
 testpaths = ["tests"]
-
-[tool.coverage.run]
-omit = ["app/codegen/*", "*/__main__.py"]  # generated + composition roots
+pythonpath = [".", "src"]     # "." for "from tests.fakes import ..."
+strict = true                 # unknown markers and keys, non-strict xfail, duplicate ids
+empty_parameter_set_mark = "fail_at_collect"
+filterwarnings = [
+    "error::RuntimeWarning",  # a coroutine never awaited
+    "error::pytest.PytestUnraisableExceptionWarning",
+    "error::pytest.PytestCollectionWarning",
+    "error::pytest.PytestAssertRewriteWarning",
+]
+markers = ["integration: needs a real database or broker; not a unit test"]
 ```
 
-The coverage threshold (`--cov-fail-under=80`) lives here, read identically by `make test` locally
-and by `make ci` in the pipeline — there is no second copy in a CI YAML to drift out of sync. `app/codegen/*`
-(the generated OpenAPI client) is omitted from coverage the same way `go-makefile` filters
-`_gen.go`/`.pb.go`: generated code compiles into tested packages and would otherwise inflate or
-deflate the number on churn nobody wrote.
+The coverage gate is not configured here. `make test` runs `scripts/check-python-coverage.sh` (copied
+from `python-unit-test`), which requires 100% of lines and 100% of branches over the full run, writes
+its own coverage configuration and reads the JSON report. There is no `--cov` flag, `fail_under` or
+`omit` in `pyproject.toml`: a coverage flag in shared settings fails every subset run, and a single
+percentage passes with code hidden. Only generated code (marked in the file's leading comments) is
+excluded automatically; every other exclusion goes in `coverage-exceptions.txt` once the product owner
+approves it. `make ci` and the pipeline run the same target, so there is no second copy to drift.
 
 ---
 
@@ -144,7 +156,7 @@ jobs:
         run: uv python install 3.12
 
       # The entire quality gate is one line. Every check — ruff, mypy, pytest,
-      # coverage, freshness — runs through the SAME Makefile targets a developer
+      # coverage gate, freshness — runs through the SAME Makefile targets a developer
       # runs locally. There is no CI-only command here to drift from the Makefile.
       - name: Run the full CI gate
         run: make ci
