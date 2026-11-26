@@ -1,21 +1,17 @@
 ---
 name: bdd-feature-file
 description: >
-  Teaches how to write Gherkin feature files as executable specifications — the
-  Given/When/Then structure, mapping acceptance criteria to scenarios, scenario
-  outlines for data variation, the ubiquitous-language rule for step wording,
-  binding steps to Go step definitions (godog) and to frontend e2e, and keeping
-  feature files as living documentation a PM can read. Covers the Specification
-  Workshop definition-of-ready (business-language-only, one-rule-per-example,
-  team-agreed — the Three Amigos collaborative-authorship expectation made
-  checkable), Living Documentation's full two-part definition, and the Key
-  Examples minimality principle, in
-  references/collaborative-specification-and-living-documentation.md. Includes
-  assets/bdd-feature-file-template.md and
-  scripts/scaffold-bdd-feature-file.sh / scripts/validate-bdd-feature-file.sh.
-  BDD is a mandatory methodology. Used by the test-strategist during Implement
-  and Quality.
-version: 2.1.0
+  Use when test-strategist (or anyone) writes, reviews, fixes or changes a
+  Gherkin .feature file or executable BDD scenarios in the Implement or Quality
+  phase (/sdlc-implement, /sdlc-quality): turning acceptance criteria
+  AC-US-n.m into scenarios; Given/When/Then, Rule, Background, Scenario
+  Outline, Examples tables, @ tags and criterion traceability; step definitions
+  (godog, Python), browser journeys from the same criteria, living
+  documentation; being asked to cover only the happy path, skip criteria or a
+  small (lean) product, script clicks or endpoints into steps, change a
+  scenario so it matches the code or passes, or report scenarios as passing
+  without a run. Produces artifacts/<product>/implement/features/US-n.feature.
+version: 3.0.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -23,179 +19,116 @@ tags: [implement, quality, bdd, gherkin, feature-file, godog, executable-spec, g
 produces: gherkin-feature-file
 domain: testing
 status: stable
+related: [acceptance-criteria, example-mapping, test-pyramid, go-e2e-test, python-e2e-test, react-e2e-testing, uat-scenario, nfr-specification, glossary-management, methodology-review]
+sources:
+  - research/testing/specification-by-example-adzic.md
+  - research/requirements-and-user-stories/lean-agile-atdd-pugh.md
+  - research/testing/agile-testing-crispin-gregory.md
+  - research/testing/software-testing-craftsman-jorgensen.md
+  - research/testing/gherkin-official-reference.md
+  - research/testing/godog-official-docs.md
+  - research/testing/playwright-official-docs.md
+  - research/testing/pytest-official-docs.md
 ---
 
 # BDD Feature File
 
 ## Purpose
 
-A feature file written in Gherkin is two things at once: a specification a Product Manager can read and approve, and an automated test that proves the system meets it. This is the heart of Behavior-Driven Development — Specification by Example — the acceptance criteria *are* the test, in the business's language. There is no translation gap between "what we agreed" and "what we verified" because they are the same artifact.
+A feature file turns a story's agreed acceptance criteria into scenarios the product owner can read and a test runner can execute: the example that was agreed is the test, with no paraphrase in between (Ken Pugh, *Lean-Agile Acceptance Test-Driven Development*; Gojko Adzic, *Specification by Example*). These are the business-facing tests that guide development (Crispin and Gregory, *Agile Testing*). BDD is mandatory in this plugin.
 
-BDD is a non-negotiable methodology in this plugin (CLAUDE.md). Every acceptance criterion from the Ideate phase becomes a scenario here; the absence of feature files for acceptance criteria is a defect.
+## Fixed rules: a request does not change them
 
----
+These hold at every size (lean, standard, enterprise), whoever asks, the product owner included.
 
-## Where Feature Files Come From
+1. **Every criterion of every Must Have story gets an executable scenario.** A small product gets fewer and shorter files, never none and never a subset. Any other story with agreed criteria gets the same when it is built.
+2. **Scenarios come only from approved criteria** (`ideate/acceptance-criteria/US-n.md`). Missing or unapproved: the file is not written; go to `acceptance-criteria` (and `example-mapping`).
+3. **Automate, never decide.** Step wording may be refined; no value, limit, actor or outcome changes, and no new behaviour is added. A case the criteria do not settle goes back to the example map as a question.
+4. **A mismatch is the product owner's decision.** When the code or the request differs from a criterion, report both values and ask: keep the criterion (the build is then a defect, and the scenario fails until fixed), or change it through the map. Do not pick, and never soften a scenario so it passes.
+5. **Traceable:** one file per story, `US-n.feature`; every scenario tagged `@AC-US-n.m` plus one of `@happy`, `@negative`, `@edge`. No trailing comments, no other ID scheme. All three angles, always; no "no meaningful edge" exemption.
+6. **Declarative:** the product's own terms (`glossary-management`), one `When`, an observable `Then`; clicks, requests and queries live in step definitions.
+7. **Executable, written before the code.** Step definitions follow and run in CI; undefined, pending or zero scenarios fail the run. Nothing is called passing without a run.
+8. **A skipped or quarantined scenario proves nothing** (`test-pyramid`).
+9. **Approval is the product owner's.** Editing an approved file returns it to draft until re-approved.
+10. **No false session.** An agent-run file says one agent wrote it and no workshop was held.
 
-Feature files are not invented by the test-strategist — they are the realisation of the `requirements-analyst`'s `acceptance-criteria` (the Gherkin scenarios drafted during Ideate) and the `example-mapping` examples. The test-strategist takes those, refines them into executable scenarios, and binds them to step definitions.
+When asked to break one: name the rule in a sentence or two, then do the useful work at once (write the scenarios the criteria support, rewrite the step declaratively, draft the question). Never offer to switch a fixed rule on request. What the product owner **can** do is answer a question or change a criterion through the example map.
 
-```
-acceptance-criteria (Ideate) ──► bdd-feature-file (Implement) ──► step definitions (Go/JS)
-   the agreement                    the executable spec              the automation
-```
+## What every answer states
 
-The examples a feature file's scenarios are built from should come from a **Three Amigos** session — business, development, and testing perspectives deriving concrete examples together before Gherkin is finalised (see the canonical glossary; played solo by a single agent when no live multi-role team exists). In this repo that expectation is realised as a joint sanity check between `requirements-analyst` and `test-strategist`, not a one-directional handoff refined solo. `references/collaborative-specification-and-living-documentation.md` gives this a concrete, checkable definition-of-ready.
+In a chat reply as much as with the file:
 
----
+- that scenarios are required for this product; at lean, say plainly that a small product still covers every Must Have criterion;
+- the criteria file used, by path, and whether it is approved;
+- the feature file path, and **each criterion ID** with its scenario and angle; any ID without one, with the reason;
+- everything of the user's that was replaced, removed or not written, **by name**, with the reason (for example, "your 'When she sends a DELETE request' became 'When she cancels the order': a step says what, not how");
+- any mismatch between the criteria and the code or the request, as a **decision addressed to the product owner** with both options (the scenarios meanwhile follow the agreed criterion);
+- the verdict: **Written, awaiting your approval**, or **Not written**, with what blocks it;
+- the run status: **not run**, or the runner's actual counts (passed, failed, undefined, skipped);
+- open items and questions for the product owner, or "none"; agent-run (or who took part);
+- the next step: answers or approval; then step definitions, seen failing, before the code.
 
-## Gherkin Structure
+## Procedure
+
+1. **Read** the criteria file, its example map, the glossary, the test strategy (layer and runner), any existing feature file and step definitions, and in the manifest whether the criteria are approved.
+2. **Check the gate** (rules 2 and 4). A blocked story is reported **Not written**; settled stories continue.
+3. **Create the file** from the product repository root: `./scripts/scaffold-bdd-feature-file.sh <product> <story-id> <story-title>` (path relative to this skill), or copy `./templates/feature-file.feature` with Write. Finish with Edit or Write.
+4. **Shape the scenarios.** One `Rule:` per map rule; at least one scenario per criterion; real names and values from the criteria. For criterion-to-scenario mapping, readiness, outlines, pruning, decision tables or a changed criterion, read `./references/deriving-scenarios.md`.
+5. **Write the Gherkin.** For tags, `Background`, `Rule`, comments, tables and syntax traps, read `./references/gherkin-syntax.md`.
+6. **Validate:** `./scripts/validate-bdd-feature-file.sh <US-n.feature>`; fix every FAIL, re-run until clean, answer each WARN. Never pass by deleting a criterion or changing one.
+7. **Check coverage across stories:** `./scripts/validate-bdd-feature-file.sh --product artifacts/<product> --must <Must Have IDs from ideate/moscow.md or the backlog>`.
+8. **Tick** `./resources/checklist.md`, run `methodology-review`, and present with the answer list above.
+9. **Bind and run:** step definitions before implementation, seen failing for the expected reason. Read `./references/binding-and-running.md` for godog, Python, browser journeys, the living-documentation report and suite upkeep.
+
+## Shape
 
 ```gherkin
-# artifacts/<product>/implement/features/classify_data_asset.feature
-Feature: Classify a data asset
-  As a Data Steward
-  I want to set a data asset's sensitivity level
-  So that downstream access control and retention apply correctly
+  Rule: An order can be cancelled until cooking starts
 
-  Background:
-    Given a tenant "acme" with a data steward "maya"
-    And a data asset "Q3 Report" exists with no classification
-
-  Scenario: Successfully classify an asset
-    Given Maya is authenticated with permission "data-assets:classify"
-    When she classifies "Q3 Report" as "Confidential"
-    Then the asset's sensitivity level is "Confidential"
-    And a "DataAssetClassified" event is published
-
-  Scenario: Reject classification without permission
-    Given Maya is authenticated without permission "data-assets:classify"
-    When she attempts to classify "Q3 Report" as "Confidential"
-    Then the request is forbidden
-    And the asset remains unclassified
+    @AC-US-4.2 @negative
+    Scenario: Cancelling is refused once cooking has started
+      Given Priya's order 17 is being cooked
+      When she cancels order 17
+      Then she is told "Already cooking"
+      But order 17 stays on the cooking list
 ```
 
-| Keyword | Role |
+Not `When she sends a DELETE request`, not `Then the row is removed`, not a `# negative` after the title.
+
+## Boundary with neighbouring skills
+
+| Skill | Owns |
 |---|---|
-| `Feature` | The capability, with the user-story framing (As/I want/So that) |
-| `Background` | Shared `Given` steps run before each scenario |
-| `Scenario` | One concrete example of behaviour |
-| `Given` | Precondition — the world before the action |
-| `When` | The action under test (exactly one, ideally) |
-| `Then` | The observable outcome (assertions) |
-| `And`/`But` | Additional steps of the preceding type |
+| `example-mapping` | Rules, examples, questions, readiness (Ideate) |
+| `acceptance-criteria` | What "done" means, the criterion IDs, any change to them |
+| **This skill** (test-strategist, Implement) | Feature files, titles, tags, criterion coverage, `Background`, outlines, step definitions |
+| `test-pyramid` | Which layer proves each scenario, suite selection, flaky policy |
+| `go-e2e-test`, `python-e2e-test`, `react-e2e-testing` | Journey environments and browser tests |
+| `uat-scenario` | Human scripts after deployment; never a substitute for a missing scenario |
 
----
+## Gotchas
 
-## The Golden Triangle — Cover More Than the Happy Path
+- **"Happy path now, the rest later."** *Reason:* the uncovered criteria are where defects live, and approval would claim they are proven. *Instead:* one scenario per criterion before presenting.
+- **"The code refunds 50%, so I'll write 50%."** *Reason:* the defect becomes the specification. *Instead:* keep the agreed value, name the ID and both values, ask.
+- **"I'll add a scenario for the case they forgot."** *Reason:* its outcome is a rule nobody agreed. *Instead:* put the question to the product owner; add it once the criteria have it.
+- **`Scenario: Refused # negative`.** *Reason:* comments start their own line; trailing text joins the name and filters nothing. *Instead:* tags above the scenario.
+- **"All tests passed" from an unbound or empty suite.** *Reason:* godog passes undefined steps unless strict, and passes when it finds no features. *Instead:* strict mode, assert features were found, report counts.
+- **Eleven near-identical Examples rows.** *Reason:* a row that proves nothing new only hides the rules. *Instead:* keep rows whose removal would lose something; split mixed rules.
+- **`@wip` to get CI green.** *Reason:* the criterion is now unproven. *Instead:* say the gate is red for that ID.
+- **"It runs in CI, so it is living documentation."** *Reason:* that is half; the verified result must also be rendered readably. *Instead:* generate the report.
+- **"The browser journey reuses the .feature file."** *Reason:* Playwright does not read it as written. *Instead:* plain browser tests tagged with the same IDs.
 
-Every feature needs at least three scenarios (from `acceptance-criteria`): the happy path, a negative path, and an edge case. A feature with only a happy-path scenario is incomplete.
+## Files
 
-```gherkin
-  Scenario: Successfully classify an asset            # happy
-  Scenario: Reject classification without permission  # negative
-  Scenario: Reject downgrade without reclassification # edge (the domain invariant)
-```
-
-These map directly to the user flows' branches (`ux-flow-design`) and to the backend's domain invariants (`go-domain-model`) — the feature file is where requirements, UX, and domain meet and are verified together.
-
----
-
-## Scenario Outlines for Data Variation
-
-When the same behaviour holds across many inputs, use a `Scenario Outline` with an `Examples` table instead of copy-pasting scenarios — this keeps the spec readable and the variations explicit.
-
-```gherkin
-  Scenario Outline: Sensitivity level drives required controls
-    When an asset is classified as "<level>"
-    Then access requires "<control>"
-    And it is audited on read: <audited>
-
-    Examples:
-      | level        | control          | audited |
-      | Public       | none             | false   |
-      | Confidential | abac-permission  | false   |
-      | Restricted   | abac-least-priv  | true    |
-```
-
-This mirrors the data-architect's classification control mapping (`data-classification`) — one spec, verified across every level.
-
-An Examples table answers "how many rows," a question the Golden Triangle doesn't address (it governs *which angles* — happy/negative/edge — not *how many examples per angle*). `references/collaborative-specification-and-living-documentation.md` gives the minimality principle for pruning a table that's grown past what actually teaches the reader something new.
-
----
-
-## Ubiquitous Language in Steps
-
-Step wording uses the **canonical glossary terms** — "data asset," "sensitivity level," "classify," "tenant." Never synonyms ("file," "label," "tag"). Because feature files are read by the user and bind to code, drift in step language is drift in the product. Step phrasing is declarative (what, not how): "she classifies the asset," not "she sends a PATCH to /v1/data-assets/{id}/classification" — the HTTP detail lives in the step definition, not the spec. This declarative discipline is this repo's permanent instance of Ken Pugh's ATDD point (`research/requirements-and-user-stories/lean-agile-atdd-pugh.md`) and Gojko Adzic's framing of Given/When/Then as illustrating a business rule, not scripting a UI interaction (`research/testing/specification-by-example-adzic.md`) — cited here as provenance, not an unattributed local rule.
-
----
-
-## Binding Steps to Automation
-
-### Backend — godog (Cucumber for Go)
-Each `Given/When/Then` maps to a Go step function. Steps drive the system through its public interface (API/command handlers), not its internals (black-box — see the test-strategist's functional-testing stance).
-
-```go
-func (w *world) sheClassifiesAs(asset, level string) error {
-    return w.api.Classify(w.ctx, w.assetID(asset), domain.SensitivityLevel(level))
-}
-
-func InitializeScenario(ctx *godog.ScenarioContext) {
-    w := &world{}
-    ctx.Before(w.reset)                                  // hermetic: fresh state per scenario
-    ctx.Step(`^she classifies "([^"]*)" as "([^"]*)"$`, w.sheClassifiesAs)
-    ctx.Step(`^the asset's sensitivity level is "([^"]*)"$`, w.assertSensitivity)
-}
-```
-
-### Frontend — the same scenarios drive Playwright
-Journey-level scenarios bind to Playwright e2e steps (see `react-e2e-testing`), so a single Gherkin scenario can be verified at the UI level too. The spec is shared; the bindings differ per layer.
-
----
-
-## Living Documentation
-
-Feature files live in the repo (`artifacts/<product>/implement/features/`, registered in the product manifest so the user can approve them; point godog and other runners there), are reviewed in PRs, and run in CI. They are always current because a stale scenario fails the build. This makes them trustworthy documentation — unlike a wiki page, a feature file cannot quietly drift from the system, because it *is* tested against the system.
-
-This is half of what "living documentation" actually requires. `references/collaborative-specification-and-living-documentation.md` covers the other half: mechanically deriving a browsable documentation artifact from the executed spec suite, so what a PM reads is generated from verified results — not a raw `.feature` file browsed in a repo.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Traceable to criteria | Every acceptance criterion has a scenario | Acceptance criteria with no feature file |
-| Golden triangle | Happy + negative + edge per feature | Happy-path-only features |
-| Declarative steps | Steps say what, not how (no HTTP/SQL in the spec) | Implementation detail leaking into Gherkin |
-| Ubiquitous language | Canonical glossary terms in steps | Synonyms / informal wording |
-| Outlines for variation | Scenario Outline + Examples for data sets | Copy-pasted near-identical scenarios |
-| Hermetic | Fresh state per scenario (Background + Before) | Scenarios depending on prior scenario state |
-| Executable & current | Bound to step defs; runs in CI | Feature files that don't execute |
-
----
-
-## Anti-Patterns
-
-- **Imperative scripts in Gherkin** — "she sends a PATCH with header X" is a test script, not a specification; the HTTP mechanics belong in the step definition.
-- **Multiple `When` steps in one Scenario** — two actions means two behaviours; split the Scenario so a failure names one behaviour.
-- **Scenarios chained on prior Scenario state** — every Scenario must be runnable alone and in any order; shared setup goes in `Background` or a `Before` hook.
-- **`Then` steps with no observable assertion** — "Then the system processes the request" verifies nothing; assert an outcome a user or downstream consumer can observe (state, response, Domain Event).
-- **Feature files written after the code** — they become descriptions of what was built, not specifications of what was agreed; BDD writes the Scenario first.
-- **Synonym drift in steps** — "file," "label," "tag" instead of "data asset," "sensitivity level," "classification" silently forks the Ubiquitous Language.
-- **Untended specification growth** — duplicated step definitions, overlapping scenarios, and scenarios that no longer reflect a live business rule left to accumulate as the suite grows, until no one trusts whether the whole suite still reflects live behaviour. Refactor the specification suite the way disciplined teams refactor production code, not as an afterthought (see `references/collaborative-specification-and-living-documentation.md`).
-
----
-
-## Output Format
-
-Produces Gherkin feature files plus their step definitions (written before implementation — BDD):
-
-```
-artifacts/<product>/implement/features/*.feature   (Gherkin scenarios — readable by the user)
-internal/test/bdd/steps_*.go               (godog step definitions)
-tests/e2e/*.spec.ts                         (journey scenarios bound to Playwright)
-```
-
-- **Starting a new feature file** — copy `assets/bdd-feature-file-template.md`, or run `scripts/scaffold-bdd-feature-file.sh <product> <feature-title>` to generate one pre-filled with the Golden Triangle's three tagged placeholder scenarios.
-- **Checking a feature file mechanically** — run `scripts/validate-bdd-feature-file.sh` to check Golden Triangle tag presence, imperative/HTTP-mechanics leakage in step text, and multiple-`When`-per-scenario.
-- **Going deeper on collaborative authorship, living documentation, or example minimality** — read `references/collaborative-specification-and-living-documentation.md`.
+| File | When to open it |
+|---|---|
+| `./templates/feature-file.feature` | Writing the artifact by hand |
+| `./scripts/scaffold-bdd-feature-file.sh` | Starting a story's file from its criteria |
+| `./scripts/validate-bdd-feature-file.sh` | Before hand-off, after every edit, and for product-wide coverage |
+| `./resources/checklist.md` | After the script passes |
+| `./references/deriving-scenarios.md` | Criteria to scenarios, readiness, examples, changes |
+| `./references/gherkin-syntax.md` | Writing or fixing Gherkin |
+| `./references/binding-and-running.md` | Step definitions, running, reporting, upkeep |
+| `./examples/01-lean-food-truck-preorder.md` | A small product, or a request to cover only the happy path |
+| `./examples/02-standard-library-renewal.md` | Rules, an outline pruned, rule-format criteria, clicks rewritten |
+| `./examples/03-enterprise-payment-approval.md` | Tenants, a decision table, eventual outcomes, a build that disagrees |
