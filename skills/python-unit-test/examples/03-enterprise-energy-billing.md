@@ -393,7 +393,7 @@ PASS: every measured line and branch ran
 ## What the answer says
 
 - Both measures as counts, never one blended percentage; the generated file named.
-- The gate reads the JSON report and fails on any line not run or branch not taken; `--cov-fail-under` is removed. Only generated code is excluded automatically; any other exclusion is listed with a reason for the product owner's approval.
+- The gate reads the JSON report and fails on any line not run or branch not taken; `--cov-fail-under` is removed. Generated code is excluded automatically; `...` placeholder bodies and `if TYPE_CHECKING:` blocks are approved as a class and listed (none here); any other exclusion needs its own reason and the product owner's approval. The gate ignores the product's coverage settings; no test was skipped.
 - Enterprise size adds tenants, properties, concurrency and a time limit. The gate is unchanged.
 - Hypothesis runs a derandomized profile, so the same inputs are generated each run; properties check only the inputs generated.
 - The concurrency test proves the use case handles a version conflict from this fake. It does not prove the database's compare-and-swap: that is `python-integration-test`.

@@ -22,5 +22,5 @@ Copy and tick before hand-off.
 - [ ] `check-python-coverage.sh` run on the full suite; exit code, both counts and the skipped count recorded
 - [ ] Old `--cov-fail-under` and any percentage check removed
 - [ ] Every "no result" resolved by a change or an approved exception; none reported as passing
-- [ ] Coverage report filled: unmeasured cases, exclusions and their approval
+- [ ] Coverage report filled: unmeasured cases, skipped count, every approved-class line listed, other exclusions with reason and approval
 - [ ] Anything not run is called unverified

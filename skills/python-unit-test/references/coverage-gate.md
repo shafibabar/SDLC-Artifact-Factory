@@ -5,7 +5,9 @@ Self-contained. Use when running, reading or reporting Python coverage. The poli
 ## The policy
 
 - 100% of lines and 100% of branches, each judged separately.
-- Only machine-generated code is excluded automatically. Every other exclusion is listed with a reason for the product owner's approval, including coverage.py's own defaults (`# pragma: no cover`, `...` bodies, `if TYPE_CHECKING:`) and `# pragma: no branch`.
+- Machine-generated code is excluded automatically.
+- Approved once by the product owner as a class, with no per-file approval, and listed in every report: `...` placeholder bodies (a function or class whose body is only `...`, with or without a docstring) and `if TYPE_CHECKING:` blocks (`TYPE_CHECKING` from `typing`; an `else` branch is not included).
+- Every other exclusion needs its own listed reason and the product owner's approval: `# pragma: no cover`, `# pragma: no branch`, a `...` inside working code, and any file left out.
 - Above 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below has no waiver. No result means nothing to waive. A waiver covers one run. Testing layers are never waived.
 - Compute from counts, never a rounded figure: waivable only if `covered x 10 > total x 9` and `covered < total`. Add counts across packages; never average percentages or blend the two measures.
 - The verdict comes from the full run of all suites in scope. A unit-only or filtered run gives no verdict.
@@ -28,13 +30,13 @@ It runs the whole `tests/` folder and reads the JSON report it has just written,
 | Failed test, pytest error, no test collected or run, any test deselected | 2 |
 | Report missing or without branch data; zero statements | 2 |
 | A `.py` file under a source folder that is absent from the report | 2 |
-| Lines left out by coverage.py or `no branch`, with no matching approval | 2 |
+| Lines left out by coverage.py or `no branch`, outside the two approved classes, with no matching approval | 2 |
 | Pending, malformed or undated exclusion entry; a skip of the unit, integration or contract folder; any test-selection argument | 2 |
 | All counted lines and branches ran | 0 |
 
 Any non-zero exit blocks the build. Skipped and expected-to-fail tests are counted and printed but do not change the exit code: read the line.
 
-It ignores the product's coverage settings (`omit`, `exclude_also`, `partial_branches`, `fail_under`) and clears `addopts` and `PYTEST_ADDOPTS`, so the exclusion file is the only way to leave anything out.
+It prints each file's approved-class lines on every run. It ignores the product's coverage settings (`omit`, `exclude_also`, `partial_branches`, `fail_under`) and clears `addopts` and `PYTEST_ADDOPTS`, so beyond generated code and the two classes the exclusion file is the only way to leave anything out.
 
 ## The old check is removed
 
@@ -53,7 +55,7 @@ src/<pkg>/wiring.py | file | approved YYYY-MM-DD | reason
 src/<pkg>/ports.py | lines 0a1b2c3d4e5f | approved YYYY-MM-DD | reason
 ```
 
-The script prints the `lines` entry to propose, marked `pending`, which it refuses until the product owner approves it. The fingerprint is of the left-out lines' text: change them and approval lapses. It mirrors the exclusion register in the test strategy. Excepted files are printed as not measured. Prefer a code change to an entry: a Protocol method with a docstring body instead of `...` leaves nothing out.
+The script prints the `lines` entry to propose, marked `pending`, which it refuses until the product owner approves it. The fingerprint is of the left-out lines' text: change them and approval lapses. It mirrors the exclusion register in the test strategy. Excepted files are printed as not measured. Prefer a code change to an entry. The two approved classes need no entry.
 
 Generated code is recognised only by a marker in the file's leading comments (`@generated`, or "generated" with "DO NOT EDIT"); each such file is printed. Never add a marker to hand-written code.
 

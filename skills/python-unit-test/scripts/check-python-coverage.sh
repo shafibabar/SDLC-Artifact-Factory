@@ -11,13 +11,15 @@
 # written fresh. --source defaults to src. --out keeps a copy of the report.
 #
 # Left out: files whose leading comments carry a generated-code marker
-# ("@generated", or "generated" with "DO NOT EDIT"), and approved entries of
-# --exclusions, one per line:
+# ("@generated", or "generated" with "DO NOT EDIT"); two classes approved once by
+# the product owner and printed on every run (functions and classes whose body is
+# only "..." or a docstring and "...", and "if TYPE_CHECKING:" blocks with
+# TYPE_CHECKING from typing); and approved entries of --exclusions, one per line:
 #   <path> | file | approved YYYY-MM-DD | <reason>
 #   <path> | lines <fingerprint> | approved YYYY-MM-DD | <reason>
-# "file" leaves a whole file out. "lines" accepts the lines coverage.py leaves
-# out of one file ("# pragma: no cover", "..." bodies, "if TYPE_CHECKING:",
-# "# pragma: no branch"); the fingerprint changes when those lines change.
+# "file" leaves a whole file out. "lines" accepts the other lines left out of one
+# file ("# pragma: no cover", "# pragma: no branch", anything outside the two
+# classes); the fingerprint changes when those lines change.
 #
 # Any non-zero exit blocks the build.
 # Exit 0 = every line and branch ran; 1 = a gap; 2 = no result (usage, failed
@@ -25,7 +27,7 @@
 # exclusion): nothing to waive.
 set -uo pipefail
 exec python3 -I - "$@" <<'PY'
-import datetime, hashlib, json, os, re, shutil, subprocess, sys, tempfile
+import ast, datetime, hashlib, json, os, re, shutil, subprocess, sys, tempfile
 import xml.etree.ElementTree as ET
 
 def die(message):
@@ -147,6 +149,39 @@ def generated(text):
         head.append(line)
     return any("@generated" in l or (re.search(r"(?i)generated", l) and "DO NOT EDIT" in l) for l in head)
 
+def class_lines(text):
+    """Line numbers of the two approved classes: "..." placeholder bodies and TYPE_CHECKING blocks."""
+    try:
+        tree = ast.parse(text)
+    except (SyntaxError, ValueError):
+        return set(), set()
+    nodes = list(ast.walk(tree))
+    imported = any(isinstance(n, ast.ImportFrom) and n.module in ("typing", "typing_extensions")
+                   and any(a.name == "TYPE_CHECKING" and a.asname is None for a in n.names) for n in nodes)
+    reassigned = any(isinstance(n, ast.Name) and n.id == "TYPE_CHECKING" and isinstance(n.ctx, ast.Store)
+                     for n in nodes)
+
+    def string(node):
+        return isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) \
+            and isinstance(node.value.value, str)
+
+    bodies, typing_only = set(), set()
+    for node in nodes:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            body = node.body[1:] if len(node.body) == 2 and string(node.body[0]) else node.body
+            if len(body) == 1 and isinstance(body[0], ast.Expr) \
+                    and isinstance(body[0].value, ast.Constant) and body[0].value.value is Ellipsis:
+                first = min([node.lineno] + [d.lineno for d in node.decorator_list])
+                bodies.update(range(first, node.end_lineno + 1))
+        if isinstance(node, ast.If) and not reassigned:
+            test = node.test
+            plain = isinstance(test, ast.Name) and test.id == "TYPE_CHECKING" and imported
+            dotted = isinstance(test, ast.Attribute) and test.attr == "TYPE_CHECKING" \
+                and isinstance(test.value, ast.Name) and test.value.id == "typing"
+            if plain or dotted:     # the body only: an else branch runs, so it is not in the class
+                typing_only.update(range(node.lineno, node.body[-1].end_lineno + 1))
+    return bodies, typing_only
+
 totals = {"statements": [0, 0], "branches": [0, 0]}   # covered, total
 gaps, left_out, unmeasured, unapproved = [], [], [], []
 paths = sorted({os.path.join(base, name) for source in source_dirs
@@ -165,8 +200,17 @@ for path in paths:
         unmeasured.append(rel)
         continue
     source_lines = text.split("\n")
-    hidden = set(entry.get("excluded_lines", []))
-    hidden |= {n for n, l in enumerate(source_lines, 1) if re.search(r"#.*pragma[:\s]*no\s*branch", l, re.I)}
+    excluded = set(entry.get("excluded_lines", []))
+    pragmas = {n for n, l in enumerate(source_lines, 1)
+               if re.search(r"#.*pragma[:\s]*no\s*(branch|cover)", l, re.I)}
+    bodies, typing_only = class_lines(text)
+    for label, found in (('"..." placeholder bodies', (excluded & bodies) - pragmas),
+                         ("TYPE_CHECKING blocks", (excluded & typing_only) - bodies - pragmas)):
+        if found:
+            left_out.append(f"{rel}: approved class, {label}: lines {', '.join(map(str, sorted(found)))}")
+    silent = {n for n, l in enumerate(source_lines, 1) if not l.strip() or l.lstrip().startswith("#")}
+    hidden = (excluded - bodies - typing_only - silent) | (pragmas & excluded)
+    hidden |= {n for n in pragmas if re.search(r"no\s*branch", source_lines[n - 1], re.I)}
     if hidden:
         content = "\n".join(source_lines[n - 1].strip() for n in sorted(hidden))
         mark = hashlib.sha256(content.encode()).hexdigest()[:12]

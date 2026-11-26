@@ -119,7 +119,7 @@ PASS: every measured line and branch ran
 - "A couple of tests" is replaced by the nine derived cases. Small size means one package and one table; the gate stays at 100% of lines and branches.
 - The day is passed in as `at`; no test reads the clock.
 - The gate is `check-python-coverage.sh`: it reads the JSON report and fails on any line not run or branch not taken. `--cov-fail-under` and any printed percentage check are removed, not kept as an extra step.
-- Only generated code is excluded automatically; anything else is listed with a reason for the product owner's approval. Nothing is excluded here, and there is no waiver.
+- Generated code is excluded automatically; `...` placeholder bodies and `if TYPE_CHECKING:` blocks are approved as a class and listed; anything else needs its own reason and the product owner's approval. The gate ignores the product's coverage settings. Nothing is excluded or skipped here, and there is no waiver.
 - Unmeasured: alternatives inside one line; zero-iteration loops; a docstring-only body; child processes. This code has none of them.
 - Coverage shows the paths ran; the assertions check the values.
 - Run: the gate on both drafts and the file checker. The red step was not re-enacted for this write-up.

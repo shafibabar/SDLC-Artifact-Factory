@@ -46,7 +46,11 @@ traces-to: [implement/test-strategy.md, [commit or run id]]
 
 | Path | Kind | Reason | Approval |
 |---|---|---|---|
+| [file and lines, or "none"] | approved class: `...` placeholder bodies | Placeholder, no behaviour | approved once as a class |
+| [file and lines, or "none"] | approved class: `if TYPE_CHECKING:` blocks | Not run at run time | approved once as a class |
 | [path or "none"] | [generated / file / lines and fingerprint] | [reason] | [automatic (generated) / pending / approved YYYY-MM-DD] |
+
+<!-- List every "approved class" line the gate printed, in every report. The classes need no per-file approval. -->
 
 ## Waivers
 
@@ -60,4 +64,4 @@ traces-to: [implement/test-strategy.md, [commit or run id]]
 
 Coverage shows that code ran and which line-to-line branches were taken. It does not show that any assertion would catch a fault. Checks confirm only what someone specified.
 
-**For approval:** [the exclusions (including any behind a "no result") and waivers the product owner is asked to decide]
+**For approval:** [the exclusions outside the two approved classes (including any behind a "no result") and waivers the product owner is asked to decide]

@@ -103,32 +103,25 @@ from flexfit.domain.booking import Booking
 
 
 class BookingRepository(Protocol):
-    async def get(self, booking_id: str) -> Booking | None:
-        """The stored booking, or None."""
+    async def get(self, booking_id: str) -> Booking | None: ...
 
-    async def save(self, booking: Booking) -> None:
-        """Store the booking and its events."""
+    async def save(self, booking: Booking) -> None: ...
 
 
 class UnitOfWork(Protocol):
     @property
-    def bookings(self) -> BookingRepository:
-        """Repository inside this transaction."""
+    def bookings(self) -> BookingRepository: ...
 
-    async def __aenter__(self) -> "UnitOfWork":
-        """Open the transaction."""
+    async def __aenter__(self) -> "UnitOfWork": ...
 
     async def __aexit__(self, exc_type: type[BaseException] | None,
-                        exc: BaseException | None, tb: TracebackType | None) -> None:
-        """Roll back unless committed."""
+                        exc: BaseException | None, tb: TracebackType | None) -> None: ...
 
-    async def commit(self) -> None:
-        """Make the writes permanent."""
+    async def commit(self) -> None: ...
 
 
 class SmsGateway(Protocol):
-    async def send(self, phone: str, text: str) -> None:
-        """Deliver one text message."""
+    async def send(self, phone: str, text: str) -> None: ...
 
 
 class BookingNotFoundError(Exception):
@@ -366,28 +359,35 @@ async def test_second_cancel_is_refused_and_sends_nothing(
 
 `save` moves the events into the fake's `outbox`; asserting that row, not a publish call, is how a product with a Transactional Outbox proves the event.
 
-## The gate and two things it showed
+## The gate and what it showed
 
-First the ports were written with `...` bodies. All tests passed and the counts were complete, but coverage.py leaves `...` bodies out by default:
+The ports have `...` bodies. coverage.py leaves them out; they belong to a class the product owner approved once, so no entry is needed and the run lists them:
 
 ```text
+excluded src/flexfit/service_layer/commands.py: approved class, "..." placeholder bodies: lines 10, 12, 16, 17, 19, 24, 28
 tests: 18 ran, 0 skipped or expected to fail (they prove nothing)
 Line coverage: 76/76 statements
-Branch coverage: 12/12 branches
-unapproved exclusion: src/flexfit/service_layer/commands.py lines 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 22, 23, 24, 25, 27, 28, 29; entry to propose: src/flexfit/service_layer/commands.py | lines d4ba8eed99be | pending | <reason>
-NO RESULT: lines are left out without the product owner's approval. The counts above are not a verdict.
-```
-
-Two remedies: change the code (docstring bodies, as above), or list that entry for the product owner. It stays pending, and the build stays blocked, until they approve it. With docstring bodies:
-
-```text
-tests: 18 ran, 0 skipped or expected to fail (they prove nothing)
-Line coverage: 83/83 statements
 Branch coverage: 12/12 branches
 PASS: every measured line and branch ran
 ```
 
-A docstring-only body counts as run although nothing calls it; that suits a Protocol, which has no behaviour, and the report says so.
+Then, as a trial, a helper marked `# pragma: no cover` was appended to `commands.py`:
+
+```python
+def audit_label(booking_id: str) -> str:  # pragma: no cover
+    return f"booking:{booking_id}"
+```
+
+```text
+excluded src/flexfit/service_layer/commands.py: approved class, "..." placeholder bodies: lines 10, 12, 16, 17, 19, 24, 28
+tests: 18 ran, 0 skipped or expected to fail (they prove nothing)
+Line coverage: 76/76 statements
+Branch coverage: 12/12 branches
+unapproved exclusion: src/flexfit/service_layer/commands.py lines 51, 52; entry to propose: src/flexfit/service_layer/commands.py | lines 78b16e01de0a | pending | <reason>
+NO RESULT: lines are left out without the product owner's approval. The counts above are not a verdict.
+```
+
+All tests passed and the counts were complete, yet the run gives no result. Two remedies: remove the pragma and test the helper, or list that entry with a reason for the product owner; it stays pending, and the build blocked, until they approve it. The helper was removed.
 
 Two faults planted by hand, to show the assertions work: deleting `await uow.commit()` failed three tests (the fake rolls back); deleting the `await` before `sms.send` failed the run through the warning filters.
 
@@ -395,6 +395,6 @@ Two faults planted by hand, to show the assertions work: deleting `await uow.com
 
 - What is replaced, by name and why; every other owned dependency keeps a fake, and only the text gateway is mocked.
 - Standard size adds the use case, a fake and a mock; the rules are the lean ones.
-- Gate counts, as above, from the JSON report; `--cov-fail-under` is not used, because it passes with lines left out. Only generated code is excluded automatically; any other exclusion is listed with a reason for the product owner's approval.
-- Unmeasured: alternatives inside one line; zero-iteration loops; docstring-only bodies; child processes; hidden or skipped tests.
+- Gate counts, as above, from the JSON report; `--cov-fail-under` is not used, because it passes with lines left out. Only generated code is excluded automatically; `...` placeholder bodies and `if TYPE_CHECKING:` blocks are approved as a class and listed (the ports, above); any other exclusion needs its own reason and the product owner's approval. The gate ignores the product's coverage settings; no test was skipped.
+- Unmeasured: alternatives inside one line; zero-iteration loops; docstring-only bodies counted as run; child processes; hidden or skipped tests.
 - Not run: the real repository, broker or gateway. They belong in `python-integration-test` and `python-contract-test`.

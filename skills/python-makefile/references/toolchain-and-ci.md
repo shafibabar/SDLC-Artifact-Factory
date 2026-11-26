@@ -96,9 +96,10 @@ The coverage gate is not configured here. `make test` runs `scripts/check-python
 from `python-unit-test`), which requires 100% of lines and 100% of branches over the full run, writes
 its own coverage configuration and reads the JSON report. There is no `--cov` flag, `fail_under` or
 `omit` in `pyproject.toml`: a coverage flag in shared settings fails every subset run, and a single
-percentage passes with code hidden. Only generated code (marked in the file's leading comments) is
-excluded automatically; every other exclusion goes in `coverage-exceptions.txt` once the product owner
-approves it. `make ci` and the pipeline run the same target, so there is no second copy to drift.
+percentage passes with code hidden. Generated code (marked in the file's leading comments) is
+excluded automatically; `...` placeholder bodies and `if TYPE_CHECKING:` blocks are approved as a
+class and printed on every run; every other exclusion goes in `coverage-exceptions.txt` once the
+product owner approves it. `make ci` and the pipeline run the same target, so there is no second copy to drift.
 
 ---
 
