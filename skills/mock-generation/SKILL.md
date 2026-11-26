@@ -1,218 +1,126 @@
 ---
 name: mock-generation
 description: >
-  Used by the test-strategist during Implement to design typed test doubles in
-  Go — the complete five-type taxonomy (dummy, stub, spy, mock, fake), the
-  managed vs. unmanaged dependency decision (the criterion that determines
-  whether a test double should verify an interaction at all), the Classical
-  (Detroit/Chicago) school chosen over London (mockist), interface isolation
-  (mock only consumer-defined ports, never third-party concretions), and
-  generation tooling (mockery, gomock, moq). Full taxonomy with per-type Go
-  examples and the managed vs. unmanaged dependency table:
-  references/test-double-taxonomy.md. Go generation mechanics (mockery YAML
-  config, gomock DSL, moq //go:generate, compile-time compliance, CI freshness
-  check): references/go-mock-implementation.md.
-version: 2.0.0
+  Use when test-strategist, backend-engineer or anyone writes, reviews or fixes
+  Go test doubles: whether to mock a dependency at all (managed vs unmanaged),
+  dummy, stub, spy, mock or fake, in-memory fake repositories and keeping them
+  honest, doubling a database, pgx pool, broker, outbox publish, third-party
+  client or sibling service, "assert Save was called once", moq and
+  go:generate directives, replacing mockery, gomock or testify mocks, nil-func
+  panics, stale generated mocks passing CI, or generated mocks and hand-written
+  fakes in the 100% coverage gate. Produces go-test-doubles.
+version: 3.0.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
-tags: [implement, go, mocks, fakes, stubs, test-doubles, mockery, gomock, moq, interface-isolation, managed-dependency, unmanaged-dependency]
+tags: [implement, go, mocks, fakes, stubs, test-doubles, moq, interface-isolation, managed-dependency, unmanaged-dependency]
 produces: go-test-doubles
 domain: testing
 status: stable
-related: [go-unit-test, go-integration-test, go-project-structure, test-fixture-design, react-component-testing]
+related: [test-pyramid, test-fixture-design, go-unit-test, go-integration-test, go-contract-test, go-project-structure, go-makefile, go-mutation-test, python-unit-test, react-component-testing, multi-tenancy-design]
+sources:
+  - research/testing/unit-testing-khorikov.md
+  - research/testing/moq-official-docs.md
+  - research/testing/go-coverage-official-docs.md
+  - research/testing/gremlins-official-docs.md
+  - research/testing/contract-testing-in-action-cruz-prescott.md
+  - research/software-architecture/architecture-patterns-with-python-percival-gregory.md
 ---
 
 # Mock Generation
 
 ## Purpose
 
-Unit tests isolate the code under test by replacing its dependencies with test
-doubles. A good double is strongly typed (it implements the real interface so it
-cannot drift), generated not hand-maintained, and chosen for the job — not every
-dependency needs the same kind of double, and choosing the wrong one produces
-a test that either verifies too much (breaking on pure refactors) or too little
-(letting the wrong behavior through). This skill defines how doubles are created
-and used so tests stay fast, honest, and maintainable.
+This skill owns how test doubles are chosen, generated, written and kept correct in Go. `go-unit-test` states the testing school, `test-fixture-design` owns test data and isolation, `test-pyramid` owns layers and the coverage and mutation gates. The school is Khorikov's classical one: isolate each test from other tests, run the real domain code, and replace only what lies outside the application.
 
-The doubles target the **consumer-defined interfaces** from `go-project-structure`
-(small ports like `DataAssetRepository`) — because those interfaces are small,
-the doubles are simple.
+## Fixed rules
 
----
+A request does not change these, whoever makes it. Do the work as the rules require, say where it differs from what was asked and why, and never offer to switch a rule off.
 
-## The Core Decision: Managed vs. Unmanaged Dependencies
-
-Before choosing a double type, answer one question: **is this dependency managed
-or unmanaged?**
-
-| Dependency kind | Definition | Verify with |
+| # | Rule | Reason |
 |---|---|---|
-| **Managed** | Fully owned by your app; the outside world never observes it directly (e.g., your own repository, your own in-process service) | A state-based **fake** or a real instance in an integration test — never a call-count mock |
-| **Unmanaged** | Its side effect is observable to something outside your app's control (e.g., the outbox relay publishing to Redpanda, an outbound email/SMTP call, a third-party API) | A **mock** that verifies the call happened with the right arguments — the interaction IS the behaviour |
+| M1 | **Double only a port the consumer defines**, never a type you do not own (`*pgxpool.Pool`, a broker or vendor client) | A double of it encodes a guess about the library; the test passes when the guess is wrong |
+| M2 | **Managed dependency** (your own database, repository, in-process service): verify **state**, through a fake in a unit test or the real thing in an integration test. Never assert its calls | The outside world never sees those calls; asserting them breaks on refactors (Khorikov) |
+| M3 | **Unmanaged dependency** (message publish, email, third-party API): a mock; assert the call happened, with the arguments that matter, as many times as the behaviour requires | Here the interaction is the observable behaviour |
+| M4 | **Never assert on a stub** (a call made only to fetch input) | It couples the test to the implementation and proves nothing |
+| M5 | **Go mocks are generated by moq**, version pinned. No mockery, gomock, testify mock or hand-written call recorder in new or migrated code; no hand edits to a generated file | One generator, checked by the compiler and by regeneration |
+| M6 | **Only machine-generated code leaves the coverage gate automatically.** The coverage filter excludes generated mocks by file name, every file ending `_moq.go`, and they are recorded; fakes and other test support are not generated and are counted, or listed with a reason for the product owner's approval | `test-pyramid`'s 100% line and branch rule |
 
-**Only mock unmanaged dependencies.** A managed dependency — your own repository,
-your own internal service — gets a fake or gets tested for real. Asserting
-`repo.SaveCalls()` has length 1 tests an implementation detail (how the handler
-called the repository) rather than the actual contract (the asset's new state is
-retrievable afterward).
+Every product size follows all six. **Lean** means fewer ports and fewer doubles, never call assertions on a repository, a second generator or an unrecorded exclusion.
 
-Full table with this-repo examples (fakeAssetRepo as managed, outbox publish as
-unmanaged) and the rationale: `references/test-double-taxonomy.md`.
+## What every answer states
 
----
+Say these in words, in a reply as much as beside code; code that follows a rule silently leaves the reader free to undo it.
 
-## Classical School, Not London
+1. **Each dependency's class and double:** managed or unmanaged, why, and fake, stub, mock, dummy, spy or real instance.
+2. **What is replaced or refused, by name, with the reason**, e.g. "`repo.SaveCalls()` is removed: the repository is ours, so the test reads the saved state". Give the compliant version; no switch, "override" or "just this once".
+3. **What stays the default when one case differs:** "the email sender gets a mock; every repository still gets a fake or a real database, and no call assertions".
+4. **What the reader cannot see** in a helper or generated file:
+   - a moq method whose `Func` field is nil **panics, which fails the test**; with `-stub` it silently returns zero values instead;
+   - a moq mock **verifies nothing by itself**: one that is never called passes unless the test asserts its `Calls()`;
+   - what the fake returns for missing or duplicate data, that it hands out copies, and any error it can be told to return;
+   - which helper fails the test, and on what.
+5. **Sketches:** every variable declared or its origin named; each test asserts the thing its name claims (state for managed; count and arguments for unmanaged; nothing on a stub).
+6. **Coverage:** the filter excludes files ending `_moq.go` **by name** (`grep -v '_moq\.go:'` on the profile); **a filter matching only `_mock.go` must be corrected to `_moq.go`**; each exclusion is recorded; the fake is counted.
+7. **At this size:** what lean changes (the number of doubles) and what it does not (the rules).
+8. **Decisions for the product owner**, when they arise: a tenancy model not yet decided (`multi-tenancy-design` has no default); a coverage exclusion beyond generated code; a dependency whose class is unclear (for example a database other applications also read).
+9. **What was run.** Code not executed is called unverified.
 
-This repo follows Khorikov's **Classical (Detroit/Chicago) school**, not the
-London (mockist) school. The distinction governs how much to isolate:
+## Which double
 
-- **London school** — isolate the *class under test* from every collaborator;
-  every dependency, however internal, becomes a mock; tests verify a web of
-  interactions.
-- **Classical school** — isolate the *test case* from other test cases (no
-  shared mutable state); a "unit" of test is a unit of observable behaviour,
-  which may span several collaborating types with only true external (unmanaged)
-  dependencies replaced.
-
-The classical school is chosen because London-school over-mocking zeros out the
-Resistance to Refactoring pillar: any internal restructuring that preserves
-external behaviour still turns the suite red. See `go-unit-test`'s
-`references/mocking-philosophy.md` for the full four-pillars rationale; see
-`references/test-double-taxonomy.md` for the Classical vs. London school table.
-
----
-
-## The Double-Picking Decision
-
-Once you know a dependency is the right thing to double, choose the type by
-what the test needs to prove. Full five-type taxonomy with per-type Go examples:
-`references/test-double-taxonomy.md`.
-
-| Double | What it does | Use when | Verifies |
-|---|---|---|---|
-| **Dummy** | Passed but never used | Interface requires an argument the test does not exercise | Nothing — structural placeholder only |
-| **Stub** | Returns canned values | Dependency must return a specific value to exercise the path under test | State (the result the SUT produces) |
-| **Spy** | Records calls, then forwards or does nothing | You want to observe calls *without* failing the test for violations | State + deferred observation |
-| **Mock** | Declares expected calls upfront; fails if violated | The *interaction* is the behaviour under test (an unmanaged dependency) | Behaviour (the calls) |
-| **Fake** | A working lightweight implementation (e.g., in-memory repo) | You want realistic state-based behaviour without the real dependency | State (the outcome) |
-
-**Prefer fakes and stubs (state-based) over mocks (interaction-based).** Mocks
-couple the test to *how* the code calls its dependencies; if that is not the
-behaviour you care about, the test becomes brittle. Reserve mocks for when the
-interaction itself is the contract (e.g., the outbox publish is written exactly
-once) — and only for unmanaged dependencies where that interaction is the
-observable side effect.
-
----
-
-## Generate, Don't Hand-Roll
-
-When a mock is the right tool, generate it from the interface — never hand-write
-string-matched call recorders. Generated mocks are type-safe, refactor-safe
-(they regenerate when the interface changes), and consistent.
-
-| Tool | Style | Default |
+| Situation | Double | Assert |
 |---|---|---|
-| **mockery** (vektra/mockery) | YAML-configured, generates entire packages at once | Yes — use for most interfaces |
-| **gomock** (uber-go/mock; `mockgen`) | GoMock expectation DSL; per-file or reflect mode | Use when richer EXPECT().Return().Times() DSL is needed |
-| **moq** (matryer/moq) | Simple struct of func fields; minimal generated code | Use for small, one-off interfaces where reading is key |
+| Argument required but unused on this path | Dummy (zero value, `context.Background()`) | Nothing about it |
+| Query to an outside service: the test only needs an answer fed in | Stub: a moq mock or tiny struct with fixed returns | The result, never the call |
+| Own repository, store or in-process service | Fake (hand-written, in memory), or real instance in `go-integration-test` | State read back |
+| Publish, send, charge, book: a side effect others observe | Mock (moq) | `Calls()`: count and arguments |
+| Your own outbox table | Managed: fake or real database | The outbox row exists with the state change |
+| Relay that publishes outbox rows to the broker | Mock of the publisher port | What was published |
+| Another service of the same product | Unmanaged by Khorikov's definition: stub its queries, mock its commands; response data must satisfy the shared contract (`go-contract-test`) | As above |
+| Real SQL, constraints, broker delivery | No double: `go-integration-test` | Real end state |
+| Time, IDs, randomness | Injected values (`test-fixture-design`) | Not a mock |
 
-Default to **mockery** for this repo's consumer-defined ports; **gomock** when the
-test needs a rich expectation DSL. Full generation mechanics, YAML config, and
-CI freshness check: `references/go-mock-implementation.md`.
+A **spy** is a hand-written recorder inspected afterwards; for a port, use moq's call records instead. A moq object is a mock only when the test asserts its calls; otherwise it is serving as a stub.
 
----
+Python services use `python-unit-test` (fakes first; patching only at the unmanaged edge). React uses `react-component-testing` (fake only outside edges such as the network and clock, never the app's own modules). M2 to M4 hold in both; M5 is Go only.
 
-## Compile-Time Interface Compliance
+## Procedure
 
-Every hand-written fake must assert at compile time that it satisfies the
-interface — so it can never silently diverge from the real port as the interface
-evolves:
+1. Read the code under test, its port interfaces, existing doubles, the tenancy design and the test strategy's exclusion register.
+2. Copy `./templates/double-plan.md`; list every dependency, its class and its double. For a doubtful class, the school, sibling services or the outbox, read `./references/choosing-a-double.md`.
+3. If doubles already exist (mockery, gomock, call assertions on repositories), the plan lists current and new double per test. Check it against M1 to M6 before changing anything.
+4. Write the failing test first. `scripts/tdd-gate.sh` only checks that a matching test file exists, so also see it fail for the expected reason.
+5. For mocks, read `./references/moq-generation.md`; put the directive beside the port, run `go generate ./...`, commit the output.
+6. For fakes, read `./references/keeping-fakes-honest.md`; add the compile-time assertion and run one behaviour suite against the fake and the real adapter.
+7. Copy skeletons from `./templates/go-doubles.md`, including the freshness check for CI. Create hand-written files with Write.
+8. Record each generated mock in the exclusion register (kind: generated). Editing an approved strategy sends it back to the product owner.
+9. Run `./scripts/validate-test-doubles.sh <module root>`; fix every FAIL, judge every WARN, re-run until clean. Then regenerate, run the tests, tick `./resources/checklist.md` and answer with the statements above.
 
-```go
-var _ domain.DataAssetRepository = (*fakeAssetRepo)(nil)
-```
+Worked cases: `./examples/01-lean-newsletter-signup.md` (one service, one fake, one mock), `./examples/02-standard-ride-booking.md` (payment provider, outbox and relay, migration from gomock), `./examples/03-enterprise-freight-platform.md` (sibling services, tenants, fault injection).
 
-This is the cheap guard that keeps fakes honest. Full fake implementation
-example (with all repository methods): `references/go-mock-implementation.md`.
+## Gotchas
 
----
+- **"Assert `Save` was called once."** *Reason:* the repository is managed. *Instead:* read the record back; for "must not save", assert it is absent.
+- **Mocking the publish from the command handler when the product uses an outbox.** *Reason:* the handler writes a row and publishes nothing. *Instead:* assert the row; mock the publisher in the relay's test.
+- **A fake that stores the caller's pointer.** *Reason:* a change that is never saved still appears saved, so the test passes with `Save` missing. *Instead:* copy on write and on read.
+- **Treating the compile-time assertion as proof the fake is right.** *Reason:* it checks signatures only. *Instead:* run the same behaviour suite against fake and real adapter.
+- **A `_moq.go` name or `Code generated` header on a hand-written fake to get it out of coverage.** *Reason:* it is not generated. *Instead:* cover it, or list it for approval.
+- **`if err != nil { t.Fatalf(...) }` in shared support code.** *Reason:* the failure block never runs, so the statement gate fails. *Instead:* use `require`, or list it with its reason.
+- **`-stub` to stop panics.** *Reason:* an unexpected call then returns zero values and the test carries on. *Instead:* set only the funcs the test expects.
+- **A green CI after an interface or directive change.** *Reason:* `git diff` ignores untracked files, and a mock with no directive is never regenerated. *Instead:* check `git status --porcelain` and run the script.
+- **Leaving a `_mock.go` filter in place.** *Reason:* it misses every moq file, so the mocks are counted. *Instead:* correct it to `_moq.go`, in the coverage and mutation settings. Never filter on the header comment: that moq writes the expected line is unverified.
+- **A directive in a new `gen.go` or ports file written without a test.** *Reason:* the TDD hook refuses it. *Instead:* put the directive beside the port, with that file's matching test written first.
 
-## Mocking at the Right Boundary
+## Output
 
-Mock the **consumer-defined port**, not concrete types or third-party libraries:
+| File | When to open it |
+|---|---|
+| `./references/choosing-a-double.md` | Classifying a dependency; the five types; schools |
+| `./references/moq-generation.md` | Generating, CI freshness, exclusion, migration |
+| `./references/keeping-fakes-honest.md` | Writing or reviewing a fake |
+| `./templates/double-plan.md` | Planning doubles |
+| `./templates/go-doubles.md` | Writing Go code |
+| `./scripts/validate-test-doubles.sh` | Before hand-off and after every edit |
+| `./resources/checklist.md` | After the script passes |
 
-- Mock `domain.DataAssetRepository` (your small interface).
-- Do not mock `*pgxpool.Pool` or `*kgo.Client` — those are integration concerns;
-  test them for real with Testcontainers (see `go-integration-test`).
-
-This keeps unit tests about *your* logic and pushes real-dependency verification
-to the integration layer where it belongs. Over-mocking (mocking everything,
-including things you do not own) produces tests that pass while the system is
-broken.
-
----
-
-## Frontend Parity
-
-The frontend applies the same philosophy with a different tool: **MSW** mocks the
-network at the boundary (not the hooks), so components run real data-fetching
-code against controlled responses (see `react-component-testing`). Same
-principle — mock at the edge, against the real contract — different layer.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| Right double | Type chosen from 5-type taxonomy by what the test proves | Mock everywhere, even for state checks |
-| Managed/unmanaged decision made | Managed dependencies get fakes or integration tests | Call-count mocks on repositories |
-| Classical school applied | Only unmanaged dependencies verified via interaction | Every collaborator mocked (London-style) |
-| Generated mocks | mockery/gomock/moq from the interface; CI freshness check | Hand-rolled string-matched mocks |
-| Compile compliance asserted | `var _ Iface = (*fake)(nil)` on fakes | Doubles that can silently diverge |
-| Right boundary | Mock consumer-defined ports, not pgx/kgo | Mocking third-party concretions in unit tests |
-| Not over-mocked | Prefer fakes for managed deps; mock only unmanaged | Everything mocked; tests pass on broken systems |
-
----
-
-## Anti-Patterns
-
-- **Mocking managed dependencies** — asserting `SaveCalls()` on a repository
-  tests how the handler happened to call the repo, not the actual contract
-  (resulting state); managed dependencies get a fake or an integration test.
-- **Interaction-verifying everything** — asserting call counts and argument order
-  on every dependency couples the test to the implementation; a pure refactor
-  turns the suite red. Verify state unless the interaction IS the contract.
-- **Mocking types you do not own** — a mocked `*pgxpool.Pool` encodes your guess
-  about pgx's behaviour; when the guess is wrong the test passes and production
-  fails. Wrap it in a port; integration-test the real thing.
-- **Hand-rolled mocks with string-based dispatch** — `calls["Save"]++` style
-  recorders are refactor-blind and typo-prone; generation from the interface is
-  free and type-safe.
-- **Editing generated mock files** — regeneration erases the edit; behaviour
-  belongs in the test's configured funcs, customization belongs in a
-  hand-written fake.
-- **A "god fake" with test-specific branching** — a fake that inspects inputs to
-  decide which test it is serving is hidden coupling; keep fakes generic.
-- **Doubles without compile-time compliance** — `var _ Iface = (*fake)(nil)` is
-  free and catches interface drift at build time.
-- **Asserting on a stub** — if a double's calls are only there to arrange input,
-  do not verify them; if you want to verify them, the double is functioning as a
-  mock and should only exist for an unmanaged dependency.
-
----
-
-## Output Format
-
-Produces generated mocks, hand-written fakes, and the generate directives:
-
-```
-internal/**/<iface>_mock.go              (GENERATED — mockery/gomock/moq)
-internal/test/fakes/*.go                 (hand-written fakes for managed ports)
-.mockery.yaml                            (mockery configuration at repo root)
-//go:generate ...                        (directives beside each interface)
-```
-
-Full Go code for each artifact: `references/go-mock-implementation.md`.
+Generated mocks sit beside the consuming package as `<port>_moq.go` (`go-project-structure`); hand-written fakes under `internal/test/fakes/`; shared behaviour suites under `internal/test/portsuite/`.

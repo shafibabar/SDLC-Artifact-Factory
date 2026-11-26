@@ -1940,7 +1940,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.5.0"
+        "version": "2.6.0"
       },
       {
         "created": "2026-06-25",
@@ -2510,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -7311,14 +7311,14 @@
         "dir": "skills/mock-generation",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "mock-generation",
         "owner": "test-strategist",
         "phase": "implement",
@@ -7326,29 +7326,40 @@
           "go-test-doubles"
         ],
         "related": [
+          "go-contract-test",
           "go-integration-test",
+          "go-makefile",
+          "go-mutation-test",
           "go-project-structure",
           "go-unit-test",
+          "multi-tenancy-design",
+          "python-unit-test",
           "react-component-testing",
-          "test-fixture-design"
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/architecture-patterns-with-python-percival-gregory.md",
+          "research/testing/contract-testing-in-action-cruz-prescott.md",
+          "research/testing/go-coverage-official-docs.md",
+          "research/testing/gremlins-official-docs.md",
+          "research/testing/moq-official-docs.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
           "fakes",
           "go",
-          "gomock",
           "implement",
           "interface-isolation",
           "managed-dependency",
-          "mockery",
           "mocks",
           "moq",
           "stubs",
           "test-doubles",
           "unmanaged-dependency"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-24",
@@ -11178,8 +11189,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1213,
-    "edges_skill_sources": 313,
+    "edges_skill_related": 1219,
+    "edges_skill_sources": 319,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11191,20 +11202,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 89,
+    "research_files_cited": 91,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 132,
+    "skills_with_contract_test": 131,
     "skills_with_domain": 190,
-    "skills_with_evals": 57,
-    "skills_with_examples": 57,
+    "skills_with_evals": 58,
+    "skills_with_examples": 58,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 56,
-    "skills_with_scripts": 50,
-    "skills_with_sources": 58,
+    "skills_with_resources": 57,
+    "skills_with_scripts": 51,
+    "skills_with_sources": 59,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 55
+    "skills_with_templates": 56
   },
   "edges": {
     "agent_produces": [
@@ -15791,7 +15802,19 @@
         "skill": "message-broker-selection"
       },
       {
+        "related": "go-contract-test",
+        "skill": "mock-generation"
+      },
+      {
         "related": "go-integration-test",
+        "skill": "mock-generation"
+      },
+      {
+        "related": "go-makefile",
+        "skill": "mock-generation"
+      },
+      {
+        "related": "go-mutation-test",
         "skill": "mock-generation"
       },
       {
@@ -15803,11 +15826,23 @@
         "skill": "mock-generation"
       },
       {
+        "related": "multi-tenancy-design",
+        "skill": "mock-generation"
+      },
+      {
+        "related": "python-unit-test",
+        "skill": "mock-generation"
+      },
+      {
         "related": "react-component-testing",
         "skill": "mock-generation"
       },
       {
         "related": "test-fixture-design",
+        "skill": "mock-generation"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "mock-generation"
       },
       {
@@ -18607,6 +18642,30 @@
       {
         "skill": "message-broker-selection",
         "source": "research/software-architecture/rabbitmq-in-depth-roy.md"
+      },
+      {
+        "skill": "mock-generation",
+        "source": "research/software-architecture/architecture-patterns-with-python-percival-gregory.md"
+      },
+      {
+        "skill": "mock-generation",
+        "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
+      },
+      {
+        "skill": "mock-generation",
+        "source": "research/testing/go-coverage-official-docs.md"
+      },
+      {
+        "skill": "mock-generation",
+        "source": "research/testing/gremlins-official-docs.md"
+      },
+      {
+        "skill": "mock-generation",
+        "source": "research/testing/moq-official-docs.md"
+      },
+      {
+        "skill": "mock-generation",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "moscow-prioritization",
