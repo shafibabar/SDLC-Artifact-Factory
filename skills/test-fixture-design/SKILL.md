@@ -93,6 +93,7 @@ Worked cases: `./examples/01-lean-tool-library.md` (one Python service, single t
 
 ## Gotchas
 
+- whenever a test commits data: that a **cleanup failure is reported** (it fails or logs on the test, never an ignored error), and show that in the sketch;
 - **Wrapping an outbox or concurrent-writer test in the rollback transaction.** The second connection sees nothing, so it fails or, if it asserts absence, passes for nothing. Use scoped data and say why.
 - **Reaching for scoped data "to be safe", or because the tenant ID is there.** Rollback is the default; a real commit needs a named reason.
 - **Scoped keys and a process that reads every row.** A relay or batch job picks up other tests' rows. Filter it to the test's keys or give that test a schema or database of its own.
