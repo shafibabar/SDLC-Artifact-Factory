@@ -54,7 +54,7 @@ Success criterion, Conformance level, Complete process, Roving tabindex.
 
 ## Caveats
 
-- [unverified] 2.2's added criteria (not read). The authoring practices are guidance, separate from the WCAG requirements (their normative status was not read). Pattern lists above are partial.
+- 2.2's changes, conformance and tool coverage are in `wcag-22-official-docs.md` (accessed 2026-11-26). The authoring practices are guidance, separate from the WCAG requirements (their normative status was not read). Pattern lists above are partial.
 
 ## Answers to audit questions
 

@@ -10,6 +10,7 @@ Format: [Semantic Version] — Date — Description
 
 ### Added
 
+- 2026-11-26 — **Wave 3 research: WCAG 2.2 (#1474, PR #1481).** `research/testing/wcag-22-official-docs.md`: new success criteria and what automated tools can check.
 - 2026-11-26 — **Wave 3 research: Python Gherkin tools (#1473, PR #1480).** `research/testing/python-gherkin-tools-official-docs.md`; recommends pytest-bdd 9.x with guards.
 - 2026-11-25 — **Wave 3 research: official documentation for front-end test tools (#1458, PR #1468).** Seven `research/testing/` notes (Testing Library, MSW, Vitest, Stryker, jest-axe and axe-core, Playwright, WCAG and ARIA Authoring Practices).
 - 2026-11-25 — **Wave 3 research: official documentation for Python test tools (#1457, PR #1467).** Nine `research/testing/` notes (coverage, mutmut, pytest, pytest-asyncio, pytest-benchmark, testcontainers-python, jsonschema, oasdiff, Hypothesis); D048 records the Go coverage decision.
