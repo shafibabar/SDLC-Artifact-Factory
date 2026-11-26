@@ -12,9 +12,10 @@ Run after `validate-test-doubles.sh` (the skill's script) is clean. The script f
 
 ## Generated mocks
 - [ ] moq, version pinned, directive beside the port, no hand edits, no `-skip-ensure`; any `-stub` has a reason.
-- [ ] Each generated file carries the generated marker (looked at, not assumed) and is committed.
+- [ ] Each generated file ends `_moq.go`, is written by a directive and is committed.
 - [ ] CI regenerates and fails on a changed or untracked file.
-- [ ] The coverage filter and mutation settings catch these files; the exclusion register lists them.
+- [ ] The coverage filter and mutation settings exclude `_moq.go` by name; any filter matching only `_mock.go` is corrected; the exclusion register lists them.
+- [ ] Optional, unverified: the generated header line was looked at; it is not used as the filter.
 
 ## Fakes
 - [ ] Compile-time assertion; copies in and out; the port's errors; tenant scope from the design.

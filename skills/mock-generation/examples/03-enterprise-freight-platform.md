@@ -14,7 +14,7 @@
 | `PricingClient.Quote` | Other service, a query | Stub (moq struct) | Nothing about the call |
 | `YardClient.ReserveBay` | Other service, a command | moq mock | One reservation: shipper, shipment |
 
-Refused: excluding the fakes. They are hand-written, so the 100% gate counts them; only the `_moq.go` files leave it automatically. Cover each fake method and fault field. Any line that still cannot be covered goes to the product owner with its reason.
+Refused: excluding the fakes. They are hand-written, so the 100% gate counts them; only the files ending `_moq.go` leave it, excluded by name (a filter matching only `_mock.go` must be corrected to `_moq.go`). Cover each fake method and fault field. Any line that still cannot be covered goes to the product owner with its reason.
 
 ```go
 // internal/test/fakes/shipment_repo.go

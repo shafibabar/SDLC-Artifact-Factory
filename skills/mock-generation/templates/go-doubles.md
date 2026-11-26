@@ -185,3 +185,11 @@ generate-check:
 	go generate ./...
 	@test -z "$$(git status --porcelain)" || { git status --porcelain; echo "generated code is stale or not committed"; exit 1; }
 ```
+
+## Coverage filter (by file name)
+
+In the project's coverage script, before the profile is judged. Replace any `_mock\.go` pattern with this one.
+
+```bash
+grep -v '_moq\.go:' coverage.out > coverage.filtered.out
+```

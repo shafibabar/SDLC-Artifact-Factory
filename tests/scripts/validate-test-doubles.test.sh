@@ -34,7 +34,8 @@ bad mockery-config .mockery.yaml M5 'all: false'
 bad makefile-mockery Makefile M5 '	mockery --all'
 bad latest Makefile M5 '	go install github.com/matryer/moq@latest'
 bad orphan sender_moq.go M5 "$MARK"
-bad wrong-name sender_mock.go M5 "$MARK"
+bad old-filter-sh check-coverage.sh M6 "grep -Ev '_gen\.go:|_mock\.go:' coverage.out"
+bad old-filter-yaml .gremlins.yaml M6 '    - ".*_mock\.go"'
 bad repo-calls a_test.go M2 '	require.Len(t, repo.SaveCalls(), 1)'
 bad repo-calls-named a_test.go M2 '	require.Len(t, orderRepository.SaveCalls(), 1)'
 bad py-repo-assert test_a.py M2 'fake_repo.save.assert_called_once_with(order)'
@@ -48,7 +49,10 @@ var _ Port = (*OrderRepo)(nil)"
 mkdir -p "$TMP/bad/no-marker"
 printf '%s\n' "$DIRECTIVE" > "$TMP/bad/no-marker/ports.go"
 printf 'package app\n' > "$TMP/bad/no-marker/sender_moq.go"
-expect "moq file without marker" 1 "FAIL M6 " "$TMP/bad/no-marker"
+expect "moq file without marker only warns" 0 "WARN M6 " "$TMP/bad/no-marker"
+mkdir -p "$TMP/warn-name"
+printf '%s\npackage app\n' "$MARK" > "$TMP/warn-name/sender_mock.go"
+expect "moq header under another name warns" 0 "WARN M5 " "$TMP/warn-name"
 
 mkdir -p "$TMP/good/app" "$TMP/good/internal/test/fakes" "$TMP/good/vendor/x"
 printf '%s\n' "$DIRECTIVE" > "$TMP/good/app/ports.go"
@@ -68,6 +72,7 @@ require.Len(t, sender.SendCalls(), 1)
 require.Len(t, reporter.SendCalls(), 1)
 GO
 printf 'import "go.uber.org/mock/gomock"\n' > "$TMP/good/vendor/x/v.go"
+printf "grep -v '_moq\\.go:' coverage.out\n" > "$TMP/good/check-coverage.sh"
 printf 'publisher.publish.assert_called_once_with(event)\n' > "$TMP/good/test_ok.py"
 expect "clean tree passes, vendor skipped" 0 "0 FAIL, 0 WARN" "$TMP/good"
 

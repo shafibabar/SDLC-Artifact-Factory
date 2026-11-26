@@ -55,11 +55,17 @@ It belongs in the `ci` target that `go-makefile` owns, on a clean checkout. `git
 
 ## Coverage and mutation
 
-- Go does not exclude generated files from coverage. The gate script drops files carrying the marker line matching `^// Code generated .* DO NOT EDIT\.$`, and the branch tool's wrapper filters them too.
-- That moq v0.8.1 writes exactly such a line is unverified. Look at the first lines of the generated file; the script fails a `_moq.go` without it. If it is absent, the file is not automatically excluded: report it.
-- A filter keyed on names must match `_moq.go`. One that matches only `_mock.go` counts the mock.
+- Go does not exclude generated files from coverage. The coverage filter excludes files ending `_moq.go` **by name**, applied to the profile before it is judged:
+
+  ```bash
+  grep -v '_moq\.go:' coverage.out > coverage.filtered.out
+  ```
+
+- **A filter that matches only `_mock.go` must be corrected to `_moq.go`**: as written it counts every moq file. The branch tool's wrapper uses the same name rule.
+- The name is trustworthy only for moq output: `validate-test-doubles.sh` fails a `_moq.go` file that no moq directive writes. Never give a hand-written file that name.
+- Optional extra check, **unverified**: whether moq v0.8.1 writes a line matching `^// Code generated .* DO NOT EDIT\.$`. The script only warns when it is missing. It is never the coverage filter.
 - Record each generated mock in the strategy's exclusion register: path or pattern (`**/*_moq.go`), kind `generated`, reason, approval. Adding an entry edits an approved artifact, which returns it to the product owner.
-- Mutation: the exclusion setting (Gremlins `unleash.exclude-files`) covers generated files and approved exclusions only.
+- Mutation: the exclusion setting (Gremlins `unleash.exclude-files`) matches `_moq.go` for these mocks, and otherwise covers only other generated files and approved exclusions.
 - Hand-written fakes, port suites and helpers under `internal/test/` are counted. Cover them or list them for approval.
 
 ## Replacing mockery, gomock or testify mocks

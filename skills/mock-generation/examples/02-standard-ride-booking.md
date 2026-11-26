@@ -70,4 +70,4 @@ func TestRelay_PublishesPendingRow(t *testing.T) {
 
 What the helpers do: `fakes.NewRideRepo` keeps rides and their outbox entries in memory, stores copies, and returns `domain.ErrNotFound` for an unknown ride. `Outbox` returns a copy of the entries. It cannot show that ride and row commit together: that is an integration test with a real commit (`test-fixture-design`). An unconfigured moq method panics and fails the test.
 
-Then: remove the gomock directives and module dependency, run `go generate ./...`, run the validator and the freshness check. The old controller failed a test automatically on a missing or extra call; moq does not, so each expectation that mattered is now a written assertion.
+Then: remove the gomock directives and module dependency, run `go generate ./...`, run the validator and the freshness check. Correct a coverage or mutation filter that matches only `_mock.go` to `_moq.go`. The old controller failed a test automatically on a missing or extra call; moq does not, so each expectation that mattered is now a written assertion.
