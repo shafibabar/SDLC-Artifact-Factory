@@ -7,7 +7,7 @@ description: >
   the image, run migrations, local-up), the check-freshness pattern for
   generated artifacts, and the single-entrypoint-for-common-tasks
   discipline. The Python analog of go-makefile.
-version: 1.0.0
+version: 2.0.0
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
@@ -49,7 +49,7 @@ must always run. See "The Standard Target Set" and `references/toolchain-and-ci.
 
 Every target must be invocable identically on a developer's machine and inside CI — no target that
 only works because a CI-only secret, environment variable, or network path is present. `test`
-writes coverage to the same relative path in both places; `lint` reads the same `pyproject.toml`
+runs the same coverage gate script in both places; `lint` reads the same `pyproject.toml`
 config in both. The moment a target diverges — a "fast" local variant, a CI-only extra flag —
 "passes locally" and "passes in CI" stop being the same claim, and the gap is exactly where
 "worked on my machine" bugs live. CI must call `make ci`, never re-list raw `ruff`/`mypy`/`pytest`
@@ -62,7 +62,7 @@ explicitly-named pipeline stage, not in this Makefile.
 ## One Command Per Common Task
 
 Every routine a developer performs more than once gets exactly one target — `make test`, not a
-half-remembered `uv run pytest -xvs tests/ --cov=app --cov-report=term-missing`. The target is the
+half-remembered `uv run pytest` command with a string of flags. The target is the
 memory: the flags, paths, and config live inside it, discoverable by `make help`, changed in one
 place. A developer who never has to reconstruct a command never reconstructs it *wrong*, and a new
 teammate learns the service's whole operational surface from the target list alone. This is the
@@ -83,7 +83,7 @@ Full annotated Makefile with every target body: `references/makefile-targets.md`
 | `format` | `ruff format . && ruff check --fix .` | The only target that *writes* — never in `ci` |
 | `lint` | `ruff format --check . && ruff check .` | Read-only; the CI form of `format` |
 | `typecheck` | `mypy app tests` | The gate Go's compiler gives for free — mandatory, not optional |
-| `test` | `pytest` (config in `pyproject.toml`) | `pytest-asyncio` for async handlers; coverage threshold enforced here |
+| `test` | `scripts/check-python-coverage.sh` (runs `pytest`) | 100% line and branch gate over the full run (`python-unit-test`) |
 | `migrate` | `alembic upgrade head` | Applies `python-migration`'s revisions; forward-only in production |
 | `build` | `docker build` | Thin local wrapper over `python-dockerfile`'s `Dockerfile` |
 | `local-up` | `kind` cluster + apply manifests | Local dev stack — Postgres, Redpanda, the service |
@@ -160,7 +160,7 @@ coroutines — *is* checked, but by `ruff`/`mypy` statically, not by a runtime d
 | One command per task | Every routine is a single named target; flags live inside it | A README telling developers to type a long `uv run pytest ...` by hand |
 | `typecheck` mandatory | `mypy` in `ci`, failures break the build, `--strict` with recorded opt-outs | `mypy` absent, advisory-only, or blanket `ignore_errors` |
 | Single CI entry, order preserved | `make ci` runs `install lint typecheck test freshness` in that order | Gates reordered without cost justification, or an ad-hoc CI script |
-| Coverage enforced | `test` fails below the `--cov-fail-under` threshold | Coverage printed but not gating |
+| Coverage enforced | `test` fails on any line or branch not run, or on no result | `--cov-fail-under`, a percentage, or coverage printed but not gating |
 | Freshness enforced | `make ci` fails on any uncommitted regen/lock diff | Stale generated code or `uv.lock` allowed to merge |
 | No phantom race target | No race-detector target; the GIL rationale is stated | A `test-race` target that detects nothing |
 | `.PHONY` complete, `help` present | Every task target `.PHONY`; `make help` lists them | A file named like a target silently shadowing it |
@@ -192,6 +192,6 @@ every task target `.PHONY`; a self-documenting `help` target. Full listing:
 `references/makefile-targets.md`.
 
 **`pyproject.toml`** (toolchain sections) — `[tool.ruff]`, `[tool.mypy]` (`strict = true`),
-`[tool.pytest.ini_options]` (with `--cov-fail-under`), and the `[project]`/`uv` dependency
+`[tool.pytest.ini_options]` (no coverage flags), and the `[project]`/`uv` dependency
 metadata the targets read. Full config and the GitHub Actions workflow that calls `make ci`:
 `references/toolchain-and-ci.md`.

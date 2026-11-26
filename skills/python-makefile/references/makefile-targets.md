@@ -64,13 +64,18 @@ lint: ## Check formatting and lint rules (read-only)
 typecheck: ## Static type check (mypy --strict, config in pyproject.toml)
 	uv run mypy $(PKG) $(TESTS)
 
-# ---- test: the whole suite, coverage threshold enforced ---------------------
-# pytest-asyncio drives the async FastAPI handlers, asyncpg pool, and aiokafka
-# consumers. --cov-fail-under (in pyproject.toml) makes coverage a gate, not a
-# printed number. NO race-detector flag exists or belongs here: under the GIL
-# pure-Python code has no shared-memory data race to detect.
-test: ## Run the full test suite with coverage gating
-	uv run pytest
+# ---- test: the full suite behind the line and branch coverage gate ----------
+# The script (copied from python-unit-test) runs pytest itself and fails on any
+# line not run, branch not taken or "no result". e2e needs a live environment and
+# is skipped here; unit and integration tests can never be skipped. NO
+# race-detector flag exists or belongs here: under the GIL pure-Python code has
+# no shared-memory data race to detect.
+SOURCE     := src/classification   # measured package (python-project-structure)
+EXCEPTIONS := coverage-exceptions.txt
+test: ## Run the test suite with the line and branch coverage gate
+	uv run bash scripts/check-python-coverage.sh --source $(SOURCE) --skip-suite e2e \
+		--skip-suite chaos --skip-suite performance --skip-suite load \
+		$(if $(wildcard $(EXCEPTIONS)),--exclusions $(EXCEPTIONS))
 
 # ---- migrate: apply Alembic revisions ---------------------------------------
 # Alembic is used purely as a migration runner against hand-written SQL (no
@@ -122,7 +127,7 @@ ci: install lint typecheck test freshness ## Everything CI runs — gates the me
 | `format` | `ruff format .` then `ruff check --fix .` | Always (it mutates to conform) | Only on an internal tool error — never on a style finding, because it fixes them |
 | `lint` | `ruff format --check .` then `ruff check .` | Tree is already formatted and lint-clean | Any file unformatted or any lint rule violated |
 | `typecheck` | `mypy app tests` | No type error under `strict` | Any type error not covered by a recorded per-module opt-out |
-| `test` | `pytest` | All tests pass and coverage ≥ `--cov-fail-under` | A test fails or coverage falls below threshold |
+| `test` | `check-python-coverage.sh` | All tests pass and every line and branch ran | A test fails, a line or branch is not run, or the run gives no result |
 | `migrate` | `alembic upgrade head` | Every pending revision applies | A revision errors or the DB is unreachable |
 | `build` | `docker build -t $(IMAGE):$(TAG) .` | The image builds | The `Dockerfile` (python-dockerfile's) fails |
 | `local-up` | kind create + load + `kubectl apply -k` | The stack comes up | Cluster creation or manifest apply fails |

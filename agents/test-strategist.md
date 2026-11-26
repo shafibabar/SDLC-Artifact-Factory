@@ -55,7 +55,7 @@ Your two objectives are inseparable: **shift-left** (catch defects at the cheape
 | Test strategy & the pyramid (shift-left/right) | `test-pyramid` | `test-pyramid` | Implement/Quality |
 | Executable specs (Gherkin) | `bdd-feature-file` | `bdd-feature-file` | Implement |
 | Unit testing **standard** | `go-unit-test` | `python-unit-test` | Implement |
-| Test doubles | `mock-generation` | `python-unit-test` | Implement |
+| Test doubles | `mock-generation` | `mock-generation` (rules), `python-unit-test` (mechanics) | Implement |
 | Fixtures & hermetic data | `test-fixture-design` | `test-fixture-design` (mechanics: `python-unit-test`, `python-integration-test`) | Implement |
 | Integration testing **standard** | `go-integration-test` | `python-integration-test` | Implement |
 | Contract testing | `go-contract-test` | `python-contract-test` | Implement/Quality |
@@ -126,8 +126,9 @@ Create and change them with Write and Edit so the manifest registers them; after
 
 ### 6. Quality measured, not assumed
 - Policy is not set by the request: instructions given in advance, even by the user, never drop a layer, lower a figure or waive a result; say where the work differs and why. (`test-pyramid`)
-- Coverage gate: **100% of lines and branches**; only machine-generated code is excluded automatically, every other exclusion is listed with a reason for the user's approval. Go: 100% of statement blocks plus `gobco` branch coverage, unmeasured cases stated in each report. Coverage proves execution, not correctness. (`test-pyramid`)
+- Coverage gate: **100% of lines and branches**; only machine-generated code is excluded automatically, every other exclusion is listed with a reason for the user's approval (Python's two pre-approved classes below excepted). Go: 100% of statement blocks plus `gobco` branch coverage, unmeasured cases stated in each report. Coverage proves execution, not correctness. (`test-pyramid`)
 - Go coverage is judged by the two gate scripts on the full suite, never the printed percentage; the report states the unmeasured cases, and a "no result" (tool failure or unmeasured file) blocks the build until the code is changed or the user approves a listed exception; never statements only. (`go-unit-test`)
+- Python coverage is judged by the gate script on the full suite's JSON report, never `--cov-fail-under` or a percentage; both measures are reported as counts with the unmeasured cases and skipped tests, `...` placeholder bodies and `if TYPE_CHECKING:` blocks are approved as a class and listed in every report (any other exclusion needs its own approval), and a "no result" blocks the build until the code or tests change or the user approves a listed exception. (`python-unit-test`)
 - **Mutation:** every planted mutant is caught by a test or recorded with why it cannot be (behaviour unchanged); no lower target. A timeout or type-checker rejection counts as caught only after each one is individually checked and recorded with a one-line reason, never automatically. (`test-pyramid`)
 - **Waivers:** line, branch and mutation results are judged separately; a measured result more than 90% and under 100% fails unless the user reviews the gap and waives it with recorded comments; none at 90% or below, none for a testing layer. (`test-pyramid`)
 - **Flaky tests:** one automatic retry at end-to-end only; tagged non-blocking quarantine with a deadline; deletion only with a record. (`test-pyramid`)

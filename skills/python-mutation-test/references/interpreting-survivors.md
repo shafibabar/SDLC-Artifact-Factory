@@ -10,15 +10,15 @@ steps and the 60% threshold below rather than assuming the parent `SKILL.md` bod
 
 ## The Precise Relationship to Coverage
 
-`python-makefile` enforces a **line-coverage** gate via `pytest --cov` on every `make ci` run.
+`python-makefile` runs the **100% line and branch coverage** gate (`python-unit-test`) on every `make ci` run.
 This skill enforces **60% mutation score** on a narrower package set, on a weekly-plus-pre-release
 schedule. These are not the same metric at two numbers — they answer two different questions, on
 two different cadences:
 
-| | Line coverage (`python-makefile`) | Mutation score (this skill) |
+| | Line and branch coverage (`python-unit-test`) | Mutation score (this skill) |
 |---|---|---|
 | Question answered | Did this line execute during any test? | Did a test notice when this line's behaviour changed? |
-| Gate | line-coverage floor, every `make ci` (every PR) | 60%, weekly + pre-release |
+| Gate | 100% of lines and branches, every `make ci` (every PR) | 60%, weekly + pre-release |
 | Scope | whole `src/` minus generated/mock files | `domain/`, `service_layer/` only |
 | Gameable by | assertion-free tests that merely execute code | nothing comparable — killing a mutant needs a real behavioural assertion |
 | A failure means | untested code shipped | a test runs this line but would not catch a real bug in it |
@@ -178,7 +178,7 @@ explicit, reviewed addition to `paths_to_mutate`, never a silent broadening of s
 
 ## Threshold Justification, in Depth
 
-60% is set below `python-makefile`'s line-coverage number for a structural reason, not an arbitrary
+60% is set below the 100% coverage figure for a structural reason, not an arbitrary
 one: coverage's ceiling is a true 100% — every statement either ran or it did not, with no analog
 to an equivalent mutant. Mutation score's ceiling is **below** 100% for any nontrivial function,
 because some fraction of generated mutants — exactly the `clamp_page_size` shape above — are

@@ -7,7 +7,7 @@ description: >
   frugal), interpreting survivors to find weak tests, and scoping to the
   domain/service layer. The Python analog of go-mutation-test. Authored and
   applied by the test-strategist.
-version: 1.2.0
+version: 1.2.1
 phase: quality
 owner: test-strategist
 created: 2026-07-31
@@ -57,7 +57,7 @@ Coverage tells you which lines *ran* during tests — never whether a test would
 
 ## Mutation-Score Threshold — Distinguished from Coverage
 
-**60%**, enforced on the targeted `domain`/`service_layer` packages only — deliberately lower than, and measuring a different axis than, `python-makefile`'s line-coverage gate. Coverage answers "did this line execute"; mutation score answers "did a test notice when this line's behaviour changed." A package can sit at 100% line coverage (every statement ran) and far below 60% mutation score (nothing asserted the value) — expected, not a contradiction. The threshold is set below coverage's because a meaningful fraction of generated mutants in any nontrivial function are **equivalent** — different syntax, identical behaviour for every reachable input — and chasing 100% means hunting unkillable mutants instead of writing tests that catch real bugs. 60% is a floor proven achievable by disciplined parametrized testing (`python-unit-test`), raisable per product for compliance-critical logic. Worked 100%-coverage-with-survivor proof: `references/interpreting-survivors.md`.
+**60%**, enforced on the targeted `domain`/`service_layer` packages only — deliberately lower than, and measuring a different axis than, the 100% line and branch coverage gate (`python-unit-test`). Coverage answers "did this line execute"; mutation score answers "did a test notice when this line's behaviour changed." A package can sit at 100% line coverage (every statement ran) and far below 60% mutation score (nothing asserted the value) — expected, not a contradiction. The threshold is set below coverage's because a meaningful fraction of generated mutants in any nontrivial function are **equivalent** — different syntax, identical behaviour for every reachable input — and chasing 100% means hunting unkillable mutants instead of writing tests that catch real bugs. 60% is a floor proven achievable by disciplined parametrized testing (`python-unit-test`), raisable per product for compliance-critical logic. Worked 100%-coverage-with-survivor proof: `references/interpreting-survivors.md`.
 
 ---
 

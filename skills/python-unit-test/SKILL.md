@@ -1,220 +1,124 @@
 ---
 name: python-unit-test
 description: >
-  Teaches how to write Python unit tests with pytest —
-  function-scoped @pytest.fixture, @pytest.mark.parametrize example tables,
-  pytest-asyncio for async domain/service tests, the fakes-over-mocks
-  discipline (a set-backed FakeRepository over pytest-mock, per Khorikov +
-  cosmic-python), AAA structure, and coverage. The fast domain-model layer.
-  The Python analog of go-unit-test. Authored by the
-  test-strategist; applied test-first by the backend-engineer.
-version: 1.1.0
-phase: quality
+  Use when backend-engineer, test-strategist or anyone writes, reviews or fixes
+  Python unit tests in the Implement phase: pytest, test-first (TDD),
+  parametrize tables, fixtures and conftest.py, deriving cases (boundaries,
+  decision tables, state transitions), pytest-asyncio and async tests that pass
+  while checking nothing, fakes and fake Unit of Work, AsyncMock and mocking a
+  publisher or repository, fake clocks, Hypothesis property tests, or Python
+  coverage: pytest-cov, coverage.py, --cov-fail-under, 100% line and branch
+  gates, pragma no cover and exclusions. Produces pytest-suite.
+version: 2.0.0
+phase: implement
 owner: test-strategist
 created: 2026-07-31
-tags: [quality, python, pytest, unit-test, fixtures, parametrize, pytest-asyncio, fakes-over-mocks, aaa, coverage, four-pillars, tdd]
+tags: [implement, python, pytest, unit-test, parametrize, fixtures, pytest-asyncio, fakes, hypothesis, tdd, coverage, branch-coverage]
 produces: pytest-suite
 domain: testing
 status: stable
-related: [go-unit-test, python-domain-model, python-service-layer, test-fixture-design]
-tools: [Bash]
+related: [test-pyramid, mock-generation, test-fixture-design, go-unit-test, python-domain-model, python-service-layer, python-repository-pattern, python-project-structure, python-makefile, python-integration-test, python-contract-test, python-mutation-test]
+sources:
+  - research/testing/unit-testing-khorikov.md
+  - research/testing/software-testing-craftsman-jorgensen.md
+  - research/testing/python-testing-with-pytest-okken.md
+  - research/testing/pytest-official-docs.md
+  - research/testing/pytest-asyncio-official-docs.md
+  - research/testing/coverage-official-docs.md
+  - research/testing/hypothesis-official-docs.md
+  - research/software-architecture/architecture-patterns-with-python-percival-gregory.md
 ---
 
 # Python Unit Test
 
 ## Purpose
 
-Unit tests are the base of the pyramid: fast, deterministic, isolated checks that a
-function, value object, or Aggregate behaves correctly. They run in milliseconds against
-in-memory fakes — never a real database, broker, clock, or socket — so a service can have
-thousands of them and each pinpoints one unit. This skill is the Python analog of
-`go-unit-test`; the test-strategist authors it and the backend-engineer applies it **test-first** (TDD) for
-`python-domain-model` and `python-service-layer`, and every other Python test skill
-(`python-integration-test`, `python-contract-test`) treats this one's conventions —
-fixture shape, parametrize tables, fakes-over-mocks — as baseline, not something to
-restate.
+This skill owns how Python unit tests are derived, written and measured; the other Python test skills take it as the baseline. It follows the same policy as `go-unit-test`; only the mechanics differ. `test-strategist` authors the standard; `backend-engineer` applies it. `test-pyramid` owns layers and gates, `mock-generation` the rules for doubles, `test-fixture-design` test data.
 
-Three Python realities diverge honestly from Go and shape everything below:
+## Fixed rules
 
-- **Fixtures + parametrize replace Go's table-driven struct.** Go packs cases into a
-  `[]struct{name; want}` looped with `t.Run`; pytest splits the two roles — `@pytest.fixture`
-  supplies dependencies by injection, `@pytest.mark.parametrize` supplies the example table
-  as decorator rows, each reported as its own pass/fail. Neither is "more correct"; they are
-  different idioms for the same AAA discipline.
-- **Async is not free — `pytest-asyncio` is load-bearing.** The stack (FastAPI + asyncpg +
-  aiokafka) is `async def` end to end, so `async def test_` coroutines need an event loop.
-  Go's `testing.T` runs any goroutine synchronously; pytest needs `asyncio_mode = "auto"`
-  configured or the coroutine is never awaited and the test **silently passes without
-  running** — a failure mode with no Go equivalent.
-- **No compiler-enforced privacy.** Go's unexported fields cannot be reached from a test in
-  another package, so a test *must* assert through the public surface. Python's `_underscore`
-  is convention only — a test *can* reach private state, which makes the discipline of
-  asserting observable behaviour (below) a rule you enforce, not one the compiler enforces.
+A request does not change these, whoever makes it. Do the work as the rules require, say where it differs from what was asked and why, and never offer to switch a rule off.
 
----
-
-## Discovery and Plain `assert`
-
-pytest finds tests by convention, no registration: files `test_*.py`, functions `test_`,
-classes `Test*` (no `__init__`). A bare module of `test_` functions is a runnable suite —
-no base class, no suite object. Test layout mirrors package layout without wiring.
-
-Assert with Python's bare `assert`, never `unittest`'s `assertEqual`/`assertTrue`. pytest's
-assertion rewriting unpacks a failed `assert got == want` into a recursive diff of both
-operands — so the failure message is generated from the expression, no custom message
-needed. This is the single biggest ergonomic win over `unittest` and the reason this repo
-does **not** use the `unittest` vocabulary anywhere.
-
-```python
-def test_restricted_outranks_internal():
-    assert Sensitivity.RESTRICTED.outranks(Sensitivity.INTERNAL)   # rewritten diff on fail
-```
-
----
-
-## Fixtures and Parametrize — The Core
-
-A `@pytest.fixture` function's return (or `yield`) value is injected into any test naming
-it as a parameter — pytest's composable replacement for xUnit `setUp`/`tearDown`. `scope=`
-controls lifetime: `function` (default, per test — the unit-layer default), `class`,
-`module`, `session`. A `yield` fixture runs setup before the yield and teardown after,
-guaranteed even when the test fails. Fixtures in `conftest.py` are auto-discovered by every
-test file in that directory tree — never imported.
-
-`@pytest.mark.parametrize` turns one test function into N independent cases, each a row of
-input/expected data reported with its own id — Specification by Example in code. Adding a
-case is adding a data row, not copy-pasting a test. Always give each row an explicit `id=`
-so a failure names the case, not `test[0-1-2]`.
-
-For the unit layer, default to **function scope** (cheap, isolated) and a **factory
-fixture** when a test needs many configured domain objects
-(`make_data_asset(tenant=…, sensitivity=…)`). Fixture scopes, `conftest.py` layering,
-`yield` teardown, factory fixtures, parametrize `id=` tables, and a full worked DataAsset
-domain + service unit test: `references/fixtures-and-parametrize.md`.
-
----
-
-## Async Tests with pytest-asyncio
-
-Domain and service code here is `async def`, so its unit tests are too. Configure
-`asyncio_mode = "auto"` in `pyproject.toml` (`[tool.pytest.ini_options]`) so `async def
-test_` functions and `async def … yield` async fixtures run under an event loop without
-per-test `@pytest.mark.asyncio` boilerplate. **Verify the mode is set** — an un-awaited
-coroutine test is reported as passed, catching nothing (the async analog of an
-assertion-free test). Config, async fixtures, and the async FakeUnitOfWork drive:
-`references/fakes-async-coverage.md`.
-
----
-
-## Fakes Over Mocks — Mock Only the Unmanaged Edge
-
-This repo follows Khorikov's classical school and cosmic-python's fakes-over-mocks
-discipline. The rule for what earns a mock at all is the **managed vs. unmanaged
-dependency** distinction:
-
-- A **managed dependency** (your own Postgres, reachable only through your code) is verified
-  by its **end state** — a set-backed `FakeRepository` / `FakeUnitOfWork` for unit tests,
-  a `testcontainers-python` integration test for the real thing. **Never** a call-count
-  mock on a repository.
-- An **unmanaged dependency** (an aiokafka publish, a third-party HTTP call — a side effect
-  observable outside your app) *is* the behaviour that matters, so a `pytest-mock` `mocker`
-  patch verifying the interaction is the correct and only tool.
-
-Prefer a set-backed fake over `pytest-mock` for the owned path: assert on resulting state,
-not on how the code called its collaborators. **Never assert on a stub** — verifying a call
-that was only there to supply data couples the test to an implementation detail with zero
-behavioural payoff. The `FakeRepository`/`FakeUnitOfWork` implementations, the four-pillars
-rationale, and the narrow `mocker` use for the unmanaged edge: `references/fakes-async-coverage.md`.
-
----
-
-## AAA and One Behaviour Per Test
-
-Each test (or each parametrize row) follows **Arrange–Act–Assert**: build the world, call
-one thing, assert one observable outcome. More than one Act in a test usually means it is
-secretly an integration test or should split into two. Assert on **observable behaviour
-through the public surface** (`asset.sensitivity`, a returned DTO, a raised domain
-exception) — never a private `_field` or an internal call count, even though Python lets
-you reach them. Name tests after the behaviour in plain language
-(`test_returns_error_when_tenant_is_empty`), not the method signature.
-
-This is Khorikov's four pillars — protection against regressions, resistance to
-refactoring, fast feedback, maintainability — held as **multiplicative, not additive**: a
-test that asserts a private call count *looks* like more protection but destroys resistance
-to refactoring, zeroing out the rest. The full four-pillars framing is
-`references/fakes-async-coverage.md`.
-
----
-
-## Coverage — A Signal, Never a Target
-
-Wire `pytest-cov` (`--cov=src --cov-report=term-missing`) for a *gap signal* only. Coverage
-tells you a line executed, not that a meaningful assertion ran — an assertion-free test
-inflates it to 100% while catching nothing. Use it to find under-tested domain code (a
-useful negative signal); never accept a coverage number as evidence a suite is good. The
-suggested per-layer gate and its honest caveat: `references/fakes-async-coverage.md`.
-
----
-
-## Rules
-
-- **No real world.** No filesystem, network, database, or uncontrolled clock — fakes and
-  injected time only. A "unit" test needing a real database is an integration test; move it
-  to `python-integration-test`.
-- **Function-scoped fixtures at the unit layer**, factory fixtures for many objects,
-  `conftest.py` for sharing — never an import.
-- **Parametrize with explicit `id=`** for every example table.
-- **`asyncio_mode = "auto"`** configured and verified, or async tests silently no-op.
-- **Fakes for managed dependencies, `mocker` only for the unmanaged edge.** Never a
-  call-count mock on a repository; never assert on a stub.
-- **Assert observable behaviour**, never private state or call counts (a Python discipline,
-  not a compiler guarantee). One behaviour per test.
-- **Test-first (TDD).** The test precedes the code; the `tdd-gate` hook verifies it.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
+| # | Rule | Reason |
 |---|---|---|
-| Isolated | Fakes + injected time; no real FS/network/DB | A "unit" test hitting Postgres |
-| Fixtures unit-appropriate | Function scope; factory fixture for many objects | `session`-scoped mutable state shared across tests |
-| Parametrized tables | `@pytest.mark.parametrize` with explicit `id=` | Copy-pasted near-identical `test_` funcs |
-| Async wired | `asyncio_mode = "auto"`; async tests actually run | `async def test_` un-awaited, silently passing |
-| Fakes over mocks | Set-backed fake for the owned path | Call-count mock on a repository |
-| Mock only unmanaged edge | `mocker` for aiokafka/HTTP interaction only | Asserting on a stub that only supplied data |
-| AAA, one behaviour | Single Act; one observable assertion | Multiple Acts; assertion on a private `_field` |
-| Coverage as signal | `--cov` reported, not chased | A coverage % accepted as proof of quality |
-| Test-first | Test precedes code (`tdd-gate`) | Tests written after, to fit the code |
+| U1 | **Test first:** write a failing test, see it fail for the expected reason, write the least code that passes, refactor | The `tdd-gate` hook checks only that a matching test file exists, never order |
+| U2 | **Assert behaviour through the public surface, not internal state**: never a `_field` or internal call count | Such tests break on refactors that preserve behaviour (Khorikov) |
+| U3 | **No real world:** no file system, network, database, clock or randomness the test does not control; no sleeping | Results would vary between runs; a real dependency belongs in `python-integration-test` |
+| U4 | **Doubles:** a managed dependency is verified by state through a fake; mock only a port for an unmanaged one; never assert on a stub | One rule across every test (`mock-generation`) |
+| U5 | **Coverage is 100% of lines and branches.** Excluded without a per-file entry: machine-generated code, and two classes the product owner approved once (`...` placeholder bodies, `if TYPE_CHECKING:` blocks), listed in every report. Any other exclusion needs its own reason and approval. Never offer or record a lower figure | `test-pyramid` and the product owner's decision |
+| U6 | **A "no result" blocks the build** (failed or partial run, unmeasured file, unapproved exclusion). Remedy: change the code or tests, or list an exception for approval. Never report unmeasured code as passing | A gate that guesses proves nothing |
+| U7 | **A waiver exists only for a measured result above 90% and under 100%,** after the product owner reviews it and records comments, per measure and per run | None before a result; none at 90% or below |
 
----
+Every product size follows all seven. **Lean** means fewer cases and packages, never a lower figure, a skipped gate or tests written afterwards.
 
-## Anti-Patterns
+## What every answer states
 
-- **`unittest.TestCase` transliteration** — `assertEqual`/`setUp` inheritance instead of
-  bare `assert` + fixtures; discards pytest's assertion rewriting and composability.
-- **Missing `asyncio_mode`** — an `async def test_` that is collected, never awaited, and
-  reported green while asserting nothing.
-- **Call-count mock on a repository** — a managed dependency verified by interaction instead
-  of end state; Khorikov's classical-school violation.
-- **Asserting on a stub** — verifying a call that only arranged input; couples to an
-  implementation detail with zero behavioural payoff.
-- **Reaching private state** — `asset._sensitivity` in an assertion because Python lets you;
-  breaks resistance to refactoring exactly as a Go private-field access would if it compiled.
-- **Parametrize without `id=`** — failures read `test_x[0-1-2]` instead of naming the case.
-- **Chasing a coverage number** — writing assertion-free tests to hit a percentage.
-- **One giant test function** — a failure in the third scenario hides the rest; parametrize
-  rows report every case independently.
+Say these in words, beside any code; code that follows a rule silently leaves the reader free to undo it.
 
----
+1. **What kind of code it is** (quadrant) and which test proves each part. "Trivial" and glue code is still covered or listed.
+2. **How the cases were derived**, naming the technique, what was collapsed and what was not tried.
+3. **What is replaced or refused, by name, with the reason** (a private-state or call assertion on our own code is replaced because it **breaks when the code is refactored** although behaviour is unchanged; mocks are for unmanaged dependencies such as a broker, email or a third-party API): "`repo.save.assert_awaited_once()` is removed: the repository is ours, so the test reads the saved state". Give the compliant version.
+4. **What stays the default when one case differs**: "this publisher gets a mock; every repository still gets a fake, with no call assertions".
+5. **What a tool does that the reader cannot see**, whichever applies: an un-awaited async *test* fails on pytest 8.4 and later, but a forgotten `await` inside a test passes with only a warning unless that warning is an error; `assert_called_once` passes for a call never awaited; a mock verifies nothing until asserted; an empty parametrize list is skipped and the run stays green; autospec rejects wrong arguments; each script's exit codes.
+6. **Sketches:** every name declared or its origin named; each test asserts what its name claims.
+7. **Coverage, whenever it comes up:** that **branch measurement must be switched on** (`branch = true`; the gate runs with it); that **a lower figure or a lone percentage is not the gate** and no coverage flag stays in shared settings (`--cov-fail-under=100` may sit on the full gate command only, never as the whole check); that the gate **reads the JSON report of a full run and fails on any line not run or branch not taken**, and in the same place that **all three of: machine-generated code is excluded automatically; `...` placeholder bodies and `if TYPE_CHECKING:` blocks are approved once as a class and listed in every report (say "listed in every report"); any other exclusion needs its own reason and the product owner's approval**; that **the tool's own exit status is not enough**, because it passes at 100% with a pragma, `omit`, branch measurement off or an unimported folder; both measures as counts; the unmeasured cases (alternatives inside one line; zero-iteration loops; docstring-only bodies; child processes; hidden or skipped tests); generated files and the approved-class lines by file; other exclusions pending or approved; skipped tests counted (reported, not blocking); that the gate ignores the product's own coverage settings; a "no result" blocks the build, with its two remedies; a unit-only or filtered run gives no verdict.
+8. **At this size:** what lean changes and what it does not.
+9. **Decisions for the product owner**: each exclusion, each waiver after a result, any rule the request leaves undefined.
+10. **What was run.** Code not executed is called unverified.
 
-## Output Format
+## What deserves which test
 
-Produces pytest test files, written before the code they cover (TDD):
+| Code | Proof |
+|---|---|
+| Domain logic: complex, few collaborators | Thorough parametrized unit tests |
+| Complex and many collaborators | Split first: logic into plain classes, a thin wrapper left (Humble Object) |
+| Use case or handler: simple, many collaborators | One test per way it ends, against fakes; adapters and routes in integration tests |
+| Trivial | Through the behaviour that uses it; else its own small test, or listed |
 
-```
-tests/domain/test_data_asset.py            (parametrized invariant tests — no I/O)
-tests/application/test_classify_asset.py    (service tests against FakeUnitOfWork)
-tests/conftest.py                           (shared fixtures: factories, fakes)
-pyproject.toml                              ([tool.pytest.ini_options]: asyncio_mode, markers)
-```
+## Procedure
+
+1. Read the code or requirement, acceptance criteria, ports, `tests/fakes.py`, `pyproject.toml` and the test strategy's exclusion register.
+2. Classify the code with the table above.
+3. Derive the cases; open `./references/deriving-test-cases.md` for limits, condition combinations or state changes.
+4. Copy from `./templates/unit-test-skeletons.md` into `tests/unit/<layer>/test_<module>.py` with Write, before the implementation. A module holding only Protocols or errors needs its matching test file too, or the hook refuses it.
+5. Run it; see it fail for the expected reason. Then write the least code to pass and refactor.
+6. For tables, fixtures, time or randomness read `./references/test-shape-fixtures-isolation.md`; for async code `./references/async-and-silent-passes.md`; for doubles or test value `./references/doubles-and-value.md`; for invariants or untrusted input `./references/property-based-testing.md`.
+7. Check `pyproject.toml` against `./templates/pytest-settings.md`.
+8. Run `./scripts/validate-python-unit-tests.sh tests/unit tests/conftest.py tests/fakes.py` (those that exist), then `pytest`; fix and repeat until clean.
+9. Read `./references/coverage-gate.md`, then run `./scripts/check-python-coverage.sh` on the full suite. For each gap add the behaviour case it reveals; for each "no result" change the code or tests, or list the exception as pending (the build stays blocked); rerun until it passes.
+10. Copy `./templates/coverage-report.md` to `artifacts/<product>/quality/test-reports/` and fill it from the full run, for the product owner's approval.
+11. Tick `./resources/checklist.md` and answer with the statements above.
+
+Worked cases with real gate output: `./examples/01-lean-bakery-stamps.md` (all lines run, two branches missed), `./examples/02-standard-class-booking.md` (decision table, fake Unit of Work, mock, a listed class and a blocked pragma), `./examples/03-enterprise-energy-billing.md` (tenants, properties, concurrency, a waivable result beside one that is not).
+
+## Gotchas
+
+- **"An async test that is never awaited passes silently."** *Reason:* false on current pytest: it fails. The silent pass is a forgotten `await` *inside* a test. *Instead:* make those warnings errors.
+- **`--cov-fail-under` in `addopts`.** *Reason:* subset runs fail on coverage, and at 100 it still passes with code hidden. *Instead:* no coverage flags in shared settings; run the gate.
+- **`# pragma: no cover` or `omit` as routine.** *Reason:* each is an exclusion needing approval; only the two classes are pre-approved, and a `...` inside working code is not one. *Instead:* test it, change it, or list it.
+- **"All lines ran, so branches are fine."** *Reason:* an `if` without `else` has a second path. *Instead:* read the branch count.
+- **Asserting `repo.save` was awaited.** *Reason:* the repository is managed. *Instead:* read the record back; for "must not save", assert it is unchanged.
+- **A fake that returns the stored object itself.** *Reason:* the state assertion passes with `save` or `commit` missing. *Instead:* copy on read, roll back by default.
+- **Mocking a broker publish from a command handler with an outbox.** *Reason:* the handler publishes nothing. *Instead:* assert the outbox row.
+- **Patching a function by its import path.** *Reason:* it couples the test to the module's insides. *Instead:* pass the port in and autospec it.
+- **`datetime.now()`, `asyncio.sleep(1)` or global `random`.** *Reason:* the run decides the result. *Instead:* inject them.
+- **Adding calls with no assertion to reach 100%.** *Reason:* coverage proves only that code ran. *Instead:* write the behaviour case, or delete dead code.
+
+## Output
+
+| File | When to open it |
+|---|---|
+| `./references/deriving-test-cases.md` | Choosing cases |
+| `./references/test-shape-fixtures-isolation.md` | Tables, fixtures, time, randomness |
+| `./references/async-and-silent-passes.md` | Async code, or a suspicious pass |
+| `./references/doubles-and-value.md` | Fakes, mocks, quadrants |
+| `./references/property-based-testing.md` | Hypothesis |
+| `./references/coverage-gate.md` | Running or reporting coverage |
+| `./templates/unit-test-skeletons.md` | Writing test files |
+| `./templates/pytest-settings.md` | Settings and pinned tools |
+| `./templates/coverage-report.md` | Reporting a full run |
+| `./scripts/validate-python-unit-tests.sh` | Before hand-off, after every edit |
+| `./scripts/check-python-coverage.sh` | The coverage gate |
+| `./resources/checklist.md` | Before answering |
+
+Tests mirror the package under `tests/unit/` (`tests/unit/domain/test_dataasset.py`, the `python-project-structure` layout), with shared fakes in `tests/fakes.py` and fixtures in `conftest.py`.
