@@ -47,7 +47,7 @@ These hold at every size (lean, standard, enterprise), whoever asks, the product
 5. **Three angles, always:** at least one happy path, one negative and one edge criterion. There is no "no meaningful edge" exemption at any size.
 6. **Observable and testable:** a pass or fail outcome in business language, one action per Given/When/Then.
 7. **A quality target is not a criterion.** Speed, availability and the like are cited by NFR ID, or asked for.
-8. **Agreed criteria change only through the map and the product owner**, never to match what was built or to make a test pass.
+8. **Agreed criteria change only through the map and the product owner**, never to match what was built or to make a test pass. When the build (or a request) differs from an agreed rule, report both values and ask the product owner to decide: keep the rule (the build is then a defect), or change it through the map. Do not pronounce the verdict for them.
 9. **No false session.** An agent-run file says one agent drafted it and no workshop was held.
 
 When asked to break one: name the rule in a sentence or two, then do the useful work at once (draw or update the map, ask the question, write the edge criterion the map supports, give the correct ID). Never offer to switch a fixed rule on request. What the product owner **can** do is answer a question, change an agreed rule through the map, or move a case to another story.
@@ -62,6 +62,7 @@ In a chat reply as much as in the file:
 - which IDs cover the happy, negative and edge angles;
 - everything of the user's that was replaced, removed or not written, **by name**, with the reason (for example, "your 'the page is fast' is removed: a quality target, cite its NFR");
 - the verdict: **Drafted, awaiting your approval**, or **Not drafted**, with the blocking question IDs;
+- any mismatch between the map and what was built or asked, as a **decision addressed to the product owner** with both options (the criteria meanwhile follow the agreed map; this is not an open map question);
 - the open questions, addressed to the product owner, or "none";
 - that it was agent-run (or who took part);
 - the next step: answers; or approval, then `bdd-feature-file`.
