@@ -11,7 +11,7 @@ One row per artifact type this plugin can produce: Artifact Type, Producing Agen
 | OKR Set | product-strategist | `strategy/okr-authoring` | `artifacts/[product]/strategy/okrs/[cycle].md` | strategy | name, version, phase, owner, created, summary |
 | User Story Backlog | requirements-analyst | `user-story-writing` | `artifacts/[product]/ideate/user-stories.md` | ideate | name, version, phase, owner, created, summary |
 | Epic | requirements-analyst | `discovery/epic-definition` | `artifacts/[product]/ideate/epics/[epic-id].md` | ideate | name, version, phase, owner, created, summary |
-| Acceptance Criteria | requirements-analyst | `discovery/acceptance-criteria` | `artifacts/[product]/ideate/stories/[story-id]-ac.md` | ideate | name, version, phase, owner, created, summary |
+| Acceptance Criteria | requirements-analyst | `acceptance-criteria` | `artifacts/[product]/ideate/acceptance-criteria/US-[n].md` | ideate | name, version, phase, owner, created, summary |
 | Event Storm Board | domain-modeler | `domain-modeling/event-storming-facilitation` | `artifacts/[product]/design/event-storms/[domain].md` | design | name, version, phase, owner, created, summary |
 | Bounded Context Map | domain-modeler | `domain-modeling/bounded-context-mapping` | `artifacts/[product]/design/context-map.md` | design | name, version, phase, owner, created, summary |
 | ADR | enterprise-architect | `architecture/adr-authoring` | `artifacts/[product]/design/decisions/ADR-[NNN]-[slug].md` | design | adr-id, title, status, date, deciders |
