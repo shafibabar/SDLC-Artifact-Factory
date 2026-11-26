@@ -6,7 +6,7 @@ description: >
   vuln, cover) and the cost reasoning behind that order, the CI-Parity
   Principle (every target runs identically local and in CI, no CI-only
   branch), the race-detector-always-on standard, the enforced (not merely
-  measured) 100% statement coverage gate and its generated-code
+  measured) 100% statement and branch coverage gates and their generated-code
   exclusions, the arch target as the Dependency Rule fitness function
   (authoritative script owned jointly with go-project-structure), the vuln
   target's govulncheck scope versus go-dockerfile's Trivy image scan, the
@@ -39,7 +39,7 @@ passes on my machine" and "it passes in CI" are the same claim, not two claims t
 usually agree. `make ci` is the one command that gates a merge; if it is green, the change
 satisfies every standard this plugin holds for backend code.
 
-This skill produces the Makefile and the scripts it invokes (`check-go-line-coverage.sh`,
+This skill produces the Makefile, the scripts it invokes (the two coverage checks,
 `check-imports.sh`) and the linter config (`.golangci.yml`). `docker` is a thin, local-only
 wrapper over `docker build` — CI's own image stage (`ci-pipeline`) calls `docker/build-push-action`
 directly for registry caching and digest output instead, building the same `Dockerfile`
@@ -92,8 +92,7 @@ have caught in milliseconds:
 | 6 | `vuln` | Network/DB lookup | Least deterministic of the static checks |
 | 7 | `cover` | Slowest by far | Compiles and executes the entire suite under `-race` |
 
-`bench` and `docker` are intentionally absent from `ci` — see "Benchmarks" and "Container Build"
-below. Full reasoning per target: `references/quality-gate-targets.md`.
+`bench` and `docker` are intentionally absent from `ci` — see "Benchmarks" and "Container Build" below. Full reasoning per target: `references/quality-gate-targets.md`.
 
 ---
 
@@ -103,7 +102,8 @@ below. Full reasoning per target: `references/quality-gate-targets.md`.
 "fast" path without it. The blueprint requires zero data races; the only way to guarantee that is
 to never run tests without the detector. A race that appears only under `-race` in CI but not in
 a developer's habitual un-raced local run is the worst kind of flake — universal `-race` closes
-that gap by construction. Coverage is measured with `-covermode=atomic` specifically because
+that gap by construction. The one exception is the branch
+measurement (`gobco`), which repeats tests the line check already raced. Coverage is measured with `-covermode=atomic` specifically because
 `-race` is active: atomic counters are the only coverage-counter mode safe to increment under
 concurrent, race-detector-instrumented access.
 
@@ -112,15 +112,12 @@ concurrent, race-detector-instrumented access.
 ## Coverage: Enforced, Not Merely Measured
 
 **100%.** The product's gate is 100% of lines and branches (`test-pyramid`); this skill is a
-mechanism for it, not a second source of truth. `cover` enforces the statement half: any statement
-block that did not run fails the build, judged on exact counts, never on the printed percentage
-(one decimal can show a gap as 100.0%). Only machine-generated code is excluded automatically:
-moq mocks by file name (`_moq.go`) and files carrying the Go generated-code marker. Every other
-exclusion needs the user's approval, `cmd/**` composition roots included (with `-coverpkg=./...`
-they appear in the profile). The script is `go-unit-test`'s `check-go-line-coverage.sh`; the
-branch half is that skill's `check-go-branch-coverage.sh` (`gobco`), which this Makefile does not
-run. A green `cover` alone is therefore not the coverage gate. Wiring and rationale:
-`references/coverage-and-benchmark-standard.md`.
+mechanism for it, not a second source of truth. `cover` runs `go-unit-test`'s
+`check-go-line-coverage.sh` (statement blocks) then `check-go-branch-coverage.sh` (`gobco`), on exact
+counts, never a printed percentage. A gap blocks the build, and so does a **no result** (tool failure
+or unmeasured file): change the code so it can be measured, or list an exception for the user's
+approval; never fall back to statements only. Only machine-generated code is excluded automatically
+(`_moq.go` by name, the generated-code marker); `cmd/**` is counted. Wiring and rationale: `references/coverage-and-benchmark-standard.md`.
 
 ---
 
@@ -140,8 +137,7 @@ mechanism. Full reproduction and per-layer breakdown: `references/quality-gate-t
 check_layer "internal/domain" 'jackc/pgx' 'go-chi/chi' 'go\.opentelemetry\.io' ...
 ```
 
-This pairs with the architecture governance hook — defence in depth on the Dependency Rule, not
-a substitute for it: the hook can catch a design intent problem before code exists; this script
+This pairs with the architecture governance hook — defence in depth on the Dependency Rule, not a substitute for it: the hook can catch a design intent problem before code exists; this script
 catches an actual import-graph violation once code does.
 
 ---
@@ -192,7 +188,7 @@ caught violation. Full config: `references/quality-gate-targets.md`.
 | CI-Parity | Every target runs identically local and in CI; no CI-only branch or secret-gated logic | A target that only works in CI, or a "fast local" variant of a gate |
 | Race always on | `test`/`cover` always pass `-race`; `cover` uses `-covermode=atomic` | A test target without the race detector; `count`/`set` coverage mode under `-race` |
 | Single CI entry, order preserved | `make ci` runs `tidy, generate, vet, lint, arch, vuln, cover` in that order | CI re-listing ad-hoc commands; gates reordered without cost justification |
-| Coverage enforced and correctly scoped | Any statement block not run fails the build; only `_moq.go` files and generated-marker files excluded automatically, other exclusions approved | Coverage measured but not gating; a percentage threshold below 100 or read from rounded output; an unapproved exclude-list |
+| Coverage enforced and correctly scoped | A statement or branch gap, or a no result, fails the build; only `_moq.go` files and generated-marker files excluded automatically, other exclusions approved | Coverage measured but not gating; a percentage threshold below 100 or read from rounded output; an unapproved exclude-list |
 | `arch` matches the authoritative script | Three-layer `check_layer` walk identical to `go-project-structure/references/architecture-fitness-functions.md` | A different or partial import-check mechanism |
 | `vuln` scope stated correctly | Source/call-graph only, explicitly distinct from Trivy's image scan | `vuln` and image scanning conflated as redundant |
 | Bench/CI-gate boundary respected | `bench` single-run only; `benchstat` regression gating lives in `go-performance-test` | `benchstat` comparison logic duplicated into this Makefile |
@@ -221,14 +217,13 @@ caught violation. Full config: `references/quality-gate-targets.md`.
 
 ## Output Format
 
-**`Makefile`** — `tidy`, `vet`, `lint`, `arch`, `vuln`, `test`, `cover`, `bench`, `build`,
-`generate`, `docker`, and the aggregate `ci` composed exactly as `tidy generate vet lint arch vuln
-cover` plus the trailing `git diff --exit-code` freshness check; every target `.PHONY`. Full
-listing: `references/quality-gate-targets.md`.
+**`Makefile`** — `tidy`, `vet`, `lint`, `arch`, `vuln`, `test`, `cover`, `bench`, `build`, `generate`, `docker`, and the aggregate `ci` composed exactly as `tidy generate vet lint arch vuln
+cover` plus the trailing `git diff --exit-code` freshness check; every target `.PHONY`. Full listing: `references/quality-gate-targets.md`.
 
-**`scripts/check-go-line-coverage.sh`** (copied from `go-unit-test`; wiring in
+**`scripts/check-go-line-coverage.sh`** and **`scripts/check-go-branch-coverage.sh`** (copied from
+`go-unit-test`; wiring in
 `references/coverage-and-benchmark-standard.md`) and **`scripts/check-imports.sh`** (full script
-in `references/quality-gate-targets.md`); the latter identical to `go-project-structure`'s fitness-function reference.
+in `references/quality-gate-targets.md`);
+the latter identical to `go-project-structure`'s fitness-function reference.
 
-**`.golangci.yml`** — pinned-version linter config per the standard above, committed at the
-module root.
+**`.golangci.yml`** — pinned-version linter config per the standard above, committed at the module root.

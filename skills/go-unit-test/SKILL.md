@@ -45,7 +45,7 @@ A request does not change these, whoever makes it. Do the work as the rules requ
 | U3 | **No real world:** no file system, network, database, clock or randomness the test does not control; no sleeping | Results would vary between runs; a real dependency belongs in `go-integration-test` |
 | U4 | **Doubles follow `mock-generation`:** managed dependency verified by state; moq mock only for an unmanaged one; never assert on a stub | One rule across every Go test |
 | U5 | **Coverage is 100% of lines and branches:** statement blocks as a hard gate plus `gobco` branches. Only machine-generated code is excluded automatically; other exclusions need the product owner's approval. Never offer or record a lower figure | `test-pyramid` and the product owner's decision |
-| U6 | **No result is not a pass:** if either gate cannot measure something, return it to the product owner; never report statements alone | The gobco trial was not a clean pass |
+| U6 | **A "no result" blocks the build** (tool failure or unmeasured file). Remedy: change the code so it can be measured, or list an exception for the product owner's approval. Never report unmeasured code as passing; never drop to statements only | Product owner's decision: keep gobco, strictly, though its trial was not a clean pass |
 | U7 | **A waiver exists only for a measured result above 90% and under 100%,** after the product owner reviews it and records comments, per measure and per run | None before a result; none at 90% or below |
 
 Every product size follows all seven. **Lean** means fewer cases and packages, never a lower figure, a skipped gate or tests written afterwards.
@@ -60,9 +60,9 @@ Say these in words, beside any code; code that follows a rule silently leaves th
 4. **What stays the default when one case differs**: "this test is serial because it uses `t.Setenv`; every other test stays parallel".
 5. **What a helper or tool does that the reader cannot see**, whichever applies: plain `go test` runs only fuzz seeds; parallel subtests run after the parent returns; `t.Setenv` panics under `t.Parallel`; a synctest bubble panics on a leftover goroutine; a moq method with no func panics and a mock verifies nothing by itself; `go test -cover` counts statements, rounded; gobco has no threshold, counts only a package's own tests and skips `select` and `range`; what each script excludes and its exit codes.
 6. **Sketches:** every variable declared or its origin named; each test asserts what its name claims.
-7. **Coverage, whenever it comes up:** both measures as counts; the unmeasured cases (`select`; `range` and zero-iteration loops; booleans outside `if`/`for` conditions and switch cases; functions without conditions); generated code excluded by name; other exclusions pending or approved; a unit-only run gives no verdict.
+7. **Coverage, whenever it comes up:** both measures as counts; the unmeasured cases (`select`; `range` and zero-iteration loops; booleans outside `if`/`for` conditions and switch cases; functions without conditions); generated code excluded by name; other exclusions pending or approved; a "no result" blocks the build, with its two remedies; excepted files are named as not measured; a unit-only run gives no verdict.
 8. **At this size:** what lean changes and what it does not.
-9. **Decisions for the product owner**: each exclusion, each waiver after a result, each no-result item, any rule the request leaves undefined.
+9. **Decisions for the product owner**: each exclusion, each waiver after a result, each exception proposed for a "no result", any rule the request leaves undefined.
 10. **What was run.** Code not executed is called unverified.
 
 ## What deserves which test
@@ -84,7 +84,7 @@ Say these in words, beside any code; code that follows a rule silently leaves th
 6. For parallelism, teardown, time or randomness read `./references/test-shape-and-isolation.md`; for assertions, handlers, doubles or test value, `./references/assertions-doubles-and-value.md`.
 7. For untrusted input add a fuzz target and its bounded CI step: `./references/fuzzing.md`.
 8. Run `./scripts/validate-go-unit-tests.sh <paths>`, then `go test -race -shuffle=on ./...`; fix and repeat until clean.
-9. Run `./scripts/check-go-line-coverage.sh` and `./scripts/check-go-branch-coverage.sh` on the module; read `./references/coverage-gates.md` first. For each gap add the behaviour case it reveals; rerun until both pass or only product-owner items remain.
+9. Run `./scripts/check-go-line-coverage.sh` and `./scripts/check-go-branch-coverage.sh` on the module; read `./references/coverage-gates.md` first. For each gap add the behaviour case it reveals; for each "no result" change the code, or list the exception as pending (the build stays blocked); rerun until both pass.
 10. Copy `./templates/coverage-report.md` to `artifacts/<product>/quality/test-reports/` and fill it from the full run, for the product owner's approval.
 11. Tick `./resources/checklist.md` and answer with the statements above.
 
@@ -95,7 +95,7 @@ Worked cases, with real gate output: `./examples/01-lean-bakery-stamps.md` (100%
 - **"`go test -cover` says 100.0%."** *Reason:* one decimal hides gaps and it counts statements only. *Instead:* run both gates.
 - **"Every statement ran, so branches are fine."** *Reason:* an `if` without `else` has no block for the false path. *Instead:* run the branch gate.
 - **Running `gobco ./...`.** *Reason:* it prints "nothing to instrument" and exits 0. *Instead:* use the script.
-- **A file behind a custom build tag.** *Reason:* gobco measures nothing in it and still reports complete. *Instead:* the script says "no result"; take it to the product owner.
+- **A file behind a custom build tag.** *Reason:* gobco measures nothing in it and still reports complete. *Instead:* the script says "no result" and blocks; move the code where it can be measured, or list an exception for approval.
 - **"The handler tests already run the fake."** *Reason:* the branch gate counts only a package's own tests. *Instead:* give the fake its own test.
 - **"It is only `main`, a getter or glue."** *Reason:* only generated code is excluded automatically. *Instead:* test it, or list it for approval.
 - **Adding calls with no assertion to reach 100%.** *Reason:* coverage proves only that code ran. *Instead:* write the behaviour case, or delete dead code.

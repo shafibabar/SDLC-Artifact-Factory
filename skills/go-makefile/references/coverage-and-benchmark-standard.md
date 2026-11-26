@@ -8,10 +8,11 @@ a dev-time benchmark run and `go-performance-test`'s CI-gated regression detecti
 
 ## The Coverage Gate: 100%, Enforced Not Measured
 
-The product's gate is **100% of lines and branches** (`test-pyramid`). `cover` enforces the
-statement half; the branch half is `go-unit-test`'s `check-go-branch-coverage.sh` (`gobco`), run
-separately. There is no threshold variable to lower. A result above 90% and under 100% fails unless
-the user reviews the gap and waives that run with recorded comments.
+The product's gate is **100% of lines and branches** (`test-pyramid`). `cover` enforces both
+halves: statement blocks, then `gobco` branches. There is no threshold variable to lower. A
+measured result above 90% and under 100% fails unless the user reviews the gap and waives that run
+with recorded comments. A **no result** (tool failure or unmeasured file) blocks the build: change
+the code so it can be measured, or list an exception for the user's approval.
 
 **A measured-but-unenforced number gates nothing**, and neither does a printed one: `go tool cover`
 rounds to one decimal, so a gap can read 100.0%. The check fails on any statement block with a zero
@@ -25,29 +26,30 @@ count.
 - **Excluded automatically: machine-generated code only** — moq mocks by file name (`_moq.go`) and
   files carrying the `// Code generated ... DO NOT EDIT.` marker before the package clause. Test
   doubles written by hand are counted.
-- **Every other exclusion** is a line in an exclusion file with its approval date and reason
-  (`--exclusions`).
+- **Every other exclusion** is a line in `coverage-exceptions.txt` with its approval date and reason
+  (both gates read it; excepted files are printed as not measured).
 
-### The Check
+### The Checks
 
-Copy `go-unit-test`'s `check-go-line-coverage.sh` to the service's `scripts/`; do not write a second
-version. It needs Python 3. `make cover` calls it; it runs the suite itself
-(`go test -count=1 -race -covermode=atomic -coverpkg=./...`) and keeps the profile:
+Copy `go-unit-test`'s `check-go-line-coverage.sh` and `check-go-branch-coverage.sh` to the service's
+`scripts/`; do not write second versions. Both need Python 3; the branch check needs `gobco` v1.3.4
+on `PATH` (`go install github.com/rillig/gobco@v1.3.4`), locally and in CI. `make cover` calls both;
+each runs the tests itself:
 
 ```bash
-./scripts/check-go-line-coverage.sh --out coverage.out .
+./scripts/check-go-line-coverage.sh $(COVER_EXCEPTIONS) --out coverage.out .
+./scripts/check-go-branch-coverage.sh $(COVER_EXCEPTIONS) .
 ```
 
-**Exit codes:** `0` every block ran, `1` a block did not run, `2` no result (failed tests, empty
-profile, a production file left out by build constraints, unapproved exclusion). Both non-zero
-codes fail `make cover` and so `make ci`.
+**Exit codes:** `0` pass, `1` a gap, `2` no result. Both non-zero codes stop `make cover` and so
+`make ci`. The branch check runs without `-race`: it measures only, and `gobco`'s counters are
+unsynchronised. Race detection stays with the line check's run.
 
-**Why measured under `-race` and `-covermode=atomic`, never a separate un-raced run:** a second,
-faster coverage run without `-race` would be a second test execution path — the exact thing the
-race-detector-always-on standard (`SKILL.md`) forbids. `-covermode=atomic` (rather than `count` or
-`set`) is required specifically because `-race` is on: atomic counters are safe to increment
+**Why the line check runs under `-race` and `-covermode=atomic`:** `-covermode=atomic` (rather
+than `count` or `set`) is required because `-race` is on: atomic counters are safe to increment
 concurrently, which `set`/`count` mode's plain counters are not once the race detector is
-instrumenting concurrent access to the same coverage counter.
+instrumenting concurrent access to the same counter. The branch check is the one un-raced run,
+because `gobco`'s own counters are unsynchronised; it measures only and never replaces a raced run.
 
 ---
 

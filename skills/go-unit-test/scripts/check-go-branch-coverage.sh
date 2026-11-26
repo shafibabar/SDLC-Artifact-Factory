@@ -11,6 +11,11 @@
 # expressions outside if/for conditions and switch cases; functions without
 # conditions. Each package counts only its own tests.
 # Do not add -race: gobco's counters are unsynchronised.
+# A "no result" (tool failure or unmeasured file) blocks the build. Remedy:
+# change the code so it can be measured, or an exception approved by the product
+# owner in --exclusions. A package is skipped only when every file in it is
+# excepted.
+# Any non-zero exit blocks the build.
 # Exit 0 = all measured outcomes seen; 1 = a gap; 2 = no result for at least
 # one package: nothing to waive.
 set -uo pipefail
@@ -65,7 +70,7 @@ if version != PINNED:
     die(f"gobco version is '{version}', the pinned version is {PINNED}")
 
 tags = ["-tags", opts["--tags"]] if opts["--tags"] else []
-fields = '{{.Dir}}|{{join .GoFiles ","}},{{join .CgoFiles ","}}|{{join .IgnoredGoFiles ","}}'
+fields = '{{.Dir}}|{{join .GoFiles ","}},{{join .CgoFiles ","}}'
 try:
     listed = subprocess.run(["go", "list", *tags, "-f", fields, "./..."],
                             cwd=root, capture_output=True, text=True)
@@ -73,6 +78,24 @@ except FileNotFoundError:
     die("go is not installed or not on PATH")
 if listed.returncode or not listed.stdout.strip():
     die("go list failed or found no packages: " + listed.stderr.strip())
+
+def unbuilt(root, built):
+    """Production files of this module that the build left out: nothing measures them."""
+    missing = []
+    for base, dirs, names in os.walk(root):
+        dirs[:] = sorted(d for d in dirs if d not in ("vendor", "testdata") and d[0] not in "._"
+                         and not os.path.isfile(os.path.join(base, d, "go.mod")))
+        for name in sorted(names):
+            path = os.path.join(base, name)
+            rel = os.path.relpath(path, root)
+            if (not name.endswith(".go") or name.endswith(("_test.go", "_moq.go")) or name[0] in "._"
+                    or path in built or rel in approved):
+                continue
+            head = re.split(r"^package\s", open(path, encoding="utf-8", errors="replace").read(),
+                            maxsplit=1, flags=re.M)[0]
+            if not re.search(r"^//go:build ignore\b|^// Code generated .* DO NOT EDIT\.\r?$", head, re.M):
+                missing.append(rel)
+    return missing
 
 def head_of(text):
     return re.split(r"^package\s", text, maxsplit=1, flags=re.M)[0]
@@ -92,16 +115,15 @@ def has_condition(text):
     return False
 
 covered = total = 0
-gaps, broken = [], []
+gaps, broken, built_files = [], [], set()
 work = tempfile.TemporaryDirectory()
 for number, row in enumerate(listed.stdout.strip().splitlines()):
-    directory, built, ignored = row.split("|")
+    directory, built = row.split("|")
     rel_dir = os.path.relpath(os.path.realpath(directory), root)
     label = "." if rel_dir == "." else "./" + rel_dir
     sources = {}
-    for name in filter(None, (built + "," + ignored).split(",")):
-        if name.endswith("_test.go"):
-            continue
+    for name in filter(None, built.split(",")):
+        built_files.add(os.path.join(os.path.realpath(directory), name))
         rel = os.path.normpath(os.path.join(rel_dir, name))
         text = open(os.path.join(directory, name), encoding="utf-8", errors="replace").read()
         if rel in approved:
@@ -110,9 +132,6 @@ for number, row in enumerate(listed.stdout.strip().splitlines()):
             print(f"excluded {rel}: generated mock (by name)")
         elif re.search(r"^// Code generated .* DO NOT EDIT\.\r?$", head_of(text), re.M):
             print(f"excluded {rel}: generated marker")
-        elif name in ignored.split(","):
-            if not re.search(r"^//go:build ignore\b", head_of(text), re.M):
-                broken.append(f"{rel}: left out of this build by constraints, so unmeasured")
         else:
             sources[name] = (rel, text)
     if not sources:
@@ -147,6 +166,9 @@ for number, row in enumerate(listed.stdout.strip().splitlines()):
                 what = "never evaluated" if len(missing) == 2 else "never " + missing[0]
                 gaps.append(f"  {rel}:{':'.join(position)}: '{code}' {what}")
 
+for rel in unbuilt(root, built_files):
+    broken.append(f"{rel}: left out of this build by constraints, so unmeasured")
+
 for line in gaps:
     print(line)
 print(f"Branch coverage (gobco {PINNED}): {covered}/{total} outcomes")
@@ -155,14 +177,16 @@ print("Not measured: select; range loops, including zero iterations; boolean exp
 if broken:
     for line in broken:
         print("NO RESULT " + line)
-    print("NO RESULT: the branch figure is incomplete, so there is nothing to waive. "
-          "Take it to the product owner; do not fall back to statement coverage only.")
+    print("NO RESULT: this blocks the build and there is nothing to waive. Change the code so it "
+          "can be measured, or list an exception for the product owner's approval. "
+          "Never report statement coverage only.")
     sys.exit(2)
 if gaps:
     print("FAIL: the gate is 100% of measured branches. "
           + ("Above 90%: the product owner may waive this result after review."
              if covered * 10 > total * 9 else "90% or below: no waiver."))
     sys.exit(1)
-print("PASS: every measured outcome was seen" if total else
-      "PASS: no package holds a condition (0/0 checked against the source)")
+print(("PASS: every measured outcome was seen" if total else
+       "PASS: no measured package holds a condition (0/0 checked against the source)")
+      + (f". NOT measured, by approved exception: {', '.join(sorted(approved))}" if approved else ""))
 PY

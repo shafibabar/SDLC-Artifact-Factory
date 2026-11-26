@@ -12,8 +12,8 @@ the parent `SKILL.md` body is in context.
 
 ## The Precise Relationship to Line Coverage
 
-`go-makefile` enforces **100% statement coverage** (the statement half of the product's 100% line
-and branch gate) via `check-go-line-coverage.sh`, on every `make ci` run. This skill enforces **60% mutation score** on a
+`go-makefile` enforces the product's **100% line and branch coverage** gate (statement blocks and
+`gobco` branches) on every `make ci` run. This skill enforces **60% mutation score** on a
 narrower package set, on a monthly-plus-pre-release schedule. These are not the same metric at two
 different numbers — they measure two different questions, on two different cadences, via two
 different mechanisms:

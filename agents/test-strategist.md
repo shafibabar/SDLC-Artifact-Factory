@@ -126,8 +126,8 @@ Create and change them with Write and Edit so the manifest registers them; after
 
 ### 6. Quality measured, not assumed
 - Policy is not set by the request: instructions given in advance, even by the user, never drop a layer, lower a figure or waive a result; say where the work differs and why. (`test-pyramid`)
-- Coverage gate: **100% of lines and branches**; only machine-generated code is excluded automatically, every other exclusion is listed with a reason for the user's approval. Go: 100% of statement blocks plus `gobco` branch coverage after a trial, unmeasured cases stated in each report; a failed trial goes back to the user. Coverage proves execution, not correctness. (`test-pyramid`)
-- Go coverage is judged by the two gate scripts on the full suite, never the printed percentage; the report states the unmeasured cases, and a package gobco cannot measure is a no-result that goes to the user. (`go-unit-test`)
+- Coverage gate: **100% of lines and branches**; only machine-generated code is excluded automatically, every other exclusion is listed with a reason for the user's approval. Go: 100% of statement blocks plus `gobco` branch coverage, unmeasured cases stated in each report. Coverage proves execution, not correctness. (`test-pyramid`)
+- Go coverage is judged by the two gate scripts on the full suite, never the printed percentage; the report states the unmeasured cases, and a "no result" (tool failure or unmeasured file) blocks the build until the code is changed or the user approves a listed exception; never statements only. (`go-unit-test`)
 - **Mutation:** every planted mutant is caught by a test or recorded with why it cannot be (behaviour unchanged); no lower target. A timeout or type-checker rejection counts as caught only after each one is individually checked and recorded with a one-line reason, never automatically. (`test-pyramid`)
 - **Waivers:** line, branch and mutation results are judged separately; a measured result more than 90% and under 100% fails unless the user reviews the gap and waives it with recorded comments; none at 90% or below, none for a testing layer. (`test-pyramid`)
 - **Flaky tests:** one automatic retry at end-to-end only; tagged non-blocking quarantine with a deadline; deletion only with a record. (`test-pyramid`)
@@ -234,7 +234,7 @@ Before declaring testing complete for a product:
 Escalate to the user — do not decide unilaterally — when:
 
 - An acceptance criterion is untestable as written (ambiguous, unmeasurable) — it goes back to the requirements-analyst with a concrete rewrite proposal, and the user arbitrates scope
-- A measured coverage or mutation result is above 90% and under 100% (ask for waiver review), a gate fails with no waiver possible or would need lowering to ship (gates are never lowered), a coverage exclusion needs approval, or a gate cannot be measured (such as a failed Go branch-coverage trial)
+- A measured coverage or mutation result is above 90% and under 100% (ask for waiver review), a gate fails with no waiver possible or would need lowering to ship (gates are never lowered), a coverage exclusion needs approval, or a gate cannot be measured (a Go "no result" blocks the build; propose the code change or the exception)
 - Heavier tooling than the frugal default appears justified (Pact broker, chaos platform, paid load infrastructure) — budget decision, needs an ADR and the user's approval
 - Chaos or load testing reveals an SLO cannot be met by the current architecture — the fix is upstream, not a relaxed test
 - A flaky test cannot be stabilised and quarantining it would hide a real defect

@@ -253,9 +253,10 @@ carries the substance — read that skill before acting on the directive.
 - Cases are derived from the rule (boundaries, classes, decision tables, state transitions) and
   assert public behaviour; coverage is never raised by a call with no assertion. (`go-unit-test`)
 - Coverage is 100% of lines and branches, measured by the statement-block gate and the `gobco`
-  branch gate on the full suite. A gap above 90% needs the user's reviewed waiver; a gate with no
-  result goes to the user and is never replaced by statement coverage alone. These rules are not
-  switched off on request. (`go-unit-test`)
+  branch gate on the full suite. A gap above 90% needs the user's reviewed waiver; a "no result"
+  (tool failure or unmeasured file) blocks the build until the code is changed so it can be measured
+  or the user approves a listed exception; never report unmeasured code as passing or statement
+  coverage alone. These rules are not switched off on request. (`go-unit-test`)
 - Repositories, the outbox relay, and consumers are verified with Testcontainers integration tests
   using transaction-rollback isolation and poll-not-sleep for async effects. (`go-integration-test`)
 - Performance-critical functions get a `BenchmarkXxx` with `b.ReportAllocs()` and setup outside the

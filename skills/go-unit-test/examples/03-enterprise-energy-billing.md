@@ -362,16 +362,16 @@ Without the tag, both gates refuse a result because `bucket.go` is outside the b
 
 ```text
 Statement coverage: 39/39 statements, 0 block(s) not run
-PASS: every statement block ran (statement blocks only; branches are a separate gate)
+PASS: every measured statement block ran (statement blocks only; branches are a separate gate)
 Branch coverage (gobco 1.3.4): 8/8 outcomes
 NO RESULT internal/export/bucket.go: has conditions but gobco measured none (a custom build tag does this)
-NO RESULT: the branch figure is incomplete, so there is nothing to waive. Take it to the product owner; do not fall back to statement coverage only.
+NO RESULT: this blocks the build and there is nothing to waive. Change the code so it can be measured, or list an exception for the product owner's approval. Never report statement coverage only.
 ```
 
 ## What the answer says
 
-- "There is no branch figure for this module. Statement blocks are 39/39. 8/8 leaves out `bucket.go`, so it is not the result and is not reported as one." No waiver is possible and none is offered.
-- Decision for the product owner, options without choosing: move the logic of `bucket.go` into an untagged file so both gates measure it (a code change); or approve listing the file as an exclusion with its reason (pending until they do); or hold the gate.
+- "The build is blocked. There is no branch figure for this module. Statement blocks are 39/39. 8/8 leaves out `bucket.go`, so it is not the result and is not reported as one." No waiver is possible.
+- Remedies: move the logic of `bucket.go` into an untagged file so both gates measure it (first choice, a code change); or list the file as an exception with its reason, pending until the product owner approves, with the build blocked meanwhile. An approved exception is printed as not measured, never as passing.
 - `fetch` has no condition gobco counts: its `select` is seen only by the statement gate. Also unmeasured: `range` and zero-iteration loops; booleans outside conditions; functions without conditions.
 - `tariff` proves one tenant cannot be priced at another's rate in memory only. Isolation in storage is an integration test, keyed by the product's tenancy design.
 - `-race` checks only the interleavings that happened. The gate run excluded nothing.

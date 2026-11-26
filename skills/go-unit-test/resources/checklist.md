@@ -20,5 +20,6 @@ Copy and tick before hand-off.
 - [ ] `validate-go-unit-tests.sh` has no FAIL; each WARN judged
 - [ ] `go test -race -shuffle=on ./...` passes
 - [ ] Line gate and branch gate run on the full suite; exit codes and counts recorded
-- [ ] Coverage report filled: unmeasured cases, exclusions and their approval, no-result items
+- [ ] Every "no result" resolved by a code change or an approved exception; none reported as passing
+- [ ] Coverage report filled: unmeasured cases, exclusions and their approval, excepted files
 - [ ] Anything not run is called unverified

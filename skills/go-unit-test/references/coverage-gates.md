@@ -4,7 +4,8 @@ Self-contained. Use when running, reading or reporting Go coverage. The policy b
 
 ## The policy
 
-- 100% of lines and branches. Go's own tool counts statement blocks and has no branch coverage, so: 100% of statement blocks as a hard gate, plus `gobco` branch coverage after a trial, with the unmeasured cases stated in each report. A failed trial returns to the product owner; never drop to statements only.
+- 100% of lines and branches. Go's own tool counts statement blocks and has no branch coverage, so: 100% of statement blocks as a hard gate, plus `gobco` branch coverage, with the unmeasured cases stated in each report.
+- Decided after the trial (product owner, 2026-11-26): keep `gobco`, strictly. A **no result** (tool failure or unmeasured file) blocks the build. Remedy: change the code so it can be measured, or an exception listed for the product owner's approval. Never report unmeasured code as passing; never drop to statements only.
 - Only machine-generated code is excluded automatically. Every other exclusion is listed with a reason for the product owner's approval.
 - Statement and branch results are judged separately. Above 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below has no waiver; no result means nothing to waive. A waiver covers one run. Testing layers are never waived.
 - Compute from counts, never a rounded figure: waivable only if `covered x 10 > total x 9` and `covered < total`.
@@ -13,11 +14,11 @@ Self-contained. Use when running, reading or reporting Go coverage. The policy b
 ## The two commands
 
 ```bash
-check-go-line-coverage.sh [--tags t] [--exclusions file] [--profile file | --out file] [module-dir]
+check-go-line-coverage.sh [--tags t] [--exclusions file] [--out file] [module-dir]
 check-go-branch-coverage.sh [--tags t] [--exclusions file] [module-dir]
 ```
 
-Copy `../scripts/check-go-line-coverage.sh` and `../scripts/check-go-branch-coverage.sh` into the product's `scripts/`. Install the pinned tool: `go install github.com/rillig/gobco@v1.3.4`. Both need Python 3; the line gate runs `-race`, which needs cgo (a C compiler). Exit 0 pass, 1 gap, 2 no result.
+Copy `../scripts/check-go-line-coverage.sh` and `../scripts/check-go-branch-coverage.sh` into the product's `scripts/`. Install the pinned tool: `go install github.com/rillig/gobco@v1.3.4`. Both need Python 3; the line gate runs `-race`, which needs cgo (a C compiler). Exit 0 pass, 1 gap, 2 no result; any non-zero exit blocks the build (`go-makefile` runs both in `make ci`).
 
 | | Line gate | Branch gate |
 |---|---|---|
@@ -25,11 +26,11 @@ Copy `../scripts/check-go-line-coverage.sh` and `../scripts/check-go-branch-cove
 | Counts | Blocks from any package's tests | **Only the package's own tests** |
 | Passes when | No block has a zero count | Every measured condition was true and false |
 | Leaves out | `_moq.go` by name, generated marker, approved entries | The same |
-| Refuses a result when | Tests fail; build constraints leave a production file out | Also: gobco fails; a file with conditions is measured as none |
+| No result when | Tests fail; build constraints leave a production file out, even a whole folder `go list` does not show | The same files; gobco fails; a file with conditions is measured as none |
 
 Why not the printed figure: with 1 of 2503 statements not run, `go test -cover` and `go tool cover -func` both printed `100.0%`.
 
-Exclusion file, one line each, approved entries only (pending is refused): `internal/x/y.go | approved YYYY-MM-DD | reason`. It mirrors the strategy's exclusion register. `cmd/**` composition roots are counted (packages without tests appear at 0%): test them or list them.
+Exclusion file, one line each, approved entries only (pending is refused): `internal/x/y.go | approved YYYY-MM-DD | reason`. It mirrors the strategy's exclusion register; `go-makefile` passes `coverage-exceptions.txt` to both gates. Excepted files are printed as not measured. The branch gate skips a package only when every production file in it is excepted. `cmd/**` composition roots are counted (packages without tests appear at 0%): test them or list them.
 
 Because the branch gate counts only own-package tests, every package with conditions needs tests of its own, including hand-written fakes under `internal/test/`.
 
@@ -43,9 +44,9 @@ Because the branch gate counts only own-package tests, every package with condit
 | Each operand of `a && b` in an `if` | No | Whole condition only |
 | Function without conditions | Counted | Absent |
 
-## The gobco trial (D048 requires one)
+## The gobco trial
 
-**Verdict: not a clean pass.** Generics and multi-package modules work through the script; custom build tags fail.
+**Verdict: not a clean pass.** Generics and multi-package modules work through the script; custom build tags fail. `gobco` stays, strictly (policy above).
 
 | Construct | Result |
 |---|---|
@@ -64,4 +65,9 @@ Because the branch gate counts only own-package tests, every package with condit
 
 Not tried: `go.work`, nested modules, `replace` directives to outside the module, cgo, operating systems other than Linux on amd64, very large modules. One package with two third-party dependencies took about 10 seconds on its first run.
 
-For a "no result": say which package, quote the message, and put it to the product owner. Offering a change to the code or tests that makes it measurable (rename an import, give `TestMain` an `os.Exit`, remove the label) is fine. Excluding the file, or reporting statements alone, is their decision to refuse, not a workaround to take.
+For a "no result", the build is blocked. Say which package or file, quote the message, and give the two remedies:
+
+1. **Change the code or tests so it is measured** (the first choice): move tagged logic into an untagged file, rename an import, give `TestMain` an `os.Exit`, remove the label.
+2. **List an exception** (file and reason) for the product owner. It is pending, and the build stays blocked, until they approve it.
+
+Reporting statements alone, or calling the rest a pass, is not a remedy.

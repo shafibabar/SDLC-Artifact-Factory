@@ -26,10 +26,11 @@ traces-to: [implement/test-strategy.md, [commit or run id]]
 
 **Gaps:** [each file, line and condition or block not run, with the behaviour case that will cover it; or "none"]
 
-**No result:** [each package or file without a measurement and the tool's message; or "none". These return to the product owner; nothing is waivable.]
+**No result:** [each package or file without a measurement and the tool's message; or "none". Each blocks the build; nothing is waivable. State the code change that will make it measurable, or the exception listed below as pending.]
 
 ## Not Measured
 
+- Files under an approved exception: [each file, or "none"]. They are not part of any pass.
 - `select` statements in the branch figure (their clause bodies are seen only by the statement gate).
 - `range` loops and zero-iteration loops, by neither gate.
 - Boolean expressions outside `if`/`for` conditions and switch cases (for example `ok := a || b`).
@@ -54,4 +55,4 @@ traces-to: [implement/test-strategy.md, [commit or run id]]
 
 Coverage shows that code ran and, for branches, which outcomes were taken. It does not show that any assertion would catch a fault. Checks confirm only what someone specified.
 
-**For approval:** [the exclusions, waivers and no-result items the product owner is asked to decide]
+**For approval:** [the exclusions (including any for a "no result") and waivers the product owner is asked to decide]

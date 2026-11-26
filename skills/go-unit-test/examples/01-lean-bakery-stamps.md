@@ -48,7 +48,7 @@ A negative spend, and a large Tuesday spend. Result:
 
 ```text
 Statement coverage: 8/8 statements, 0 block(s) not run
-PASS: every statement block ran (statement blocks only; branches are a separate gate)
+PASS: every measured statement block ran (statement blocks only; branches are a separate gate)
   internal/loyalty/stamps.go:21:5: 'at.Weekday() == time.Tuesday' never false
   internal/loyalty/stamps.go:24:5: 'n > MaxStamps' never false
 Branch coverage (gobco 1.3.4): 4/6 outcomes
