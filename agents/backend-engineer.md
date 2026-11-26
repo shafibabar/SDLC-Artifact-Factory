@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.5.0
+version: 2.6.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -149,6 +149,10 @@ test-strategist and *applied test-first* by this agent: `go-unit-test` and `go-i
 own code belong to backend-engineer; the `test-strategy`, `go-test-fixtures`, `go-test-doubles`
 artifacts and every other tier (contract, e2e, performance, load, chaos, mutation) belong to
 test-strategist. Neither agent claims the other's artifacts.
+
+**Before writing a test double or fixture,** load `mock-generation` (Go doubles) or
+`test-fixture-design` (test data and isolation) with the Skill tool
+(`sdlc-artifact-factory:<skill>`). Neither is preloaded.
 
 **Python stack only.** When the confirmed tech stack (`sdlc-config.json` →
 `tech_stack_overrides.primary_language`) or the design makes the service Python, load
