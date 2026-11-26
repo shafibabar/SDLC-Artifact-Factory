@@ -1940,7 +1940,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.6.0"
+        "version": "2.7.0"
       },
       {
         "created": "2026-06-25",
@@ -2510,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.2.0"
+        "version": "2.3.0"
       },
       {
         "created": "2026-06-25",
@@ -6062,7 +6062,7 @@
           "makefile",
           "race-detector"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -6227,7 +6227,7 @@
           "survived-mutant",
           "test-quality"
         ],
-        "version": "2.1.0"
+        "version": "2.2.0"
       },
       {
         "created": "2026-06-25",
@@ -6548,12 +6548,12 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "go-unit-test",
         "owner": "test-strategist",
         "phase": "implement",
@@ -6561,31 +6561,41 @@
           "go-test-file"
         ],
         "related": [
+          "go-chi-handler",
           "go-domain-model",
+          "go-error-handling",
           "go-integration-test",
+          "go-makefile",
           "go-mutation-test",
           "go-repository-pattern",
           "mock-generation",
-          "test-fixture-design"
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/100-go-mistakes-harsanyi.md",
+          "research/software-architecture/the-go-programming-language-donovan-kernighan.md",
+          "research/testing/go-coverage-official-docs.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/moq-official-docs.md",
+          "research/testing/software-testing-craftsman-jorgensen.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
           "assertions",
-          "complexity-quadrants",
           "coverage",
-          "fixtures",
           "flakiness",
-          "four-pillars",
           "fuzzing",
           "go",
+          "gobco",
           "implement",
-          "mocking-philosophy",
+          "synctest",
           "table-driven",
           "tdd",
           "unit-test"
         ],
-        "version": "3.0.0"
+        "version": "4.0.0"
       },
       {
         "created": "2026-07-31",
@@ -11189,8 +11199,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1219,
-    "edges_skill_sources": 319,
+    "edges_skill_related": 1223,
+    "edges_skill_sources": 326,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11202,20 +11212,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 91,
+    "research_files_cited": 92,
     "skills_with_assets": 6,
     "skills_with_contract_test": 131,
     "skills_with_domain": 190,
     "skills_with_evals": 58,
-    "skills_with_examples": 58,
+    "skills_with_examples": 59,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 57,
-    "skills_with_scripts": 51,
-    "skills_with_sources": 59,
+    "skills_with_resources": 58,
+    "skills_with_scripts": 52,
+    "skills_with_sources": 60,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 56
+    "skills_with_templates": 57
   },
   "edges": {
     "agent_produces": [
@@ -15438,11 +15448,23 @@
         "skill": "go-service-skeleton"
       },
       {
+        "related": "go-chi-handler",
+        "skill": "go-unit-test"
+      },
+      {
         "related": "go-domain-model",
         "skill": "go-unit-test"
       },
       {
+        "related": "go-error-handling",
+        "skill": "go-unit-test"
+      },
+      {
         "related": "go-integration-test",
+        "skill": "go-unit-test"
+      },
+      {
+        "related": "go-makefile",
         "skill": "go-unit-test"
       },
       {
@@ -15459,6 +15481,10 @@
       },
       {
         "related": "test-fixture-design",
+        "skill": "go-unit-test"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "go-unit-test"
       },
       {
@@ -18502,6 +18528,34 @@
       {
         "skill": "go-repository-pattern",
         "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+      },
+      {
+        "skill": "go-unit-test",
+        "source": "research/software-architecture/100-go-mistakes-harsanyi.md"
+      },
+      {
+        "skill": "go-unit-test",
+        "source": "research/software-architecture/the-go-programming-language-donovan-kernighan.md"
+      },
+      {
+        "skill": "go-unit-test",
+        "source": "research/testing/go-coverage-official-docs.md"
+      },
+      {
+        "skill": "go-unit-test",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "go-unit-test",
+        "source": "research/testing/moq-official-docs.md"
+      },
+      {
+        "skill": "go-unit-test",
+        "source": "research/testing/software-testing-craftsman-jorgensen.md"
+      },
+      {
+        "skill": "go-unit-test",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "grpc-contract-design",

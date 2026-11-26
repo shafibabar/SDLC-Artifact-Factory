@@ -3,7 +3,7 @@ name: go-mutation-test
 description: >
   This plugin's mutation-testing standard for Go — the antidote to
   high-coverage-but-weak-assertion tests that neither go-unit-test's
-  coverage-by-quadrant guidance nor go-makefile's 80%-line-coverage gate can
+  coverage gates nor go-makefile's 100%-line-coverage gate can
   detect on their own. Covers: the Gremlins tool configuration in exact form
   — .gremlins.yaml, CLI invocation, frugal open-source tool choice
   (references/tool-configuration-and-targeting.md); the package-glob
@@ -22,7 +22,7 @@ description: >
   insufficient (references/survived-mutant-triage-and-coverage-
   relationship.md). Authored and run by the test-strategist as a periodic
   Quality-phase gate.
-version: 2.1.0
+version: 2.2.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -65,13 +65,13 @@ Named precisely (Khorikov's four pillars — `go-unit-test`'s "Decoupled from Im
 
 ## Tool Configuration and Targeting
 
-**Gremlins** (`go-gremlins/gremlins`) is this repo's mutation tool — actively maintained, Go-native, and open-source, satisfying the frugality constraint without evaluating a paid alternative. It is configured via `.gremlins.yaml` and invoked per targeted package. **Only `internal/domain/...` and `internal/application/...` are mutated** — the same quadrant-1 packages `go-unit-test`'s complexity heuristic already identifies as carrying real logic. `internal/infrastructure/...` (repositories, adapters — Humble Object per `go-repository-pattern`) and `internal/handlers/...` (thin chi handlers, Humble Object per `go-chi-handler`) are excluded: mutating them tests plumbing that `go-integration-test` already verifies against the real dependency, not logic, and would bury the domain-layer survivors that matter under wiring noise. Generated files (`_gen.go`, `.pb.go`, `_mock.go`) are excluded by the identical filename-pattern convention `go-makefile`'s coverage filter already uses — the same mechanical rule applied to a second tool, not a second policy to maintain. Exact `.gremlins.yaml`, CLI invocation, the full package-glob table, and how a newly-created domain package joins the target list: `references/tool-configuration-and-targeting.md`.
+**Gremlins** (`go-gremlins/gremlins`) is this repo's mutation tool — actively maintained, Go-native, and open-source, satisfying the frugality constraint without evaluating a paid alternative. It is configured via `.gremlins.yaml` and invoked per targeted package. **Only `internal/domain/...` and `internal/application/...` are mutated** — the same quadrant-1 packages `go-unit-test`'s complexity heuristic already identifies as carrying real logic. `internal/infrastructure/...` (repositories, adapters — Humble Object per `go-repository-pattern`) and `internal/handlers/...` (thin chi handlers, Humble Object per `go-chi-handler`) are excluded: mutating them tests plumbing that `go-integration-test` already verifies against the real dependency, not logic, and would bury the domain-layer survivors that matter under wiring noise. Generated files (`_gen.go`, `.pb.go`, and moq mocks named `_moq.go`) are excluded by the same file-name convention the coverage gate uses — the same mechanical rule applied to a second tool, not a second policy to maintain. Exact `.gremlins.yaml`, CLI invocation, the full package-glob table, and how a newly-created domain package joins the target list: `references/tool-configuration-and-targeting.md`.
 
 ---
 
 ## Mutation-Score Threshold — Distinguished from Line Coverage
 
-**60%**, enforced on the targeted domain/application packages only — deliberately lower than, and measuring a different axis than, `go-makefile`'s **80%** line-coverage gate. Line coverage answers "did this line execute"; mutation score answers "did a test notice when this line's behaviour changed" — a package can sit at 100% line coverage (every statement ran) and far below 60% mutation score (nothing asserted the value), which is expected, not a contradiction between the two gates (see the worked example in `references/survived-mutant-triage-and-coverage-relationship.md`). The threshold is set below line coverage's because a meaningful fraction of generated mutants in any nontrivial function are **equivalent** — different syntax producing identical behaviour for every reachable input — and chasing 100% means hunting unkillable mutants instead of writing tests that catch real bugs. 60% is a floor proven achievable by disciplined table-driven testing (`go-unit-test`), not a ceiling to stop at; a product handling compliance-critical logic may raise it per `sdlc-config-management`'s override pattern, the same mechanism that tightens the scheduling cadence below.
+**60%**, enforced on the targeted domain/application packages only — deliberately lower than, and measuring a different axis than, `go-makefile`'s **100%** statement-coverage gate. Line coverage answers "did this line execute"; mutation score answers "did a test notice when this line's behaviour changed" — a package can sit at 100% line coverage (every statement ran) and far below 60% mutation score (nothing asserted the value), which is expected, not a contradiction between the two gates (see the worked example in `references/survived-mutant-triage-and-coverage-relationship.md`). The threshold is set below line coverage's because a meaningful fraction of generated mutants in any nontrivial function are **equivalent** — different syntax producing identical behaviour for every reachable input — and chasing 100% means hunting unkillable mutants instead of writing tests that catch real bugs. 60% is a floor proven achievable by disciplined table-driven testing (`go-unit-test`), not a ceiling to stop at; a product handling compliance-critical logic may raise it per `sdlc-config-management`'s override pattern, the same mechanism that tightens the scheduling cadence below.
 
 ---
 
@@ -101,10 +101,10 @@ Two fully worked triage examples — a real gap traced to a missing boundary row
 |---|---|---|
 | Tool configured correctly | `.gremlins.yaml` scoped to targeted packages, checked in | Ad hoc CLI flags, no committed config |
 | Targeting correct | Domain/application only; infrastructure/handlers/generated excluded | Mutating Humble Object or generated code, burying real survivors |
-| Threshold distinguished from coverage | 60% mutation score gate, stated as a different axis from the 80% line-coverage gate | Mutation score conflated with or substituted for line coverage |
+| Threshold distinguished from coverage | 60% mutation score gate, stated as a different axis from the 100% line-coverage gate | Mutation score conflated with or substituted for line coverage |
 | Threshold enforced, not just measured | Scheduled job fails below 60% on targeted packages | Score computed and logged but never gates anything |
 | Periodic, not per-PR | Monthly + pre-release; `mutation_test_cadence` override documented for tightened contexts | Mutation on every PR, wrecking CI speed |
-| Coverage vs. mutation understood | Both gates run, at different cadences, for different questions | Assuming 80% line coverage implies adequate mutation score |
+| Coverage vs. mutation understood | Both gates run, at different cadences, for different questions | Assuming 100% line coverage implies adequate mutation score |
 | Survivors triaged, not just reported | Every survivor gets a step-3 disposition (real gap or equivalent) | Report generated, nobody converts it into tests or annotations |
 | Equivalents annotated, not chased | Named, commented exclusion; never re-triaged from scratch | Same equivalent re-investigated every run |
 | Domain-layer priority | Domain-package survivors triaged before application-layer ones | Survivors worked in file-listing order regardless of layer |

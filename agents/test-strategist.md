@@ -11,7 +11,7 @@ description: >
   rework, and shift-right testing to validate real-world resilience. Frugal; Go
   by default, Python on a Python stack. Spans the Implement and Quality phases.
 role: SDET — test discipline, Test Pyramid, BDD feature files, and cross-cutting system tests
-version: 2.2.0
+version: 2.3.0
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -127,6 +127,7 @@ Create and change them with Write and Edit so the manifest registers them; after
 ### 6. Quality measured, not assumed
 - Policy is not set by the request: instructions given in advance, even by the user, never drop a layer, lower a figure or waive a result; say where the work differs and why. (`test-pyramid`)
 - Coverage gate: **100% of lines and branches**; only machine-generated code is excluded automatically, every other exclusion is listed with a reason for the user's approval. Go: 100% of statement blocks plus `gobco` branch coverage after a trial, unmeasured cases stated in each report; a failed trial goes back to the user. Coverage proves execution, not correctness. (`test-pyramid`)
+- Go coverage is judged by the two gate scripts on the full suite, never the printed percentage; the report states the unmeasured cases, and a package gobco cannot measure is a no-result that goes to the user. (`go-unit-test`)
 - **Mutation:** every planted mutant is caught by a test or recorded with why it cannot be (behaviour unchanged); no lower target. A timeout or type-checker rejection counts as caught only after each one is individually checked and recorded with a one-line reason, never automatically. (`test-pyramid`)
 - **Waivers:** line, branch and mutation results are judged separately; a measured result more than 90% and under 100% fails unless the user reviews the gap and waives it with recorded comments; none at 90% or below, none for a testing layer. (`test-pyramid`)
 - **Flaky tests:** one automatic retry at end-to-end only; tagged non-blocking quarantine with a deadline; deletion only with a record. (`test-pyramid`)

@@ -1,81 +1,46 @@
 # Coverage Threshold and Benchmark Standard
 
-Self-contained reference for `go-makefile`'s `cover` and `bench` targets: the exact threshold,
-what is excluded from the count and why, the enforcement script in full, and the boundary between
+Self-contained reference for `go-makefile`'s `cover` and `bench` targets: the exact gate,
+what is excluded from the count and why, how the enforcement script is wired, and the boundary between
 a dev-time benchmark run and `go-performance-test`'s CI-gated regression detection.
 
 ---
 
-## The Coverage Threshold: 80%, Enforced Not Measured
+## The Coverage Gate: 100%, Enforced Not Measured
 
-**80%** is the factory-wide default (`COVER_MIN` in the Makefile), consistent with the number
-already established independently by `test-pyramid` ("Gate: ≥80% on changed packages") and
-`ci-pipeline` ("Coverage below the enforced threshold (≥80%)") — `go-makefile` is the mechanism
-that actually enforces the number both of those skills already name, not a fourth, different
-source of truth. A product may override it per `sdlc-config-management`'s pattern (e.g. `85` for
-a bounded context handling PII classification) by setting `COVER_MIN` in the product's own
-Makefile include or CI variables — the mechanism stays identical, only the number moves.
+The product's gate is **100% of lines and branches** (`test-pyramid`). `cover` enforces the
+statement half; the branch half is `go-unit-test`'s `check-go-branch-coverage.sh` (`gobco`), run
+separately. There is no threshold variable to lower. A result above 90% and under 100% fails unless
+the user reviews the gap and waives that run with recorded comments.
 
-**A measured-but-unenforced number gates nothing.** `go tool cover -func` printing a percentage
-to a log that nobody is required to look at is equivalent to no coverage policy at all. The
-`cover` target's `check-coverage.sh` call is what turns the number into a build failure — the
-distinction `test-pyramid` calls "coverage is a signal, not a target": measuring it makes it
-visible, *enforcing* it makes it a gate.
+**A measured-but-unenforced number gates nothing**, and neither does a printed one: `go tool cover`
+rounds to one decimal, so a gap can read 100.0%. The check fails on any statement block with a zero
+count.
 
 ### What Counts, and What's Excluded
 
-- **`cmd/**` composition roots are absent from the profile by construction, not by a filter.**
-  `go-project-structure` is explicit that `cmd/server/main.go` only wires dependencies and starts
-  the process — "the moment it decides anything, that decision is untestable without booting the
-  process" — so a composition root correctly carries no `_test.go` file at all. `go test`'s
-  default (non-`-coverpkg`) coverage profile only contains statements from packages that were
-  themselves under test; a package with zero test files contributes zero lines to
-  `coverage.out`, counted in neither the numerator nor the denominator. Nothing needs to actively
-  exclude `cmd/` — it was never going to be present. Do not add a synthetic `main_test.go` whose
-  only purpose is to inflate a number; that produces exactly the "line coverage with weak
-  assertions proves nothing" failure mode `test-pyramid` warns against.
-- **Generated code and mocks ARE compiled into tested packages and DO need an explicit filter.**
-  Unlike `cmd/`, `oapi-codegen` output and `mockgen`/`moq` doubles frequently live inside a
-  package that has real tests (a handler package importing its own generated server interface,
-  for instance) — so their lines land in the same `coverage.out` as hand-written logic unless
-  filtered out. The filter matches on filename convention, not a separate exclude-list to
-  maintain by hand: any file ending `_gen.go`, `.pb.go`, or `_mock.go` is dropped from the
-  profile before the percentage is computed. This is the one place this standard trades a small
-  amount of precision (a filename-pattern match, not a semantic "is this generated" check) for
-  zero maintenance burden — the same trade-off `go-project-structure`'s `arch` fitness function
-  makes with its own pattern-based deny-list, made explicit rather than silently assumed.
+- **Everything in the module is counted**, `cmd/**` composition roots included: with
+  `-coverpkg=./...`, packages without tests appear in the profile at zero. Test them or list them
+  as exclusions for the user's approval.
+- **Excluded automatically: machine-generated code only** — moq mocks by file name (`_moq.go`) and
+  files carrying the `// Code generated ... DO NOT EDIT.` marker before the package clause. Test
+  doubles written by hand are counted.
+- **Every other exclusion** is a line in an exclusion file with its approval date and reason
+  (`--exclusions`).
 
-### `check-coverage.sh` in Full
+### The Check
+
+Copy `go-unit-test`'s `check-go-line-coverage.sh` to the service's `scripts/`; do not write a second
+version. It needs Python 3. `make cover` calls it; it runs the suite itself
+(`go test -count=1 -race -covermode=atomic -coverpkg=./...`) and keeps the profile:
 
 ```bash
-#!/usr/bin/env bash
-# scripts/check-coverage.sh — enforce the coverage threshold on a filtered profile.
-# Usage: check-coverage.sh coverage.out 80
-# Invoked by `make cover`, part of `make ci`.
-set -euo pipefail
-
-profile="$1"
-threshold="$2"
-
-filtered="$(mktemp)"
-trap 'rm -f "$filtered"' EXIT
-
-# Keep the `mode: atomic` header line, then drop generated/mock files from the count.
-head -1 "$profile" > "$filtered"
-tail -n +2 "$profile" | grep -Ev '_gen\.go:|\.pb\.go:|_mock\.go:' >> "$filtered" || true
-
-pct="$(go tool cover -func="$filtered" | tail -1 | awk '{print $NF}' | tr -d '%')"
-echo "Coverage (generated/mock files excluded): ${pct}%  (threshold: ${threshold}%)"
-
-awk -v p="$pct" -v t="$threshold" 'BEGIN { exit !(p+0 >= t+0) }' || {
-  echo "FAIL: coverage ${pct}% is below the ${threshold}% threshold"
-  exit 1
-}
+./scripts/check-go-line-coverage.sh --out coverage.out .
 ```
 
-**Exit codes:** `0` on pass, `1` on a filtered percentage below `threshold` — the same
-success/failure exit-code contract every `scripts/*.sh` in this plugin follows, so `make cover`'s
-failure propagates through `make ci` without any special-case handling in either Makefile target.
+**Exit codes:** `0` every block ran, `1` a block did not run, `2` no result (failed tests, empty
+profile, a production file left out by build constraints, unapproved exclusion). Both non-zero
+codes fail `make cover` and so `make ci`.
 
 **Why measured under `-race` and `-covermode=atomic`, never a separate un-raced run:** a second,
 faster coverage run without `-race` would be a second test execution path — the exact thing the

@@ -1,190 +1,123 @@
 ---
 name: go-unit-test
 description: >
-  This plugin's foundational unit-testing standard for Go — the one every other
-  Go test skill (go-integration-test, go-contract-test, go-mutation-test,
-  go-e2e-test) assumes as baseline. Covers: Table-Driven Test structure (the
-  exact struct-shape convention, subtest naming via t.Run, t.Parallel()
-  safe-vs-unsafe rules — references/worked-example.md); the code-complexity
-  quadrant heuristic (domain complexity × collaborator count) deciding what
-  earns a unit test versus an integration test versus no test at all;
-  Khorikov's four pillars of a good unit test (protection against regressions,
-  resistance to refactoring, fast feedback, maintainability) held as
-  multiplicative not additive; this repo's mocking philosophy — classical
-  (Detroit) school chosen over London (mockist), mock only unmanaged
-  dependencies, cross-referencing mock-generation for the actual tooling
-  (references/mocking-philosophy.md); numeric coverage-expectation targets by
-  quadrant, honestly caveated against Khorikov's coverage-is-gameable warning
-  (references/coverage-by-quadrant.md); the assertion-style standard — a
-  layered stdlib-vs-testify convention and what a good expected/got failure
-  message looks like — plus the unit-layer test-data/fixture standard and the
-  flakiness-prevention standard (no time.Sleep, no real network/filesystem,
-  seeded deterministic randomness — references/assertion-and-fixture-
-  standard.md). Authored by the test-strategist as the canonical pattern;
-  applied test-first (TDD) by the backend-engineer for every unit in
-  go-domain-model and go-service-layer. The base of the pyramid. Used during
-  Implement.
-version: 3.0.0
+  Use when backend-engineer, test-strategist, security-engineer or anyone
+  writes, reviews or fixes Go unit tests in the Implement phase: test-first
+  (TDD), table-driven tests and t.Run, t.Parallel, t.Cleanup and t.Setenv,
+  deriving cases (boundaries, equivalence classes, decision tables, state
+  transitions), assertions with testing or testify, httptest handler tests,
+  fake clocks and testing/synctest, fuzzing in CI, what to unit test, or Go
+  coverage: go test -cover, 100% statement and branch gates, gobco, exclusions
+  and unmeasured code. Produces go-test-file.
+version: 4.0.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
-tags: [implement, go, unit-test, table-driven, tdd, fuzzing, mocking-philosophy, coverage, assertions, fixtures, flakiness, four-pillars, complexity-quadrants]
+tags: [implement, go, unit-test, table-driven, tdd, fuzzing, assertions, flakiness, coverage, gobco, synctest]
 produces: go-test-file
 domain: testing
 status: stable
-related: [mock-generation, go-domain-model, go-repository-pattern, go-integration-test, test-fixture-design, go-mutation-test]
+related: [test-pyramid, mock-generation, test-fixture-design, go-integration-test, go-mutation-test, go-domain-model, go-error-handling, go-chi-handler, go-repository-pattern, go-makefile]
+sources:
+  - research/testing/unit-testing-khorikov.md
+  - research/testing/software-testing-craftsman-jorgensen.md
+  - research/testing/go-toolchain-official-docs.md
+  - research/testing/go-coverage-official-docs.md
+  - research/testing/moq-official-docs.md
+  - research/software-architecture/100-go-mistakes-harsanyi.md
+  - research/software-architecture/the-go-programming-language-donovan-kernighan.md
 ---
 
 # Go Unit Test
 
 ## Purpose
 
-Unit tests are the foundation of the pyramid: fast, deterministic, isolated checks that a function or Aggregate behaves correctly. They run in milliseconds, so there can be thousands of them, and they pinpoint a failure to one unit. This skill is authored by the test-strategist as the canonical pattern; the backend-engineer applies it **test-first** (TDD) for `go-domain-model` and `go-service-layer`. Every other Go test skill in this roster treats this one's standards — table shape, mocking philosophy, assertion style — as baseline, not as something to restate.
+This skill owns how Go unit tests are derived, written and measured; the other Go test skills take it as the baseline. `test-strategist` authors the standard; `backend-engineer` applies it. `test-pyramid` owns layers and gates, `mock-generation` doubles, `test-fixture-design` test data.
 
----
+## Fixed rules
 
-## What Deserves a Unit Test: The Complexity Quadrants
+A request does not change these, whoever makes it. Do the work as the rules require, say where it differs from what was asked and why, and never offer to switch a rule off.
 
-Before writing a test, classify the code on two axes — **domain complexity** and **number of collaborators** — and let the quadrant decide the strategy:
-
-| Quadrant | Domain complexity | Collaborators | Verdict |
-|---|---|---|---|
-| 1 — Domain logic | High | Few | Best return on unit-test investment — thorough table-driven tests belong here (`go-domain-model` Aggregates, value objects, pure calculations) |
-| 2 — Overcomplicated | High | Many | The danger zone: decompose first, pulling complex logic into quadrant 1, then unit-test the extracted logic *and* integration-test (`go-integration-test`) the wiring left behind |
-| 3 — Controllers | Low | Many | A thin chi handler that deserializes and delegates — apply Humble Object (`go-chi-handler`) and verify with integration/e2e tests instead of forcing unit coverage |
-| 4 — Trivial | Low | Few | A getter, a simple mapper — often needs no dedicated test at all |
-
-Numeric coverage guidance per quadrant, and the honest caveat about coverage as a metric: `references/coverage-by-quadrant.md`. Quadrant 3 is the common trap: table-driven unit tests over a handler with no logic of its own really test wiring, not behaviour — `go-chi-handler`'s handler → service → encode split is this fix in practice.
-
----
-
-## Isolation — No Real World
-
-A unit test touches no file system, no network, no database, no clock it doesn't control — dependencies are replaced with test doubles (`mocking-philosophy` below), and time/IDs are injected (`go-domain-model`'s `now time.Time` parameter). If a "unit" test needs a real database, it is an integration test — move it (`go-integration-test`). Full flakiness-prevention rules (no `time.Sleep`, no real network/FS, seeded randomness): `references/assertion-and-fixture-standard.md`.
-
----
-
-## Table-Driven Test: Struct Shape and Parallel Safety
-
-The canonical shape — one test function, a table of named cases, a loop, each case a named subtest:
-
-```go
-tests := []struct {
-    name    string
-    // ...inputs...
-    want    T
-    wantErr bool // or a typed/sentinel error field per go-domain-model's axes
-}{ /* cases */ }
-for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) { /* Act + assert */ })
-}
-```
-
-`name` is always first and always drives `t.Run(tt.name, ...)` so a failure names the exact case. Since Go 1.22, loop variables are per-iteration — `tt := tt` re-declaration is dead weight and must not appear in new code. Full worked example (`TestSensitivityLevel_IsHigherThan`) and the single-case `-run` invocation: `references/worked-example.md`.
-
-**`t.Parallel()` is safe** when a subtest owns its data and doubles exclusively and its outcome does not depend on execution order — the default for table-driven cases. It is **unsafe** when subtests share a package-level `var`, a fixed clock/random source with no per-test isolation, or any other mutable state outside the case's own scope; `go test -race` and `-shuffle=on` both exist to catch exactly this. One structural pitfall worked in `references/worked-example.md`: a parent test that spawns parallel subtests *returns* before they run, so a parent `defer` fires before its subtests execute — use `t.Cleanup` for shared teardown instead.
-
----
-
-## The TDD Loop (Red-Green-Refactor)
-
-The test is written **before** the production code, and drives its design: **Red** — write a failing test that specifies the next behaviour, confirm it fails for the right reason; **Green** — write the *minimal* code to pass, no more than the test demands; **Refactor** — improve names, structure, and efficiency with the test green as the safety net. The `tdd-gate` hook verifies the test file is not newer than the implementation file — TDD is enforced, not trusted.
-
----
-
-## Mocking Philosophy
-
-This repo follows Khorikov's **classical (Detroit/Chicago) school**, not the London (mockist) school: isolate the *test case* from other test cases (no shared mutable state), not the *class under test* from every collaborator. A unit of test is a unit of observable behaviour, which may legitimately span several collaborating types with only true external dependencies replaced. The precise rule for what earns a mock at all — managed vs. unmanaged dependencies, stub-vs-mock, and why a repository (Humble Object, `go-repository-pattern`) gets a fake or an integration test rather than a call-count mock — is `references/mocking-philosophy.md`. `mock-generation` owns the actual Go tooling (`moq`/`mockgen`/`counterfeiter`) this philosophy is applied through; this skill owns only *when to mock at all*.
-
----
-
-## Assertion-Style Standard
-
-A failing test must state exactly what went wrong — the operation, the input, the got value, and the want value — without a debugger. This repo's convention is layered, not one blanket rule: hand-written stdlib `t.Errorf`/`t.Fatalf` for quadrant-1 domain-model table-driven tests (each row already supplies the exact input/want, so a case-specific message beats any generic library one), `testify/require` at the application/integration layer where boilerplate reduction matters more than per-case customization. Never a boolean-collapsing assertion (`assert.True(t, got == want)`) — it discards both values from the failure output. Full standard and worked bad/good pairs: `references/assertion-and-fixture-standard.md`.
-
----
-
-## Test-Data and Fixture Standard (Unit Layer)
-
-Unit-test fixtures are small, inline, readable struct literals — one per table row — never a large opaque golden file; golden files belong to `test-fixture-design`'s toolkit for complex output at the integration/e2e layer, not here. `test-fixture-design` owns the builder pattern and hermetic setup/teardown this skill's fixtures follow; full unit-layer specifics: `references/assertion-and-fixture-standard.md`.
-
----
-
-## Flakiness Prevention
-
-- **No `time.Sleep`** — inject a fake clock or a `now time.Time` parameter; a unit test never waits for something to happen, it calls a function and asserts.
-- **No real network or filesystem calls** — that dependency belongs to `go-integration-test`; a "unit" test touching either is mislabeled or not actually isolated.
-- **Deterministic randomness** — never call unseeded top-level `math/rand` inside code under unit test; inject a seeded `*rand.Rand` or stub randomness as a collaborator.
-- **Order-independence** — `go test -shuffle=on` must stay green; any shared mutable package-level state between test functions violates this immediately.
-
-Full standard and rationale: `references/assertion-and-fixture-standard.md`.
-
----
-
-## Native Fuzzing for Input Mutation
-
-Go's built-in fuzzer (`testing.F`) generates mutated inputs to find cases hand-written tables miss — malformed input, panics, invariant violations. Use it on parsers, validators, and anything taking untrusted input:
-
-```go
-func FuzzParseSensitivity(f *testing.F) {
-    f.Add("Confidential") // seed corpus
-    f.Fuzz(func(t *testing.T, s string) {
-        level := domain.SensitivityLevel(s)
-        if level.IsValid() && level.rank() == 0 {
-            t.Errorf("valid level %q has rank 0", s)
-        }
-    })
-}
-```
-
-Fuzz tests run briefly in CI and longer on a schedule; a discovered crasher is added to the seed corpus as a permanent regression case.
-
----
-
-## Decoupled from Implementation — The Four Pillars
-
-Khorikov's **four pillars** — Protection Against Regressions, Resistance to Refactoring, Fast Feedback, Maintainability — are the "why" behind every rule above. They are **multiplicative, not additive**: a missing pillar zeroes out the value of the others rather than just discounting it. Asserting a private call count *looks* like more protection, but it destroys resistance to refactoring — any internal restructuring that preserves behaviour still breaks the test, training the team to distrust red tests. Tests assert **behaviour through the public surface** (`asset.Sensitivity()`), never private fields or internal call counts. A well-decoupled test stays green through any refactor that preserves behaviour and fails only when external behaviour changes.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
+| # | Rule | Reason |
 |---|---|---|
-| Isolated | No real FS/network/DB/clock | A "unit" test hitting a database |
-| Right-sized | Quadrant classified before testing | Exhaustive unit tests forced onto controller/glue code |
-| Table-driven | Named struct shape; subtests via `t.Run` | Copy-pasted near-identical test funcs |
-| Parallel-safe | `t.Parallel()`; no shared state; race-clean | Order-dependent, shared-state tests |
-| Test-first | Test precedes code (`tdd-gate`) | Tests written after, to fit the code |
-| Mocking philosophy applied | Classical school; only unmanaged deps mocked | Every collaborator mocked (London-style) |
-| Assertions actionable | Expected-vs-got with context, layered convention followed | Bare `t.Fail()`; boolean-collapsing assertions |
-| Fixtures unit-appropriate | Small inline literals per case | Opaque golden file for a unit test |
-| Flakiness-free | No sleep/network/FS/unseeded rand | Any of the above present |
-| Fuzzed where apt | Parsers/validators have fuzz tests | Untrusted-input code unfuzzed |
-| Behaviour-coupled | Asserts public behaviour | Asserts private state / call counts |
+| U1 | **Test first:** write a failing test, see it fail for the expected reason, write the least code that passes, refactor | The `tdd-gate` hook checks only that a matching test file exists, never order |
+| U2 | **Assert behaviour through the public surface, not internal state**: never a private field or internal call count | Such tests break on refactors that preserve behaviour (Khorikov) |
+| U3 | **No real world:** no file system, network, database, clock or randomness the test does not control; no sleeping | Results would vary between runs; a real dependency belongs in `go-integration-test` |
+| U4 | **Doubles follow `mock-generation`:** managed dependency verified by state; moq mock only for an unmanaged one; never assert on a stub | One rule across every Go test |
+| U5 | **Coverage is 100% of lines and branches:** statement blocks as a hard gate plus `gobco` branches. Only machine-generated code is excluded automatically; other exclusions need the product owner's approval. Never offer or record a lower figure | `test-pyramid` and the product owner's decision |
+| U6 | **No result is not a pass:** if either gate cannot measure something, return it to the product owner; never report statements alone | The gobco trial was not a clean pass |
+| U7 | **A waiver exists only for a measured result above 90% and under 100%,** after the product owner reviews it and records comments, per measure and per run | None before a result; none at 90% or below |
 
----
+Every product size follows all seven. **Lean** means fewer cases and packages, never a lower figure, a skipped gate or tests written afterwards.
 
-## Anti-Patterns
+## What every answer states
 
-- **`tt := tt` loop-variable capture** — unnecessary since Go 1.22; a stale idiom cargo-culted forward.
-- **`defer` for teardown shared with parallel subtests** — fires before the subtests run; use `t.Cleanup`.
-- **`time.Sleep` in a unit test** — a unit test controls its clock by injection; sleeping means it's nondeterministic or secretly an integration test.
-- **Mocking managed dependencies** (your own repository/DB) — Khorikov's classical-school violation; a managed dependency gets a fake or an integration test, never interaction verification.
-- **Asserting on a stub** — verifying calls that were only there to supply data couples the test to an implementation detail with zero behavioural payoff.
-- **Asserting error message strings** — assert with `errors.Is`/`errors.As` against sentinel errors or types; message text is not a contract.
-- **Boolean-collapsing assertions** — `assert.True(t, got == want)` discards both values from the failure output.
-- **One giant test function** — a failure in case 3 hides cases 4–20; table-driven subtests report every case independently.
-- **Test names that describe mechanics, not behaviour** — `TestClassify2` says nothing; `"equal is not higher"` reads as a specification.
+Say these in words, beside any code; code that follows a rule silently leaves the reader free to undo it.
 
----
+1. **What kind of code it is** (quadrant) and which test proves each part. "Trivial" and "controller" code is still covered or listed.
+2. **How the cases were derived**, naming the technique, what was collapsed and what was not tried.
+3. **What is replaced or refused, by name, with the reason**: "`repo.SaveCalls()` is removed: the repository is ours, so the test reads the saved state". Give the compliant version.
+4. **What stays the default when one case differs**: "this test is serial because it uses `t.Setenv`; every other test stays parallel".
+5. **What a helper or tool does that the reader cannot see**, whichever applies: plain `go test` runs only fuzz seeds; parallel subtests run after the parent returns; `t.Setenv` panics under `t.Parallel`; a synctest bubble panics on a leftover goroutine; a moq method with no func panics and a mock verifies nothing by itself; `go test -cover` counts statements, rounded; gobco has no threshold, counts only a package's own tests and skips `select` and `range`; what each script excludes and its exit codes.
+6. **Sketches:** every variable declared or its origin named; each test asserts what its name claims.
+7. **Coverage, whenever it comes up:** both measures as counts; the unmeasured cases (`select`; `range` and zero-iteration loops; booleans outside `if`/`for` conditions and switch cases; functions without conditions); generated code excluded by name; other exclusions pending or approved; a unit-only run gives no verdict.
+8. **At this size:** what lean changes and what it does not.
+9. **Decisions for the product owner**: each exclusion, each waiver after a result, each no-result item, any rule the request leaves undefined.
+10. **What was run.** Code not executed is called unverified.
 
-## Output Format
+## What deserves which test
 
-Produces Go test files (written before the code they cover):
+| Code | Proof |
+|---|---|
+| Domain logic: complex, few collaborators | Thorough table-driven unit tests |
+| Complex and many collaborators | Split first: logic into plain types, a thin wrapper left (Humble Object) |
+| Controller or handler: simple, many collaborators | A few integration tests; `httptest` for its own paths |
+| Trivial | Through the behaviour that uses it; else its own small test, or listed |
 
-```
-internal/domain/*_test.go              (table-driven invariant tests)
-internal/application/**/*_test.go       (handler tests with mocked ports)
-internal/**/fuzz_test.go                (fuzz targets for parsers/validators)
-```
+## Procedure
+
+1. Read the code or requirement, acceptance criteria, ports, existing tests, `go.mod`, and the test strategy's exclusion register.
+2. Classify the code with the table above.
+3. Derive the cases; open `./references/deriving-test-cases.md` for limits, condition combinations or state changes.
+4. Copy a skeleton from `./templates/unit-test-skeletons.md` into `<implementation>_test.go` (or `_<variant>_test.go`) with Write, before the implementation.
+5. Run it; see it fail for the expected reason. Then write the least code to pass and refactor.
+6. For parallelism, teardown, time or randomness read `./references/test-shape-and-isolation.md`; for assertions, handlers, doubles or test value, `./references/assertions-doubles-and-value.md`.
+7. For untrusted input add a fuzz target and its bounded CI step: `./references/fuzzing.md`.
+8. Run `./scripts/validate-go-unit-tests.sh <paths>`, then `go test -race -shuffle=on ./...`; fix and repeat until clean.
+9. Run `./scripts/check-go-line-coverage.sh` and `./scripts/check-go-branch-coverage.sh` on the module; read `./references/coverage-gates.md` first. For each gap add the behaviour case it reveals; rerun until both pass or only product-owner items remain.
+10. Copy `./templates/coverage-report.md` to `artifacts/<product>/quality/test-reports/` and fill it from the full run, for the product owner's approval.
+11. Tick `./resources/checklist.md` and answer with the statements above.
+
+Worked cases, with real gate output: `./examples/01-lean-bakery-stamps.md` (100% statements, two branches missed), `./examples/02-standard-class-booking.md` (decision table, transitions, fake and mock), `./examples/03-enterprise-energy-billing.md` (tenants, synctest, fuzzing, a branch result gobco cannot give).
+
+## Gotchas
+
+- **"`go test -cover` says 100.0%."** *Reason:* one decimal hides gaps and it counts statements only. *Instead:* run both gates.
+- **"Every statement ran, so branches are fine."** *Reason:* an `if` without `else` has no block for the false path. *Instead:* run the branch gate.
+- **Running `gobco ./...`.** *Reason:* it prints "nothing to instrument" and exits 0. *Instead:* use the script.
+- **A file behind a custom build tag.** *Reason:* gobco measures nothing in it and still reports complete. *Instead:* the script says "no result"; take it to the product owner.
+- **"The handler tests already run the fake."** *Reason:* the branch gate counts only a package's own tests. *Instead:* give the fake its own test.
+- **"It is only `main`, a getter or glue."** *Reason:* only generated code is excluded automatically. *Instead:* test it, or list it for approval.
+- **Adding calls with no assertion to reach 100%.** *Reason:* coverage proves only that code ran. *Instead:* write the behaviour case, or delete dead code.
+- **"The fuzz test runs in CI."** *Reason:* plain `go test` runs seeds only. *Instead:* one `-fuzz` step with `-fuzztime` per target.
+- **`defer` for teardown above parallel subtests.** *Reason:* it runs before they do. *Instead:* `t.Cleanup`.
+- **`time.Sleep`, or a test that reads `time.Now()`.** *Reason:* timing decides the result. *Instead:* pass the time, or use `testing/synctest`.
+- **Writing `tt := tt`.** *Reason:* unneeded from Go 1.22. *Instead:* remove it, after checking `go.mod`.
+
+## Output
+
+| File | When to open it |
+|---|---|
+| `./references/deriving-test-cases.md` | Choosing rows |
+| `./references/test-shape-and-isolation.md` | Table shape, parallelism, time, randomness |
+| `./references/assertions-doubles-and-value.md` | Assertions, handlers, doubles, quadrants |
+| `./references/fuzzing.md` | Untrusted input |
+| `./references/coverage-gates.md` | Running or reporting coverage |
+| `./templates/unit-test-skeletons.md` | Writing test files |
+| `./templates/coverage-report.md` | Reporting a full run |
+| `./scripts/validate-go-unit-tests.sh` | Before hand-off, after every edit |
+| `./scripts/check-go-line-coverage.sh` | Statement gate |
+| `./scripts/check-go-branch-coverage.sh` | Branch gate |
+| `./resources/checklist.md` | Before answering |
+
+Test files sit beside the code they test (`internal/domain/*_test.go`, `internal/application/**/*_test.go`), with fakes for managed ports and moq mocks for unmanaged ones.
