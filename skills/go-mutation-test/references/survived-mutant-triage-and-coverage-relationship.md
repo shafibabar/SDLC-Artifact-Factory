@@ -2,9 +2,9 @@
 
 Full grounding for `go-mutation-test`'s "Survived-Mutant Triage Workflow" and "Mutation-Score
 Threshold" sections: the worked 100%-coverage-with-survived-mutant example that closes the loop
-`go-unit-test`'s `references/coverage-by-quadrant.md` opens (coverage is gameable; this is the
+`go-unit-test` opens (coverage shows only that code ran; this is the
 proof), two fully worked triage dispositions (a real gap and a genuine equivalent mutant), and the
-precise relationship between mutation score and `go-makefile`'s 80% line-coverage threshold.
+precise relationship between mutation score and `go-makefile`'s 100% statement-coverage gate.
 Self-contained — restates the triage steps and both threshold numbers below rather than assuming
 the parent `SKILL.md` body is in context.
 
@@ -12,8 +12,8 @@ the parent `SKILL.md` body is in context.
 
 ## The Precise Relationship to Line Coverage
 
-`go-makefile`'s `references/coverage-and-benchmark-standard.md` enforces **80% line coverage** via
-`check-coverage.sh`, gated on every `make ci` run. This skill enforces **60% mutation score** on a
+`go-makefile` enforces the product's **100% line and branch coverage** gate (statement blocks and
+`gobco` branches) on every `make ci` run. This skill enforces **60% mutation score** on a
 narrower package set, on a monthly-plus-pre-release schedule. These are not the same metric at two
 different numbers — they measure two different questions, on two different cadences, via two
 different mechanisms:
@@ -21,8 +21,8 @@ different mechanisms:
 | | Line coverage (`go-makefile`) | Mutation score (this skill) |
 |---|---|---|
 | Question answered | Did this line execute during any test? | Did a test notice when this line's behaviour changed? |
-| Gate | 80%, every `make ci` run (every PR) | 60%, monthly + pre-release |
-| Scope | Whole repo minus `cmd/`, generated/mock files | `internal/domain/...`, `internal/application/...` only |
+| Gate | 100%, every `make ci` run (every PR) | 60%, monthly + pre-release |
+| Scope | Whole module minus generated files (`_moq.go`, generated marker) and approved exclusions | `internal/domain/...`, `internal/application/...` only |
 | Gameable by | Assertion-free tests that merely execute code | Nothing comparable — killing a mutant requires an actual behavioural assertion |
 | What a failure means | Untested code shipped | A test exists over this line, but wouldn't catch a real bug in it |
 
@@ -158,7 +158,7 @@ before deciding which of the two workflow-step-3 branches applies — guessing, 
 
 ## Threshold Justification, in Depth
 
-60% is set below `go-makefile`'s 80% line-coverage number for a structural reason, not an
+60% is set below `go-makefile`'s 100% coverage figure for a structural reason, not an
 arbitrary one: line coverage's ceiling is a true 100% — every statement either ran or it didn't,
 with no analog to an equivalent mutant. Mutation score's ceiling is **below** 100% for any
 nontrivial function, because some fraction of generated mutants — exactly the `Clamp` shape above

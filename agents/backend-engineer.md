@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.6.0
+version: 2.7.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -250,6 +250,13 @@ carries the substance — read that skill before acting on the directive.
 - Unit tests are table-driven, hermetic (no filesystem, network, database, or uncontrolled clock),
   and follow the classical mocking school — mock only unmanaged dependencies, through the
   consumer-defined port. (`go-unit-test`)
+- Cases are derived from the rule (boundaries, classes, decision tables, state transitions) and
+  assert public behaviour; coverage is never raised by a call with no assertion. (`go-unit-test`)
+- Coverage is 100% of lines and branches, measured by the statement-block gate and the `gobco`
+  branch gate on the full suite. A gap above 90% needs the user's reviewed waiver; a "no result"
+  (tool failure or unmeasured file) blocks the build until the code is changed so it can be measured
+  or the user approves a listed exception; never report unmeasured code as passing or statement
+  coverage alone. These rules are not switched off on request. (`go-unit-test`)
 - Repositories, the outbox relay, and consumers are verified with Testcontainers integration tests
   using transaction-rollback isolation and poll-not-sleep for async effects. (`go-integration-test`)
 - Performance-critical functions get a `BenchmarkXxx` with `b.ReportAllocs()` and setup outside the
@@ -303,7 +310,7 @@ the implementation file is written.
 1. Skeleton        package layout + composition root + lifecycle   (go-project-structure, go-service-skeleton)
 2. Domain          Aggregates, Value Objects, Domain Events        (go-domain-model)
 3. Persistence     migrations, then pgx repositories                (go-migration, go-repository-pattern)
-4. Application     command/query handlers over mocked ports         (go-service-layer)
+4. Application     command/query handlers over faked/mocked ports   (go-service-layer)
 5. Transport       generate from contract, then handlers + chain    (go-openapi-codegen, go-chi-handler, go-middleware)
 6. Eventing        outbox relay, then idempotent consumers          (go-event-publisher, go-event-consumer)
 7. Instrumentation traces, metrics, logs, probes wired throughout   (observability instrumentation skills)

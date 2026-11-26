@@ -72,8 +72,8 @@ committed `threshold-efficacy` to make a local run pass — that value is the ga
 | `internal/application/...` | **Yes, always** | Command/query handlers orchestrating domain logic — still quadrant-1-adjacent significance, thin enough on collaborators that mutation signal stays legible. |
 | `internal/infrastructure/...` | **No** | Repositories and adapters are Humble Object (`go-repository-pattern`) — quadrant 3, correctness verified by `go-integration-test` against the real dependency. Mutating a SQL-adjacent line here tests wiring, not logic; the mutant tells you a query changed, not that a decision broke. |
 | `internal/handlers/...` (chi handlers) | **No** | Also Humble Object (`go-chi-handler`) — quadrant 3, deserialize-and-delegate with no decision logic of its own. Same reasoning as infrastructure. |
-| `cmd/**` | **No** | Composition roots wire dependencies and start the process; `go-project-structure` and `go-makefile`'s coverage standard both already exclude this by construction — no decision logic exists here to mutate. |
-| `**/*_gen.go`, `**/*.pb.go`, `**/*_mock.go` | **No** | Generated code and test doubles — identical filename-pattern exclusion `go-makefile`'s `check-coverage.sh` already applies to the line-coverage profile, reused here rather than re-invented. |
+| `cmd/**` | **No** | Composition roots wire dependencies and start the process; `go-project-structure` keeps all decisions out of them, so there is no logic here to mutate. The coverage gate does not exclude them automatically. |
+| `**/*_gen.go`, `**/*.pb.go`, `**/*_moq.go` | **No** | Generated code, moq mocks included (by file name, as in the coverage gate). Hand-written test doubles are not generated. |
 
 **Why this exactly mirrors `go-unit-test`'s quadrant heuristic:** mutation testing is expensive
 per the cost model below, so it must be spent where a survived mutant is actually informative —

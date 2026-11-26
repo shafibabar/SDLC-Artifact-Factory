@@ -21,7 +21,7 @@ GO        ?= go
 PKG       := ./...
 VERSION   ?= $(shell git describe --tags --always --dirty)
 IMAGE     ?= $(SERVICE_NAME):$(VERSION)
-COVER_MIN ?= 80
+COVER_EXCEPTIONS = $(if $(wildcard coverage-exceptions.txt),--exclusions coverage-exceptions.txt)
 
 .PHONY: help
 help: ## List available targets
@@ -63,9 +63,9 @@ test: ## Unit + integration tests, race detector always on
 	$(GO) test -race -shuffle=on -timeout=120s $(PKG)
 
 .PHONY: cover
-cover: ## test, plus coverage measured and enforced against COVER_MIN
-	$(GO) test -race -covermode=atomic -coverprofile=coverage.out $(PKG)
-	@./scripts/check-coverage.sh coverage.out $(COVER_MIN)
+cover: ## test, plus the 100% statement and branch coverage gates (any non-zero exit blocks)
+	@./scripts/check-go-line-coverage.sh $(COVER_EXCEPTIONS) --out coverage.out .
+	@./scripts/check-go-branch-coverage.sh $(COVER_EXCEPTIONS) .
 
 .PHONY: bench
 bench: ## Single-run benchmark with allocation reporting (dev-time; see references/coverage-and-benchmark-standard.md)
@@ -260,9 +260,10 @@ static checks, so it runs after every check that can fail without touching the n
 
 ### `test` / `cover`
 
-Full standard (race detector, coverage threshold and its exclusions, `-shuffle=on`) in
+Full standard (race detector, the coverage gate and its exclusions, `-shuffle=on`) in
 `references/coverage-and-benchmark-standard.md`. In brief: `-race` is never optional, coverage is
-enforced (not just measured) against `COVER_MIN`, and this is the single most expensive step in
+enforced (not just measured) at 100% of statement blocks and of `gobco` branches, a "no result"
+blocks like a gap, and this is the single most expensive step in
 `ci` — compiling and executing the entire test suite with the race detector's instrumentation
 overhead — which is exactly why it runs last: every cheaper check that could have failed the
 build already had its chance to fail it for free.

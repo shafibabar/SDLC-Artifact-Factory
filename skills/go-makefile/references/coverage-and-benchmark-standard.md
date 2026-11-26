@@ -1,88 +1,55 @@
 # Coverage Threshold and Benchmark Standard
 
-Self-contained reference for `go-makefile`'s `cover` and `bench` targets: the exact threshold,
-what is excluded from the count and why, the enforcement script in full, and the boundary between
+Self-contained reference for `go-makefile`'s `cover` and `bench` targets: the exact gate,
+what is excluded from the count and why, how the enforcement script is wired, and the boundary between
 a dev-time benchmark run and `go-performance-test`'s CI-gated regression detection.
 
 ---
 
-## The Coverage Threshold: 80%, Enforced Not Measured
+## The Coverage Gate: 100%, Enforced Not Measured
 
-**80%** is the factory-wide default (`COVER_MIN` in the Makefile), consistent with the number
-already established independently by `test-pyramid` ("Gate: ≥80% on changed packages") and
-`ci-pipeline` ("Coverage below the enforced threshold (≥80%)") — `go-makefile` is the mechanism
-that actually enforces the number both of those skills already name, not a fourth, different
-source of truth. A product may override it per `sdlc-config-management`'s pattern (e.g. `85` for
-a bounded context handling PII classification) by setting `COVER_MIN` in the product's own
-Makefile include or CI variables — the mechanism stays identical, only the number moves.
+The product's gate is **100% of lines and branches** (`test-pyramid`). `cover` enforces both
+halves: statement blocks, then `gobco` branches. There is no threshold variable to lower. A
+measured result above 90% and under 100% fails unless the user reviews the gap and waives that run
+with recorded comments. A **no result** (tool failure or unmeasured file) blocks the build: change
+the code so it can be measured, or list an exception for the user's approval.
 
-**A measured-but-unenforced number gates nothing.** `go tool cover -func` printing a percentage
-to a log that nobody is required to look at is equivalent to no coverage policy at all. The
-`cover` target's `check-coverage.sh` call is what turns the number into a build failure — the
-distinction `test-pyramid` calls "coverage is a signal, not a target": measuring it makes it
-visible, *enforcing* it makes it a gate.
+**A measured-but-unenforced number gates nothing**, and neither does a printed one: `go tool cover`
+rounds to one decimal, so a gap can read 100.0%. The check fails on any statement block with a zero
+count.
 
 ### What Counts, and What's Excluded
 
-- **`cmd/**` composition roots are absent from the profile by construction, not by a filter.**
-  `go-project-structure` is explicit that `cmd/server/main.go` only wires dependencies and starts
-  the process — "the moment it decides anything, that decision is untestable without booting the
-  process" — so a composition root correctly carries no `_test.go` file at all. `go test`'s
-  default (non-`-coverpkg`) coverage profile only contains statements from packages that were
-  themselves under test; a package with zero test files contributes zero lines to
-  `coverage.out`, counted in neither the numerator nor the denominator. Nothing needs to actively
-  exclude `cmd/` — it was never going to be present. Do not add a synthetic `main_test.go` whose
-  only purpose is to inflate a number; that produces exactly the "line coverage with weak
-  assertions proves nothing" failure mode `test-pyramid` warns against.
-- **Generated code and mocks ARE compiled into tested packages and DO need an explicit filter.**
-  Unlike `cmd/`, `oapi-codegen` output and `mockgen`/`moq` doubles frequently live inside a
-  package that has real tests (a handler package importing its own generated server interface,
-  for instance) — so their lines land in the same `coverage.out` as hand-written logic unless
-  filtered out. The filter matches on filename convention, not a separate exclude-list to
-  maintain by hand: any file ending `_gen.go`, `.pb.go`, or `_mock.go` is dropped from the
-  profile before the percentage is computed. This is the one place this standard trades a small
-  amount of precision (a filename-pattern match, not a semantic "is this generated" check) for
-  zero maintenance burden — the same trade-off `go-project-structure`'s `arch` fitness function
-  makes with its own pattern-based deny-list, made explicit rather than silently assumed.
+- **Everything in the module is counted**, `cmd/**` composition roots included: with
+  `-coverpkg=./...`, packages without tests appear in the profile at zero. Test them or list them
+  as exclusions for the user's approval.
+- **Excluded automatically: machine-generated code only** — moq mocks by file name (`_moq.go`) and
+  files carrying the `// Code generated ... DO NOT EDIT.` marker before the package clause. Test
+  doubles written by hand are counted.
+- **Every other exclusion** is a line in `coverage-exceptions.txt` with its approval date and reason
+  (both gates read it; excepted files are printed as not measured).
 
-### `check-coverage.sh` in Full
+### The Checks
+
+Copy `go-unit-test`'s `check-go-line-coverage.sh` and `check-go-branch-coverage.sh` to the service's
+`scripts/`; do not write second versions. Both need Python 3; the branch check needs `gobco` v1.3.4
+on `PATH` (`go install github.com/rillig/gobco@v1.3.4`), locally and in CI. `make cover` calls both;
+each runs the tests itself:
 
 ```bash
-#!/usr/bin/env bash
-# scripts/check-coverage.sh — enforce the coverage threshold on a filtered profile.
-# Usage: check-coverage.sh coverage.out 80
-# Invoked by `make cover`, part of `make ci`.
-set -euo pipefail
-
-profile="$1"
-threshold="$2"
-
-filtered="$(mktemp)"
-trap 'rm -f "$filtered"' EXIT
-
-# Keep the `mode: atomic` header line, then drop generated/mock files from the count.
-head -1 "$profile" > "$filtered"
-tail -n +2 "$profile" | grep -Ev '_gen\.go:|\.pb\.go:|_mock\.go:' >> "$filtered" || true
-
-pct="$(go tool cover -func="$filtered" | tail -1 | awk '{print $NF}' | tr -d '%')"
-echo "Coverage (generated/mock files excluded): ${pct}%  (threshold: ${threshold}%)"
-
-awk -v p="$pct" -v t="$threshold" 'BEGIN { exit !(p+0 >= t+0) }' || {
-  echo "FAIL: coverage ${pct}% is below the ${threshold}% threshold"
-  exit 1
-}
+./scripts/check-go-line-coverage.sh $(COVER_EXCEPTIONS) --out coverage.out .
+./scripts/check-go-branch-coverage.sh $(COVER_EXCEPTIONS) .
 ```
 
-**Exit codes:** `0` on pass, `1` on a filtered percentage below `threshold` — the same
-success/failure exit-code contract every `scripts/*.sh` in this plugin follows, so `make cover`'s
-failure propagates through `make ci` without any special-case handling in either Makefile target.
+**Exit codes:** `0` pass, `1` a gap, `2` no result. Both non-zero codes stop `make cover` and so
+`make ci`. The branch check runs without `-race`: it measures only, and `gobco`'s counters are
+unsynchronised. Race detection stays with the line check's run.
 
-**Why measured under `-race` and `-covermode=atomic`, never a separate un-raced run:** a second,
-faster coverage run without `-race` would be a second test execution path — the exact thing the
-race-detector-always-on standard (`SKILL.md`) forbids. `-covermode=atomic` (rather than `count` or
-`set`) is required specifically because `-race` is on: atomic counters are safe to increment
+**Why the line check runs under `-race` and `-covermode=atomic`:** `-covermode=atomic` (rather
+than `count` or `set`) is required because `-race` is on: atomic counters are safe to increment
 concurrently, which `set`/`count` mode's plain counters are not once the race detector is
-instrumenting concurrent access to the same coverage counter.
+instrumenting concurrent access to the same counter. The branch check is the one un-raced run,
+because `gobco`'s own counters are unsynchronised; it measures only and never replaces a raced run.
 
 ---
 
