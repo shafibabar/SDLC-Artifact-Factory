@@ -10396,14 +10396,14 @@
         "dir": "skills/test-fixture-design",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "test-fixture-design",
         "owner": "test-strategist",
         "phase": "implement",
@@ -10411,27 +10411,42 @@
           "go-test-fixtures"
         ],
         "related": [
+          "go-contract-test",
           "go-e2e-test",
           "go-integration-test",
           "go-unit-test",
-          "mock-generation"
+          "mock-generation",
+          "multi-tenancy-design",
+          "python-e2e-test",
+          "python-integration-test",
+          "python-unit-test",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/domain-driven-design/versioning-event-sourced-system-young.md",
+          "research/software-architecture/pragmatic-programmer-hunt-thomas.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/python-testing-with-pytest-okken.md",
+          "research/testing/testcontainers-go-official-docs.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
           "builder",
           "cleanup",
           "fixtures",
           "go",
+          "golden-files",
           "hermetic",
           "implement",
+          "isolation",
           "object-mother",
+          "python",
           "seeding",
-          "test-data",
-          "test-data-builder",
-          "testcontainers"
+          "test-data"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -11163,8 +11178,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1207,
-    "edges_skill_sources": 306,
+    "edges_skill_related": 1213,
+    "edges_skill_sources": 313,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11176,20 +11191,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 86,
+    "research_files_cited": 89,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 133,
+    "skills_with_contract_test": 132,
     "skills_with_domain": 190,
-    "skills_with_evals": 56,
-    "skills_with_examples": 56,
+    "skills_with_evals": 57,
+    "skills_with_examples": 57,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 55,
-    "skills_with_scripts": 49,
-    "skills_with_sources": 57,
+    "skills_with_resources": 56,
+    "skills_with_scripts": 50,
+    "skills_with_sources": 58,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 54
+    "skills_with_templates": 55
   },
   "edges": {
     "agent_produces": [
@@ -17284,6 +17299,10 @@
         "skill": "system-context-diagram"
       },
       {
+        "related": "go-contract-test",
+        "skill": "test-fixture-design"
+      },
+      {
         "related": "go-e2e-test",
         "skill": "test-fixture-design"
       },
@@ -17297,6 +17316,26 @@
       },
       {
         "related": "mock-generation",
+        "skill": "test-fixture-design"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "test-fixture-design"
+      },
+      {
+        "related": "python-e2e-test",
+        "skill": "test-fixture-design"
+      },
+      {
+        "related": "python-integration-test",
+        "skill": "test-fixture-design"
+      },
+      {
+        "related": "python-unit-test",
+        "skill": "test-fixture-design"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "test-fixture-design"
       },
       {
@@ -18864,6 +18903,34 @@
       {
         "skill": "system-context-diagram",
         "source": "research/software-architecture/just-enough-software-architecture-fairbanks.md"
+      },
+      {
+        "skill": "test-fixture-design",
+        "source": "research/domain-driven-design/versioning-event-sourced-system-young.md"
+      },
+      {
+        "skill": "test-fixture-design",
+        "source": "research/software-architecture/pragmatic-programmer-hunt-thomas.md"
+      },
+      {
+        "skill": "test-fixture-design",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "test-fixture-design",
+        "source": "research/testing/python-testing-with-pytest-okken.md"
+      },
+      {
+        "skill": "test-fixture-design",
+        "source": "research/testing/testcontainers-go-official-docs.md"
+      },
+      {
+        "skill": "test-fixture-design",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "test-fixture-design",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "test-pyramid",

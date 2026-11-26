@@ -56,7 +56,7 @@ Your two objectives are inseparable: **shift-left** (catch defects at the cheape
 | Executable specs (Gherkin) | `bdd-feature-file` | `bdd-feature-file` | Implement |
 | Unit testing **standard** | `go-unit-test` | `python-unit-test` | Implement |
 | Test doubles | `mock-generation` | `python-unit-test` | Implement |
-| Fixtures & hermetic data | `test-fixture-design` | `python-unit-test`, `python-integration-test` | Implement |
+| Fixtures & hermetic data | `test-fixture-design` | `test-fixture-design` (mechanics: `python-unit-test`, `python-integration-test`) | Implement |
 | Integration testing **standard** | `go-integration-test` | `python-integration-test` | Implement |
 | Contract testing | `go-contract-test` | `python-contract-test` | Implement/Quality |
 | Mutation testing | `go-mutation-test` | `python-mutation-test` | Quality |
@@ -115,9 +115,10 @@ Create and change them with Write and Edit so the manifest registers them; after
 - Every profile plans every layer; a smaller product gets fewer rows, not fewer layers. (`test-pyramid`)
 
 ### 4. Hermetic and deterministic
-- Every test creates, owns, and cleans its data; no shared/leftover state; order-independent (`go test -shuffle=on` green). (`test-fixture-design`)
+- Every test creates, owns, and cleans its data; no shared/leftover state; order-independent (`go test -shuffle=on` green); time, ids and seeds controlled. (`test-fixture-design`)
+- Fixtures reach only a throwaway database the run started; setup and cleanup never reset shared tables. These rules are not switched off on request. (`test-fixture-design`)
 - Injected clock/ids/seed; **Testcontainers** for real dependencies, identical locally and in CI. (`go-integration-test`)
-- **Parallel-safe** by per-test tenant isolation — maximise CI throughput.
+- **Parallel-safe**: database tests roll back each test; data scoped to the test only when a real commit is needed, with the reason stated, keyed from the tenancy design. (`test-fixture-design`)
 
 ### 5. Honest test doubles
 - Strongly-typed, **generated** mocks (`moq`/`mockgen`) against consumer-defined interfaces; prefer fakes/stubs for state. No hand-rolled string matchers; no over-mocking. (`mock-generation`)
@@ -172,7 +173,7 @@ Load each step's skill for the service's language before starting it (see **Load
 ### Shift-left (during Implement — alongside feature development)
 1. **Strategy** — plan every layer, the coverage and mutation gates, exclusions and the flaky policy for the product (`test-pyramid`).
 2. **Executable specs** — turn approved acceptance criteria into feature files, before implementation, and check Must Have coverage (`bdd-feature-file`).
-3. **Standards in place** — establish the unit/mocking/fixture/integration patterns the backend-engineer applies (Go: `go-unit-test`, `mock-generation`, `test-fixture-design`, `go-integration-test`; Python: `python-unit-test`, `python-integration-test`).
+3. **Standards in place** — establish the unit/mocking/fixture/integration patterns the backend-engineer applies (Go: `go-unit-test`, `mock-generation`, `test-fixture-design`, `go-integration-test`; Python: `python-unit-test`, `test-fixture-design`, `python-integration-test`).
 4. **Contract verification** — wire provider/consumer + event-schema contract tests at the boundaries (`go-contract-test`; Python: `python-contract-test`).
 
 ### Shift-right (during Quality — once the system runs)
