@@ -59,6 +59,11 @@ When asked to break one: name the rule in a sentence or two, then do the useful 
 In a chat reply as much as with the file:
 
 - that scenarios are required for this product; at lean, say plainly that a small product still covers every Must Have criterion;
+- that an **edge-case scenario is required at every product size**, lean included, whether or not it was asked for;
+- when asked for notes at the end of a line: that Gherkin has **no trailing comments; a comment must start on its own line**, so labels go in tags above the scenario;
+- when click, request or query steps are asked for: that they are rewritten **because** a step states business behaviour, and interface detail makes scenarios break when the screen changes and hides what is being agreed; the detail goes in step definitions;
+- for browser journeys: plain Playwright tests tagged with the same criterion IDs **plus a coverage check that fails when a Must Have criterion has no tagged test**. Do not offer a Gherkin adapter as an alternative;
+- that a pipeline run publishes a report readable without opening the code;
 - the criteria file used, by path, and whether it is approved;
 - the feature file path, and **each criterion ID** with its scenario and angle; any ID without one, with the reason;
 - everything of the user's that was replaced, removed or not written, **by name**, with the reason (for example, "your 'When she sends a DELETE request' became 'When she cancels the order': a step says what, not how");
@@ -111,7 +116,7 @@ Not `When she sends a DELETE request`, not `Then the row is removed`, not a `# n
 - **"Happy path now, the rest later."** *Reason:* the uncovered criteria are where defects live, and approval would claim they are proven. *Instead:* one scenario per criterion before presenting.
 - **"The code refunds 50%, so I'll write 50%."** *Reason:* the defect becomes the specification. *Instead:* keep the agreed value, name the ID and both values, ask.
 - **"I'll add a scenario for the case they forgot."** *Reason:* its outcome is a rule nobody agreed. *Instead:* put the question to the product owner; add it once the criteria have it.
-- **`Scenario: Refused # negative`.** *Reason:* comments start their own line; trailing text joins the name and filters nothing. *Instead:* tags above the scenario.
+- **`Scenario: Refused # negative`.** *Reason:* a comment must start its own line, so trailing text is not a comment and filters nothing. *Instead:* tags above the scenario.
 - **"All tests passed" from an unbound or empty suite.** *Reason:* godog passes undefined steps unless strict, and passes when it finds no features. *Instead:* strict mode, assert features were found, report counts.
 - **Eleven near-identical Examples rows.** *Reason:* a row that proves nothing new only hides the rules. *Instead:* keep rows whose removal would lose something; split mixed rules.
 - **`@wip` to get CI green.** *Reason:* the criterion is now unproven. *Instead:* say the gate is red for that ID.
