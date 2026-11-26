@@ -7,7 +7,7 @@ description: >
   with a FakeUnitOfWork twin, asyncio.TaskGroup for parallel query fan-out
   (cancels siblings on failure, like errgroup), and contextvars for
   tenant/trace propagation. The Python analog of go-service-layer.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
@@ -47,32 +47,35 @@ Two Python realities differ honestly from Go and shape everything below:
 ## Use-Case Function Standard
 
 One function per use case, taking a command DTO (a Pydantic model or frozen dataclass)
-and the Unit of Work, returning the use case's own result DTO — never an ORM object,
+and the Unit of Work, returning the use case's own result DTO (or `None`) — never an ORM object,
 never an `asyncpg.Record`, never an HTTP type. Fixed step order, identical in spirit to
 `go-service-layer`'s five-step discipline:
 
 **idempotency check → load → authorise → domain call → commit.**
 
 ```python
-async def classify_data_asset(cmd: ClassifyDataAsset, uow: AbstractUnitOfWork) -> None:
+async def classify_data_asset(cmd: ClassifyDataAsset, uow: UnitOfWork,
+                              clock: Clock = _utc_now) -> None:
     async with uow:
         if await uow.commands.already_processed(cmd.idempotency_key):
             return                                    # duplicate delivery — replay
         asset = await uow.assets.get(cmd.asset_id)    # load (tenant-scoped repo)
         if asset is None:
-            raise NotFoundError(cmd.asset_id)
-        subject = current_subject.get()               # from a ContextVar, not a global
-        subject.require("data-assets:classify")       # authorise BEFORE mutate
-        asset.classify(cmd.sensitivity)               # domain call — invariant lives here
-        await uow.assets.add(asset)
-        await uow.commands.record(cmd.idempotency_key)
+            raise NotFoundError(cmd.asset_id, tenant_id())
+        subject = current_subject.get()               # from a ContextVar, not a parameter
+        subject.require("data-assets:classify", asset.id)     # authorise BEFORE mutate
+        level = SensitivityLevel.parse(cmd.sensitivity)
+        asset.classify(level, by=subject.user_id, now=clock())  # invariant lives here
+        await uow.assets.save(asset)
+        await uow.commands.record(cmd.idempotency_key, asset.id)
         await uow.commit()                            # explicit; absence == rollback
 ```
 
 The idempotency `record` insert shares the UoW's single transaction with the domain
 write — same guarantee as `go-service-layer`'s `command_log` rule and
-`python-repository-pattern`'s outbox-in-one-transaction rule: a crash between the ledger
-write and the domain write is impossible by construction. A use-case function changes
+`python-repository-pattern`'s outbox-in-one-transaction rule: a crash cannot split the ledger
+write from the domain write. `record` raises `DuplicateCommandError` when a concurrent
+delivery inserted the key first, which rolls this delivery back. A use-case function changes
 **exactly one Aggregate per transaction**; a case that appears to need two atomically is
 a signal to reconsider the boundary or emit a Domain Event, never a transaction spanning
 two.
@@ -84,9 +87,7 @@ command-vs-event dispatch rule: `references/service-layer-and-uow.md`.
 
 ## Query Standard
 
-Queries never load Aggregates and never open a Unit of Work. A read has no invariant to
-enforce, so it goes straight to a narrow read-model port scoped to the tenant and
-permission — the CQRS Read Model, a denormalised projection read with one `SELECT`:
+Queries never load Aggregates and never open a Unit of Work. A read has no invariant to enforce, so it goes straight to a narrow read-model port scoped to the tenant and permission — the CQRS Read Model, a denormalised projection read with one `SELECT`:
 
 ```python
 async def list_data_assets(q: ListDataAssets, view: DataAssetView) -> Page[DataAssetDTO]:
@@ -101,22 +102,11 @@ Bypassing the domain layer for reads is deliberate — a read has no invariant t
 
 ## Unit of Work: Async Context Manager, Rollback by Default
 
-The Unit of Work owns one atomic transaction and exposes the repositories inside it. It
-is an `async with` context manager whose `__aexit__` **rolls back unless the caller
-explicitly `await uow.commit()`ed** — so "did we forget to commit?" and "did an
-exception leave a half-written transaction?" become structurally-answered questions, not
-review-time worries. `__aenter__` acquires an `asyncpg` connection and opens its
-transaction; `__aexit__` commits only if `commit()` was called, else rolls back.
+The Unit of Work owns one atomic transaction and exposes the repositories inside it. It is an `async with` context manager whose `__aexit__` **rolls back unless the caller explicitly `await uow.commit()`ed** — so "did we forget to commit?" and "did an exception leave a half-written transaction?" become structurally-answered questions, not review-time worries. `__aenter__` acquires an `asyncpg` connection and opens its transaction; `__aexit__` commits only if `commit()` was called and no exception propagated, else rolls back.
 
-Because the port is an abstraction, its biggest day-to-day payoff is a test fake: a
-`FakeUnitOfWork` backed by `set`-based fake repositories, no-op commit, lets the whole
-service layer get fast, database-free unit tests, while the real `asyncpg` UoW is
-exercised only by a few `testcontainers` integration tests. Prefer this fake over a
-mock: assert on resulting state, not on how the code called its collaborators. Full
-`AbstractUnitOfWork` Protocol, the concrete `asyncpg` UoW, and the `FakeUnitOfWork`:
-`references/service-layer-and-uow.md`.
+Because the port is an abstraction, its biggest day-to-day payoff is a test fake: a `FakeUnitOfWork` backed by the `set`-based fake repository, which publishes staged writes only on commit, lets the whole service layer get fast, database-free unit tests, while the real `asyncpg` UoW is exercised only by a few `testcontainers` integration tests. Prefer this fake over a mock: assert on resulting state, not on how the code called its collaborators. Full `UnitOfWork` Protocol, the concrete `asyncpg` UoW, and the `FakeUnitOfWork`: `references/service-layer-and-uow.md`.
 
-The port is a `typing.Protocol` (structural typing — the `asyncpg` implementation never
+The `UnitOfWork` port is a `typing.Protocol` (structural typing — the `asyncpg` implementation never
 subclasses it), the closest Python gets to Go's implicit interface satisfaction. Honest
 caveat: a `Protocol` is only checked if `mypy`/`pyright` runs — nothing at runtime
 rejects a wrong-shaped object, unlike Go's compile error, so the type-check step is a
@@ -150,11 +140,11 @@ failure by default — prefer `TaskGroup`. Full fan-out, the failure/cancel sema
 
 ## Tenant and Trace Propagation with contextvars
 
-Tenant id, the authenticated `Subject`, and the trace span are carried in
-`contextvars.ContextVar`s — set once by middleware at the request edge, read by the
+Tenant id, the authenticated `Subject`, and the trace id are carried in
+`contextvars.ContextVar`s (`domain/context.py`) — set once by middleware at the request edge, read by the
 service layer via `.get()`. A `ContextVar` is `asyncio`-aware: each concurrently
 scheduled coroutine sees its own value, so tenant state cannot leak between requests
-sharing the event loop. **Never** read tenant/trace from a module-level global — that
+sharing the event loop. **Never** hold tenant/trace in a plain module-level value — that
 leaks state across concurrent coroutines, the bug with no Go equivalent. Definitions,
 middleware set-up, and propagation into `TaskGroup` tasks: `references/concurrency-and-context.md`.
 
@@ -180,11 +170,11 @@ middleware set-up, and propagation into `TaskGroup` tasks: `references/concurren
 | Criterion | Pass | Fail | How to verify |
 |---|---|---|---|
 | Thin functions, one use case each | Orchestration only; command DTO in, result DTO out | Business logic in the function, or an Aggregate/`Record` returned | Read the body against the fixed step order |
-| UoW owns the transaction | `commit`/rollback only via the UoW context manager; repos never open a transaction | A repository calling `conn.transaction()` itself | `grep -rn "conn.transaction()" src/infrastructure` — only inside the UoW |
+| UoW owns the transaction | `commit`/rollback only via the UoW context manager; repos never open a transaction | A repository calling `conn.transaction()` itself | `grep -n "transaction()" src/<pkg>/adapters/postgres.py` — no hits |
 | Rollback by default | Happy path ends in `await uow.commit()`; `__aexit__` rolls back otherwise | A UoW that commits in `__aexit__` unconditionally | Read `__aexit__`; read the end of every use-case function |
 | Idempotency same-transaction | Processed-key record shares the UoW with the domain write | Record and domain write in separate transactions | Read the function for one `async with uow:` spanning both |
 | Write/read separation | Commands mutate Aggregates; queries hit read-model views | A query loading an Aggregate or opening a UoW | Grep query functions for `uow` / `.get(` — none |
-| Fan-out cancels siblings, tenant via ContextVar | `asyncio.TaskGroup` with one local per task; `current_subject.get()` | `gather` with no cancel-on-failure, or tenant from a module-level global | Read each `create_task` write target; `grep -rn "^tenant" src` — none |
+| Fan-out cancels siblings, tenant via ContextVar | `asyncio.TaskGroup` with one local per task; `current_subject.get()` | `gather` with no cancel-on-failure, or tenant from a module-level global | Read each `create_task` write target; `grep -rn "^tenant" src/` — none |
 
 ---
 
@@ -212,8 +202,8 @@ functions get fast unit tests against the `FakeUnitOfWork`; the real `asyncpg` U
 transaction boundary that is itself under test.
 
 ```
-src/application/commands/classify_data_asset.py
-tests/application/commands/test_classify_data_asset.py   (unit — FakeUnitOfWork)
-src/infrastructure/uow.py
-tests/infrastructure/test_uow.py                          (integration — real asyncpg)
+src/<pkg>/service_layer/{commands,queries,unit_of_work}.py   (use cases; port Protocols)
+src/<pkg>/adapters/{uow,command_log}.py       (AsyncpgUnitOfWork, PgCommandLog)
+tests/unit/service_layer/test_commands.py     (unit — FakeUnitOfWork)
+tests/integration/test_uow.py                 (integration — real asyncpg)
 ```

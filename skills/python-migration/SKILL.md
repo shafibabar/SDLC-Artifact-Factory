@@ -17,7 +17,7 @@ description: >
   references/alembic-setup-and-revisions.md; the full expand/contract worked sequence
   and tenant application order in references/expand-contract-patterns.md. Used by the
   backend-engineer during Implement when Python is the selected backend language.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
@@ -51,12 +51,7 @@ paired with SQLAlchemy in the book's default story; this repo rejects that pairi
 `python-repository-pattern` uses `asyncpg` directly with `$1`-style parameterized SQL
 and no ORM, so there is **no SQLAlchemy model metadata for Alembic to diff against**.
 
-**Autogenerate is therefore off.** `alembic revision --autogenerate` compares live
-schema to declarative ORM `MetaData`; with no ORM models it produces empty diffs and
-tempts a team into adding ORM models solely to satisfy it. Author every revision by
-hand with `alembic revision -m "..."` and write raw SQL inside `upgrade()` /
-`downgrade()` via `op.execute("...")` — reviewable, and coupled to nothing in the
-application layer.
+**Autogenerate is therefore off.** `alembic revision --autogenerate` compares live schema to declarative ORM `MetaData`; with `target_metadata = None` it stops with an error, which tempts a team into adding ORM models solely to satisfy it. Author every revision by hand with `alembic revision -m "..."` and write raw SQL inside `upgrade()` / `downgrade()` via `op.execute("...")` — reviewable, and coupled to nothing in the application layer.
 
 **Revision identity differs honestly from goose.** goose orders by a sortable 5-digit
 filename (`00001_...sql`) readable straight from `git log`. Alembic instead identifies
@@ -106,7 +101,7 @@ adding a required column:
 |---|---|---|
 | Expand (Deploy 1) | Add the column nullable | Revision (`op.execute`) |
 | Backfill | Populate existing rows | **App-level batch job** — never a bare `UPDATE` inside `upgrade()`; unthrottled it turns a seconds-long migration into a lock-holding, deploy-blocking one |
-| Contract (Deploy 2, later) | Add the constraint (`NOT VALID` CHECK + `VALIDATE CONSTRAINT` — light lock, no full scan) | Revision |
+| Contract (Deploy 2, later) | Add a `NOT VALID` CHECK (brief lock, no scan), then `VALIDATE CONSTRAINT` (scans without blocking reads or writes) | Two revisions, so two transactions |
 
 | Change | Safe in one deploy? | Approach |
 |---|---|---|
@@ -144,13 +139,7 @@ land in the same deploy as the code depending on it — `Backward Compatibility`
 
 ## Index-Creation Standard
 
-Unqualified `CREATE INDEX` takes a `SHARE` lock for the build's full duration, blocking
-every write — the default on every table, every time. The standard is `CREATE INDEX
-CONCURRENTLY`, always, for any table not provably empty. But `CONCURRENTLY` **cannot run
-inside a transaction block**, and Alembic wraps each revision in one by default (its
-`transaction_per_migration` behavior — the analog of goose's per-file transaction). The
-Python fix is Alembic's `op.get_context().autocommit_block()` context manager (the
-counterpart of goose's `-- +goose NO TRANSACTION` directive):
+Unqualified `CREATE INDEX` takes a `SHARE` lock for the build's full duration, blocking every write — the default on every table, every time. The standard is `CREATE INDEX CONCURRENTLY`, always, for any table not provably empty. But `CONCURRENTLY` **cannot run inside a transaction block**, and Alembic runs migrations inside one. By default that is one transaction for the whole run; this skill's `env.py` sets `transaction_per_migration=True`, one per revision (the analog of goose's per-file transaction). The Python fix is Alembic's `op.get_context().autocommit_block()` context manager (the counterpart of goose's `-- +goose NO TRANSACTION` directive):
 
 ```python
 def upgrade() -> None:
@@ -170,11 +159,7 @@ retrying, never assumed safe to rerun.
 
 ## Tenant-Aware Migration
 
-In physical multi-tenancy (`multi-tenancy-design`), the same revision set applies to
-**every tenant database**; the control plane iterates tenants (`alembic upgrade head`
-per tenant DSN) and records a per-tenant schema version. A migration isn't "done" until
-every tenant is migrated — partial rollouts are tracked and alertable. Tenant
-application order and a control-plane sketch: `references/expand-contract-patterns.md`.
+The tenancy model is the product's tenancy design's choice (`multi-tenancy-design`; there is no default). A shared database is migrated once. Where tenants have their own databases, the same revision set applies to **every tenant database**; the control plane iterates tenants (`alembic upgrade head` per tenant DSN) and records a per-tenant schema version. A migration isn't "done" until every tenant is migrated — partial rollouts are tracked and alertable. Tenant application order and a control-plane sketch: `references/expand-contract-patterns.md`.
 
 ---
 
@@ -192,7 +177,7 @@ application order and a control-plane sketch: `references/expand-contract-patter
 | Backfill is app-level | Large backfills run as a batch job | `upgrade()` runs an unbounded `UPDATE` | Read revision for `UPDATE ... WHERE` scaling with table size |
 | Concurrent index builds | Index on a live-eligible table uses `CONCURRENTLY` inside `autocommit_block()` | Plain `CREATE INDEX`, or `CONCURRENTLY` without the autocommit block | Check every index revision |
 | Pre-deploy application | `alembic upgrade head` runs as a Job before rollout | App auto-migrates on startup | Deploy manifest has a migration step preceding rollout |
-| Tenant coverage | Every tenant DB migrated; version tracked | Some tenant databases left behind | Control-plane migration-status record shows 100% |
+| Tenant coverage (per-tenant databases) | Every tenant DB migrated; version tracked | Some tenant databases left behind | Control-plane migration-status record shows 100% |
 
 ---
 
@@ -217,10 +202,12 @@ a `CONCURRENTLY` statement sits inside an `autocommit_block()`; an irreversible 
 its own revision whose `downgrade()` raises rather than fakes a restore.
 
 ```
-alembic.ini                                   (script_location, no sqlalchemy.url secret in git)
+alembic.ini                                   (script_location, logging; no connection URL in git)
 migrations/env.py                             (async engine + asyncpg bridge — see references)
 migrations/versions/0002_*.py                 (upgrade/downgrade per change, per the standards above)
 ```
+
+Install `sqlalchemy[asyncio]`, not bare `sqlalchemy`: the async engine needs `greenlet`.
 
 Full standards: `references/alembic-setup-and-revisions.md` (init, async `env.py`, a
 worked hand-written revision, the CI/Makefile `upgrade head` command) and

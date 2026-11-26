@@ -1,29 +1,30 @@
 # The Port and the Set-Backed FakeRepository
 
-This is the primary justification for the whole pattern (Percival & Gregory, *Architecture Patterns with Python* / "Cosmic Python", Ch. 2): the repository port exists **so that a fake can stand in for the database in tests**. Decoupling is a bonus; the fake is the payoff. This reference gives the full Protocol port, the set-backed `FakeRepository`, the `FakeUnitOfWork` that pairs with it, and a worked service-layer unit test that never opens a socket to Postgres.
+This is the primary justification for the whole pattern (Percival & Gregory, *Architecture Patterns with Python* / "Cosmic Python", Ch. 2): the repository port exists **so that a fake can stand in for the database in tests**. Decoupling is a bonus; the fake is the payoff. This reference gives the full Protocol port, the set-backed `FakeRepository`, and a service-layer unit test that never opens a socket to Postgres. Paths follow `python-project-structure` (`classification` package).
 
 ---
 
-## 1. The Port — a `typing.Protocol` in the domain layer
+## 1. The port — a `typing.Protocol` in the domain layer
 
-The port is **consumer-defined**: it is declared in the layer that *uses* it (domain / service), not in the infrastructure layer that implements it. This keeps the dependency arrow pointing inward — the `asyncpg` adapter depends on the domain, never the reverse.
+The port is **consumer-defined**: it is declared in the layer that *uses* it (domain), not in the adapter that implements it. This keeps the dependency arrow pointing inward — the `asyncpg` adapter depends on the domain, never the reverse.
 
 ```python
-# domain/ports.py
-from __future__ import annotations
+# src/classification/domain/ports.py
 from typing import Protocol
 from uuid import UUID
 
-from domain.data_asset import DataAsset
+from classification.domain.dataasset import DataAsset
+from classification.domain.events import DomainEvent
 
 
 class DataAssetRepository(Protocol):
     """The persistence port for the DataAsset Aggregate.
 
-    Declared here, in the domain layer, so the service layer depends on this
-    abstraction and never on asyncpg. Both the real adapter and the fake
-    satisfy it *structurally* — neither inherits from it.
+    Both the real adapter and the fake satisfy it *structurally* — neither
+    inherits from it. The tenant is read from domain.context, not passed in.
     """
+
+    saved_events: list[DomainEvent]   # events drained by save(), for after-commit dispatch
 
     async def get(self, asset_id: UUID) -> DataAsset | None: ...
 
@@ -34,146 +35,140 @@ class DataAssetRepository(Protocol):
 
 ### Protocol vs. `abc.ABC` — which to use
 
-`typing.Protocol` is the default for a repository port. It gives **structural typing**: the `asyncpg` adapter satisfies the port merely by having methods of the right shape — it does not `import` or subclass `DataAssetRepository`. This is the closest Python gets to Go's implicit interface satisfaction and keeps the infrastructure layer free of any inward import back into the domain's abstractions.
+`typing.Protocol` is the default for a repository port. It gives **structural typing**: the `asyncpg` adapter satisfies the port merely by having members of the right shape — it does not subclass `DataAssetRepository`. This is the closest Python gets to Go's implicit interface satisfaction.
 
 Reserve `abc.ABC` for the narrow case where you want an explicit base class carrying **shared helper code** that every implementation inherits (e.g. a common `_row_to_domain` mapper). An `ABC` forces `class DataAssetRepo(DataAssetRepository):` — nominal, not structural — and raises `TypeError` at instantiation if an abstract method is unimplemented. For a plain port with no shared code, `Protocol` is the better fit.
 
-**Honest divergence from Go:** neither form is checked at runtime the way Go checks interface satisfaction at compile time. A `Protocol` is only verified when `mypy`/`pyright` runs; an `ABC` catches only *missing* methods at instantiation, not wrong signatures. There is no runtime equivalent of Go's `var _ DataAssetRepository = (*DataAssetRepo)(nil)` compile-time assertion — the equivalent guarantee is a **mandatory `mypy` gate in CI** (`python-tooling`). Without that gate, a drifted fake or adapter ships silently.
+**Honest divergence from Go:** neither form is checked at runtime the way Go checks interface satisfaction at compile time. A `Protocol` is only verified when `mypy`/`pyright` runs, and only where a value is *used* as the port; an `ABC` catches only *missing* methods at instantiation, not wrong signatures. The equivalent guarantee is a **mandatory `mypy` gate in CI** (`python-tooling`). Without that gate, a drifted fake or adapter ships silently.
 
 ---
 
 ## 2. The set-backed `FakeRepository`
 
-The fake is a real, working, in-memory implementation of the exact same port — backed by a `set`. It is a handful of lines, and it is what makes the service and domain layers testable with no database at all.
+A real, working, in-memory implementation of the same port. It must behave like the database in the three ways a test could otherwise be fooled by: it hands out **copies** (so a mutation that is never saved is not visible), it checks the **version** on save, and it filters by **tenant**.
 
 ```python
 # tests/fakes.py
+from copy import deepcopy
 from uuid import UUID
 
-from domain.data_asset import DataAsset
+from classification.domain.context import tenant_id
+from classification.domain.dataasset import DataAsset
+from classification.domain.errors import ConflictError, OptimisticConcurrencyError
+from classification.domain.events import DomainEvent
 
 
 class FakeRepository:
-    """In-memory DataAssetRepository, backed by a set. Satisfies the
-    DataAssetRepository Protocol structurally — no inheritance."""
+    """In-memory DataAssetRepository, backed by a set. Satisfies the Protocol
+    structurally. Set membership uses DataAsset's identity equality (its id)."""
 
-    def __init__(self, assets: list[DataAsset] | None = None) -> None:
-        self._assets: set[DataAsset] = set(assets or [])
+    def __init__(self, assets: set[DataAsset] | None = None) -> None:
+        self.assets: set[DataAsset] = assets if assets is not None else set()
+        self.saved_events: list[DomainEvent] = []
+
+    def _stored(self, asset_id: UUID) -> DataAsset | None:
+        return next((a for a in self.assets if a.id == asset_id), None)
 
     async def get(self, asset_id: UUID) -> DataAsset | None:
-        return next((a for a in self._assets if a.id == asset_id), None)
+        found = self._stored(asset_id)
+        if found is None or found.tenant_id != tenant_id():
+            return None
+        return deepcopy(found)
 
     async def save(self, asset: DataAsset) -> None:
-        # Set semantics rely on DataAsset hashing/equality by identity (id),
-        # so re-saving the same Aggregate id replaces the stored instance.
-        self._assets.discard(asset)
-        self._assets.add(asset)
+        if asset.tenant_id != tenant_id():
+            raise RuntimeError("asset belongs to a different tenant than the context")
+        if asset.version_number == asset.persisted_version:
+            return                                          # nothing changed
+        stored = self._stored(asset.id)
+        if asset.persisted_version == 0:
+            if stored is not None:
+                raise ConflictError(asset.id, "already exists")
+        elif stored is None or stored.version_number != asset.persisted_version:
+            raise OptimisticConcurrencyError(asset.id, asset.persisted_version)
+        self.saved_events.extend(asset.pull_events())
+        asset.mark_persisted()
+        self.assets.discard(asset)                           # replace by identity
+        self.assets.add(deepcopy(asset))
 
     async def list_by_source(self, source_id: UUID) -> list[DataAsset]:
-        return [a for a in self._assets if a.source_id == source_id]
+        return [deepcopy(a) for a in self.assets
+                if a.source_id == source_id and a.tenant_id == tenant_id()]
 ```
 
-For the `set` to behave correctly, the `DataAsset` entity must hash and compare **by identity** (its `id`), matching `python-domain-model`'s entity-equality rule:
-
-```python
-# domain/data_asset.py  (excerpt — full model in python-domain-model)
-def __eq__(self, other: object) -> bool:
-    return isinstance(other, DataAsset) and other.id == self.id
-
-def __hash__(self) -> int:
-    return hash(self.id)
-```
+The set works only because the `DataAsset` entity hashes and compares **by identity** (its `id`), `python-domain-model`'s entity-equality rule.
 
 ### Why a fake, not a mock
 
-The book's central testing argument: **fakes over mocks.** A mock would assert on *how* the service calls the repository (`repo.save.assert_called_once_with(...)`) — brittle, coupled to implementation, and it re-passes even when the persisted state is wrong. The fake lets the test assert on **state and outcome**: after the use case runs, was the right Aggregate actually stored, at the right version, carrying the right events? That is what a caller cares about, and it survives refactors of the service internals.
+The book's central testing argument: **fakes over mocks.** A mock would assert on *how* the service calls the repository (`repo.save.assert_called_once_with(...)`) — brittle, coupled to implementation, and it passes even when the persisted state is wrong. The fake lets the test assert on **state and outcome**: after the use case runs, was the right Aggregate actually stored, at the right version, raising the right events? That is what a caller cares about, and it survives refactors of the service internals.
 
 ---
 
-## 3. The `FakeUnitOfWork` — rollback by default
+## 3. The Unit of Work fake
 
-The service layer opens its transaction through a Unit of Work (`python-service-layer`), so tests need a fake UoW as well. Like the real one, it **defaults to rollback**: `commit()` must be called explicitly, and `__aexit__` rolls back otherwise. This makes "did we forget to commit?" a structurally-answered question even in tests.
-
-```python
-# tests/fakes.py  (continued)
-class FakeUnitOfWork:
-    def __init__(self, assets: list[DataAsset] | None = None) -> None:
-        self.assets = FakeRepository(assets)
-        self.committed = False
-
-    async def __aenter__(self) -> "FakeUnitOfWork":
-        return self
-
-    async def __aexit__(self, *exc: object) -> None:
-        # Default is rollback: only an explicit commit() flips `committed`.
-        # A no-op rollback here mirrors the real UoW's rollback-on-exit.
-        pass
-
-    async def commit(self) -> None:
-        self.committed = True
-
-    def collect_new_events(self):
-        for asset in self.assets._assets:
-            while asset.events:
-                yield asset.events.pop(0)
-```
+The service layer opens its transaction through a Unit of Work, so use-case tests need a fake of that too. `python-service-layer` owns `FakeUnitOfWork` (in the same `tests/fakes.py`): it wraps this `FakeRepository`, publishes its writes only on commit, and rolls back by default. Do not write a second one.
 
 ---
 
-## 4. Worked service-layer unit test — no database
+## 4. A service-layer unit test — no database
 
-This is the whole point. A complete use case is driven through the service layer against the fakes; the assertions are on stored state and drained events. It runs in milliseconds, needs no `testcontainers`, no event loop bound to a socket, and no Postgres.
+A complete use case (`register_data_asset(cmd, uow)`, `python-service-layer`) driven against the fakes; the assertions are on stored state and raised events. No `testcontainers`, no socket, no Postgres.
 
 ```python
-# tests/application/test_register_data_asset.py
+# tests/unit/service_layer/test_register_data_asset.py
+from uuid import uuid4
+
 import pytest
 
-from application.services import register_data_asset
+from classification.domain.context import Subject, current_subject, current_tenant
+from classification.domain.errors import AuthorizationError
+from classification.service_layer.commands import RegisterDataAsset, register_data_asset
 from tests.fakes import FakeUnitOfWork
 
-pytestmark = pytest.mark.asyncio
+
+def _sign_in(*perms: str) -> None:
+    tenant = uuid4()
+    current_tenant.set(tenant)
+    current_subject.set(Subject(user_id=uuid4(), tenant_id=tenant, perms=frozenset(perms)))
 
 
-async def test_register_persists_asset_and_records_event() -> None:
+@pytest.mark.asyncio
+async def test_register_persists_asset_and_raises_event() -> None:
+    _sign_in("data-assets:register")
     uow = FakeUnitOfWork()
+    cmd = RegisterDataAsset(asset_id=uuid4(), source_id=uuid4(), idempotency_key="k-1")
 
-    asset_id = await register_data_asset(
-        uow,
-        source_id=SOME_SOURCE_ID,
-        sensitivity_level="confidential",
-    )
+    await register_data_asset(cmd, uow)
 
-    # Assert on OUTCOME (the id came back) and STATE (it was stored)...
-    stored = await uow.assets.get(asset_id)
+    stored = await uow.assets.get(cmd.asset_id)          # OUTCOME and STATE
     assert stored is not None
-    assert stored.sensitivity_level == "confidential"
-    assert stored.version == 0
-
-    # ...and that the use case committed and raised the creation event.
+    assert stored.source_id == cmd.source_id
+    assert stored.version_number == 1
     assert uow.committed is True
-    events = list(uow.collect_new_events())
-    assert any(type(e).__name__ == "DataAssetRegistered" for e in events)
+    assert [type(e).__name__ for e in uow.collect_new_events()] == ["DataAssetRegistered"]
 
 
-async def test_register_is_rolled_back_on_domain_error() -> None:
+@pytest.mark.asyncio
+async def test_refused_register_stores_nothing() -> None:
+    _sign_in()                                           # no permission
     uow = FakeUnitOfWork()
+    cmd = RegisterDataAsset(asset_id=uuid4(), source_id=uuid4(), idempotency_key="k-2")
 
-    with pytest.raises(InvalidSensitivityLevel):
-        await register_data_asset(uow, source_id=SOME_SOURCE_ID,
-                                  sensitivity_level="nonsense")
+    with pytest.raises(AuthorizationError):
+        await register_data_asset(cmd, uow)
 
-    assert uow.committed is False          # rollback-by-default proven
-    assert list(await uow.assets.list_by_source(SOME_SOURCE_ID)) == []
+    assert uow.committed is False                        # rollback by default
+    assert await uow.assets.list_by_source(cmd.source_id) == []
 ```
 
-Because both fakes satisfy the same Protocol the real adapter does, a green test here is meaningful: the service code under test is byte-for-byte the code that will run in production against `asyncpg` — only the injected adapter differs. The real adapter is then covered separately, and only once, by the integration suite in `references/asyncpg-adapter.md`.
+A green test here is meaningful because the service code under test is the code that runs in production — only the injected adapter differs. The real adapter is covered separately by the integration suite.
 
 ---
 
 ## 5. The Test Pyramid this produces
 
-- **Many fast unit tests** (this file): whole use cases through the service layer against fakes. Assert on state/outcome. No I/O.
-- **A few per-Aggregate domain unit tests** (`python-domain-model`): invariants and state transitions, no repository at all.
+- **Many fast unit tests**: whole use cases through the service layer against fakes. Assert on state/outcome. No I/O.
+- **Per-Aggregate domain unit tests** (`python-domain-model`): invariants and state transitions, no repository at all.
 - **A small integration suite** (`python-integration-test`): the real `asyncpg` adapter against a real PostgreSQL via `testcontainers-python` — real SQL, real CAS conflicts, real constraint violations.
 
-The fake is what makes the wide base of that pyramid cheap. That is the abstraction earning its keep at the test seam — not decoupling for its own sake.
+The fake is what makes the wide base of that pyramid cheap. That is the abstraction earning its keep at the test seam.

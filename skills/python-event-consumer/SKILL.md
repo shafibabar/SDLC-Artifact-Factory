@@ -9,7 +9,7 @@ description: >
   a ProcessPoolExecutor for CPU-bound work (entity extraction/classification),
   DLQ topic routing, and graceful drain. The Python analog of
   go-event-consumer.
-version: 1.0.0
+version: 1.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
@@ -32,19 +32,22 @@ This is `aiokafka`-direct, `asyncpg`-direct — no framework wrapper. Redpanda s
 
 ## The Async Consume Loop and Manual Offset Commit
 
-The consumer is an `async for msg in consumer:` loop over an `AIOKafkaConsumer` constructed with `enable_auto_commit=False`. Offsets are **never** advanced on a timer — a crash between an auto-commit tick and completed processing silently loses the in-flight event. The commit happens *after* the record is durably processed or DLQ'd, and only then:
+The consumer is a poll loop (`getmany`) over an `AIOKafkaConsumer` constructed with `enable_auto_commit=False`. Offsets are **never** advanced on a timer — a crash between an auto-commit tick and completed processing silently loses the in-flight event. The commit happens *after* the record is durably processed or DLQ'd, and names that record's offset, because a bare `commit()` after `getmany` would also commit the fetched records not yet handled:
 
 ```python
 consumer = AIOKafkaConsumer(
     topic, bootstrap_servers=brokers, group_id="dataasset-indexer",
     enable_auto_commit=False, auto_offset_reset="earliest",
 )
-async for msg in consumer:
-    await self._handle(msg)              # durably processed or DLQ'd inside
-    await consumer.commit()              # then, and only then
+while not stopping.is_set():
+    batches = await consumer.getmany(timeout_ms=1000, max_records=100)
+    for tp, messages in batches.items():
+        for msg in messages:
+            await self._handle_or_dlq(msg)                  # durably processed or DLQ'd
+            await consumer.commit({tp: msg.offset + 1})     # then, and only then
 ```
 
-`asyncio.CancelledError` (raised into the loop when the task is cancelled on shutdown) is the cancellation analog to Go's `ctx.Done()` — but unlike a `context.Context` it carries no values, so tenant/trace state travels in a `contextvars.ContextVar`, not the cancellation signal. Full consumer construction, per-message vs batched commit tradeoff, and the worked `DataAsset` consumer: `references/consumer-loop-and-idempotency.md`.
+A shutdown signal sets `stopping`, so the record in hand finishes before the loop ends; `asyncio.CancelledError` is the fallback when the deadline passes (it rolls the open transaction back, and the record is redelivered). Cancellation carries no values, unlike a `context.Context`, so tenant state travels in a `contextvars.ContextVar`. Full consumer construction, per-message vs batched commit tradeoff, and the worked `DataAsset` consumer: `references/consumer-loop-and-idempotency.md`.
 
 ---
 
@@ -64,7 +67,7 @@ async with pool.acquire() as conn, conn.transaction():
     await self._apply(conn, envelope)    # business logic, same transaction
 ```
 
-`event_id` is the envelope's id — always `python-event-publisher`'s outbox row id, never re-derived here (that contract is owned by that skill). `consumer_name` scopes the dedup ledger per pipeline stage so one stage's replay never collides with another's. Every query the business logic runs is scoped to `tenant_id` — the application-layer backstop behind physical per-tenant isolation. Full schema, the `"INSERT 0 0"` status-string check, retention, and why the insert must precede business logic in the same transaction: `references/consumer-loop-and-idempotency.md`.
+`event_id` is the envelope's id — always `python-event-publisher`'s outbox row id, never re-derived here (that contract is owned by that skill). `consumer_name` scopes the dedup ledger per pipeline stage so one stage's replay never collides with another's. In a multi-tenant product every query the business logic runs is scoped to `tenant_id` — the application-layer backstop, whichever isolation model the tenancy design chose. Full schema, the `"INSERT 0 0"` status-string check, retention, and why the insert must precede business logic in the same transaction: `references/consumer-loop-and-idempotency.md`.
 
 ---
 
@@ -85,7 +88,7 @@ An `asyncio.Semaphore`-bounded "worker pool" of coroutines is **not** a substitu
 
 Transient failures retry with exponential backoff + jitter; records that exhaust retries or are undecodable route to `<topic>.dlq`, the original message value forwarded **byte-for-byte unchanged**, with an `x-retry-count` header and failure metadata carried only in headers — never re-serialised. A single poison record goes to the DLQ; it never fails the surrounding batch or blocks the partition head.
 
-On shutdown the loop stops fetching, lets in-flight work finish, commits final offsets, then calls `await consumer.stop()`. `aiokafka`'s `consumer.stop()` performs the group-leave and final flush; the drain must `await` it inside a bounded `asyncio.wait_for` under the pod grace period. A commit that fails during drain just means re-delivery on restart — dedup covers it. Full DLQ producer, the retry-then-route logic, `x-retry-count` convention, and the drain sequence: `references/worker-pools-and-dlq.md`.
+On shutdown the loop stops fetching, finishes and commits the record in hand, then calls `await consumer.stop()`. With auto-commit off, `consumer.stop()` leaves the group but commits **nothing**; every commit is the loop's own. The whole drain runs inside bounded `asyncio.wait_for` calls under the pod grace period. A commit that fails during drain just means re-delivery on restart — dedup covers it. Full DLQ producer, the retry-then-route logic, `x-retry-count` convention, and the drain sequence: `references/worker-pools-and-dlq.md`.
 
 ---
 
@@ -97,8 +100,8 @@ On shutdown the loop stops fetching, lets in-flight work finish, commits final o
 - **Bounded concurrency.** A Semaphore (or pool `max_workers`) caps in-flight work; no unbounded `create_task` per message.
 - **Per-message failure ≠ batch failure.** One bad record goes to the DLQ; the loop proceeds.
 - **DLQ, never drop.** `<topic>.dlq`, value unchanged, `x-retry-count` set once per push.
-- **Tenant scope every query.** `tenant_id` in every `WHERE`, read from a `contextvars.ContextVar`, even under physical isolation.
-- **Graceful drain** via `await consumer.stop()` inside a bounded `wait_for` under the pod grace period.
+- **Tenant scope every query** (multi-tenant products). `tenant_id` in every statement, read from a `contextvars.ContextVar`.
+- **Graceful drain**: a stop flag, then `await consumer.stop()`, bounded by `wait_for` under the pod grace period.
 
 ---
 
@@ -108,12 +111,12 @@ On shutdown the loop stops fetching, lets in-flight work finish, commits final o
 |---|---|---|---|
 | Idempotency | Dedup + business write share one `conn.transaction()`, dedup first | Work applied before/without dedup, or dedup in a separate transaction | Read `_handle` for one `async with conn.transaction()` spanning both |
 | Dedup key scope | `(consumer_name, event_id)` composite key | `event_id` alone | Read `processed_events`' `PRIMARY KEY` clause |
-| Offset discipline | `enable_auto_commit=False`; commit only after `_handle` returns | Auto-commit enabled, or commit before processing completes | `grep -n "enable_auto_commit\|\.commit()" ` over the consumer |
+| Offset discipline | `enable_auto_commit=False`; commit the handled record's offset only after it is applied or DLQ'd | Auto-commit enabled, commit before processing completes, or a bare `commit()` mid-batch | `grep -n "enable_auto_commit\|\.commit()" ` over the consumer |
 | Correct primitive | I/O-bound → `asyncio.Semaphore`; CPU-bound → `ProcessPoolExecutor` | A coroutine/Semaphore pool wrapping CPU-bound work | Read the dispatch site — CPU work goes through `run_in_executor` |
 | Bounded concurrency | `Semaphore(N)` or pool `max_workers` present | Unbounded `create_task` per message | `grep -n "Semaphore\|max_workers" ` over the consumer |
 | Poison handling | Undecodable/exhausted → DLQ, value unchanged | Infinite retry, silent drop, or DLQ value re-serialised | Read the DLQ push — `value=msg.value`, not a re-encoded object |
 | DLQ topic naming | `<topic>.dlq` | Any other naming, or one shared DLQ topic | `grep -n "dlq" ` over the DLQ producer |
-| Tenant scoping | Every business query filters `tenant_id` | A query missing the tenant filter | Read every `WHERE` in `_apply` for `tenant_id` |
+| Tenant scoping (multi-tenant) | Every business statement carries `tenant_id` | A statement missing it | Read every statement in `_apply` for `tenant_id` |
 | Graceful drain | `await consumer.stop()` inside a bounded `wait_for` | Hard process exit, or an unbounded stop that can hang shutdown | Read the shutdown path for `wait_for(consumer.stop(), ...)` |
 
 ---
@@ -134,9 +137,9 @@ On shutdown the loop stops fetching, lets in-flight work finish, commits final o
 Python source built exactly to the standards above, plus an integration test against real Redpanda and PostgreSQL via `testcontainers-python` (`python-integration-test` owns the harness):
 
 ```
-infrastructure/events/consumer.py            (AIOKafkaConsumer, run loop, _handle, _apply, drain)
-infrastructure/events/dlq.py                 (DLQ producer, dlq_topic, x-retry-count)
-tests/infrastructure/test_consumer.py        (written first — TDD; includes a duplicate-delivery test)
+src/<pkg>/entrypoints/event_consumer.py      (AIOKafkaConsumer, run loop, _handle, _apply, drain, serve)
+src/<pkg>/entrypoints/dead_letter.py         (DLQ producer, dlq_topic, retry, x-retry-count)
+tests/integration/test_event_consumer.py     (written first — TDD; includes a duplicate-delivery test)
 ```
 
 Full standards: `references/consumer-loop-and-idempotency.md` (consumer construction, manual commit, `processed_events` in-transaction dedup, tenant scoping, worked `DataAsset` consumer) and `references/worker-pools-and-dlq.md` (Semaphore I/O pool vs `ProcessPoolExecutor` CPU pool with pickling constraints, DLQ routing after N retries, graceful drain).

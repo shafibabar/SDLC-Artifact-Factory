@@ -9,6 +9,7 @@ The full standard for bounded per-message concurrency — the `asyncio.Semaphore
 Most per-message work in this product is I/O-bound: writing to Postgres, fetching a document from S3 or Google Drive, calling another service. The GIL is **released** during those waits, so coroutines run concurrently and cheaply — the same "many concurrent things, one thread of Python execution" model goroutines give, minus the multi-core part (which I/O-bound work doesn't need). The only thing to add is a ceiling on in-flight work so a burst of messages cannot open ten thousand simultaneous connections and exhaust memory:
 
 ```python
+# Illustration: bounded fan-out for I/O-bound work
 import asyncio
 
 
@@ -27,10 +28,12 @@ class IOBoundPool:
 
     async def _guarded(self, handle, msg) -> None:
         async with self._sem:                      # blocks past the ceiling
-            await handle(msg)                       # per-message failure -> DLQ inside handle
+            await handle(msg)                       # pass _handle_or_dlq: failures end in the DLQ
 ```
 
-`asyncio.TaskGroup` (Python 3.11+) is the closest analog to Go's `errgroup`: it awaits every child task and, on the first unhandled exception, cancels the siblings and raises an `ExceptionGroup`. Because a per-message failure is caught inside `handle` and routed to the DLQ (never re-raised), one bad message never cancels the group — only a genuinely fatal error (or shutdown `CancelledError`) tears it down, exactly the "per-record failure ≠ batch failure" discipline from `go-event-consumer`.
+`asyncio.TaskGroup` (Python 3.11+) is the closest analog to Go's `errgroup`: it awaits every child task and, on the first unhandled exception, cancels the siblings and raises an `ExceptionGroup`. Because a per-message failure is caught inside `handle` (the consumer's `_handle_or_dlq`) and routed to the DLQ (never re-raised), one bad message never cancels the group — only a genuinely fatal error (or shutdown `CancelledError`) tears it down, exactly the "per-record failure ≠ batch failure" discipline from `go-event-consumer`.
+
+Two consequences: records of one partition now finish out of order, so use the pool only where per-key order does not matter, and commit offsets only after the whole `run` call returns.
 
 Sizing the Semaphore is about downstream capacity — connection-pool size, the rate limit of the API being called — not CPU cores. A good default is the `asyncpg` pool's `max_size`, so the consumer never has more DB work in flight than the pool can serve.
 
@@ -43,6 +46,7 @@ Some events demand pure-Python CPU work per message: entity extraction, classifi
 True multi-core parallelism for pure-Python code requires separate OS processes. `concurrent.futures.ProcessPoolExecutor`, driven from the event loop via `loop.run_in_executor`, is the mechanism:
 
 ```python
+# Illustration: the CPU-bound pool
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
 
@@ -50,8 +54,8 @@ from concurrent.futures import ProcessPoolExecutor
 # The target callable MUST be a top-level, importable function defined at module
 # scope. ProcessPoolExecutor pickles the callable and its arguments to ship them
 # to the worker process; a lambda, a closure, or a locally-defined (nested)
-# function is not picklable and cannot cross the process boundary — attempting
-# it raises a PicklingError at submit time.
+# function is not picklable and cannot cross the process boundary. Through
+# run_in_executor the pickling error surfaces when the future is awaited.
 def extract_entities(raw_document: bytes) -> list[str]:
     # pure-Python CPU-bound work runs here, in its own interpreter process
     ...
@@ -92,10 +96,27 @@ For this product the standing escalation discipline is that document parsing / O
 Transient failures retry with exponential backoff and jitter; exhausted or undecodable records route to `<topic>.dlq`. The original message value is forwarded **byte-for-byte unchanged** — failure metadata lives only in headers, so an undecodable payload still preserves its exact bytes for offline inspection:
 
 ```python
+# src/classification/entrypoints/dead_letter.py
 import asyncio
 import random
+from collections.abc import Awaitable, Callable
 
-from aiokafka import AIOKafkaProducer
+import asyncpg
+from aiokafka import AIOKafkaProducer, ConsumerRecord
+
+TRANSIENT_ERRORS: tuple[type[BaseException], ...] = (
+    ConnectionError,                        # includes refused and reset connections
+    TimeoutError,
+    asyncpg.PostgresConnectionError,
+    asyncpg.TooManyConnectionsError,
+    asyncpg.CannotConnectNowError,
+    asyncpg.SerializationError,
+    asyncpg.DeadlockDetectedError,
+)
+
+
+def is_transient(exc: BaseException) -> bool:
+    return isinstance(exc, TRANSIENT_ERRORS)
 
 
 def dlq_topic(source_topic: str) -> str:
@@ -103,11 +124,12 @@ def dlq_topic(source_topic: str) -> str:
 
 
 class DLQProducer:
-    def __init__(self, producer: AIOKafkaProducer):
+    def __init__(self, producer: AIOKafkaProducer) -> None:
         self._producer = producer
 
-    async def route(self, msg, reason: str, retry_count: int = 0) -> None:
-        headers = list(msg.headers or [])
+    async def route(self, msg: ConsumerRecord, reason: str, retry_count: int = 0) -> None:
+        headers = [(k, v) for k, v in (msg.headers or ())
+                   if k not in ("x-retry-count", "x-dlq-reason")]
         headers.append(("x-retry-count", str(retry_count).encode()))
         headers.append(("x-dlq-reason", reason.encode()))
         await self._producer.send_and_wait(
@@ -118,15 +140,16 @@ class DLQProducer:
         )
 
 
-async def with_retry(fn, *, max_attempts: int, base_delay: float = 0.5):
-    """Retry a transient operation, returning the attempt count reached.
-    Raises the last exception once attempts are exhausted so the caller can DLQ."""
+async def with_retry(fn: Callable[[], Awaitable[None]], *, max_attempts: int,
+                     base_delay: float = 0.5) -> None:
+    """Retry a transient failure with exponential backoff and jitter. A non-transient
+    failure, or the last attempt's failure, is raised so the caller can DLQ it."""
     for attempt in range(1, max_attempts + 1):
         try:
             await fn()
-            return attempt
-        except TransientError:
-            if attempt >= max_attempts:
+            return
+        except Exception as exc:
+            if not is_transient(exc) or attempt >= max_attempts:
                 raise
             delay = base_delay * (2 ** (attempt - 1))
             await asyncio.sleep(delay + random.uniform(0, delay))   # jitter
@@ -145,30 +168,29 @@ Wiring it into the handler: a transient error retries up to `max_attempts`; a no
 On `SIGTERM` the pod gets a grace period before `SIGKILL`. The consumer must stop fetching, let in-flight work finish, commit final offsets, and leave the group — all inside a bounded deadline under that grace period, so a hang never blocks the pod's shutdown past `SIGKILL`:
 
 ```python
-import asyncio
-import signal
-
-
-async def serve(consumer_component, io_pool, cpu_pool, dlq_producer):
+# src/classification/entrypoints/event_consumer.py  (continued)
+async def serve(component: DataAssetConsumer, producer: AIOKafkaProducer) -> None:
+    """Run until SIGTERM/SIGINT. `producer` is the one the component's DLQProducer uses."""
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(sig, stop.set)
 
-    run_task = asyncio.create_task(consumer_component.run())
-    await stop.wait()                       # block until a shutdown signal
-
-    run_task.cancel()                       # raises CancelledError into the loop
+    await producer.start()
+    run_task = asyncio.create_task(component.run())
+    stop_task = asyncio.create_task(stop.wait())
     try:
-        await asyncio.wait_for(run_task, timeout=25.0)   # bounded < pod grace period
-    except (asyncio.CancelledError, asyncio.TimeoutError):
-        pass
+        # A signal, or the loop dying on its own.
+        await asyncio.wait({run_task, stop_task}, return_when=asyncio.FIRST_COMPLETED)
+        component.request_stop()                         # finish the record in hand
+        await asyncio.wait_for(run_task, timeout=20.0)   # cancels run_task on timeout
     finally:
-        # aiokafka's stop() performs the group-leave and final flush; bound it too.
-        await asyncio.wait_for(dlq_producer.flush(), timeout=5.0)
-        cpu_pool.close()                    # ProcessPoolExecutor.shutdown(wait=True)
+        stop_task.cancel()
+        await asyncio.wait_for(producer.stop(), timeout=5.0)
 ```
 
-`consumer.stop()` (called from the component's `_drain`, see `consumer-loop-and-idempotency.md` §7) is what actually performs the group-leave and final offset flush; wrapping it in `asyncio.wait_for` guarantees the drain itself cannot hang past the deadline. A commit that fails during drain is harmless — it just means the last few records are redelivered on restart, and the `processed_events` dedup makes redelivery a no-op. The `ProcessPoolExecutor` is shut down with `wait=True` so in-flight CPU tasks finish rather than being killed mid-work, unless the outer deadline forces the process down first.
+The imports it adds to that module are `signal` and `AIOKafkaProducer` (from `aiokafka`). If the deadline passes or the loop failed, the error propagates and the process exits non-zero, which is what the orchestrator should see.
 
-The whole drain deadline (25s here) must sit **under** the Kubernetes `terminationGracePeriodSeconds` (default 30s), leaving margin — otherwise the drain is still running when `SIGKILL` arrives and the graceful path was pointless.
+`consumer.stop()` (called from the component's `_drain`, see `consumer-loop-and-idempotency.md` §7) performs the group-leave; with auto-commit off it flushes no offsets, so the loop's own per-record commits are the only ones. A commit that fails during drain just means redelivery on restart, and the `processed_events` dedup makes redelivery a no-op. A service that owns a `ProcessPoolExecutor` shuts it down after the loop has ended (`shutdown(wait=True)` blocks until running tasks finish).
+
+The bounded waits (20s for the loop, 5s for the producer) must sum to **less** than the Kubernetes `terminationGracePeriodSeconds` (default 30s) — otherwise the drain is still running when `SIGKILL` arrives and the graceful path was pointless.

@@ -29,8 +29,14 @@ if self._sensitivity.is_higher_than(level):
 **Right** — a named subclass per invariant carrying its own violating values as real attributes:
 
 ```python
-# app/domain/errors.py
+# src/classification/domain/errors.py
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from uuid import UUID
+
+if TYPE_CHECKING:  # type hints only; sensitivity.py imports this module at runtime
+    from classification.domain.sensitivity import SensitivityLevel
 
 
 class DomainError(Exception):
@@ -38,27 +44,108 @@ class DomainError(Exception):
     family to HTTP status once, via a single FastAPI @app.exception_handler(DomainError)."""
 
 
-class MissingIdentityError(DomainError):
-    """Parameter-free-ish: the fact alone is the message. Still typed, not a bare Exception."""
-    def __init__(self, id: UUID | None, tenant_id: UUID | None):
-        self.id, self.tenant_id = id, tenant_id
-        super().__init__(f"data asset requires id and tenant_id (got id={id}, tenant_id={tenant_id})")
+# --- the shared taxonomy (python-error-handling names it and maps it) -------------
+
+class NotFoundError(DomainError):
+    def __init__(self, asset_id: UUID, tenant_id: UUID):
+        super().__init__(f"data asset {asset_id} not found")
+        self.asset_id, self.tenant_id = asset_id, tenant_id
 
 
-class SensitivityDowngradeError(DomainError):
+class ValidationError(DomainError):
+    def __init__(self, field: str, reason: str):
+        super().__init__(f"invalid {field}: {reason}")
+        self.field, self.reason = field, reason
+
+
+class ConflictError(DomainError):
+    def __init__(self, asset_id: UUID, reason: str):
+        super().__init__(f"conflict on data asset {asset_id}: {reason}")
+        self.asset_id, self.reason = asset_id, reason
+
+
+class OptimisticConcurrencyError(ConflictError):
+    def __init__(self, asset_id: UUID, expected_version: int):
+        super().__init__(asset_id, f"expected version {expected_version}, row changed")
+        self.expected_version = expected_version
+        self.retryable = True
+
+
+class AuthorizationError(DomainError):
+    def __init__(self, subject_id: UUID, action: str, asset_id: UUID | None = None):
+        super().__init__("not authorized")
+        self.subject_id, self.action, self.asset_id = subject_id, action, asset_id
+
+
+class ViewUnavailableError(DomainError):
+    def __init__(self, tenant_id: UUID):
+        super().__init__("read model unavailable")
+        self.tenant_id = tenant_id
+
+
+# --- DataAsset's own failures -----------------------------------------------------
+
+class MissingIdentityError(ValidationError):
+    def __init__(self, id: UUID | None, tenant_id: UUID | None, source_id: UUID | None):
+        super().__init__("identity", "id, tenant_id and source_id are required")
+        self.id, self.tenant_id, self.source_id = id, tenant_id, source_id
+
+
+class InvalidSensitivityError(ValidationError):
+    def __init__(self, raw_value: str):
+        super().__init__("sensitivity", f"{raw_value!r} is not an assignable level")
+        self.raw_value = raw_value
+
+
+class SensitivityDowngradeError(ConflictError):
     """Data-carrying: from_/to are needed by the caller (409 body, audit log)."""
-    def __init__(self, asset_id: UUID, from_: "SensitivityLevel", to: "SensitivityLevel"):
-        self.asset_id, self.from_, self.to = asset_id, from_, to
-        super().__init__(
-            f"data asset {asset_id}: cannot downgrade sensitivity {from_} -> {to} "
-            f"without explicit reclassification")
+    def __init__(self, asset_id: UUID, from_: SensitivityLevel, to: SensitivityLevel):
+        super().__init__(asset_id, f"cannot downgrade sensitivity {from_.name} -> {to.name}")
+        self.from_, self.to = from_, to
 
 
-class CrossTenantClassificationError(DomainError):
-    """Data-carrying: the offending actor and the asset's tenant both matter for the audit trail."""
-    def __init__(self, asset_id: UUID, tenant_id: UUID, actor_id: UUID):
-        self.asset_id, self.tenant_id, self.actor_id = asset_id, tenant_id, actor_id
-        super().__init__(f"actor {actor_id} may not classify asset {asset_id} in tenant {tenant_id}")
+class DuplicateCommandError(ConflictError):
+    """A concurrent delivery of the same Command recorded its key first."""
+    def __init__(self, asset_id: UUID, idempotency_key: str):
+        super().__init__(asset_id, "command already processed")
+        self.idempotency_key = idempotency_key
+```
+
+The request context lives in the domain package too, because both the service layer and the
+adapters read it and neither may import the other:
+
+```python
+# src/classification/domain/context.py
+import contextvars
+from dataclasses import dataclass
+from uuid import UUID
+
+from classification.domain.errors import AuthorizationError
+
+
+@dataclass(frozen=True)
+class Subject:
+    user_id: UUID
+    tenant_id: UUID
+    perms: frozenset[str]
+
+    def require(self, perm: str, asset_id: UUID | None = None) -> None:
+        if perm not in self.perms:
+            raise AuthorizationError(self.user_id, perm, asset_id)
+
+
+# The ContextVar OBJECT is a module global; its VALUE is per execution context.
+current_tenant: contextvars.ContextVar[UUID] = contextvars.ContextVar("current_tenant")
+current_subject: contextvars.ContextVar[Subject] = contextvars.ContextVar("current_subject")
+current_trace_id: contextvars.ContextVar[str] = contextvars.ContextVar("current_trace_id")
+
+
+def tenant_id() -> UUID:
+    try:
+        return current_tenant.get()
+    except LookupError:
+        # A missing tenant must never silently become a cross-tenant query.
+        raise RuntimeError("tenant id missing from context") from None
 ```
 
 A caller catches the specific type and reads its attributes back, typed — no dict, no guessing:
@@ -79,21 +166,21 @@ When a domain error is triggered by catching a lower-level one, chain it explici
 
 ```python
 try:
-    parsed = SensitivityLevel(raw_value)
-except ValueError as cause:
-    raise InvalidSensitivityError(raw_value) from cause   # __cause__ = the ValueError
+    level = SensitivityLevel[raw_value.upper()]
+except KeyError as cause:
+    raise InvalidSensitivityError(raw_value) from cause   # __cause__ = the KeyError
 ```
 
-Never `raise NewError() ` bare inside an `except` block when a cause exists — that discards the chain. And never chain in the *other* direction (catching a `DomainError` to re-raise a generic one) — the domain error is already the most specific, most useful type at that point.
+Never omit `from cause` when translating inside an `except` block: Python then sets only `__context__` ("during handling of the above exception, another exception occurred"), leaves `__cause__` as `None`, and the traceback reads like a second bug rather than a translation. And never chain in the *other* direction (catching a `DomainError` to re-raise a generic one) — the domain error is already the most specific, most useful type at that point.
 
 ### Classifying the `DataAsset` Error Roster
 
 | Invariant | Carries data? | Standard |
 |---|---|---|
-| Missing identity (`id`/`tenant_id` is `None`) | Minimal — the fact is the message | `MissingIdentityError` (typed, no real payload) |
-| Invalid sensitivity value | No — any invalid input yields the same fact | `InvalidSensitivityError(raw_value)` |
-| Silent downgrade attempted | Yes — `from_`/`to` needed by caller (audit, 409) | `SensitivityDowngradeError(asset_id, from_, to)` |
-| Classification by an actor outside the asset's tenant | Yes — the offending `actor_id` and `tenant_id` both matter | `CrossTenantClassificationError(asset_id, tenant_id, actor_id)` |
+| Missing identity (`id`/`tenant_id`/`source_id` is `None`) | Which one was missing | `MissingIdentityError` (a `ValidationError`) |
+| Unknown or unassignable sensitivity | The rejected value | `InvalidSensitivityError(raw_value)` (a `ValidationError`) |
+| Silent downgrade attempted | Yes — `from_`/`to` needed by caller (audit, 409) | `SensitivityDowngradeError(asset_id, from_, to)` (a `ConflictError`) |
+| Actor lacks the permission (checked in the service layer, not the Aggregate) | The subject and the action | `AuthorizationError(subject_id, action, asset_id)` |
 
 The dividing line is mechanical: **if a caller could plausibly want to read a specific value out of the failure, it is a typed subclass with that value as an attribute — never a bare `Exception`, never a shared string-keyed bucket.**
 
@@ -101,15 +188,15 @@ The dividing line is mechanical: **if a caller could plausibly want to read a sp
 
 ## Domain Events as Frozen Dataclasses
 
-A Domain Event is a plain, immutable value type recorded on the Aggregate — a frozen dataclass, so it is immutable and value-comparable exactly like a Value Object. Its shape is fixed: `aggregate_id` (which instance), a `tenant_id` scoping field (this product is per-tenant physically isolated), business-specific fields, and `occurred_at: datetime` (always passed in, never `datetime.now()` inside the event). The serialization contract for Redpanda wire transport is owned by `event-schema-design`; the domain defines only this in-memory shape.
+A Domain Event is a plain, immutable value type recorded on the Aggregate — a frozen dataclass, so it is immutable and value-comparable exactly like a Value Object. Its shape is fixed: `aggregate_id` (which instance), a `tenant_id` scoping field (in a multi-tenant product), business-specific fields, and `occurred_at: datetime` (always passed in, never `datetime.now()` inside the event). The serialization contract for Redpanda wire transport is owned by `event-schema-design`; the domain defines only this in-memory shape.
 
 ```python
-# app/domain/events.py
+# src/classification/domain/events.py
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from app.domain.sensitivity import SensitivityLevel
+from classification.domain.sensitivity import SensitivityLevel
 
 
 @dataclass(frozen=True)
@@ -122,7 +209,7 @@ class DomainEvent:
 
 @dataclass(frozen=True)
 class DataAssetRegistered(DomainEvent):
-    pass   # inherits aggregate_id, tenant_id, occurred_at — the registration fact needs no more
+    source_id: UUID
 
 
 @dataclass(frozen=True)
@@ -182,7 +269,26 @@ Since the language will not stop external mutation, four practices do the enforc
 1. **Private-by-convention naming, consistently applied** — all Aggregate state is `_underscore`, mutation is only ever through methods, and reviewers treat any `asset._field = ...` outside the domain package (or outside a test's explicit setup) as a defect. Convention is only load-bearing if it is actually reviewed.
 2. **Frozen dataclasses for every Value Object** — this is the *one* genuinely-enforced immutability in the model; `@dataclass(frozen=True)` raises `FrozenInstanceError` at runtime, so Value Objects get real protection even though entities cannot.
 3. **A mandatory `mypy` / `pyright` gate in CI** — type hints are runtime-erased; without a required static-type step, a wrong-shaped object flowing into a domain method is caught by nothing. `python-error-handling` and the tooling skill make this gate non-negotiable, precisely because it is the closest Python gets to the Go compiler's always-on checking.
-4. **`import-linter` "Layers" contract** — Python has no `internal/` compiler privacy, so the inward-only dependency rule (domain imports nothing from infrastructure/transport) is enforced as a CI fitness function instead. This is what keeps `asyncpg`/`fastapi` out of the domain package when the language will not.
+4. **`import-linter` contracts** — Python has no `internal/` compiler privacy, so the inward-only dependency rule is enforced as a CI fitness function instead. A `layers` contract only governs imports between the project's own packages; keeping `asyncpg`/`fastapi` out of the domain package also needs a `forbidden` contract with external packages included:
+
+```ini
+# .importlinter  (add include_external_packages to the existing [importlinter] section)
+[importlinter]
+root_package = classification
+include_external_packages = True
+
+[importlinter:contract:domain-is-pure]
+name = domain imports no framework or driver
+type = forbidden
+source_modules =
+    classification.domain
+forbidden_modules =
+    aiokafka
+    asyncpg
+    fastapi
+    pydantic
+    sqlalchemy
+    starlette
+```
 
 The honest summary for any artifact: **Python's domain model achieves the same *design* as Go's, but its invariant protection is a review-and-CI discipline, not a compiler guarantee — the frozen dataclass is the only part the runtime enforces on its own.** Say that plainly; do not imply parity.
-</content>
