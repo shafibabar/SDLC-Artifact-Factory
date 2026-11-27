@@ -15,13 +15,23 @@
 #      answer, so a non-positive delta fails even when every case passes.
 #
 # Usage:
-#   tests/run-skill-evals.sh <skill> [--runs N] [--max-cost-usd X] [--threshold T]
+#   tests/run-skill-evals.sh <skill> [--runs N] [--max-cost-usd X] [--threshold T] [--run-by WHO]
 #   tests/run-skill-evals.sh --verdict-only <aggregate-result.json>   # no model calls
 #   tests/run-skill-evals.sh --freeze-status <skill>                  # no model calls
 #
 # Every run also prints the suite's freeze status: the "Freeze evals: <skill>"
 # commit, and any eval file changed since it (the grader-change rule). This is
 # reported, never blocking — the PR's change log is where a change is judged.
+#
+# Every run on an issue-<number>-… branch is also posted to that issue by
+# scripts/record-eval-run.py (#1508): an "Eval run N: started" comment when the
+# run begins, rewritten into the result (per-case table, times, who ran it)
+# when it ends. A run that dies leaves the "started" comment. Recording never
+# changes the verdict or the exit code; EVAL_RECORD_OFF=1 switches it off.
+# --run-by names who started the run when the default is wrong (the default is
+# "Claude session" inside Claude Code and "terminal" otherwise; a subagent
+# cannot be told apart from its parent session, so its brief passes
+# --run-by subagent).
 #
 # Defaults: --runs 3, --max-cost-usd 7 (the per-skill budget, raised from 2 on
 # 2026-10-30: independently authored cases ask for full documents), --threshold 0.66 (2 of 3 runs must pass;
@@ -95,16 +105,17 @@ fi
 
 SKILL="${1:-}"
 if [[ -z "$SKILL" || "$SKILL" == -* ]]; then
-  echo "usage: $0 <skill> [--runs N] [--max-cost-usd X] [--threshold T]" >&2
+  echo "usage: $0 <skill> [--runs N] [--max-cost-usd X] [--threshold T] [--run-by WHO]" >&2
   exit 2
 fi
 shift
-RUNS=3; COST=7; THRESHOLD=0.66
+RUNS=3; COST=7; THRESHOLD=0.66; RUN_BY=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --runs) RUNS="$2"; shift 2 ;;
     --max-cost-usd) COST="$2"; shift 2 ;;
     --threshold) THRESHOLD="$2"; shift 2 ;;
+    --run-by) RUN_BY="$2"; shift 2 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -121,15 +132,25 @@ fi
 command -v claude >/dev/null || { echo "claude CLI not on PATH" >&2; exit 2; }
 
 OUT="$(mktemp -t "skill-evals-$SKILL.XXXXXX.json")"
-trap 'rm -f "$OUT"' EXIT
+REC_STATE="$(mktemp -t "skill-evals-$SKILL.record.XXXXXX")"
+trap 'rm -f "$OUT" "$REC_STATE"' EXIT
+record() { python3 "$REPO_ROOT/scripts/record-eval-run.py" "$@" || true; }  # never affects the run
 echo "== evals: $SKILL  (runs=$RUNS, threshold=$THRESHOLD, cost cap \$$COST, with/without-plugin ablation)"
-freeze_status "$SKILL" "$SUITE"
+FREEZE="$(freeze_status "$SKILL" "$SUITE")"
+echo "$FREEZE"
+record start --state "$REC_STATE" --skill "$SKILL" --runs "$RUNS" --threshold "$THRESHOLD" \
+  --cost-cap "$COST" --freeze "$FREEZE" ${RUN_BY:+--run-by "$RUN_BY"}
 ( cd "$REPO_ROOT" && claude plugin eval . --eval-dir "$SUITE" \
     --runs "$RUNS" --threshold "$THRESHOLD" --max-cost-usd "$COST" \
     --no-publish --trust-plugin --json "$OUT" )
 RUNNER_RC=$?
 if [[ ! -s "$OUT" ]]; then
   echo "VERDICT: ERROR — runner exited $RUNNER_RC without a result file" >&2
+  record finish --state "$REC_STATE" --runner-rc "$RUNNER_RC" --verdict-rc 2
   exit 2
 fi
-verdict "$OUT"
+VERDICT_LINE="$(verdict "$OUT")"; VERDICT_RC=$?
+echo "$VERDICT_LINE"
+record finish --state "$REC_STATE" --result "$OUT" --runner-rc "$RUNNER_RC" --verdict-rc "$VERDICT_RC" \
+  --verdict-line "$VERDICT_LINE"
+exit $VERDICT_RC

@@ -1,0 +1,3569 @@
+{
+  "current_plan": {
+    "issue_number": 1450,
+    "issue_id": "I_kwDOS_2DcM8AAAABiShkcw",
+    "title": "Fresh-Eyes Phase C \u2014 Wave 3: testing (24 skills)",
+    "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLp2xo",
+    "status": "in_progress"
+  },
+  "draft": {
+    "next_id": 1,
+    "rows": {}
+  },
+  "sub_issues": {
+    "49": {
+      "id": "I_kwDOS_2DcM8AAAABJtFWyw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzqhK8",
+      "title": "Create ddd-agent-handoff skill",
+      "sequence": "1"
+    },
+    "50": {
+      "id": "I_kwDOS_2DcM8AAAABJtFX_g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzqhL0",
+      "title": "Wire ddd-agent-handoff into agents, tests, and housekeeping",
+      "sequence": "2"
+    },
+    "55": {
+      "id": "I_kwDOS_2DcM8AAAABJt7m5Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzrWxo",
+      "title": "Write references/handoff-protocol.md",
+      "sequence": "2"
+    },
+    "56": {
+      "id": "I_kwDOS_2DcM8AAAABJt7pSg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzrW0o",
+      "title": "Write assets/handoff-record-template.md",
+      "sequence": "3"
+    },
+    "57": {
+      "id": "I_kwDOS_2DcM8AAAABJt7sBg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzrW5w",
+      "title": "Write references/handoff-worked-examples.md",
+      "sequence": "4"
+    },
+    "58": {
+      "id": "I_kwDOS_2DcM8AAAABJt7uzw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzrXAs",
+      "title": "Rewrite SKILL.md as a thin progressive-disclosure entry point",
+      "sequence": "5"
+    },
+    "59": {
+      "id": "I_kwDOS_2DcM8AAAABJt7wrw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzrXDQ",
+      "title": "Update smoke test, sdlc-context.json, and CHANGELOG.md",
+      "sequence": "6"
+    },
+    "60": {
+      "id": "I_kwDOS_2DcM8AAAABJt7x5Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzrXEk",
+      "title": "Create MVP subdomain-distillation skill",
+      "sequence": "1"
+    },
+    "69": {
+      "id": "I_kwDOS_2DcM8AAAABJvEo2w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgzsf7g",
+      "title": "Create MVP miro-board-notation skill",
+      "sequence": "1"
+    },
+    "70": {
+      "id": "I_kwDOS_2DcM8AAAABJvErAQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgzsf9Q",
+      "title": "Write references/classification-techniques.md",
+      "sequence": "2"
+    },
+    "71": {
+      "id": "I_kwDOS_2DcM8AAAABJvEstg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgzsf-0",
+      "title": "Write references/security-sensitive-subdomains.md",
+      "sequence": "2"
+    },
+    "72": {
+      "id": "I_kwDOS_2DcM8AAAABJvEwNw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzsgA8",
+      "title": "Write references/legacy-transformation-guidance.md",
+      "sequence": "2"
+    },
+    "73": {
+      "id": "I_kwDOS_2DcM8AAAABJvExnA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzsgCA",
+      "title": "Write assets/subdomain-classification-canvas.md",
+      "sequence": "3"
+    },
+    "74": {
+      "id": "I_kwDOS_2DcM8AAAABJvEy4A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzsgDc",
+      "title": "Rewrite SKILL.md as a thin progressive-disclosure entry point",
+      "sequence": "4"
+    },
+    "75": {
+      "id": "I_kwDOS_2DcM8AAAABJvE1Eg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzsgEs",
+      "title": "Update smoke test, sdlc-context.json, and CHANGELOG.md",
+      "sequence": "5"
+    },
+    "90": {
+      "id": "I_kwDOS_2DcM8AAAABJw3v_Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLMo",
+      "title": "Create microfrontend-architecture skill",
+      "sequence": "1"
+    },
+    "91": {
+      "id": "I_kwDOS_2DcM8AAAABJw3yWw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLPM",
+      "title": "Create css-styling-strategy skill",
+      "sequence": "2"
+    },
+    "92": {
+      "id": "I_kwDOS_2DcM8AAAABJw30Fw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLQs",
+      "title": "Update react-project-structure for shell + remotes layout",
+      "sequence": "3"
+    },
+    "93": {
+      "id": "I_kwDOS_2DcM8AAAABJw31nA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLSk",
+      "title": "Update react-routing for cross-remote composition",
+      "sequence": "4"
+    },
+    "94": {
+      "id": "I_kwDOS_2DcM8AAAABJw33UQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLTo",
+      "title": "Update react-state-management for cross-fragment state",
+      "sequence": "4"
+    },
+    "95": {
+      "id": "I_kwDOS_2DcM8AAAABJw371A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLXE",
+      "title": "Update ui-component-spec for shared vs local components",
+      "sequence": "4"
+    },
+    "96": {
+      "id": "I_kwDOS_2DcM8AAAABJw3-Ig",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLZs",
+      "title": "Update agents/frontend-engineer.md for microfrontend skills",
+      "sequence": "5"
+    },
+    "97": {
+      "id": "I_kwDOS_2DcM8AAAABJw4AMg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLbs",
+      "title": "Update agents/ux-architect.md for shared vs local component specs",
+      "sequence": "5"
+    },
+    "98": {
+      "id": "I_kwDOS_2DcM8AAAABJw4CIA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzuLdg",
+      "title": "Update smoke tests, sdlc-context.json, and CHANGELOG.md",
+      "sequence": "6"
+    },
+    "112": {
+      "id": "I_kwDOS_2DcM8AAAABJ1TwdA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzyIFg",
+      "title": "Add exploratory-testing component to uat-plan",
+      "sequence": "1"
+    },
+    "113": {
+      "id": "I_kwDOS_2DcM8AAAABJ1TxNQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzyIGY",
+      "title": "Update requirements-analyst.md and test-strategist.md for exploratory testing + Quadrant ownership",
+      "sequence": "2"
+    },
+    "114": {
+      "id": "I_kwDOS_2DcM8AAAABJ1Txyw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzyIHA",
+      "title": "Refactor acceptance-sign-off for exploratory findings input",
+      "sequence": "2"
+    },
+    "115": {
+      "id": "I_kwDOS_2DcM8AAAABJ1TyYg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzyIHg",
+      "title": "Update smoke tests, sdlc-context.json, and CHANGELOG.md",
+      "sequence": "3"
+    },
+    "122": {
+      "id": "I_kwDOS_2DcM8AAAABJ1hMrg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzyVCU",
+      "title": "Research Secure by Design into research/security/",
+      "sequence": "1"
+    },
+    "123": {
+      "id": "I_kwDOS_2DcM8AAAABJ1hNug",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzyVDo",
+      "title": "Refactor access-control-model using Secure by Design research",
+      "sequence": "2"
+    },
+    "124": {
+      "id": "I_kwDOS_2DcM8AAAABJ1hOZw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzgzyVE4",
+      "title": "Update smoke test, sdlc-context.json, and CHANGELOG.md",
+      "sequence": "3"
+    },
+    "130": {
+      "id": "I_kwDOS_2DcM8AAAABJ8T_wg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz4sXM",
+      "title": "Write skill-authoring-standards skill content",
+      "sequence": ""
+    },
+    "131": {
+      "id": "I_kwDOS_2DcM8AAAABJ8UA4Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz4sYQ",
+      "title": "Amend CLAUDE.md with the new Skill Authoring section",
+      "sequence": ""
+    },
+    "132": {
+      "id": "I_kwDOS_2DcM8AAAABJ8UCSA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz4sZk",
+      "title": "Rewrite adr-authoring SKILL.md body and references/ content",
+      "sequence": ""
+    },
+    "133": {
+      "id": "I_kwDOS_2DcM8AAAABJ8UDeQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz4sac",
+      "title": "Build assets/adr-template.md and scripts/scaffold-adr.sh",
+      "sequence": ""
+    },
+    "134": {
+      "id": "I_kwDOS_2DcM8AAAABJ8UEgg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz4sbA",
+      "title": "Build scripts/validate-adr.sh",
+      "sequence": ""
+    },
+    "135": {
+      "id": "I_kwDOS_2DcM8AAAABJ8UFhQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz4sbo",
+      "title": "Update skill contract tests for both skills",
+      "sequence": ""
+    },
+    "136": {
+      "id": "I_kwDOS_2DcM8AAAABJ8UGnQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz4sck",
+      "title": "Update sdlc-context.json and CHANGELOG.md",
+      "sequence": ""
+    },
+    "146": {
+      "id": "I_kwDOS_2DcM8AAAABJ81b-g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz5GEo",
+      "title": "Rewrite acceptance-criteria SKILL.md content per the full research corpus and skill-authoring-standards",
+      "sequence": ""
+    },
+    "147": {
+      "id": "I_kwDOS_2DcM8AAAABJ81c1Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz5GFw",
+      "title": "Build assets/acceptance-criteria-template.md and scripts/scaffold-criteria.sh + scripts/validate-criteria.sh",
+      "sequence": ""
+    },
+    "148": {
+      "id": "I_kwDOS_2DcM8AAAABJ81eaA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz5GHc",
+      "title": "Update acceptance-criteria contract test",
+      "sequence": ""
+    },
+    "149": {
+      "id": "I_kwDOS_2DcM8AAAABJ81fVw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz5GIA",
+      "title": "Update sdlc-context.json and CHANGELOG.md for the acceptance-criteria refactor",
+      "sequence": ""
+    },
+    "156": {
+      "id": "I_kwDOS_2DcM8AAAABJ-bX2A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6eoQ",
+      "title": "Rewrite acceptance-sign-off SKILL.md content per the full research corpus and skill-authoring-standards",
+      "sequence": ""
+    },
+    "157": {
+      "id": "I_kwDOS_2DcM8AAAABJ-bYjw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6epo",
+      "title": "Build assets/sign-off-template.md and scripts/scaffold-signoff.sh + scripts/validate-signoff.sh",
+      "sequence": ""
+    },
+    "158": {
+      "id": "I_kwDOS_2DcM8AAAABJ-bZYg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6eq4",
+      "title": "Update acceptance-sign-off contract test",
+      "sequence": ""
+    },
+    "159": {
+      "id": "I_kwDOS_2DcM8AAAABJ-bZ5w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6erc",
+      "title": "Update sdlc-context.json and CHANGELOG.md for the acceptance-sign-off refactor",
+      "sequence": ""
+    },
+    "166": {
+      "id": "I_kwDOS_2DcM8AAAABJ-lLNw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6oS0",
+      "title": "Rewrite access-control-model SKILL.md content per the full research corpus and skill-authoring-standards",
+      "sequence": ""
+    },
+    "167": {
+      "id": "I_kwDOS_2DcM8AAAABJ-lMDA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6oTY",
+      "title": "Build assets/access-control-model-template.md and scripts/scaffold-access-control-model.sh + scripts/validate-access-control-model.sh",
+      "sequence": ""
+    },
+    "168": {
+      "id": "I_kwDOS_2DcM8AAAABJ-lMtA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6oUE",
+      "title": "Update access-control-model contract test",
+      "sequence": ""
+    },
+    "169": {
+      "id": "I_kwDOS_2DcM8AAAABJ-lNRA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz6oUg",
+      "title": "Update sdlc-context.json and CHANGELOG.md for the access-control-model refactor",
+      "sequence": ""
+    },
+    "176": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xKOg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60OI",
+      "title": "Research Eric Evans' Domain-Driven Design into research/domain-driven-design/",
+      "sequence": ""
+    },
+    "177": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xLJg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60O0",
+      "title": "Research Vaughn Vernon's Implementing Domain-Driven Design (Effective Aggregate Design) into research/domain-driven-design/",
+      "sequence": ""
+    },
+    "178": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xMIQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60Pg",
+      "title": "Research Vlad Khononov's Learning Domain-Driven Design into research/domain-driven-design/",
+      "sequence": ""
+    },
+    "179": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xM6Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60QQ",
+      "title": "Design the aggregate-design skill architecture: thin SKILL.md entry point + full references/ file map",
+      "sequence": ""
+    },
+    "180": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xNrg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60Q0",
+      "title": "Write references/invariants-and-consistency-boundaries.md and references/sizing-contention-and-concurrency.md",
+      "sequence": ""
+    },
+    "181": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xOgA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60Rg",
+      "title": "Write references/cross-aggregate-coordination-and-sagas.md and references/entities-value-objects-and-domain-primitives.md",
+      "sequence": ""
+    },
+    "182": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xPgw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60SY",
+      "title": "Write references/go-implementation-patterns.md and references/worked-examples.md",
+      "sequence": ""
+    },
+    "183": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xQYQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60S4",
+      "title": "Write references/decision-trees-and-worksheets.md and finalize SKILL.md",
+      "sequence": ""
+    },
+    "184": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xREg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60Ts",
+      "title": "Build assets/aggregate-design-template.md and scripts/scaffold-aggregate-design.sh + scripts/validate-aggregate-design.sh",
+      "sequence": ""
+    },
+    "185": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xRwQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60Uk",
+      "title": "Update aggregate-design contract tests",
+      "sequence": ""
+    },
+    "186": {
+      "id": "I_kwDOS_2DcM8AAAABJ-xSkg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz60VY",
+      "title": "Update sdlc-context.json and CHANGELOG.md for the aggregate-design rebuild",
+      "sequence": ""
+    },
+    "200": {
+      "id": "I_kwDOS_2DcM8AAAABJ_hK-g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7eH4",
+      "title": "Discovery: research Google's Site Reliability Engineering book for alerting-rules-design",
+      "sequence": ""
+    },
+    "201": {
+      "id": "I_kwDOS_2DcM8AAAABJ_hLuw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7eIo",
+      "title": "Discovery: confirm existing devops-and-delivery research coverage for alerting-rules-design",
+      "sequence": ""
+    },
+    "204": {
+      "id": "I_kwDOS_2DcM8AAAABJ_lgyg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7hg8",
+      "title": "Blueprint: alerting-rules-design multi-file architecture",
+      "sequence": ""
+    },
+    "205": {
+      "id": "I_kwDOS_2DcM8AAAABJ_mYPQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7iGs",
+      "title": "Content: burn-rate derivation and Four Golden Signals reference",
+      "sequence": ""
+    },
+    "206": {
+      "id": "I_kwDOS_2DcM8AAAABJ_mZBA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7iHw",
+      "title": "Content: toil, escalation, and postmortem-linkage references",
+      "sequence": ""
+    },
+    "207": {
+      "id": "I_kwDOS_2DcM8AAAABJ_mZwQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7iIo",
+      "title": "Scripts and assets for alerting-rules-design",
+      "sequence": ""
+    },
+    "208": {
+      "id": "I_kwDOS_2DcM8AAAABJ_mbLA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7iJ0",
+      "title": "Tests for alerting-rules-design scripts and skill contract",
+      "sequence": ""
+    },
+    "209": {
+      "id": "I_kwDOS_2DcM8AAAABJ_mcOg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz7iLM",
+      "title": "Housekeeping: glossary terms, sdlc-context.json, CHANGELOG for alerting-rules-design rebuild",
+      "sequence": ""
+    },
+    "218": {
+      "id": "I_kwDOS_2DcM8AAAABKBjD6A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9XdM",
+      "title": "Discovery: research Lean Analytics (Croll & Yoskovitz) for analytics-requirements",
+      "sequence": ""
+    },
+    "219": {
+      "id": "I_kwDOS_2DcM8AAAABKBjFng",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9XeU",
+      "title": "Discovery: confirm existing research coverage for analytics-requirements",
+      "sequence": ""
+    },
+    "222": {
+      "id": "I_kwDOS_2DcM8AAAABKBnOEw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9ai8",
+      "title": "Rewrite analytics-requirements SKILL.md content per Lean Analytics research and skill-authoring-standards",
+      "sequence": ""
+    },
+    "223": {
+      "id": "I_kwDOS_2DcM8AAAABKBnP0g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9ajk",
+      "title": "Build assets/analytics-requirements-template.md and scripts/scaffold-analytics-requirements.sh + validate-analytics-requirements.sh",
+      "sequence": ""
+    },
+    "224": {
+      "id": "I_kwDOS_2DcM8AAAABKBnQ5g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9akg",
+      "title": "Tests for analytics-requirements scripts and skill contract",
+      "sequence": ""
+    },
+    "225": {
+      "id": "I_kwDOS_2DcM8AAAABKBnSEw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9al8",
+      "title": "Housekeeping: glossary term, sdlc-context.json, CHANGELOG for analytics-requirements refactor",
+      "sequence": ""
+    },
+    "232": {
+      "id": "I_kwDOS_2DcM8AAAABKB2c-A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9m44",
+      "title": "Discovery: research API Design Patterns (JJ Geewax) for api-contract-design",
+      "sequence": ""
+    },
+    "233": {
+      "id": "I_kwDOS_2DcM8AAAABKB2eHA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9m5o",
+      "title": "Discovery: confirm existing research coverage for api-contract-design",
+      "sequence": ""
+    },
+    "236": {
+      "id": "I_kwDOS_2DcM8AAAABKB5DIQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9pFU",
+      "title": "Blueprint: api-contract-design multi-file architecture",
+      "sequence": ""
+    },
+    "237": {
+      "id": "I_kwDOS_2DcM8AAAABKB5EWA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9pGU",
+      "title": "Content: advanced resource patterns reference (custom methods, long-running operations, resource revisions, field masks)",
+      "sequence": ""
+    },
+    "238": {
+      "id": "I_kwDOS_2DcM8AAAABKB5FZQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9pHI",
+      "title": "Content: openapi-spec-structure-example and output-format-template references",
+      "sequence": ""
+    },
+    "239": {
+      "id": "I_kwDOS_2DcM8AAAABKB5Gcw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9pIM",
+      "title": "Build assets/api-contract-summary-template.md and scripts/scaffold-api-contract-design.sh + validate-api-contract-design.sh",
+      "sequence": ""
+    },
+    "240": {
+      "id": "I_kwDOS_2DcM8AAAABKB5IAw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9pJA",
+      "title": "Tests for api-contract-design scripts and skill contract",
+      "sequence": ""
+    },
+    "241": {
+      "id": "I_kwDOS_2DcM8AAAABKB5Jlw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzgz9pKU",
+      "title": "Housekeeping: glossary terms, sdlc-context.json, CHANGELOG for api-contract-design rebuild",
+      "sequence": ""
+    },
+    "252": {
+      "id": "I_kwDOS_2DcM8AAAABKFJk3Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0AkJk",
+      "title": "Confirm research coverage for artifact-manifest's registry/traceability topic"
+    },
+    "255": {
+      "id": "I_kwDOS_2DcM8AAAABKFdvLg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0A3Ho",
+      "title": "Blueprint: artifact-manifest thin SKILL.md + stub references/",
+      "sequence": ""
+    },
+    "256": {
+      "id": "I_kwDOS_2DcM8AAAABKFdwbA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0A3IY",
+      "title": "Content: artifact-type-catalog and manifest-worked-example references",
+      "sequence": ""
+    },
+    "257": {
+      "id": "I_kwDOS_2DcM8AAAABKFdx2w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0A3JQ",
+      "title": "Asset: manifest-instance-template.json",
+      "sequence": ""
+    },
+    "258": {
+      "id": "I_kwDOS_2DcM8AAAABKFdzZA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0A3KQ",
+      "title": "Tests: artifact-manifest scripts and skill contract",
+      "sequence": ""
+    },
+    "259": {
+      "id": "I_kwDOS_2DcM8AAAABKFd0qg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0A3Kw",
+      "title": "Housekeeping: glossary terms, sdlc-context.json, CHANGELOG for artifact-manifest rebuild",
+      "sequence": ""
+    },
+    "267": {
+      "id": "I_kwDOS_2DcM8AAAABKFn9lQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0A-lk",
+      "title": "Research Gojko Adzic's Specification by Example for bdd-feature-file",
+      "sequence": ""
+    },
+    "268": {
+      "id": "I_kwDOS_2DcM8AAAABKFn_Fw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0A-mY",
+      "title": "Confirm and consolidate existing research coverage for bdd-feature-file",
+      "sequence": ""
+    },
+    "271": {
+      "id": "I_kwDOS_2DcM8AAAABKFsLjQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BBeA",
+      "title": "Blueprint: bdd-feature-file thin SKILL.md + stub reference",
+      "sequence": ""
+    },
+    "272": {
+      "id": "I_kwDOS_2DcM8AAAABKFsMww",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BBew",
+      "title": "Content: collaborative-specification-and-living-documentation reference",
+      "sequence": ""
+    },
+    "273": {
+      "id": "I_kwDOS_2DcM8AAAABKFsOSg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BBgM",
+      "title": "Scripts and assets: bdd-feature-file scaffold + validate + template",
+      "sequence": ""
+    },
+    "274": {
+      "id": "I_kwDOS_2DcM8AAAABKFsPkQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BBgs",
+      "title": "Tests: bdd-feature-file scripts and skill contract",
+      "sequence": ""
+    },
+    "275": {
+      "id": "I_kwDOS_2DcM8AAAABKFsRRw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BBhc",
+      "title": "Housekeeping: glossary terms, sdlc-context.json, CHANGELOG for bdd-feature-file rebuild",
+      "sequence": ""
+    },
+    "283": {
+      "id": "I_kwDOS_2DcM8AAAABKF1TjQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BHcU",
+      "title": "Research Steve Blank's Customer Development methodology for beta-program-design",
+      "sequence": ""
+    },
+    "284": {
+      "id": "I_kwDOS_2DcM8AAAABKF1Uig",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BHdY",
+      "title": "Confirm and consolidate existing research coverage for beta-program-design",
+      "sequence": ""
+    },
+    "287": {
+      "id": "I_kwDOS_2DcM8AAAABKF4EaQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BJko",
+      "title": "Blueprint: beta-program-design thin SKILL.md + stub reference",
+      "sequence": ""
+    },
+    "288": {
+      "id": "I_kwDOS_2DcM8AAAABKF4FTA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BJlc",
+      "title": "Content: customer-development-and-graduation-discipline reference",
+      "sequence": ""
+    },
+    "289": {
+      "id": "I_kwDOS_2DcM8AAAABKF4GFg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BJmM",
+      "title": "Scripts and assets: beta-program-design scaffold + validate + template",
+      "sequence": ""
+    },
+    "290": {
+      "id": "I_kwDOS_2DcM8AAAABKF4HPw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BJnA",
+      "title": "Tests: beta-program-design scripts and skill contract",
+      "sequence": ""
+    },
+    "291": {
+      "id": "I_kwDOS_2DcM8AAAABKF4IpA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BJns",
+      "title": "Housekeeping: glossary terms, sdlc-context.json, CHANGELOG for beta-program-design rebuild",
+      "sequence": ""
+    },
+    "299": {
+      "id": "I_kwDOS_2DcM8AAAABKGOehw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BYSE",
+      "title": "Research The Go Programming Language (Donovan & Kernighan) for all go-* skills",
+      "sequence": ""
+    },
+    "300": {
+      "id": "I_kwDOS_2DcM8AAAABKGOf5g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BYS0",
+      "title": "Research 100 Go Mistakes and How to Avoid Them (Harsanyi) for all go-* skills",
+      "sequence": ""
+    },
+    "301": {
+      "id": "I_kwDOS_2DcM8AAAABKGOgow",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BYTc",
+      "title": "Research Concurrency in Go (Cox-Buday) for go-concurrency-patterns and event skills",
+      "sequence": ""
+    },
+    "302": {
+      "id": "I_kwDOS_2DcM8AAAABKGOhdA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BYUY",
+      "title": "Research Let's Go / Let's Go Further (Edwards) for core service + tooling skills"
+    },
+    "303": {
+      "id": "I_kwDOS_2DcM8AAAABKGOiKg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0BYVY",
+      "title": "Confirm and consolidate existing Go research coverage across all 7 skill groups",
+      "sequence": ""
+    },
+    "309": {
+      "id": "I_kwDOS_2DcM8AAAABKHk5Aw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUFQ",
+      "title": "Core service group: go-project-structure, go-service-skeleton, go-chi-handler, go-middleware",
+      "sequence": ""
+    },
+    "310": {
+      "id": "I_kwDOS_2DcM8AAAABKHk6BQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUFw",
+      "title": "Domain/data group: go-domain-model, go-repository-pattern, go-service-layer, go-migration",
+      "sequence": ""
+    },
+    "311": {
+      "id": "I_kwDOS_2DcM8AAAABKHk6qQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUGA",
+      "title": "Event-driven group: go-event-publisher, go-event-consumer",
+      "sequence": ""
+    },
+    "312": {
+      "id": "I_kwDOS_2DcM8AAAABKHk7JQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUGo",
+      "title": "Cross-cutting group: go-error-handling, go-concurrency-patterns, go-performance-optimization",
+      "sequence": ""
+    },
+    "313": {
+      "id": "I_kwDOS_2DcM8AAAABKHk7qQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUG4",
+      "title": "Tooling group: go-dockerfile, go-makefile, go-openapi-codegen",
+      "sequence": ""
+    },
+    "314": {
+      "id": "I_kwDOS_2DcM8AAAABKHk8Kg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUHQ",
+      "title": "Testing part 1 group: go-unit-test, go-integration-test, go-contract-test, go-mutation-test",
+      "sequence": ""
+    },
+    "315": {
+      "id": "I_kwDOS_2DcM8AAAABKHk8tQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUHg",
+      "title": "Testing part 2 group: go-e2e-test, go-performance-test, go-load-test, go-chaos-test",
+      "sequence": ""
+    },
+    "316": {
+      "id": "I_kwDOS_2DcM8AAAABKHk9IA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0CUHk",
+      "title": "Housekeeping: glossary terms, sdlc-context.json, CHANGELOG for the go-* domain rebuild",
+      "sequence": ""
+    },
+    "327": {
+      "id": "I_kwDOS_2DcM8AAAABKIRmWw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C1TE",
+      "title": "Research Learning React (Banks & Porcello) for all react-* skills",
+      "sequence": ""
+    },
+    "328": {
+      "id": "I_kwDOS_2DcM8AAAABKISNdQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C1yY",
+      "title": "Research React Design Patterns and Best Practices (Roldan) for all react-* skills",
+      "sequence": ""
+    },
+    "329": {
+      "id": "I_kwDOS_2DcM8AAAABKISN9A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C1zA",
+      "title": "Confirm and consolidate React research findings across all 4 skill groups",
+      "sequence": ""
+    },
+    "333": {
+      "id": "I_kwDOS_2DcM8AAAABKIT4Hg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C3ZQ",
+      "title": "Foundations group: react-project-structure, react-routing, react-state-management",
+      "sequence": ""
+    },
+    "334": {
+      "id": "I_kwDOS_2DcM8AAAABKIT4vw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C3Z4",
+      "title": "Component/testing group: react-component-design, react-component-testing, react-e2e-testing",
+      "sequence": ""
+    },
+    "335": {
+      "id": "I_kwDOS_2DcM8AAAABKIT56A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C3ac",
+      "title": "Data/viz group: react-api-client, react-dashboard-components, react-graph-visualization",
+      "sequence": ""
+    },
+    "336": {
+      "id": "I_kwDOS_2DcM8AAAABKIT6vQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C3a4",
+      "title": "Cross-cutting group: react-accessibility, react-observability, react-performance-optimization, react-dockerfile",
+      "sequence": ""
+    },
+    "337": {
+      "id": "I_kwDOS_2DcM8AAAABKIT7RA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0C3bo",
+      "title": "Housekeeping: glossary terms, sdlc-context.json, CHANGELOG for the react-* domain rebuild",
+      "sequence": ""
+    },
+    "344": {
+      "id": "I_kwDOS_2DcM8AAAABKIiLUQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEZk",
+      "title": "Deep rebuild: go-project-structure",
+      "sequence": ""
+    },
+    "345": {
+      "id": "I_kwDOS_2DcM8AAAABKIiMRg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEaQ",
+      "title": "Deep rebuild: go-service-skeleton",
+      "sequence": ""
+    },
+    "346": {
+      "id": "I_kwDOS_2DcM8AAAABKIiMuw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEa4",
+      "title": "Deep rebuild: go-chi-handler",
+      "sequence": ""
+    },
+    "347": {
+      "id": "I_kwDOS_2DcM8AAAABKIiNOA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEbc",
+      "title": "Deep rebuild: go-domain-model",
+      "sequence": ""
+    },
+    "348": {
+      "id": "I_kwDOS_2DcM8AAAABKIiNqg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEb4",
+      "title": "Deep rebuild: go-repository-pattern",
+      "sequence": ""
+    },
+    "349": {
+      "id": "I_kwDOS_2DcM8AAAABKIiOVw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEcg",
+      "title": "Deep rebuild: go-event-publisher",
+      "sequence": ""
+    },
+    "350": {
+      "id": "I_kwDOS_2DcM8AAAABKIiPhw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEdE",
+      "title": "Deep rebuild: go-event-consumer",
+      "sequence": ""
+    },
+    "351": {
+      "id": "I_kwDOS_2DcM8AAAABKIiQLg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEd4",
+      "title": "Deep rebuild: go-service-layer",
+      "sequence": ""
+    },
+    "352": {
+      "id": "I_kwDOS_2DcM8AAAABKIiQvg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEeQ",
+      "title": "Deep rebuild: go-middleware",
+      "sequence": ""
+    },
+    "353": {
+      "id": "I_kwDOS_2DcM8AAAABKIiRMg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEek",
+      "title": "Deep rebuild: go-migration",
+      "sequence": ""
+    },
+    "354": {
+      "id": "I_kwDOS_2DcM8AAAABKIiSRg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEfA",
+      "title": "Deep rebuild: go-dockerfile",
+      "sequence": ""
+    },
+    "355": {
+      "id": "I_kwDOS_2DcM8AAAABKIiT3g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEgI",
+      "title": "Deep rebuild: go-makefile",
+      "sequence": ""
+    },
+    "356": {
+      "id": "I_kwDOS_2DcM8AAAABKIiUrQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEgs",
+      "title": "Deep rebuild: go-openapi-codegen",
+      "sequence": ""
+    },
+    "357": {
+      "id": "I_kwDOS_2DcM8AAAABKIiVqg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEhI",
+      "title": "Deep rebuild: go-concurrency-patterns",
+      "sequence": ""
+    },
+    "358": {
+      "id": "I_kwDOS_2DcM8AAAABKIiWNw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEhw",
+      "title": "Deep rebuild: go-error-handling",
+      "sequence": ""
+    },
+    "359": {
+      "id": "I_kwDOS_2DcM8AAAABKIiXaQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEio",
+      "title": "Deep rebuild: go-performance-optimization",
+      "sequence": ""
+    },
+    "360": {
+      "id": "I_kwDOS_2DcM8AAAABKIiYlg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEjE",
+      "title": "Deep rebuild: go-unit-test",
+      "sequence": ""
+    },
+    "361": {
+      "id": "I_kwDOS_2DcM8AAAABKIiZHA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEjo",
+      "title": "Deep rebuild: go-integration-test",
+      "sequence": ""
+    },
+    "362": {
+      "id": "I_kwDOS_2DcM8AAAABKIiZrg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEkE",
+      "title": "Deep rebuild: go-contract-test",
+      "sequence": ""
+    },
+    "363": {
+      "id": "I_kwDOS_2DcM8AAAABKIib3w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DElc",
+      "title": "Deep rebuild: go-mutation-test",
+      "sequence": ""
+    },
+    "364": {
+      "id": "I_kwDOS_2DcM8AAAABKIicgw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEmA",
+      "title": "Deep rebuild: go-e2e-test",
+      "sequence": ""
+    },
+    "365": {
+      "id": "I_kwDOS_2DcM8AAAABKIie4Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEn4",
+      "title": "Deep rebuild: go-performance-test",
+      "sequence": ""
+    },
+    "366": {
+      "id": "I_kwDOS_2DcM8AAAABKIihHA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEpo",
+      "title": "Deep rebuild: go-load-test",
+      "sequence": ""
+    },
+    "367": {
+      "id": "I_kwDOS_2DcM8AAAABKIiimg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEqI",
+      "title": "Deep rebuild: go-chaos-test",
+      "sequence": ""
+    },
+    "368": {
+      "id": "I_kwDOS_2DcM8AAAABKIijPA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0DEqY",
+      "title": "Housekeeping: go-* deep-rebuild glossary/context/changelog sync",
+      "sequence": ""
+    },
+    "394": {
+      "id": "I_kwDOS_2DcM8AAAABKOCKmw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H38g",
+      "title": "Deep rebuild: react-project-structure",
+      "sequence": ""
+    },
+    "395": {
+      "id": "I_kwDOS_2DcM8AAAABKOCLTw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H39c",
+      "title": "Deep rebuild: react-component-design",
+      "sequence": ""
+    },
+    "396": {
+      "id": "I_kwDOS_2DcM8AAAABKOCMAA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H398",
+      "title": "Deep rebuild: react-state-management",
+      "sequence": ""
+    },
+    "397": {
+      "id": "I_kwDOS_2DcM8AAAABKOCMzA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H3-4",
+      "title": "Deep rebuild: react-api-client",
+      "sequence": ""
+    },
+    "398": {
+      "id": "I_kwDOS_2DcM8AAAABKOCNow",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H3_0",
+      "title": "Deep rebuild: react-routing",
+      "sequence": ""
+    },
+    "399": {
+      "id": "I_kwDOS_2DcM8AAAABKOCOQg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4Ag",
+      "title": "Deep rebuild: react-graph-visualization",
+      "sequence": ""
+    },
+    "400": {
+      "id": "I_kwDOS_2DcM8AAAABKOCO7w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4Bg",
+      "title": "Deep rebuild: react-dashboard-components",
+      "sequence": ""
+    },
+    "401": {
+      "id": "I_kwDOS_2DcM8AAAABKOCPpg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4CU",
+      "title": "Deep rebuild: react-accessibility",
+      "sequence": ""
+    },
+    "402": {
+      "id": "I_kwDOS_2DcM8AAAABKOCQcg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4C4",
+      "title": "Deep rebuild: react-dockerfile",
+      "sequence": ""
+    },
+    "403": {
+      "id": "I_kwDOS_2DcM8AAAABKOCRPg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4Dk",
+      "title": "Deep rebuild: react-component-testing",
+      "sequence": ""
+    },
+    "404": {
+      "id": "I_kwDOS_2DcM8AAAABKOCR3Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4Eg",
+      "title": "Deep rebuild: react-e2e-testing",
+      "sequence": ""
+    },
+    "405": {
+      "id": "I_kwDOS_2DcM8AAAABKOCSkg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4F0",
+      "title": "Deep rebuild: react-performance-optimization",
+      "sequence": ""
+    },
+    "406": {
+      "id": "I_kwDOS_2DcM8AAAABKOCTTQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4Gk",
+      "title": "Deep rebuild: react-observability",
+      "sequence": ""
+    },
+    "407": {
+      "id": "I_kwDOS_2DcM8AAAABKOCUBA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0H4HY",
+      "title": "Housekeeping: react-* deep-rebuild glossary/context/changelog sync",
+      "sequence": ""
+    },
+    "425": {
+      "id": "I_kwDOS_2DcM8AAAABK5GgCw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wBcA",
+      "title": "Discovery: test-pyramid research synthesis \u2014 what the 8 testing books add",
+      "sequence": ""
+    },
+    "427": {
+      "id": "I_kwDOS_2DcM8AAAABK5a8Lw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wT_4",
+      "title": "Blueprint: rewrite test-pyramid SKILL.md to thin progressive-disclosure shape + stub references/",
+      "sequence": ""
+    },
+    "428": {
+      "id": "I_kwDOS_2DcM8AAAABK5a89g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wUBE",
+      "title": "Content: fill references/test-strategy-template.md for test-pyramid",
+      "sequence": ""
+    },
+    "430": {
+      "id": "I_kwDOS_2DcM8AAAABK5bEGA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wUGk",
+      "title": "Tests: write tests/skills/test-pyramid.contract.sh probing references/ content",
+      "sequence": ""
+    },
+    "431": {
+      "id": "I_kwDOS_2DcM8AAAABK5bFwg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wUHk",
+      "title": "Housekeeping: sdlc-context.json and CHANGELOG.md for test-pyramid rebuild",
+      "sequence": ""
+    },
+    "438": {
+      "id": "I_kwDOS_2DcM8AAAABK5hAIA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wZNI",
+      "title": "discovery: gap-analysis for test-fixture-design v1.1.0 against skill-authoring-standards rubric",
+      "sequence": ""
+    },
+    "439": {
+      "id": "I_kwDOS_2DcM8AAAABK5hA2A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wZN0",
+      "title": "blueprint: rewrite test-fixture-design SKILL.md to v2.0.0 progressive-disclosure shape + stub references/",
+      "sequence": ""
+    },
+    "440": {
+      "id": "I_kwDOS_2DcM8AAAABK5hBqg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wZPA",
+      "title": "content: fill references/fixture-patterns-catalogue.md with depth from research findings",
+      "sequence": ""
+    },
+    "441": {
+      "id": "I_kwDOS_2DcM8AAAABK5hCjw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wZP8",
+      "title": "tests: write tests/skills/test-fixture-design.contract.sh probing Object Mother definition from references/",
+      "sequence": ""
+    },
+    "442": {
+      "id": "I_kwDOS_2DcM8AAAABK5hDcQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wZQ0",
+      "title": "housekeeping: sdlc-context.json (Chunk 50) and CHANGELOG.md for test-fixture-design rebuild",
+      "sequence": ""
+    },
+    "447": {
+      "id": "I_kwDOS_2DcM8AAAABK5k8Ew",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wdDY",
+      "title": "mock-generation: discovery \u2014 gap analysis against skill-authoring-standards and research corpus",
+      "sequence": ""
+    },
+    "450": {
+      "id": "I_kwDOS_2DcM8AAAABK5lwpA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0wd-8",
+      "title": "mock-generation: architecture blueprint \u2014 thin SKILL.md rewrite + stub references/ files",
+      "sequence": ""
+    },
+    "451": {
+      "id": "I_kwDOS_2DcM8AAAABK5lxdQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0weAU",
+      "title": "mock-generation: content writing \u2014 fill references/ files with research depth",
+      "sequence": ""
+    },
+    "452": {
+      "id": "I_kwDOS_2DcM8AAAABK5lzFQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0weB4",
+      "title": "mock-generation: tests \u2014 write contract test probing references/ content only",
+      "sequence": ""
+    },
+    "453": {
+      "id": "I_kwDOS_2DcM8AAAABK5lztg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0weCo",
+      "title": "mock-generation: housekeeping \u2014 sdlc-context.json Chunk 51 + CHANGELOG.md",
+      "sequence": ""
+    },
+    "454": {
+      "id": "I_kwDOS_2DcM8AAAABK5l0wA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6Qzg0weDc",
+      "title": "mock-generation: content writing \u2014 fill references/ files with research depth",
+      "sequence": ""
+    },
+    "1225": {
+      "id": "I_kwDOS_2DcM8AAAABWeWfFQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhABiOI",
+      "title": "A2 \u2014 sources: frontmatter field (research grounding)",
+      "sequence": "1"
+    },
+    "1226": {
+      "id": "I_kwDOS_2DcM8AAAABWeWiFQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhABiQw",
+      "title": "A4 \u2014 derived has_<folder> + has_evals facts",
+      "sequence": "2"
+    },
+    "1227": {
+      "id": "I_kwDOS_2DcM8AAAABWeWkmw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhABiUA",
+      "title": "A3 \u2014 lint-skill-layout.py (folder spec linter)",
+      "sequence": "3"
+    },
+    "1228": {
+      "id": "I_kwDOS_2DcM8AAAABWeWmrw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhABiWA",
+      "title": "A6 \u2014 evals runner (claude plugin eval, root evals/<skill>/)",
+      "sequence": "4"
+    },
+    "1229": {
+      "id": "I_kwDOS_2DcM8AAAABWeWopg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhABiXw",
+      "title": "A5 \u2014 migration mechanics (move script, scaffold repointing, detector coverage)",
+      "sequence": "5"
+    },
+    "1230": {
+      "id": "I_kwDOS_2DcM8AAAABWeWqxw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhABiZQ",
+      "title": "A1 \u2014 codify the 9-folder spec (skill-authoring-standards, CLAUDE.md, README)",
+      "sequence": "6"
+    },
+    "1239": {
+      "id": "I_kwDOS_2DcM8AAAABWesD5A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAB5BU",
+      "title": "Pilot: vision-statement \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "1"
+    },
+    "1240": {
+      "id": "I_kwDOS_2DcM8AAAABWesGPw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAB5Dw",
+      "title": "Pilot: adr-authoring \u2014 research augmentation + full folder migration + evals",
+      "sequence": "2"
+    },
+    "1241": {
+      "id": "I_kwDOS_2DcM8AAAABWesIYg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAB5Fs",
+      "title": "Pilot: go-repository-pattern \u2014 research augmentation + folder spec + evals (code-producing skill)",
+      "sequence": "3"
+    },
+    "1267": {
+      "id": "I_kwDOS_2DcM8AAAABWkHgJw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAHUDw",
+      "title": "Discovery: confirm Insights chart capabilities on SKILL GEN Project",
+      "sequence": "1"
+    },
+    "1269": {
+      "id": "I_kwDOS_2DcM8AAAABWkIeSg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAHU4Y",
+      "title": "Insights fields: create 14 project fields + backfill Sprint iterations",
+      "sequence": "1"
+    },
+    "1270": {
+      "id": "I_kwDOS_2DcM8AAAABWkIg3g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAHU6M",
+      "title": "ghp/insights.py: derivation rules + unit tests",
+      "sequence": "2"
+    },
+    "1271": {
+      "id": "I_kwDOS_2DcM8AAAABWkIjTg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAHU7w",
+      "title": "backfill_insights.py: dry-run report, then apply",
+      "sequence": "3"
+    },
+    "1272": {
+      "id": "I_kwDOS_2DcM8AAAABWkIljg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAHU9c",
+      "title": "Go-forward auto-fill in plan/exec tooling",
+      "sequence": "4"
+    },
+    "1273": {
+      "id": "I_kwDOS_2DcM8AAAABWkIosw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAHU_c",
+      "title": "Build the 15 Insights charts in the UI",
+      "sequence": "5"
+    },
+    "1274": {
+      "id": "I_kwDOS_2DcM8AAAABWkIqyQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhAHVBg",
+      "title": "Docs: README, INVESTIGATION.md, chart guide, CHANGELOG",
+      "sequence": "6"
+    },
+    "1293": {
+      "id": "I_kwDOS_2DcM8AAAABYK21dA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBt9q4",
+      "title": "Wave 1 discovery: audit 21 strategy/discovery/validation skills against research/",
+      "sequence": "1"
+    },
+    "1295": {
+      "id": "I_kwDOS_2DcM8AAAABYLXwOg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBuiJo",
+      "title": "Wave 1 research: Business Model Generation + Value Proposition Design (Alexander Osterwalder)",
+      "sequence": "2.a"
+    },
+    "1297": {
+      "id": "I_kwDOS_2DcM8AAAABYLYazA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBuivI",
+      "title": "Wave 1 research: Running Lean (Ash Maurya)",
+      "sequence": "2.b"
+    },
+    "1298": {
+      "id": "I_kwDOS_2DcM8AAAABYLYd5Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBuiyA",
+      "title": "Wave 1 research: Measure What Matters (John Doerr)",
+      "sequence": "2.c"
+    },
+    "1299": {
+      "id": "I_kwDOS_2DcM8AAAABYLYhjA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBui1U",
+      "title": "Wave 1 research: Good Strategy / Bad Strategy (Richard Rumelt)",
+      "sequence": "2.d"
+    },
+    "1300": {
+      "id": "I_kwDOS_2DcM8AAAABYLYlQQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBui4g",
+      "title": "Wave 1 research: Product Roadmaps Relaunched (C. Todd Lombardo, Bruce McCarthy, Evan Ryan, Michael Connors)",
+      "sequence": "2.e"
+    },
+    "1301": {
+      "id": "I_kwDOS_2DcM8AAAABYLYohA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBui74",
+      "title": "Wave 1 research: Impact Mapping (Gojko Adzic)",
+      "sequence": "2.f"
+    },
+    "1302": {
+      "id": "I_kwDOS_2DcM8AAAABYLYriQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBui-Q",
+      "title": "Wave 1 research: Competing Against Luck (Clayton Christensen et al.)",
+      "sequence": "2.g"
+    },
+    "1303": {
+      "id": "I_kwDOS_2DcM8AAAABYLYueQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujAk",
+      "title": "Wave 1 research: About Face / The Inmates Are Running the Asylum (Alan Cooper)",
+      "sequence": "2.h"
+    },
+    "1304": {
+      "id": "I_kwDOS_2DcM8AAAABYLYxYg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujCg",
+      "title": "Wave 1 research: Continuous Discovery Habits (Teresa Torres)",
+      "sequence": "2.i"
+    },
+    "1305": {
+      "id": "I_kwDOS_2DcM8AAAABYLYz0w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujFM",
+      "title": "Wave 1 research: Software Requirements, 3rd ed. (Karl Wiegers)",
+      "sequence": "2.j"
+    },
+    "1306": {
+      "id": "I_kwDOS_2DcM8AAAABYLY2lw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujHg",
+      "title": "Wave 1 research: Software Architecture in Practice (Len Bass, Paul Clements, Rick Kazman)",
+      "sequence": "2.k"
+    },
+    "1307": {
+      "id": "I_kwDOS_2DcM8AAAABYLY5TQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujKU",
+      "title": "Wave 1 research: DSDM Agile Project Framework handbook (Agile Business Consortium)",
+      "sequence": "2.l"
+    },
+    "1308": {
+      "id": "I_kwDOS_2DcM8AAAABYLY8PQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujMs",
+      "title": "Wave 1 research: The Challenger Customer (Brent Adamson, Matthew Dixon et al.)",
+      "sequence": "2.m"
+    },
+    "1309": {
+      "id": "I_kwDOS_2DcM8AAAABYLY_Xw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujP0",
+      "title": "Wave 1 research: Monetizing Innovation (Madhavan Ramanujam)",
+      "sequence": "2.n"
+    },
+    "1310": {
+      "id": "I_kwDOS_2DcM8AAAABYLZCYA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBujSM",
+      "title": "Wave 1 research: User Acceptance Testing: A Step-by-Step Guide (Brian Hambling)",
+      "sequence": "2.o"
+    },
+    "1327": {
+      "id": "I_kwDOS_2DcM8AAAABYOGXnQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxgI8",
+      "title": "Wave 1 pipeline: Strategy and Ideate order, lean-profile requirements (D045)",
+      "sequence": "3"
+    },
+    "1328": {
+      "id": "I_kwDOS_2DcM8AAAABYOGcmg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxgN4",
+      "title": "Wave 1 skill: strategy-kernel (new) \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.a"
+    },
+    "1329": {
+      "id": "I_kwDOS_2DcM8AAAABYOGhWQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxgUI",
+      "title": "Wave 1 skill: okr-authoring \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.b"
+    },
+    "1330": {
+      "id": "I_kwDOS_2DcM8AAAABYOGpLg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxgdE",
+      "title": "Wave 1 skill: roadmap-authoring \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.c"
+    },
+    "1331": {
+      "id": "I_kwDOS_2DcM8AAAABYOG2ZQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxgtE",
+      "title": "Wave 1 skill: business-model-canvas \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.d"
+    },
+    "1332": {
+      "id": "I_kwDOS_2DcM8AAAABYOG7jg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxgz0",
+      "title": "Wave 1 skill: competitive-analysis \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.e"
+    },
+    "1333": {
+      "id": "I_kwDOS_2DcM8AAAABYOHC9Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxg7M",
+      "title": "Wave 1 skill: gtm-strategy \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.f"
+    },
+    "1334": {
+      "id": "I_kwDOS_2DcM8AAAABYOHKoA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhC0",
+      "title": "Wave 1 skill: pricing-and-packaging (new) \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.g"
+    },
+    "1335": {
+      "id": "I_kwDOS_2DcM8AAAABYOHQAg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhJQ",
+      "title": "Wave 1 skill: stakeholder-mapping \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.h"
+    },
+    "1336": {
+      "id": "I_kwDOS_2DcM8AAAABYOHU6A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhPQ",
+      "title": "Wave 1 skill: user-persona \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.i"
+    },
+    "1337": {
+      "id": "I_kwDOS_2DcM8AAAABYOHerQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhYo",
+      "title": "Wave 1 skill: jtbd-analysis \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.j"
+    },
+    "1338": {
+      "id": "I_kwDOS_2DcM8AAAABYOHj9A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhcQ",
+      "title": "Wave 1 skill: opportunity-solution-tree (new) \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.k"
+    },
+    "1339": {
+      "id": "I_kwDOS_2DcM8AAAABYOHpVA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhg8",
+      "title": "Wave 1 skill: impact-mapping \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.l"
+    },
+    "1340": {
+      "id": "I_kwDOS_2DcM8AAAABYOHxQQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhpo",
+      "title": "Wave 1 skill: requirements-analysis \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.m"
+    },
+    "1341": {
+      "id": "I_kwDOS_2DcM8AAAABYOH14g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhuU",
+      "title": "Wave 1 skill: nfr-specification \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.n"
+    },
+    "1342": {
+      "id": "I_kwDOS_2DcM8AAAABYOH7pg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxhzE",
+      "title": "Wave 1 skill: epic-definition \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.o"
+    },
+    "1343": {
+      "id": "I_kwDOS_2DcM8AAAABYOIA1Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxh3M",
+      "title": "Wave 1 skill: story-mapping \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.p"
+    },
+    "1344": {
+      "id": "I_kwDOS_2DcM8AAAABYOIFag",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxh7E",
+      "title": "Wave 1 skill: user-story-writing \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.q"
+    },
+    "1345": {
+      "id": "I_kwDOS_2DcM8AAAABYOIKXQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxiA0",
+      "title": "Wave 1 skill: moscow-prioritization \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.r"
+    },
+    "1346": {
+      "id": "I_kwDOS_2DcM8AAAABYOIRvQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxiIU",
+      "title": "Wave 1 skill: uat-plan \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.s"
+    },
+    "1347": {
+      "id": "I_kwDOS_2DcM8AAAABYOIWAQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxiME",
+      "title": "Wave 1 skill: uat-scenario \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.t"
+    },
+    "1348": {
+      "id": "I_kwDOS_2DcM8AAAABYOIdkQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxiTQ",
+      "title": "Wave 1 skill: acceptance-sign-off \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.u"
+    },
+    "1349": {
+      "id": "I_kwDOS_2DcM8AAAABYOIiDw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxiak",
+      "title": "Wave 1 skill: beta-program-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.v"
+    },
+    "1350": {
+      "id": "I_kwDOS_2DcM8AAAABYOIp_Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhBxilU",
+      "title": "Wave 1 skill: feedback-template \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.w"
+    },
+    "1377": {
+      "id": "I_kwDOS_2DcM8AAAABbqT8jQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFNvPo",
+      "title": "Wave 2 discovery: audit 25 domain-modeling/architecture skills against research/",
+      "sequence": ""
+    },
+    "1379": {
+      "id": "I_kwDOS_2DcM8AAAABbuc-Ig",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSBwE",
+      "title": "Wave 2 research: Strategic DDD (Evans Part IV, Vernon, Khononov Part I: a pass over books already held)",
+      "sequence": "1.a"
+    },
+    "1380": {
+      "id": "I_kwDOS_2DcM8AAAABbudB3A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSBzc",
+      "title": "Wave 2 research: Introducing EventStorming by Alberto Brandolini",
+      "sequence": "1.b"
+    },
+    "1381": {
+      "id": "I_kwDOS_2DcM8AAAABbudFEA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSB2w",
+      "title": "Wave 2 research: Building Multi-Tenant SaaS Architectures by Tod Golding",
+      "sequence": "1.c"
+    },
+    "1382": {
+      "id": "I_kwDOS_2DcM8AAAABbudIfg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSB5k",
+      "title": "Wave 2 research: Domain Storytelling by Stefan Hofer and Henning Schwentner",
+      "sequence": "1.d"
+    },
+    "1383": {
+      "id": "I_kwDOS_2DcM8AAAABbudLwA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSB8Q",
+      "title": "Wave 2 research: the C4 model (c4model.com) and Software Architecture for Developers by Simon Brown",
+      "sequence": "1.e"
+    },
+    "1384": {
+      "id": "I_kwDOS_2DcM8AAAABbudO2Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSB_Q",
+      "title": "Wave 2 research: Versioning in an Event Sourced System by Greg Young",
+      "sequence": "1.f"
+    },
+    "1385": {
+      "id": "I_kwDOS_2DcM8AAAABbudRfQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCCA",
+      "title": "Wave 2 research: the CloudEvents 1.0 specification (CNCF)",
+      "sequence": "1.g"
+    },
+    "1386": {
+      "id": "I_kwDOS_2DcM8AAAABbudUwA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCFY",
+      "title": "Wave 2 pipeline: Design-phase order, ownership and phase requirements (D047)",
+      "sequence": "2"
+    },
+    "1387": {
+      "id": "I_kwDOS_2DcM8AAAABbudYVg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCH0",
+      "title": "Wave 2 skill: ubiquitous-language \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.01"
+    },
+    "1388": {
+      "id": "I_kwDOS_2DcM8AAAABbudbhw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCKI",
+      "title": "Wave 2 skill: subdomain-distillation \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.02"
+    },
+    "1389": {
+      "id": "I_kwDOS_2DcM8AAAABbude5g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCM4",
+      "title": "Wave 2 skill: event-storming-facilitation \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.03"
+    },
+    "1390": {
+      "id": "I_kwDOS_2DcM8AAAABbudiZg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCPw",
+      "title": "Wave 2 skill: domain-storytelling \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.04"
+    },
+    "1391": {
+      "id": "I_kwDOS_2DcM8AAAABbudljw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCS0",
+      "title": "Wave 2 skill: bounded-context-mapping \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.05"
+    },
+    "1392": {
+      "id": "I_kwDOS_2DcM8AAAABbudo_A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCWc",
+      "title": "Wave 2 skill: context-map-patterns \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.06"
+    },
+    "1393": {
+      "id": "I_kwDOS_2DcM8AAAABbudsRg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCZM",
+      "title": "Wave 2 skill: aggregate-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.07"
+    },
+    "1394": {
+      "id": "I_kwDOS_2DcM8AAAABbudvxw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCdA",
+      "title": "Wave 2 skill: event-schema-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.08"
+    },
+    "1395": {
+      "id": "I_kwDOS_2DcM8AAAABbudzNQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCgE",
+      "title": "Wave 2 skill: domain-event-catalog \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.09"
+    },
+    "1396": {
+      "id": "I_kwDOS_2DcM8AAAABbud2Gg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCjg",
+      "title": "Wave 2 skill: command-catalog \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.10"
+    },
+    "1397": {
+      "id": "I_kwDOS_2DcM8AAAABbud6Qw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCm0",
+      "title": "Wave 2 skill: cqrs-pattern \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.11"
+    },
+    "1398": {
+      "id": "I_kwDOS_2DcM8AAAABbud9Fw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCo4",
+      "title": "Wave 2 skill: read-model-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.12"
+    },
+    "1399": {
+      "id": "I_kwDOS_2DcM8AAAABbueAzw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCsM",
+      "title": "Wave 2 skill: ddd-agent-handoff \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "3.13"
+    },
+    "1400": {
+      "id": "I_kwDOS_2DcM8AAAABbueD9Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCwQ",
+      "title": "Wave 2 skill: system-context-diagram \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.01"
+    },
+    "1401": {
+      "id": "I_kwDOS_2DcM8AAAABbueGtA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSCyY",
+      "title": "Wave 2 skill: container-diagram \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.02"
+    },
+    "1402": {
+      "id": "I_kwDOS_2DcM8AAAABbueJwQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSC1Q",
+      "title": "Wave 2 skill: multi-tenancy-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.03"
+    },
+    "1403": {
+      "id": "I_kwDOS_2DcM8AAAABbueNJQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSC4c",
+      "title": "Wave 2 skill: component-diagram \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.04"
+    },
+    "1404": {
+      "id": "I_kwDOS_2DcM8AAAABbueQEA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSC7Q",
+      "title": "Wave 2 skill: integration-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.05"
+    },
+    "1405": {
+      "id": "I_kwDOS_2DcM8AAAABbueSsA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSC9o",
+      "title": "Wave 2 skill: event-driven-patterns \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.06"
+    },
+    "1406": {
+      "id": "I_kwDOS_2DcM8AAAABbueVCA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSDAI",
+      "title": "Wave 2 skill: workflow-orchestration \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.07"
+    },
+    "1407": {
+      "id": "I_kwDOS_2DcM8AAAABbueZ5Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSDEs",
+      "title": "Wave 2 skill: message-broker-selection \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.08"
+    },
+    "1408": {
+      "id": "I_kwDOS_2DcM8AAAABbuechQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSDGg",
+      "title": "Wave 2 skill: api-contract-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.09"
+    },
+    "1409": {
+      "id": "I_kwDOS_2DcM8AAAABbuefXA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSDI4",
+      "title": "Wave 2 skill: grpc-contract-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.10"
+    },
+    "1410": {
+      "id": "I_kwDOS_2DcM8AAAABbueh2g",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSDLI",
+      "title": "Wave 2 skill: api-gateway-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.11"
+    },
+    "1411": {
+      "id": "I_kwDOS_2DcM8AAAABbuelJg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFSDNg",
+      "title": "Wave 2 skill: architecture-evaluation (new) \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": "4.12"
+    },
+    "1423": {
+      "id": "I_kwDOS_2DcM8AAAABb3MQeA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhFawiE",
+      "title": "Wave 2: apply agent-skill practices to ubiquitous-language and subdomain-distillation (Gotchas, validators, loops) + clean re-runs",
+      "sequence": "4.b"
+    },
+    "1451": {
+      "id": "I_kwDOS_2DcM8AAAABiSh3lQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLp3D4",
+      "title": "Wave 3 discovery: audit 24 testing skills against research/",
+      "sequence": ""
+    },
+    "1453": {
+      "id": "I_kwDOS_2DcM8AAAABiTOexg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLqiz4",
+      "title": "Wave 3 pipeline: fix live testing-mechanics defects L1-L5, L9 (D048)",
+      "sequence": ""
+    },
+    "1455": {
+      "id": "I_kwDOS_2DcM8AAAABiTjyqQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq47U",
+      "title": "Wave 3 pipeline 2: test-skill ownership, preloads and configuration keys (D16, L10)",
+      "sequence": ""
+    },
+    "1456": {
+      "id": "I_kwDOS_2DcM8AAAABiTj14Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq498",
+      "title": "Wave 3 research: official documentation for Go test tools",
+      "sequence": ""
+    },
+    "1457": {
+      "id": "I_kwDOS_2DcM8AAAABiTj5Jg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq5Bk",
+      "title": "Wave 3 research: official documentation for Python test tools",
+      "sequence": ""
+    },
+    "1458": {
+      "id": "I_kwDOS_2DcM8AAAABiTj9IQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq5Es",
+      "title": "Wave 3 research: official documentation for front-end test tools",
+      "sequence": ""
+    },
+    "1459": {
+      "id": "I_kwDOS_2DcM8AAAABiTkAQg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq5IY",
+      "title": "Wave 3 research: official documentation for shared test tools",
+      "sequence": ""
+    },
+    "1460": {
+      "id": "I_kwDOS_2DcM8AAAABiTkDxQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq5Kg",
+      "title": "Wave 3 skill: test-pyramid \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1461": {
+      "id": "I_kwDOS_2DcM8AAAABiTkGqg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq5Nc",
+      "title": "Wave 3 skill: example-mapping \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1462": {
+      "id": "I_kwDOS_2DcM8AAAABiTkKsg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq5Q4",
+      "title": "Wave 3 skill: acceptance-criteria \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1463": {
+      "id": "I_kwDOS_2DcM8AAAABiTkOWQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhLq5T0",
+      "title": "Wave 3 skill: bdd-feature-file \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1473": {
+      "id": "I_kwDOS_2DcM8AAAABim-Q4w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhL9nVw",
+      "title": "Wave 3 research: official documentation for a Python Gherkin tool",
+      "sequence": ""
+    },
+    "1474": {
+      "id": "I_kwDOS_2DcM8AAAABim-VLQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhL9nZY",
+      "title": "Wave 3 research: official documentation for WCAG 2.2",
+      "sequence": ""
+    },
+    "1475": {
+      "id": "I_kwDOS_2DcM8AAAABim-YrQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhL9ncg",
+      "title": "Wave 3 skill: test-fixture-design \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1476": {
+      "id": "I_kwDOS_2DcM8AAAABim-cbg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhL9ngk",
+      "title": "Wave 3 skill: mock-generation \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1477": {
+      "id": "I_kwDOS_2DcM8AAAABim-f7Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhL9nkE",
+      "title": "Wave 3: repair the five Python build skills the Python tests depend on (D048.7)",
+      "sequence": ""
+    },
+    "1478": {
+      "id": "I_kwDOS_2DcM8AAAABim-keQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhL9nn4",
+      "title": "Wave 3 skill: go-unit-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1479": {
+      "id": "I_kwDOS_2DcM8AAAABim-orQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhL9nsM",
+      "title": "Wave 3 skill: python-unit-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1487": {
+      "id": "I_kwDOS_2DcM8AAAABi7QIiw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRe2I",
+      "title": "Wave 3 skill: go-integration-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1488": {
+      "id": "I_kwDOS_2DcM8AAAABi7QLKA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRe38",
+      "title": "Wave 3 skill: python-integration-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1489": {
+      "id": "I_kwDOS_2DcM8AAAABi7QN1Q",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRe6o",
+      "title": "Wave 3 skill: go-contract-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1490": {
+      "id": "I_kwDOS_2DcM8AAAABi7QRBQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRe_g",
+      "title": "Wave 3 skill: python-contract-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1491": {
+      "id": "I_kwDOS_2DcM8AAAABi7QUnA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfCA",
+      "title": "Wave 3 skill: go-e2e-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1492": {
+      "id": "I_kwDOS_2DcM8AAAABi7QXzA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfFA",
+      "title": "Wave 3 skill: python-e2e-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1493": {
+      "id": "I_kwDOS_2DcM8AAAABi7Qauw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfIc",
+      "title": "Wave 3 skill: go-load-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1494": {
+      "id": "I_kwDOS_2DcM8AAAABi7QejA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfLg",
+      "title": "Wave 3 skill: python-load-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1495": {
+      "id": "I_kwDOS_2DcM8AAAABi7Qh-w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfO0",
+      "title": "Wave 3 skill: go-chaos-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1496": {
+      "id": "I_kwDOS_2DcM8AAAABi7QkjA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfTI",
+      "title": "Wave 3 skill: python-chaos-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1497": {
+      "id": "I_kwDOS_2DcM8AAAABi7Qo-w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfWw",
+      "title": "Wave 3 skill: go-mutation-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1498": {
+      "id": "I_kwDOS_2DcM8AAAABi7QsSw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfZ8",
+      "title": "Wave 3 skill: python-mutation-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1499": {
+      "id": "I_kwDOS_2DcM8AAAABi7QvKA",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfdQ",
+      "title": "Wave 3 skill: go-performance-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1500": {
+      "id": "I_kwDOS_2DcM8AAAABi7Qx6w",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfg8",
+      "title": "Wave 3 skill: python-performance-test \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1501": {
+      "id": "I_kwDOS_2DcM8AAAABi7Q2Sg",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfnA",
+      "title": "Wave 3 skill: react-component-testing \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1502": {
+      "id": "I_kwDOS_2DcM8AAAABi7Q6qQ",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfps",
+      "title": "Wave 3 skill: react-e2e-testing \u2014 research-grounded rebuild + folder spec + evals",
+      "sequence": ""
+    },
+    "1503": {
+      "id": "I_kwDOS_2DcM8AAAABi7Q99A",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMRfsk",
+      "title": "Wave 3 close-out: recorded follow-ups, agents, catalog, cross-skill checks, PR to main",
+      "sequence": ""
+    },
+    "1507": {
+      "id": "I_kwDOS_2DcM8AAAABi_OzLw",
+      "item_id": "PVTI_lAHOA4gFKc4Bbj6QzhMVaQg",
+      "title": "Wave 3: Python coverage gate lists test-support code (D048, option B); re-evaluate python-unit-test",
+      "sequence": ""
+    }
+  },
+  "executions": {
+    "49": {
+      "branch": "issue-49-create-ddd-agent-handoff-skill",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/51",
+      "status": "in_review"
+    },
+    "50": {
+      "branch": "issue-50-wire-ddd-agent-handoff-into-agents-tests-and-house",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/52",
+      "status": "in_review"
+    },
+    "60": {
+      "branch": "issue-60-create-mvp-subdomain-distillation-skill",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/61",
+      "status": "in_review"
+    },
+    "55": {
+      "branch": "issue-55-write-references-handoff-protocol-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/62",
+      "status": "in_review"
+    },
+    "56": {
+      "branch": "issue-56-write-assets-handoff-record-template-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/64",
+      "status": "in_review"
+    },
+    "57": {
+      "branch": "issue-57-write-references-handoff-worked-examples-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/65",
+      "status": "in_review"
+    },
+    "58": {
+      "branch": "issue-58-rewrite-skill-md-as-a-thin-progressive-disclosure-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/66",
+      "status": "in_review"
+    },
+    "59": {
+      "branch": "issue-59-update-smoke-test-sdlc-context-json-and-changelog-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/67",
+      "status": "in_review"
+    },
+    "69": {
+      "branch": "issue-69-create-mvp-miro-board-notation-skill",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/76",
+      "status": "in_review"
+    },
+    "71": {
+      "branch": "issue-71-write-references-security-sensitive-subdomains-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/77",
+      "status": "in_review"
+    },
+    "70": {
+      "branch": "issue-70-write-references-classification-techniques-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/78",
+      "status": "in_review"
+    },
+    "72": {
+      "branch": "issue-72-write-references-legacy-transformation-guidance-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/79",
+      "status": "in_review"
+    },
+    "73": {
+      "branch": "issue-73-write-assets-subdomain-classification-canvas-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/80",
+      "status": "in_review"
+    },
+    "74": {
+      "branch": "issue-74-rewrite-skill-md-as-a-thin-progressive-disclosure-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/81",
+      "status": "in_review"
+    },
+    "75": {
+      "branch": "issue-75-update-smoke-test-sdlc-context-json-and-changelog-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/82",
+      "status": "in_review"
+    },
+    "90": {
+      "branch": "issue-90-create-microfrontend-architecture-skill",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/99",
+      "status": "in_review"
+    },
+    "91": {
+      "branch": "issue-91-create-css-styling-strategy-skill",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/100",
+      "status": "in_review"
+    },
+    "92": {
+      "branch": "issue-92-update-react-project-structure-for-shell-remotes-l",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/101",
+      "status": "in_review"
+    },
+    "93": {
+      "branch": "issue-93-update-react-routing-for-cross-remote-composition",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/102",
+      "status": "in_review"
+    },
+    "94": {
+      "branch": "issue-94-update-react-state-management-for-cross-fragment-s",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/103",
+      "status": "in_review"
+    },
+    "95": {
+      "branch": "issue-95-update-ui-component-spec-for-shared-vs-local-compo",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/104",
+      "status": "in_review"
+    },
+    "96": {
+      "branch": "issue-96-update-agents-frontend-engineer-md-for-microfronte",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/105",
+      "status": "in_review"
+    },
+    "97": {
+      "branch": "issue-97-update-agents-ux-architect-md-for-shared-vs-local-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/106",
+      "status": "in_review"
+    },
+    "98": {
+      "branch": "issue-98-update-smoke-tests-sdlc-context-json-and-changelog",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/107",
+      "status": "in_review"
+    },
+    "112": {
+      "branch": "issue-112-add-exploratory-testing-component-to-uat-plan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/116",
+      "status": "in_review"
+    },
+    "113": {
+      "branch": "issue-113-update-requirements-analyst-md-and-test-strategist",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/117",
+      "status": "in_review"
+    },
+    "114": {
+      "branch": "issue-114-refactor-acceptance-sign-off-for-exploratory-findi",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/118",
+      "status": "in_review"
+    },
+    "115": {
+      "branch": "issue-115-update-smoke-tests-sdlc-context-json-and-changelog",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/119",
+      "status": "in_review"
+    },
+    "122": {
+      "branch": "issue-122-research-secure-by-design-into-research-security",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/125",
+      "status": "in_review"
+    },
+    "123": {
+      "branch": "issue-123-refactor-access-control-model-using-secure-by-desi",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/126",
+      "status": "in_review"
+    },
+    "124": {
+      "branch": "issue-124-update-smoke-test-sdlc-context-json-and-changelog-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/127",
+      "status": "in_review"
+    },
+    "130": {
+      "branch": "issue-130-write-skill-authoring-standards-skill-content",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/137",
+      "status": "in_review",
+      "base": null
+    },
+    "131": {
+      "branch": "issue-131-amend-claude-md-with-the-new-skill-authoring-secti",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/138",
+      "status": "in_review",
+      "base": null
+    },
+    "132": {
+      "branch": "issue-132-rewrite-adr-authoring-skill-md-body-and-references",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/140",
+      "status": "in_review",
+      "base": null
+    },
+    "133": {
+      "branch": "issue-133-build-assets-adr-template-md-and-scripts-scaffold-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/141",
+      "status": "in_review",
+      "base": null
+    },
+    "134": {
+      "branch": "issue-134-build-scripts-validate-adr-sh",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/142",
+      "status": "in_review",
+      "base": null
+    },
+    "135": {
+      "branch": "issue-135-update-skill-contract-tests-for-both-skills",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/143",
+      "status": "in_review",
+      "base": null
+    },
+    "136": {
+      "branch": "issue-136-update-sdlc-context-json-and-changelog-md",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/144",
+      "status": "in_review",
+      "base": null
+    },
+    "146": {
+      "branch": "issue-146-rewrite-acceptance-criteria-skill-md-content-per-t",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/150",
+      "status": "done",
+      "base": "issue-145-refactor-acceptance-criteria"
+    },
+    "147": {
+      "branch": "issue-147-build-assets-acceptance-criteria-template-md-and-s",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/151",
+      "status": "done",
+      "base": "issue-145-refactor-acceptance-criteria"
+    },
+    "148": {
+      "branch": "issue-148-update-acceptance-criteria-contract-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/152",
+      "status": "done",
+      "base": "issue-145-refactor-acceptance-criteria"
+    },
+    "149": {
+      "branch": "issue-149-update-sdlc-context-json-and-changelog-md-for-the-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/153",
+      "status": "done",
+      "base": "issue-145-refactor-acceptance-criteria"
+    },
+    "156": {
+      "branch": "issue-156-rewrite-acceptance-sign-off-skill-md-content-per-t",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/160",
+      "status": "done",
+      "base": "issue-155-refactor-acceptance-sign-off"
+    },
+    "157": {
+      "branch": "issue-157-build-assets-sign-off-template-md-and-scripts-scaf",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/161",
+      "status": "done",
+      "base": "issue-155-refactor-acceptance-sign-off"
+    },
+    "158": {
+      "branch": "issue-158-update-acceptance-sign-off-contract-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/162",
+      "status": "done",
+      "base": "issue-155-refactor-acceptance-sign-off"
+    },
+    "159": {
+      "branch": "issue-159-update-sdlc-context-json-and-changelog-md-for-the-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/163",
+      "status": "done",
+      "base": "issue-155-refactor-acceptance-sign-off"
+    },
+    "166": {
+      "branch": "issue-166-rewrite-access-control-model-skill-md-content-per-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/170",
+      "status": "done",
+      "base": "issue-165-refactor-access-control-model"
+    },
+    "167": {
+      "branch": "issue-167-build-assets-access-control-model-template-md-and-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/171",
+      "status": "done",
+      "base": "issue-165-refactor-access-control-model"
+    },
+    "168": {
+      "branch": "issue-168-update-access-control-model-contract-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/172",
+      "status": "done",
+      "base": "issue-165-refactor-access-control-model"
+    },
+    "169": {
+      "branch": "issue-169-update-sdlc-context-json-and-changelog-md-for-the-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/173",
+      "status": "done",
+      "base": "issue-165-refactor-access-control-model"
+    },
+    "176": {
+      "branch": "issue-176-research-eric-evans-domain-driven-design-into-rese",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/187",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "177": {
+      "branch": "issue-177-research-vaughn-vernon-s-implementing-domain-drive",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/188",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "178": {
+      "branch": "issue-178-research-vlad-khononov-s-learning-domain-driven-de",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/189",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "179": {
+      "branch": "issue-179-design-the-aggregate-design-skill-architecture-thi",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/190",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "180": {
+      "branch": "issue-180-write-references-invariants-and-consistency-bounda",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/191",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "181": {
+      "branch": "issue-181-write-references-cross-aggregate-coordination-and-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/192",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "182": {
+      "branch": "issue-182-write-references-go-implementation-patterns-md-and",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/193",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "183": {
+      "branch": "issue-183-write-references-decision-trees-and-worksheets-md-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/194",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "184": {
+      "branch": "issue-184-build-assets-aggregate-design-template-md-and-scri",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/195",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "185": {
+      "branch": "issue-185-update-aggregate-design-contract-tests",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/196",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "186": {
+      "branch": "issue-186-update-sdlc-context-json-and-changelog-md-for-the-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/197",
+      "status": "done",
+      "base": "issue-175-rebuild-aggregate-design"
+    },
+    "200": {
+      "branch": "issue-200-discovery-research-google-s-site-reliability-engin",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/202",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "201": {
+      "branch": "issue-201-discovery-confirm-existing-devops-and-delivery-res",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/203",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "204": {
+      "branch": "issue-204-blueprint-alerting-rules-design-multi-file-archite",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/210",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "205": {
+      "branch": "issue-205-content-burn-rate-derivation-and-four-golden-signa",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/211",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "206": {
+      "branch": "issue-206-content-toil-escalation-and-postmortem-linkage-ref",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/212",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "207": {
+      "branch": "issue-207-scripts-and-assets-for-alerting-rules-design",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/213",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "208": {
+      "branch": "issue-208-tests-for-alerting-rules-design-scripts-and-skill-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/214",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "209": {
+      "branch": "issue-209-housekeeping-glossary-terms-sdlc-context-json-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/215",
+      "status": "done",
+      "base": "issue-199-alerting-rules-design"
+    },
+    "218": {
+      "branch": "issue-218-discovery-research-lean-analytics-croll-yoskovitz-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/220",
+      "status": "done",
+      "base": "issue-217-analytics-requirements"
+    },
+    "219": {
+      "branch": "issue-219-discovery-confirm-existing-research-coverage-for-a",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/221",
+      "status": "done",
+      "base": "issue-217-analytics-requirements"
+    },
+    "222": {
+      "branch": "issue-222-rewrite-analytics-requirements-skill-md-content-pe",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/226",
+      "status": "done",
+      "base": "issue-217-analytics-requirements"
+    },
+    "223": {
+      "branch": "issue-223-build-assets-analytics-requirements-template-md-an",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/227",
+      "status": "done",
+      "base": "issue-217-analytics-requirements"
+    },
+    "224": {
+      "branch": "issue-224-tests-for-analytics-requirements-scripts-and-skill",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/228",
+      "status": "done",
+      "base": "issue-217-analytics-requirements"
+    },
+    "225": {
+      "branch": "issue-225-housekeeping-glossary-term-sdlc-context-json-chang",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/229",
+      "status": "done",
+      "base": "issue-217-analytics-requirements"
+    },
+    "232": {
+      "branch": "issue-232-discovery-research-api-design-patterns-jj-geewax-f",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/234",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "233": {
+      "branch": "issue-233-discovery-confirm-existing-research-coverage-for-a",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/235",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "236": {
+      "branch": "issue-236-blueprint-api-contract-design-multi-file-architect",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/242",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "237": {
+      "branch": "issue-237-content-advanced-resource-patterns-reference-custo",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/243",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "238": {
+      "branch": "issue-238-content-openapi-spec-structure-example-and-output-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/244",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "239": {
+      "branch": "issue-239-build-assets-api-contract-summary-template-md-and-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/245",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "240": {
+      "branch": "issue-240-tests-for-api-contract-design-scripts-and-skill-co",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/246",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "241": {
+      "branch": "issue-241-housekeeping-glossary-terms-sdlc-context-json-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/247",
+      "status": "done",
+      "base": "issue-231-api-contract-design"
+    },
+    "252": {
+      "branch": "issue-252-confirm-research-coverage-for-artifact-manifest-s-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/254",
+      "status": "done",
+      "base": "issue-251-artifact-manifest"
+    },
+    "255": {
+      "branch": "issue-255-blueprint-artifact-manifest-thin-skill-md-stub-ref",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/260",
+      "status": "done",
+      "base": "issue-251-artifact-manifest"
+    },
+    "256": {
+      "branch": "issue-256-content-artifact-type-catalog-and-manifest-worked-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/261",
+      "status": "done",
+      "base": "issue-251-artifact-manifest"
+    },
+    "257": {
+      "branch": "issue-257-asset-manifest-instance-template-json",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/262",
+      "status": "done",
+      "base": "issue-251-artifact-manifest"
+    },
+    "258": {
+      "branch": "issue-258-tests-artifact-manifest-scripts-and-skill-contract",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/263",
+      "status": "done",
+      "base": "issue-251-artifact-manifest"
+    },
+    "259": {
+      "branch": "issue-259-housekeeping-glossary-terms-sdlc-context-json-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/264",
+      "status": "done",
+      "base": "issue-251-artifact-manifest"
+    },
+    "268": {
+      "branch": "issue-268-confirm-and-consolidate-existing-research-coverage",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/269",
+      "status": "done",
+      "base": "issue-266-bdd-feature-file"
+    },
+    "267": {
+      "branch": "issue-267-research-gojko-adzic-s-specification-by-example-fo",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/270",
+      "status": "done",
+      "base": "issue-266-bdd-feature-file"
+    },
+    "271": {
+      "branch": "issue-271-blueprint-bdd-feature-file-thin-skill-md-stub-refe",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/276",
+      "status": "done",
+      "base": "issue-266-bdd-feature-file"
+    },
+    "272": {
+      "branch": "issue-272-content-collaborative-specification-and-living-doc",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/277",
+      "status": "done",
+      "base": "issue-266-bdd-feature-file"
+    },
+    "273": {
+      "branch": "issue-273-scripts-and-assets-bdd-feature-file-scaffold-valid",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/278",
+      "status": "done",
+      "base": "issue-266-bdd-feature-file"
+    },
+    "274": {
+      "branch": "issue-274-tests-bdd-feature-file-scripts-and-skill-contract",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/279",
+      "status": "done",
+      "base": "issue-266-bdd-feature-file"
+    },
+    "275": {
+      "branch": "issue-275-housekeeping-glossary-terms-sdlc-context-json-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/280",
+      "status": "done",
+      "base": "issue-266-bdd-feature-file"
+    },
+    "284": {
+      "branch": "issue-284-confirm-and-consolidate-existing-research-coverage",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/285",
+      "status": "done",
+      "base": "issue-282-beta-program-design"
+    },
+    "283": {
+      "branch": "issue-283-research-steve-blank-s-customer-development-method",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/286",
+      "status": "done",
+      "base": "issue-282-beta-program-design"
+    },
+    "287": {
+      "branch": "issue-287-blueprint-beta-program-design-thin-skill-md-stub-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/292",
+      "status": "done",
+      "base": "issue-282-beta-program-design"
+    },
+    "288": {
+      "branch": "issue-288-content-customer-development-and-graduation-discip",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/293",
+      "status": "done",
+      "base": "issue-282-beta-program-design"
+    },
+    "289": {
+      "branch": "issue-289-scripts-and-assets-beta-program-design-scaffold-va",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/294",
+      "status": "done",
+      "base": "issue-282-beta-program-design"
+    },
+    "290": {
+      "branch": "issue-290-tests-beta-program-design-scripts-and-skill-contra",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/295",
+      "status": "done",
+      "base": "issue-282-beta-program-design"
+    },
+    "291": {
+      "branch": "issue-291-housekeeping-glossary-terms-sdlc-context-json-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/296",
+      "status": "done",
+      "base": "issue-282-beta-program-design"
+    },
+    "303": {
+      "branch": "issue-303-confirm-and-consolidate-existing-go-research-cover",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/304",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "299": {
+      "branch": "issue-299-research-the-go-programming-language-donovan-kerni",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/305",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "300": {
+      "branch": "issue-300-research-100-go-mistakes-and-how-to-avoid-them-har",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/306",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "301": {
+      "branch": "issue-301-research-concurrency-in-go-cox-buday-for-go-concur",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/307",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "302": {
+      "branch": "issue-302-research-let-s-go-let-s-go-further-edwards-for-cor",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/308",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "309": {
+      "branch": "issue-309-core-service-group-go-project-structure-go-service",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/317",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "310": {
+      "branch": "issue-310-domain-data-group-go-domain-model-go-repository-pa",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/318",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "311": {
+      "branch": "issue-311-event-driven-group-go-event-publisher-go-event-con",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/319",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "312": {
+      "branch": "issue-312-cross-cutting-group-go-error-handling-go-concurren",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/320",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "313": {
+      "branch": "issue-313-tooling-group-go-dockerfile-go-makefile-go-openapi",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/321",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "314": {
+      "branch": "issue-314-testing-part-1-group-go-unit-test-go-integration-t",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/322",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "315": {
+      "branch": "issue-315-testing-part-2-group-go-e2e-test-go-performance-te",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/323",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "316": {
+      "branch": "issue-316-housekeeping-glossary-terms-sdlc-context-json-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/324",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "329": {
+      "branch": "issue-329-confirm-and-consolidate-react-research-findings-ac",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/330",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "327": {
+      "branch": "issue-327-research-learning-react-banks-porcello-for-all-rea",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/331",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "328": {
+      "branch": "issue-328-research-react-design-patterns-and-best-practices-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/332",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "333": {
+      "branch": "issue-333-foundations-group-react-project-structure-react-ro",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/338",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "334": {
+      "branch": "issue-334-component-testing-group-react-component-design-rea",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/339",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "335": {
+      "branch": "issue-335-data-viz-group-react-api-client-react-dashboard-co",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/340",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "336": {
+      "branch": "issue-336-cross-cutting-group-react-accessibility-react-obse",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/341",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "337": {
+      "branch": "issue-337-housekeeping-glossary-terms-sdlc-context-json-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/342",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "344": {
+      "branch": "issue-344-deep-rebuild-go-project-structure",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/369",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "345": {
+      "branch": "issue-345-deep-rebuild-go-service-skeleton",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/370",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "346": {
+      "branch": "issue-346-deep-rebuild-go-chi-handler",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/371",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "347": {
+      "branch": "issue-347-deep-rebuild-go-domain-model",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/372",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "348": {
+      "branch": "issue-348-deep-rebuild-go-repository-pattern",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/373",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "349": {
+      "branch": "issue-349-deep-rebuild-go-event-publisher",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/374",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "350": {
+      "branch": "issue-350-deep-rebuild-go-event-consumer",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/375",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "351": {
+      "branch": "issue-351-deep-rebuild-go-service-layer",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/376",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "352": {
+      "branch": "issue-352-deep-rebuild-go-middleware",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/377",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "353": {
+      "branch": "issue-353-deep-rebuild-go-migration",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/378",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "354": {
+      "branch": "issue-354-deep-rebuild-go-dockerfile",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/379",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "355": {
+      "branch": "issue-355-deep-rebuild-go-makefile",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/380",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "356": {
+      "branch": "issue-356-deep-rebuild-go-openapi-codegen",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/381",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "357": {
+      "branch": "issue-357-deep-rebuild-go-concurrency-patterns",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/382",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "358": {
+      "branch": "issue-358-deep-rebuild-go-error-handling",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/383",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "359": {
+      "branch": "issue-359-deep-rebuild-go-performance-optimization",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/384",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "360": {
+      "branch": "issue-360-deep-rebuild-go-unit-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/385",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "361": {
+      "branch": "issue-361-deep-rebuild-go-integration-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/386",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "362": {
+      "branch": "issue-362-deep-rebuild-go-contract-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/387",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "363": {
+      "branch": "issue-363-deep-rebuild-go-mutation-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/388",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "364": {
+      "branch": "issue-364-deep-rebuild-go-e2e-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/389",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "365": {
+      "branch": "issue-365-deep-rebuild-go-performance-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/390",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "366": {
+      "branch": "issue-366-deep-rebuild-go-load-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/391",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "367": {
+      "branch": "issue-367-deep-rebuild-go-chaos-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/392",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "368": {
+      "branch": "issue-368-housekeeping-go-deep-rebuild-glossary-context-chan",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/393",
+      "status": "done",
+      "base": "issue-298-go-skills"
+    },
+    "394": {
+      "branch": "issue-394-deep-rebuild-react-project-structure",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/408",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "395": {
+      "branch": "issue-395-deep-rebuild-react-component-design",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/409",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "396": {
+      "branch": "issue-396-deep-rebuild-react-state-management",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/410",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "397": {
+      "branch": "issue-397-deep-rebuild-react-api-client",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/411",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "398": {
+      "branch": "issue-398-deep-rebuild-react-routing",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/412",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "399": {
+      "branch": "issue-399-deep-rebuild-react-graph-visualization",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/413",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "400": {
+      "branch": "issue-400-deep-rebuild-react-dashboard-components",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/414",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "401": {
+      "branch": "issue-401-deep-rebuild-react-accessibility",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/415",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "402": {
+      "branch": "issue-402-deep-rebuild-react-dockerfile",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/416",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "403": {
+      "branch": "issue-403-deep-rebuild-react-component-testing",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/417",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "404": {
+      "branch": "issue-404-deep-rebuild-react-e2e-testing",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/418",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "405": {
+      "branch": "issue-405-deep-rebuild-react-performance-optimization",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/419",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "406": {
+      "branch": "issue-406-deep-rebuild-react-observability",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/420",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "407": {
+      "branch": "issue-407-housekeeping-react-deep-rebuild-glossary-context-c",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/421",
+      "status": "done",
+      "base": "issue-326-react-skills"
+    },
+    "422": {
+      "status": "in_review"
+    },
+    "425": {
+      "branch": "issue-425-discovery-test-pyramid-research-synthesis-what-the",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/426",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "427": {
+      "branch": "issue-427-blueprint-rewrite-test-pyramid-skill-md-to-thin-pr",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/432",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "428": {
+      "branch": "issue-428-content-fill-references-test-strategy-template-md-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/433",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "430": {
+      "branch": "issue-430-tests-write-tests-skills-test-pyramid-contract-sh-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/434",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "431": {
+      "branch": "issue-431-housekeeping-sdlc-context-json-and-changelog-md-fo",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/435",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "436": {
+      "branch": "issue-436-discovery-gap-analysis-for-test-fixture-design-v1-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/437",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "439": {
+      "branch": "issue-439-blueprint-rewrite-test-fixture-design-skill-md-to-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/443",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "440": {
+      "branch": "issue-440-content-fill-references-fixture-patterns-catalogue",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/444",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "441": {
+      "branch": "issue-441-tests-write-tests-skills-test-fixture-design-contr",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/445",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "442": {
+      "branch": "issue-442-housekeeping-sdlc-context-json-chunk-50-and-change",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/446",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "447": {
+      "branch": "issue-447-mock-generation-discovery-gap-analysis-against-ski",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/448",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "450": {
+      "branch": "issue-450-mock-generation-architecture-blueprint-thin-skill-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/455",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "451": {
+      "branch": "issue-451-mock-generation-content-writing-fill-references-fi",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/456",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "452": {
+      "branch": "issue-452-mock-generation-tests-write-contract-test-probing-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/457",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "453": {
+      "branch": "issue-453-mock-generation-housekeeping-sdlc-context-json-chu",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/458",
+      "status": "done",
+      "base": "issue-424-test-engineering-rebuild"
+    },
+    "1225": {
+      "branch": "issue-1225-a2-sources-frontmatter-field-research-grounding",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1231",
+      "status": "done",
+      "base": "fresh-eyes/phase-a-standard"
+    },
+    "1226": {
+      "branch": "issue-1226-a4-derived-has-folder-has-evals-facts",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1232",
+      "status": "done",
+      "base": "fresh-eyes/phase-a-standard"
+    },
+    "1227": {
+      "branch": "issue-1227-a3-lint-skill-layout-py-folder-spec-linter",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1233",
+      "status": "done",
+      "base": "fresh-eyes/phase-a-standard"
+    },
+    "1228": {
+      "branch": "issue-1228-a6-evals-runner-claude-plugin-eval-root-evals-skil",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1234",
+      "status": "done",
+      "base": "fresh-eyes/phase-a-standard"
+    },
+    "1229": {
+      "branch": "issue-1229-a5-migration-mechanics-move-script-scaffold-repoin",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1235",
+      "status": "done",
+      "base": "fresh-eyes/phase-a-standard"
+    },
+    "1230": {
+      "branch": "issue-1230-a1-codify-the-9-folder-spec-skill-authoring-standa",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1236",
+      "status": "done",
+      "base": "fresh-eyes/phase-a-standard"
+    },
+    "1239": {
+      "branch": "issue-1239-pilot-vision-statement-research-grounded-rebuild-f",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1242",
+      "status": "done",
+      "base": "fresh-eyes/phase-b-pilot"
+    },
+    "1240": {
+      "branch": "issue-1240-pilot-adr-authoring-research-augmentation-full-fol",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1243",
+      "status": "done",
+      "base": "fresh-eyes/phase-b-pilot"
+    },
+    "1241": {
+      "branch": "issue-1241-pilot-go-repository-pattern-research-augmentation-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1244",
+      "status": "done",
+      "base": "fresh-eyes/phase-b-pilot"
+    },
+    "1267": {
+      "branch": "issue-1267-discovery-confirm-insights-chart-capabilities-on-s",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1268",
+      "status": "done",
+      "base": "issue-1266-project-insights"
+    },
+    "1269": {
+      "branch": "issue-1269-insights-fields-create-14-project-fields-backfill-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1275",
+      "status": "done",
+      "base": "issue-1266-project-insights"
+    },
+    "1270": {
+      "branch": "issue-1270-ghp-insights-py-derivation-rules-unit-tests",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1276",
+      "status": "done",
+      "base": "issue-1266-project-insights"
+    },
+    "1271": {
+      "branch": "issue-1271-backfill-insights-py-dry-run-report-then-apply",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1277",
+      "status": "done",
+      "base": "issue-1266-project-insights"
+    },
+    "1272": {
+      "branch": "issue-1272-go-forward-auto-fill-in-plan-exec-tooling",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1278",
+      "status": "done",
+      "base": "issue-1266-project-insights"
+    },
+    "1273": {
+      "branch": "issue-1273-build-the-15-insights-charts-in-the-ui",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1279",
+      "status": "done",
+      "base": "issue-1266-project-insights"
+    },
+    "1274": {
+      "branch": "issue-1274-docs-readme-investigation-md-chart-guide-changelog",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1280",
+      "status": "done",
+      "base": "issue-1266-project-insights"
+    },
+    "1293": {
+      "branch": "issue-1293-wave-1-discovery-audit-21-strategy-discovery-valid",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1294",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1295": {
+      "branch": "issue-1295-wave-1-research-business-model-generation-value-pr",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1312",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1297": {
+      "branch": "issue-1297-wave-1-research-running-lean-ash-maurya",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1313",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1298": {
+      "branch": "issue-1298-wave-1-research-measure-what-matters-john-doerr",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1314",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1299": {
+      "branch": "issue-1299-wave-1-research-good-strategy-bad-strategy-richard",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1315",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1300": {
+      "branch": "issue-1300-wave-1-research-product-roadmaps-relaunched-c-todd",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1316",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1301": {
+      "branch": "issue-1301-wave-1-research-impact-mapping-gojko-adzic",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1317",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1302": {
+      "branch": "issue-1302-wave-1-research-competing-against-luck-clayton-chr",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1318",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1303": {
+      "branch": "issue-1303-wave-1-research-about-face-the-inmates-are-running",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1319",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1304": {
+      "branch": "issue-1304-wave-1-research-continuous-discovery-habits-teresa",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1320",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1305": {
+      "branch": "issue-1305-wave-1-research-software-requirements-3rd-ed-karl-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1321",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1306": {
+      "branch": "issue-1306-wave-1-research-software-architecture-in-practice-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1322",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1307": {
+      "branch": "issue-1307-wave-1-research-dsdm-agile-project-framework-handb",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1323",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1308": {
+      "branch": "issue-1308-wave-1-research-the-challenger-customer-brent-adam",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1324",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1309": {
+      "branch": "issue-1309-wave-1-research-monetizing-innovation-madhavan-ram",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1325",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1310": {
+      "branch": "issue-1310-wave-1-research-user-acceptance-testing-a-step-by-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1326",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1327": {
+      "branch": "issue-1327-wave-1-pipeline-strategy-and-ideate-order-lean-pro",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1351",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1328": {
+      "branch": "issue-1328-wave-1-skill-strategy-kernel-new-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1352",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1329": {
+      "branch": "issue-1329-wave-1-skill-okr-authoring-research-grounded-rebui",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1353",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1330": {
+      "branch": "issue-1330-wave-1-skill-roadmap-authoring-research-grounded-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1354",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1331": {
+      "branch": "issue-1331-wave-1-skill-business-model-canvas-research-ground",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1355",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1332": {
+      "branch": "issue-1332-wave-1-skill-competitive-analysis-research-grounde",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1356",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1333": {
+      "branch": "issue-1333-wave-1-skill-gtm-strategy-research-grounded-rebuil",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1357",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1334": {
+      "branch": "issue-1334-wave-1-skill-pricing-and-packaging-new-research-gr",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1358",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1335": {
+      "branch": "issue-1335-wave-1-skill-stakeholder-mapping-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1359",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1336": {
+      "branch": "issue-1336-wave-1-skill-user-persona-research-grounded-rebuil",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1360",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1337": {
+      "branch": "issue-1337-wave-1-skill-jtbd-analysis-research-grounded-rebui",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1361",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1338": {
+      "branch": "issue-1338-wave-1-skill-opportunity-solution-tree-new-researc",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1362",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1339": {
+      "branch": "issue-1339-wave-1-skill-impact-mapping-research-grounded-rebu",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1363",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1340": {
+      "branch": "issue-1340-wave-1-skill-requirements-analysis-research-ground",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1364",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1341": {
+      "branch": "issue-1341-wave-1-skill-nfr-specification-research-grounded-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1365",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1342": {
+      "branch": "issue-1342-wave-1-skill-epic-definition-research-grounded-reb",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1366",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1343": {
+      "branch": "issue-1343-wave-1-skill-story-mapping-research-grounded-rebui",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1367",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1344": {
+      "branch": "issue-1344-wave-1-skill-user-story-writing-research-grounded-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1368",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1345": {
+      "branch": "issue-1345-wave-1-skill-moscow-prioritization-research-ground",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1369",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1346": {
+      "branch": "issue-1346-wave-1-skill-uat-plan-research-grounded-rebuild-fo",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1370",
+      "status": "done",
+      "base": "fresh-eyes/wave-1-strategy-discovery-validation"
+    },
+    "1347": {
+      "branch": "issue-1347-wave-1-skill-uat-scenario-research-grounded-rebuil",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1371",
+      "status": "in_progress",
+      "base": null
+    },
+    "1348": {
+      "branch": "issue-1348-wave-1-skill-acceptance-sign-off-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1372",
+      "status": "in_progress",
+      "base": null
+    },
+    "1349": {
+      "branch": "issue-1349-wave-1-skill-beta-program-design-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1373",
+      "status": "in_progress",
+      "base": null
+    },
+    "1350": {
+      "branch": "issue-1350-wave-1-skill-feedback-template-research-grounded-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1374",
+      "status": "in_progress",
+      "base": null
+    },
+    "1377": {
+      "branch": "issue-1377-wave-2-discovery-audit-25-domain-modeling-architec",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1378",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1379": {
+      "branch": "issue-1379-wave-2-research-strategic-ddd-evans-part-iv-vernon",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1412",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1380": {
+      "branch": "issue-1380-wave-2-research-introducing-eventstorming-by-alber",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1413",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1381": {
+      "branch": "issue-1381-wave-2-research-building-multi-tenant-saas-archite",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1414",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1382": {
+      "branch": "issue-1382-wave-2-research-domain-storytelling-by-stefan-hofe",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1415",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1383": {
+      "branch": "issue-1383-wave-2-research-the-c4-model-c4model-com-and-softw",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1416",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1384": {
+      "branch": "issue-1384-wave-2-research-versioning-in-an-event-sourced-sys",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1417",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1385": {
+      "branch": "issue-1385-wave-2-research-the-cloudevents-1-0-specification-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1418",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1386": {
+      "branch": "issue-1386-wave-2-pipeline-design-phase-order-ownership-and-p",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1419",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1387": {
+      "branch": "issue-1387-wave-2-skill-ubiquitous-language-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1420",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1388": {
+      "branch": "issue-1388-wave-2-skill-subdomain-distillation-research-groun",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1421",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1389": {
+      "branch": "issue-1389-wave-2-skill-event-storming-facilitation-research-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1422",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1423": {
+      "branch": "issue-1423-wave-2-apply-agent-skill-practices-to-ubiquitous-l",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1424",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1390": {
+      "branch": "issue-1390-wave-2-skill-domain-storytelling-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1425",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1391": {
+      "branch": "issue-1391-wave-2-skill-bounded-context-mapping-research-grou",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1426",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1392": {
+      "branch": "issue-1392-wave-2-skill-context-map-patterns-research-grounde",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1427",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1393": {
+      "branch": "issue-1393-wave-2-skill-aggregate-design-research-grounded-re",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1428",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1394": {
+      "branch": "issue-1394-wave-2-skill-event-schema-design-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1429",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1395": {
+      "branch": "issue-1395-wave-2-skill-domain-event-catalog-research-grounde",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1430",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1396": {
+      "branch": "issue-1396-wave-2-skill-command-catalog-research-grounded-reb",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1431",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1397": {
+      "branch": "issue-1397-wave-2-skill-cqrs-pattern-research-grounded-rebuil",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1432",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1398": {
+      "branch": "issue-1398-wave-2-skill-read-model-design-research-grounded-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1433",
+      "status": "done",
+      "base": null
+    },
+    "1399": {
+      "branch": "issue-1399-wave-2-skill-ddd-agent-handoff-research-grounded-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1434",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1400": {
+      "branch": "issue-1400-wave-2-skill-system-context-diagram-research-groun",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1435",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1401": {
+      "branch": "issue-1401-wave-2-skill-container-diagram-research-grounded-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1436",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1402": {
+      "branch": "issue-1402-wave-2-skill-multi-tenancy-design-research-grounde",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1437",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1403": {
+      "branch": "issue-1403-wave-2-skill-component-diagram-research-grounded-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1439",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1404": {
+      "branch": "issue-1404-wave-2-skill-integration-design-research-grounded-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1440",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1405": {
+      "branch": "issue-1405-wave-2-skill-event-driven-patterns-research-ground",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1441",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1406": {
+      "branch": "issue-1406-wave-2-skill-workflow-orchestration-research-groun",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1442",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1407": {
+      "branch": "issue-1407-wave-2-skill-message-broker-selection-research-gro",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1443",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1408": {
+      "branch": "issue-1408-wave-2-skill-api-contract-design-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1444",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1409": {
+      "branch": "issue-1409-wave-2-skill-grpc-contract-design-research-grounde",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1445",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1410": {
+      "branch": "issue-1410-wave-2-skill-api-gateway-design-research-grounded-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1446",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1411": {
+      "branch": "issue-1411-wave-2-skill-architecture-evaluation-new-research-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1447",
+      "status": "done",
+      "base": "fresh-eyes/wave-2-domain-modeling-architecture"
+    },
+    "1438": {
+      "branch": "issue-1438-remove-per-tenant-stamp-assumptions-from-platform-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1449",
+      "status": "in_review",
+      "base": null
+    },
+    "1451": {
+      "branch": "issue-1451-wave-3-discovery-audit-24-testing-skills-against-r",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1452",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1453": {
+      "branch": "issue-1453-wave-3-pipeline-fix-live-testing-mechanics-defects",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1454",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1455": {
+      "branch": "issue-1455-wave-3-pipeline-2-test-skill-ownership-preloads-an",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1464",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1459": {
+      "branch": "issue-1459-wave-3-research-official-documentation-for-shared-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1465",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1456": {
+      "branch": "issue-1456-wave-3-research-official-documentation-for-go-test",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1466",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1457": {
+      "branch": "issue-1457-wave-3-research-official-documentation-for-python-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1467",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1458": {
+      "branch": "issue-1458-wave-3-research-official-documentation-for-front-e",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1468",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1460": {
+      "branch": "issue-1460-wave-3-skill-test-pyramid-research-grounded-rebuil",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1469",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1461": {
+      "branch": "issue-1461-wave-3-skill-example-mapping-research-grounded-reb",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1470",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1462": {
+      "branch": "issue-1462-wave-3-skill-acceptance-criteria-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1471",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1463": {
+      "branch": "issue-1463-wave-3-skill-bdd-feature-file-research-grounded-re",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1472",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1473": {
+      "branch": "issue-1473-wave-3-research-official-documentation-for-a-pytho",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1480",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1474": {
+      "branch": "issue-1474-wave-3-research-official-documentation-for-wcag-2-",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1481",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1475": {
+      "branch": "issue-1475-wave-3-skill-test-fixture-design-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1482",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1476": {
+      "branch": "issue-1476-wave-3-skill-mock-generation-research-grounded-reb",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1483",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1477": {
+      "branch": "issue-1477-wave-3-repair-the-five-python-build-skills-the-pyt",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1484",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1478": {
+      "branch": "issue-1478-wave-3-skill-go-unit-test-research-grounded-rebuil",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1485",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1479": {
+      "branch": "issue-1479-wave-3-skill-python-unit-test-research-grounded-re",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1486",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1487": {
+      "branch": "issue-1487-wave-3-skill-go-integration-test-research-grounded",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1504",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1488": {
+      "branch": "issue-1488-wave-3-skill-python-integration-test-research-grou",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1505",
+      "status": "done",
+      "base": "fresh-eyes/wave-3-testing"
+    },
+    "1489": {
+      "branch": "issue-1489-wave-3-skill-go-contract-test-research-grounded-re",
+      "pr_url": "https://github.com/shafibabar/SDLC-Artifact-Factory/pull/1506",
+      "status": "in_progress",
+      "base": "fresh-eyes/wave-3-testing"
+    }
+  }
+}
