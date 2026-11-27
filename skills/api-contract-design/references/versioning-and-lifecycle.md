@@ -12,6 +12,7 @@ Reference for `api-contract-design` step 8. Grounded in Newman (*Building Micros
 | Removing a response field | breaking | a new major version |
 | Renaming a field, or changing its type | breaking | a new major version |
 | Removing an endpoint | breaking | a new major version |
+| Removing a documented error response | breaking | a new major version |
 | Making an optional request field required | breaking | a new major version |
 
 Prefer additive evolution; a new version is a last resort, because every version is a contract to run and support.

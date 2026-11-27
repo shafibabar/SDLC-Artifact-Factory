@@ -15,7 +15,7 @@ description: >
   changing an API contract, adding an endpoint, removing a field or
   deprecating a version. Internal service-to-service calls may be
   grpc-contract-design instead. Used by enterprise-architect.
-version: 3.0.0
+version: 3.1.0
 phase: design
 owner: enterprise-architect
 created: 2026-06-25

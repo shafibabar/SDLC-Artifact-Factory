@@ -2510,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.5.0"
+        "version": "2.6.0"
       },
       {
         "created": "2026-06-25",
@@ -3176,7 +3176,7 @@
           "rest",
           "versioning"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-07-31",
@@ -5582,12 +5582,12 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "go-contract-test",
         "owner": "test-strategist",
         "phase": "implement",
@@ -5596,27 +5596,46 @@
         ],
         "related": [
           "api-contract-design",
+          "cd-pipeline",
+          "ci-pipeline",
           "context-map-patterns",
           "event-schema-design",
           "go-integration-test",
+          "go-makefile",
           "go-openapi-codegen",
           "go-unit-test",
+          "grpc-contract-design",
+          "integration-design",
+          "mock-generation",
+          "react-api-client",
+          "react-component-testing",
+          "test-fixture-design",
           "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/building-microservices-newman.md",
+          "research/testing/contract-testing-in-action-cruz-prescott.md",
+          "research/testing/github-actions-official-docs.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/oasdiff-official-docs.md",
+          "research/testing/pact-go-official-docs.md",
+          "research/testing/testing-web-apis-winteringham.md"
+        ],
         "status": "stable",
         "tags": [
           "can-i-deploy",
           "consumer-driven",
           "contract-test",
+          "event-schema",
+          "go",
           "implement",
+          "oasdiff",
           "openapi",
           "pact",
-          "provider-state",
-          "quality",
-          "schema"
+          "pact-broker",
+          "quality"
         ],
-        "version": "2.0.2"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -11264,8 +11283,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1257,
-    "edges_skill_sources": 350,
+    "edges_skill_related": 1266,
+    "edges_skill_sources": 357,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11277,20 +11296,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 97,
+    "research_files_cited": 100,
     "skills_with_assets": 6,
     "skills_with_contract_test": 127,
     "skills_with_domain": 190,
     "skills_with_evals": 62,
-    "skills_with_examples": 62,
+    "skills_with_examples": 63,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 61,
-    "skills_with_scripts": 55,
-    "skills_with_sources": 63,
+    "skills_with_resources": 62,
+    "skills_with_scripts": 56,
+    "skills_with_sources": 64,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 60
+    "skills_with_templates": 61
   },
   "edges": {
     "agent_produces": [
@@ -14889,6 +14908,14 @@
         "skill": "go-contract-test"
       },
       {
+        "related": "cd-pipeline",
+        "skill": "go-contract-test"
+      },
+      {
+        "related": "ci-pipeline",
+        "skill": "go-contract-test"
+      },
+      {
         "related": "context-map-patterns",
         "skill": "go-contract-test"
       },
@@ -14901,11 +14928,39 @@
         "skill": "go-contract-test"
       },
       {
+        "related": "go-makefile",
+        "skill": "go-contract-test"
+      },
+      {
         "related": "go-openapi-codegen",
         "skill": "go-contract-test"
       },
       {
         "related": "go-unit-test",
+        "skill": "go-contract-test"
+      },
+      {
+        "related": "grpc-contract-design",
+        "skill": "go-contract-test"
+      },
+      {
+        "related": "integration-design",
+        "skill": "go-contract-test"
+      },
+      {
+        "related": "mock-generation",
+        "skill": "go-contract-test"
+      },
+      {
+        "related": "react-api-client",
+        "skill": "go-contract-test"
+      },
+      {
+        "related": "react-component-testing",
+        "skill": "go-contract-test"
+      },
+      {
+        "related": "test-fixture-design",
         "skill": "go-contract-test"
       },
       {
@@ -18705,6 +18760,34 @@
       {
         "skill": "glossary-management",
         "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "go-contract-test",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "go-contract-test",
+        "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
+      },
+      {
+        "skill": "go-contract-test",
+        "source": "research/testing/github-actions-official-docs.md"
+      },
+      {
+        "skill": "go-contract-test",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "go-contract-test",
+        "source": "research/testing/oasdiff-official-docs.md"
+      },
+      {
+        "skill": "go-contract-test",
+        "source": "research/testing/pact-go-official-docs.md"
+      },
+      {
+        "skill": "go-contract-test",
+        "source": "research/testing/testing-web-apis-winteringham.md"
       },
       {
         "skill": "go-integration-test",
