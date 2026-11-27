@@ -184,8 +184,7 @@ with tempfile.TemporaryDirectory() as td:
 # --- the live tree ------------------------------------------------------------
 proc = subprocess.run([sys.executable, str(MODULE_PATH), "--summary"], capture_output=True, text=True)
 check("CLI --summary prints the totals block", "lint-portability summary:" in proc.stdout)
-# The live tree being clean is NOT asserted here: this file runs inside the
-# gate's blocking step 1, and the check is report-only for now (gate step 7).
+check("the repository's own scripts are clean (the gate blocks on this, step 7)", proc.returncode == 0)
 check("it finds the repository's scripts", len(P.discover()) > 250)
 
 print(f"\n--- Summary: {passed} passed, {len(failed)} failed ---")

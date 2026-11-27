@@ -102,15 +102,15 @@ else
   bad "step 6 prints the layout summary" "summary block absent"
 fi
 
-if grep -qE "STEP 7/7[[:space:]]+lint-portability\.py[[:space:]]+\[REPORT-ONLY\]" <<<"$GATE_OUT"; then
-  ok "gate runs lint-portability as step 7, REPORT-ONLY"
+if grep -qE "STEP 7/7[[:space:]]+lint-portability\.py[[:space:]]+\[BLOCKING\]" <<<"$GATE_OUT"; then
+  ok "gate runs lint-portability as step 7, BLOCKING"
 else
-  bad "gate runs lint-portability as step 7, REPORT-ONLY" "step 7 banner absent"
+  bad "gate runs lint-portability as step 7, BLOCKING" "step 7 banner absent"
 fi
-if grep -q "lint-portability summary:" <<<"$GATE_OUT"; then
-  ok "step 7 prints the portability summary"
+if grep -qE "lint-portability: [0-9]+ script\(s\) clean" <<<"$GATE_OUT"; then
+  ok "step 7 reports the scripts clean"
 else
-  bad "step 7 prints the portability summary" "summary block absent"
+  bad "step 7 reports the scripts clean" "clean line absent"
 fi
 
 if grep -q "catalog is current" <<<"$GATE_OUT"; then

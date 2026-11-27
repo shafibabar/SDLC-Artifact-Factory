@@ -36,7 +36,7 @@ The dangerous differences are the **silent** ones: the command exits 0 and produ
 1. **Target Bash 3.2 and POSIX tools.** `#!/bin/bash` is Bash 3.2 on every Mac, whatever else is installed.
 2. **When a text change is more than a simple substitution, embed Python.** `python3` is already required by this plugin; a here-document of Python behaves the same everywhere. Most validators in this repository are written this way.
 3. **A test must not lean on a Linux-only tool to build its fixtures.** The harness (`tests/lib/harness.sh`) offers `sed_in_place`, `sed_multiline` and `run_with_timeout` for exactly this.
-4. **Run the check.** `python3 scripts/lint-portability.py <script>` flags the constructs above that a line scan can see; the last five rows of the table it cannot, so the tests also run on both systems in CI.
+4. **Run the check.** `python3 scripts/lint-portability.py <script>` (blocking in the governance gate) flags the constructs above that a line scan can see; the last five rows of the table it cannot, so the tests also run on both systems in CI.
 5. **A guarded use is allowed.** A GNU command used only after `command -v` finds it carries `# portable-ok: <reason>` on its line, which silences the check for that line.
 
 This covers the plugin's own scripts. Scripts the plugin *generates for a product* run in Linux containers and follow that product's standards.

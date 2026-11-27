@@ -4,13 +4,21 @@
 Creates a branch + draft PR for the given sub-issue and moves it to
 Status = In Progress. Invoking this command IS the approval checkpoint.
 
-By default the branch is cut from current HEAD and the PR targets the
-repo's default branch. Pass --base to cut from and target a different
-branch instead (e.g. an issue-level integration branch that sub-issue
-PRs merge into, rather than main directly) -- current HEAD must already
-be that branch (or a descendant of it) when this runs.
+The branch is always cut from current HEAD, and the PR targets the branch it
+was cut from:
 
-The --base value is recorded in local state so exec_complete.py knows to
+  * on the repo's default branch: the PR targets the default branch;
+  * on any other branch (an integration or wave branch that sub-issue PRs
+    merge into, rather than main directly): the PR targets THAT branch. It
+    used to target the default branch unless --base was typed, which opened
+    a wave's sub-issue PR against main (#1510);
+  * on another sub-issue's `issue-<n>-...` branch: refused unless --base is
+    given, since stacking one sub-issue on another is rarely meant.
+
+--base names the branch explicitly and wins over the above; current HEAD
+must already be that branch (or a descendant of it) when this runs.
+
+The resolved base, when it is not the default branch, is recorded in local state so exec_complete.py knows to
 auto-merge and auto-close this sub-issue once its PR is ready (see that
 script's docstring) -- default-branch sub-issues (no --base) are unaffected
 and still stop at Status: In Review, review/merge/close manual as always.
@@ -37,10 +45,38 @@ def run_git(args):
     return result.stdout
 
 
+def default_branch():
+    """The repo's default branch, from the local origin/HEAD pointer (no network)."""
+    result = subprocess.run(["git", "symbolic-ref", "--short", "refs/remotes/origin/HEAD"],
+                            cwd=_REPO_ROOT, capture_output=True, text=True)
+    name = result.stdout.strip()
+    return name.split("/", 1)[1] if result.returncode == 0 and "/" in name else "main"
+
+
+def resolve_base(explicit, current, default):
+    """Which branch the sub-issue's PR targets; None means the default branch.
+
+    Pure: `explicit` is --base (or None), `current` the checked-out branch
+    ("" when HEAD is detached), `default` the repo's default branch.
+    """
+    if explicit:
+        return explicit
+    if not current:
+        raise gh.GhError("HEAD is detached: check out the branch to cut from, or pass --base <branch>.")
+    if current == default:
+        return None
+    if re.match(r"issue-\d+-", current):
+        raise gh.GhError(
+            f"You are on an issue branch ('{current}'). Check out the branch this sub-issue "
+            f"should merge into, or pass --base <branch> if it is meant to merge into this one."
+        )
+    return current
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("issue_number", type=int)
-    parser.add_argument("--base", default=None, help="Branch to cut from and target (default: repo default branch)")
+    parser.add_argument("--base", default=None, help="Branch to cut from and target (default: the branch you are on)")
     args = parser.parse_args()
 
     try:
@@ -51,6 +87,11 @@ def main():
             issue_id, item_id, title = cached["id"], cached["item_id"], cached["title"]
         else:
             issue_id, item_id, title = project.find_item(args.issue_number)
+
+        current = run_git(["branch", "--show-current"]).strip()
+        args.base = resolve_base(args.base, current, default_branch())
+        if args.base:
+            print(f"base: {args.base} (the PR targets this branch, not the default branch)")
 
         branch = f"issue-{args.issue_number}-{slugify(title)}"
         run_git(["checkout", "-b", branch])

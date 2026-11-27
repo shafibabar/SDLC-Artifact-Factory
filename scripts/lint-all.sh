@@ -19,11 +19,11 @@
 #                                       relative pointers only. REPORT-only while the
 #                                       Fresh-Eyes waves migrate skills; flips to BLOCKING
 #                                       once every skill is clean (#1227).
-#   7. lint-portability.py   REPORT     Shell constructs that work on Linux but fail, or
+#   7. lint-portability.py   BLOCKING   Shell constructs that work on Linux but fail, or
 #                                       silently differ, on stock macOS (sed -i, GNU-only
 #                                       sed/awk/grep features, Bash 4 syntax, GNU-only
-#                                       commands). REPORT-only at first; the same scripts
-#                                       are also run on both systems in CI (#1510).
+#                                       commands). Blocking since #1510 left the tree at
+#                                       0 findings; a guarded use carries `portable-ok:`.
 #
 # The gate exits non-zero IFF a BLOCKING step failed. Report-only steps run,
 # print their findings, and never change the gate's exit code.
@@ -139,19 +139,24 @@ echo "(lint-skill-layout is report-only until every skill is migrated — run it
 echo " without --summary for the per-file findings.)"
 
 # ---------------------------------------------------------------------------
-# Step 7 — Shell portability linter  (REPORT-ONLY at first, #1510)
+# Step 7 — Shell portability linter  (BLOCKING, #1510)
 # ---------------------------------------------------------------------------
-section "STEP 7/7  lint-portability.py             [REPORT-ONLY]"
-"$PY" "$REPO_ROOT/scripts/lint-portability.py" --summary || true
-echo "(lint-portability is report-only for now — run it without --summary for"
-echo " the per-line findings. Every script must run on Linux and stock macOS.)"
+section "STEP 7/7  lint-portability.py             [BLOCKING]"
+"$PY" "$REPO_ROOT/scripts/lint-portability.py"
+PORTABILITY_RC=$?
+if [[ $PORTABILITY_RC -ne 0 ]]; then
+  echo ">>> BLOCKING FAILURE (exit $PORTABILITY_RC): scripts/lint-portability.py"
+  echo "    A script uses something that fails or silently differs on stock macOS."
+  echo "    See skills/skill-authoring-standards/references/portable-scripts.md."
+  GATE_RC=1
+fi
 
 # ---------------------------------------------------------------------------
 # Verdict
 # ---------------------------------------------------------------------------
 section "GOVERNANCE GATE RESULT"
 if [[ $GATE_RC -eq 0 ]]; then
-  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests, lint-relationships, catalog)."
+  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests, lint-relationships, catalog, portability)."
   echo "      Report-only checks ran; their findings above do not gate."
 else
   echo "FAIL: one or more BLOCKING checks failed (see >>> markers above)."

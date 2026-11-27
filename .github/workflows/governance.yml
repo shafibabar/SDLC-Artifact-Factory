@@ -11,7 +11,7 @@ name: governance
 #        * scripts/lint-relationships.py (BLOCKING)
 #        * build-catalog.py --check      (BLOCKING)
 #        * scripts/lint-skill-layout.py  (report-only)
-#        * scripts/lint-portability.py   (report-only)
+#        * scripts/lint-portability.py   (BLOCKING)
 #      The step fails iff a BLOCKING check fails.
 #   2. tests/run-smoke-tests.sh scripts schemas arch — the tests that need no
 #      model call. The pass counts on the two systems must match.
