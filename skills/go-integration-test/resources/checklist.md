@@ -17,7 +17,8 @@ Copy and tick before hand-off.
 - [ ] Expected database errors run in a savepoint
 - [ ] No `time.Sleep`; polls have a deadline and report the last error
 - [ ] Duplicate and "nothing happened" assertions come after proof of consumption
-- [ ] Isolation, deduplication and refusal tests went red with the check removed
+- [ ] Isolation, deduplication and refusal tests went red with the code broken (deduplication: result ignored, SQL kept)
+- [ ] Redelivery test drives the real consumer, observes the second delivery, waits with a bound, filters by event id
 - [ ] Relay and global readers have their own database and topic
 - [ ] Tenant denial (if any) runs as the application role, with an allowed read in the same test
 - [ ] Changed migration: up, down, up, and previous release's statements on the new schema

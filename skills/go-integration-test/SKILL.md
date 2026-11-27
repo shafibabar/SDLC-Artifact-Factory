@@ -57,17 +57,17 @@ Every product size follows all nine. **Lean** means fewer tests and only the con
 
 ## What every answer states
 
-Say these in words, beside any code; code that follows a rule silently leaves the reader free to undo it.
+**Keep it short.** Answer what was asked and state only the items below that it touches. Add no coverage, validator or harness material the request did not ask about, beyond one line where it bears on the question. An item that applies is said **in words**, even when pointing at the harness or an example: "copy the harness unchanged" tells the reader nothing about what it does.
 
-1. **Isolation of each test:** rollback, or a real commit and its named reason. When one test commits, say in the same breath that **every other database test stays on rollback**.
-2. **What is refused or replaced, by name, with the reason** and the compliant version: "`time.Sleep(2 * time.Second)` is removed: it proves nothing about whether the consumer ran".
-3. **What the helpers do that the reader cannot see**, whichever apply: the harness starts containers, applies migrations, publishes ports on 127.0.0.1 and retries a start three times; `TestMain` exits non-zero when a container cannot start or stop or the shared database's row counts changed (updated rows and other databases go unnoticed); `WithTx` never commits, so deferred constraints are never checked; `Scoped` fails the test on a cleanup error; `Await` fails the test with the last error; `go test -short` prints `ok` while skipping; the validator exits 0, 1 or 2 and runs nothing.
-4. **For anything asynchronous:** what proves the input was consumed (the committed offset), and which broken code makes the test fail.
-5. **Sketches:** every name declared or its origin named; each test asserts what its name claims; cleanup errors reported.
-6. **Coverage, whenever it comes up:** both gates, 100%; `internal/test/` is left out as the approved test-support class, needs no per-file approval, is **listed in every report** and holds test support only, never code that ships: the gates fail if non-test code imports it or a file in it is `package main` (not detected: nested modules' imports, shipped logic copied there that nothing imports). In the same breath: every other exclusion is listed with its reason, is pending until the product owner approves it, and blocks the build meanwhile.
-7. **At this size:** what lean changes and what it does not.
-8. **Decisions for the product owner:** exclusions and waivers; an undecided tenancy model (invent no `tenant_id`); a contract that promises a limit or deprecation without its value; a production change needed for testability.
-9. **What was run.** Code not executed is called unverified.
+1. **Containers**, whenever the answer sets them up or points at the harness: the **pinned image tag**; the wait strategy **by name**, `postgres.BasicWaitStrategies()` (or the readiness log line plus the listening port); and the life cycle: a start step that **returns an error**, so `TestMain` needs no `*testing.T`, with termination **after `m.Run`** (inside a single test: `testcontainers.CleanupContainer` registered **before** the error check).
+2. **Isolation.** Whenever rollback is named as the default, name **in the same breath** what a test needing a real commit uses: **data scoped to the test** with filtered cleanup (or a database of its own). Testcontainers' snapshot/restore resets the whole database, so it is only for a database no other test is using. For a test that commits, give the reason and say every other database test stays on rollback.
+3. **What is refused or replaced, by name, with the reason** and the compliant version. A fake or mock database proposed for these tests is rejected because **the database is a dependency the application controls, and the repository is verified by the resulting state in the real database**; a fake stays fine in unit tests of other code.
+4. **Redelivery and other asynchronous tests:** name the **real consumer under test** (not a copy of its handler); show how the **second delivery is observed** (the committed offset passes it); **wait with a bound**; assert the end state **filtered by event id**; name the broken code that turns the test red.
+5. **Helpers the answer relies on:** what they do that the reader cannot see (`TestMain` fails on leftover rows; `WithTx` never commits; `Scoped` fails the test on a cleanup error; `go test -short` prints `ok` while skipping).
+6. **Sketches:** every name declared or its origin named; each test asserts what its name claims; cleanup errors reported.
+7. **Coverage, only when the request is about it** (otherwise at most one line): both gates, 100%; `internal/test/` is left out as the approved test-support class, listed in every report, never code that ships (the gates fail if non-test code imports it or it holds `package main`; nested modules and copied logic nothing imports go unnoticed); every other exclusion has a reason, is pending until the product owner approves it, and blocks the build meanwhile.
+8. **Only where they arise:** what lean changes and what it does not; decisions for the product owner (exclusions and waivers; an undecided tenancy model, inventing no `tenant_id`; a promised limit or deprecation with no value; a production change needed for testability).
+9. **One line on what was run.** Code not executed is called unverified.
 
 ## What to test here
 
@@ -91,7 +91,7 @@ Say these in words, beside any code; code that follows a rule silently leaves th
 5. For database tests read `./references/isolation.md`.
 6. For relay, consumer or any later effect read `./references/events-and-async.md`.
 7. For migrations read `./references/migrations.md`; for API promises `./references/api-behaviour-checks.md`.
-8. See each test fail for the expected reason. For isolation, deduplication and refusal tests, break the code once (remove the check) and confirm red.
+8. See each test fail for the expected reason. For isolation, deduplication and refusal tests, break the code once and confirm red (deduplication: keep the SQL and ignore its "already processed" result).
 9. Run `./scripts/validate-go-integration-tests.sh <paths>`, then `go test -race -shuffle=on ./...` (needs Docker); fix and repeat until clean.
 10. Run both coverage gates (`go-unit-test`) on the full suite.
 11. Tick `./resources/checklist.md` and answer with the statements above.
@@ -106,6 +106,8 @@ Worked and run on Go 1.27.4, PostgreSQL 17.12 and Redpanda 26.2.7: `./examples/0
 - **Continuing after an expected constraint error.** *Reason:* PostgreSQL aborts the transaction (`25P02`). *Instead:* run the failing statement in a savepoint (`tx.Begin`).
 - **Row-level security tested as the container's user.** *Reason:* a superuser bypasses it. *Instead:* `SET LOCAL ROLE` to the application role.
 - **Calling `Save` on the pool in a test.** *Reason:* state commits without its event. *Instead:* bind with `WithTx`.
+- **Removing only `ON CONFLICT` to prove deduplication matters.** *Reason:* the unique key remains, so the second insert errors (`23505`) and no duplicate effect appears. *Instead:* ignore the zero-rows result so the work runs again.
+- **`testing.Short()` in `TestMain` before `flag.Parse`.** *Reason:* it panics. *Instead:* `flag.Parse()` first, as the harness's `Short` does.
 - **`TestMain` that exits under `-short`.** *Reason:* every test in the package vanishes. *Instead:* `test.Integration(t)` in each integration test.
 - **Trusting a wrong `DOCKER_HOST` to fail.** *Reason:* in the run for this skill, Testcontainers fell back to the default socket. *Instead:* check the Docker host it logs.
 - **A panic or `-timeout` with Ryuk disabled.** *Reason:* `TestMain`'s cleanup never runs and the container stays. *Instead:* keep Ryuk, or remove containers in the CI job.

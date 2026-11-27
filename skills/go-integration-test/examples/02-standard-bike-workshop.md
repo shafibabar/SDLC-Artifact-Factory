@@ -1127,11 +1127,19 @@ func TestConsumeDoesTheWorkOnceForADuplicate(t *testing.T) {
 		t.Fatalf("marshal: %v", err)
 	}
 	broker.Publish(t, topic, value)
-	broker.Publish(t, topic, value) // the redelivery
-	startConsumer(t, pool, group, topic)
+	broker.Publish(t, topic, value)      // the redelivery
+	startConsumer(t, pool, group, topic) // the real consumer: events.Consume
 
-	// Offset 2 committed = both records consumed. Only now is "once" meaningful.
+	// Offset 2 committed = both records consumed (the wait fails after 30s).
+	// Only now is "once" meaningful.
 	broker.AwaitCommitted(t, group, topic, 2)
+	var recorded int
+	if err := pool.QueryRow(context.Background(),
+		`SELECT count(*) FROM processed_events WHERE consumer_name = $1 AND event_id = $2`,
+		group, e.EventID).Scan(&recorded); err != nil || recorded != 1 {
+		t.Errorf("event %s recorded %d times (%v), want 1", e.EventID, recorded, err)
+	}
+	// reminders has no event id: this database holds only this event's job.
 	if n := sent(t, pool, e.AggregateID); n != 1 {
 		t.Errorf("%d reminders sent, want 1", n)
 	}
@@ -1184,7 +1192,8 @@ Each change was made in a copy, run, and reverted.
 
 | Broken | Observed |
 |---|---|
-| Deduplication removed | `2 reminders sent, want 1` |
+| Duplicate result ignored (SQL kept) | `2 reminders sent, want 1` |
+| Only `ON CONFLICT DO NOTHING` removed | Consumer error `23505`, offset 2 never committed: red, but not a duplicate effect |
 | Booking calls the repository on the pool, not the transaction | `after failed event write: 1 job, 0 event; want 0 and 0` |
 | Savepoint removed around the refused insert | `current transaction is aborted ... (SQLSTATE 25P02)` |
 | Idempotency claim removed | `status 201 then 409, want 201 twice`; concurrent replies 409 |

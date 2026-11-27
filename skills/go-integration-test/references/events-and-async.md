@@ -24,7 +24,7 @@ A published message cannot be rolled back. Each test uses a topic and a consumer
 
 ## Proving the duplicate was seen
 
-"One effect" is true before the second delivery arrives. Observed with deduplication removed and the consumer slowed by 200 ms per record:
+"One effect" is true before the second delivery arrives. Observed with deduplication disabled (zero-rows result ignored) and the consumer slowed by 200 ms per record:
 
 | Test | Result |
 |---|---|
@@ -33,4 +33,13 @@ A published message cannot be rolled back. Each test uses a topic and a consumer
 
 The committed offset is evidence only when the consumer commits after processing (`go-event-consumer`: manual commit). A consumer that commits first needs another signal that the duplicate was processed, such as a counter it increments for duplicates.
 
-Each such test goes red once with the deduplication removed before it is trusted.
+Drive the real consumer, and assert the end state filtered by the event id (here the `processed_events` row for this consumer and event; where the effect's table has no event id, an own database isolates the effect).
+
+## Breaking the code to see it fail
+
+Each such test goes red once before it is trusted. Both changes were run against example 02:
+
+| Change | Result | Proves deduplication matters? |
+|---|---|---|
+| Remove only `ON CONFLICT DO NOTHING`; the primary key stays | The consumer stops with `duplicate key value violates unique constraint "processed_events_pkey" (SQLSTATE 23505)`; the wait for offset 2 times out | **No**: red because of an error, not a duplicate effect |
+| Keep the SQL; ignore the zero-rows result, so the work runs again | `2 reminders sent, want 1` | **Yes** |

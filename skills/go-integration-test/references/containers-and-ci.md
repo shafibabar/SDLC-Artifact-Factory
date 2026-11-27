@@ -42,6 +42,8 @@ The harness covers PostgreSQL and Redpanda only. For MongoDB, a graph extension 
 | `go test -short ./...` | Unit tests; each integration test skips. The harness starts nothing. Output says `ok` and does not mention skips without `-v` |
 | `go test -race -shuffle=on ./...` | Everything; needs Docker |
 
+`testing.Short()` panics in `TestMain` before the flags are parsed (`testing: Short called before Parse`). The harness's `Short` calls `flag.Parse` first when needed; a hand-written `TestMain` must do the same.
+
 Put `test.Integration(t)` first in every integration test. Do not exit `TestMain` under `-short`: the package's unit tests disappear with it. Do not use a build tag.
 
 ## CI

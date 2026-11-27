@@ -14,7 +14,7 @@ Choosing; making code testable in a transaction; what rollback cannot show; real
 | 3 | Real commit, scoped keys, filtered cleanup | The subject is commit behaviour, or another connection or process must see the rows |
 | 3 | Real commit, own database (`NewDatabase`) | The code reads every row (relay, scheduler, consumer), or the test changes the schema |
 
-Never: a container per test, `TRUNCATE`, a schema reset of the shared database. Write the reason for a real commit as a comment on the test.
+Never: a container per test, `TRUNCATE`, a schema reset of the shared database. The PostgreSQL module's `Snapshot`/`Restore` is such a reset: it restores the whole configured database, so it suits only a container no other test is using at that moment, never the harness's shared one (observed: it also cuts connections held across it, `57P01`). Write the reason for a real commit as a comment on the test.
 
 ## Making code testable in a transaction
 
