@@ -15,7 +15,10 @@ expect() { # expect <label> <exit> <substring> <args...>
   local label="$1" want="$2" sub="$3"; shift 3
   local out code
   out="$("$VALIDATE" "$@" 2>&1)"; code=$?
-  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -qF -- "$sub"; }; then
+  # A here-string, not `echo "$out" | grep -q`: grep -q exits at the first match,
+  # echo can then die on the closed pipe, and under `pipefail` the match counts
+  # as a failure (seen on the macOS CI runner, #1489).
+  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || grep -qF -- "$sub" <<<"$out"; }; then
     _pass "validate-proto: $label"
   else
     _fail "validate-proto: $label" "exit $code; $(echo "$out" | grep -E 'FAIL|WARN' | head -5)"
