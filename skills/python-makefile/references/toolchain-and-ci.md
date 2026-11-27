@@ -44,7 +44,7 @@ dev = [
     "pytest-cov==7.1.0",
     "coverage==7.17.5",
     "hypothesis==6.170.17",
-    "testcontainers>=4.8",
+    "testcontainers==4.15.0",   # harness: python-integration-test
 ]
 
 # ---- ruff: lint + format in one tool ----------------------------------------

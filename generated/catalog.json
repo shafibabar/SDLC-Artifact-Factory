@@ -1940,7 +1940,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.8.0"
+        "version": "2.9.0"
       },
       {
         "created": "2026-06-25",
@@ -2510,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.4.0"
+        "version": "2.5.0"
       },
       {
         "created": "2026-06-25",
@@ -8482,42 +8482,68 @@
         "dir": "skills/python-integration-test",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "python-integration-test",
         "owner": "test-strategist",
-        "phase": "quality",
+        "phase": "implement",
         "produces": [
           "python-integration-test"
         ],
         "related": [
+          "ci-pipeline",
           "go-integration-test",
+          "mock-generation",
+          "multi-tenancy-design",
+          "python-contract-test",
+          "python-e2e-test",
           "python-event-consumer",
+          "python-event-publisher",
+          "python-fastapi-handler",
+          "python-makefile",
+          "python-middleware",
           "python-migration",
-          "python-repository-pattern"
+          "python-mongodb-repository",
+          "python-repository-pattern",
+          "python-service-layer",
+          "python-unit-test",
+          "security-implementation",
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/continuous-delivery-humble-farley.md",
+          "research/software-architecture/architecture-patterns-with-python-percival-gregory.md",
+          "research/testing/pytest-asyncio-official-docs.md",
+          "research/testing/pytest-official-docs.md",
+          "research/testing/python-testing-with-pytest-okken.md",
+          "research/testing/testcontainers-python-official-docs.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
           "aiokafka",
           "alembic",
+          "api-behaviour",
           "asyncpg",
+          "ci",
+          "implement",
           "integration-test",
+          "isolation",
           "postgres",
           "pytest-asyncio",
           "python",
-          "quality",
           "redpanda",
-          "tenant",
           "testcontainers"
         ],
-        "version": "1.1.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-31",
@@ -11238,8 +11264,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1242,
-    "edges_skill_sources": 342,
+    "edges_skill_related": 1257,
+    "edges_skill_sources": 350,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11251,20 +11277,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 96,
+    "research_files_cited": 97,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 128,
+    "skills_with_contract_test": 127,
     "skills_with_domain": 190,
-    "skills_with_evals": 61,
-    "skills_with_examples": 61,
+    "skills_with_evals": 62,
+    "skills_with_examples": 62,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 60,
-    "skills_with_scripts": 54,
-    "skills_with_sources": 62,
+    "skills_with_resources": 61,
+    "skills_with_scripts": 55,
+    "skills_with_sources": 63,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 59
+    "skills_with_templates": 60
   },
   "edges": {
     "agent_produces": [
@@ -16463,7 +16489,27 @@
         "skill": "python-grpc-handler"
       },
       {
+        "related": "ci-pipeline",
+        "skill": "python-integration-test"
+      },
+      {
         "related": "go-integration-test",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "mock-generation",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "python-contract-test",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "python-e2e-test",
         "skill": "python-integration-test"
       },
       {
@@ -16471,11 +16517,51 @@
         "skill": "python-integration-test"
       },
       {
+        "related": "python-event-publisher",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "python-fastapi-handler",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "python-makefile",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "python-middleware",
+        "skill": "python-integration-test"
+      },
+      {
         "related": "python-migration",
         "skill": "python-integration-test"
       },
       {
+        "related": "python-mongodb-repository",
+        "skill": "python-integration-test"
+      },
+      {
         "related": "python-repository-pattern",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "python-service-layer",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "python-unit-test",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "security-implementation",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "test-fixture-design",
+        "skill": "python-integration-test"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "python-integration-test"
       },
       {
@@ -18987,6 +19073,38 @@
       {
         "skill": "pricing-and-packaging",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/devops-and-delivery/continuous-delivery-humble-farley.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/software-architecture/architecture-patterns-with-python-percival-gregory.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/testing/pytest-asyncio-official-docs.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/testing/pytest-official-docs.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/testing/python-testing-with-pytest-okken.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/testing/testcontainers-python-official-docs.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "python-integration-test",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "python-unit-test",
