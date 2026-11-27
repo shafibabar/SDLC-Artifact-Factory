@@ -24,6 +24,7 @@ Copy and tick before hand-off. A line that does not apply is struck through with
 
 ## Daily: Pact
 - [ ] Every direct request/response call has a consumer Pact test and a provider verification, lean included
+- [ ] Where the provider checks a token: the real middleware is in the test router; a request filter replaces the recorded token with one signed by a key made for the run and never adds a header; the pact holds an unsigned example; "no token" and "expired token" refusals are their own interactions
 - [ ] Every Pact file starts with `//go:build pact`; nothing in `make ci` or a pull-request workflow runs Pact
 - [ ] Selectors are main branch, matching branch, deployed or released; `FailIfNoPactsFound: true`; pending and work-in-progress on; no `SoftFail`, no `Latest: true`
 - [ ] Each Provider State has a handler with the consumer's exact text; a `BeforeEach` guard makes an unmatched state fail

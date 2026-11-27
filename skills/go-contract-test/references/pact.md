@@ -4,7 +4,7 @@ Self-contained. Read when adding, changing or explaining Pact for a direct reque
 
 ## Contents
 
-The rule; what Pact adds; the flow; why it runs daily; the deployment check; selectors; pending and work-in-progress pacts; Provider States; matchers; the broker; what is refused.
+The rule; what Pact adds; the flow; why it runs daily; the deployment check; selectors; pending and work-in-progress pacts; Provider States; a provider that checks a token; matchers; the broker; what is refused.
 
 ## The rule
 
@@ -81,6 +81,16 @@ Each recorded interaction names the state it needs (`Given("class ... is open wi
 - `setup` is `true` before the interaction and `false` after it.
 - **Real commits, scoped data.** The verifier's request reaches the provider on its own connection, so data inside an open transaction is invisible: `go-integration-test`'s default rollback isolation cannot be used. Seed committed rows keyed to the ids the state names, and remove exactly those (`test-fixture-design`). Never reset whole tables between interactions.
 - Two interactions must give the same result in any order.
+
+## A provider that checks a token
+
+The verifier replays the header the consumer recorded, so a provider behind real token-checking middleware answers 401 and the verification fails. Three rules, each observed in a run (`../templates/pact-tests.md`, "When the provider checks a token"):
+
+1. **The real middleware stays.** Removing or bypassing it in the test router makes every interaction pass, including one that sends no token: a silent pass. Give the router a key made for the run and let a `RequestFilter` swap the recorded token for one signed with it. Nothing else about sign-in changes in the test.
+2. **The filter replaces a header and never adds one.** A filter that always sets it passes a consumer that forgot to send a token.
+3. **The pact holds no credential.** The consumer records an unsigned, token-shaped example with a `Regex` on the bearer shape; a working or never-expiring token in a pact is a leaked credential, and `Like` accepts any string.
+
+Each sign-in refusal the consumer handles is its own interaction with one Provider State ("no token → 401", "expired token → 401"); for the expired case the filter must sign an expired token, or the case passes for the wrong reason. Pact proves a check only where such an interaction exists: a provider that drops its audience check stays green unless a consumer recorded that refusal. The token rules themselves are `security-implementation`'s.
 
 ## Matchers decide what Pact notices
 
