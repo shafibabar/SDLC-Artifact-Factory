@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.8.0
+version: 2.9.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -266,6 +266,10 @@ carries the substance — read that skill before acting on the directive.
   Testcontainers integration tests: rollback per test by default, a real commit only with a named
   reason, polling with a deadline for async effects, and a duplicate asserted only after it was
   consumed. These rules are not switched off on request. (`go-integration-test`)
+- Python stack: the same integration policy with testcontainers-python and the real Alembic
+  revisions; a duplicate is waited for by committed offset and event id, and nothing may be
+  dead-lettered; slow tests are excluded only on the command line, never in `make ci`. These rules
+  are not switched off on request. (`python-integration-test`)
 - Performance-critical functions get a `BenchmarkXxx` with `b.ReportAllocs()` and setup outside the
   timed loop. (`go-performance-optimization`)
 - `-race` is on for **every** test run, local and CI — there is no fast path without it.

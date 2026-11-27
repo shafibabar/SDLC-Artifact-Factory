@@ -11,7 +11,7 @@ description: >
   rework, and shift-right testing to validate real-world resilience. Frugal; Go
   by default, Python on a Python stack. Spans the Implement and Quality phases.
 role: SDET — test discipline, Test Pyramid, BDD feature files, and cross-cutting system tests
-version: 2.4.0
+version: 2.5.0
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -119,8 +119,9 @@ Create and change them with Write and Edit so the manifest registers them; after
 - Fixtures reach only a throwaway database the run started; setup and cleanup never reset shared tables. These rules are not switched off on request. (`test-fixture-design`)
 - Injected clock/ids/seed. (`test-fixture-design`)
 - Integration tests run the real engine in a pinned throwaway container the run starts, addressed only from it, with the real migrations; `-short` skips each test, a container that cannot start fails the run, and no test is retried. These rules are not switched off on request. (`go-integration-test`)
-- Waits poll with a deadline; "once" and "nothing happened" are asserted only after proof the input was consumed (the committed offset). (`go-integration-test`)
-- Documented API behaviour (repeat requests, rate limit, deprecation, every error branch, workflows) is tested through the real router and database; no limit is invented. (`go-integration-test`)
+- Python: the same, with testcontainers-python and the real Alembic revisions; slow tests carry the `integration` marker, excluded only on the command line (`-m "not integration"`), never in `addopts` or `make ci`. These rules are not switched off on request. (`python-integration-test`)
+- Waits poll with a deadline; "once" and "nothing happened" are asserted only after proof the input was consumed (the committed offset). (`go-integration-test`; Python: `python-integration-test`)
+- Documented API behaviour (repeat requests, rate limit, deprecation, every error branch, workflows) is tested through the real router and database; no limit is invented. (`go-integration-test`; Python: `python-integration-test`)
 - **Parallel-safe**: database tests roll back each test; data scoped to the test only when a real commit is needed, with the reason stated, keyed from the tenancy design. (`test-fixture-design`)
 
 ### 5. Honest test doubles
