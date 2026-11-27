@@ -50,7 +50,7 @@ Estimate for the remaining eval spend: about $95–170, within the $450 wave cei
 2. `git checkout fresh-eyes/wave-3-testing && git pull`.
 3. Restore the board tooling state: `cp discovery/fresh-eyes/handoff/github-project-state.json scripts/github-project/.state.json` (get the file from `main` with `git show origin/main:discovery/fresh-eyes/handoff/github-project-state.json` if the branch lacks it). Without it, `exec_complete.py` does not know a sub-issue's base branch and will not merge it.
 4. Needed locally: `gh` signed in as the repository owner with `repo` and `project` scopes (`gh auth status`; `gh auth refresh -s repo,project`), Python 3 with `jsonschema`, the `claude` CLI (evals make real model calls on the signed-in account), Docker Desktop with WSL integration, and Node for the React skills. Go and Python test tools are downloaded into temporary folders by each rebuild; nothing is installed system-wide.
-5. Check the setup: `bash scripts/lint-all.sh` and `bash tests/run-smoke-tests.sh scripts schemas arch` (last green: 2183 passed on the wave branch).
+5. Check the setup: `bash scripts/lint-all.sh` and `bash tests/run-smoke-tests.sh scripts schemas arch` (last green: 2290 passed on Linux and on stock macOS alike, #1510). The scripts need only the system's own tools: on a Mac, Homebrew's GNU tools (`gnu-sed`, `gawk`, `grep`, `coreutils`, `findutils`, a newer `bash`) and the `~/.zshrc` lines that put them first on the `PATH` are **not** needed and can be removed. Docker Desktop's WSL integration applies to Windows only.
 6. For #1489: `git checkout issue-1489-wave-3-skill-go-contract-test-research-grounded-re` and read the notes.
 
 ## How the work is run (product owner's working preferences)
