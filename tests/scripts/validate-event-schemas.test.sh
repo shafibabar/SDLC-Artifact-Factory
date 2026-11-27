@@ -99,7 +99,7 @@ expect "a deploy version in source fails" srcver.md 1 "FAIL: org.hivewatch.apiar
 sed 's/| \*\*Compatibility\*\* | BACKWARD |/| **Compatibility** | NONE |/' good.md > none.md
 expect "NONE compatibility fails" none.md 1 "FAIL: org.hivewatch.apiary.hive.weighed: compatibility is not NONE"
 
-sed 's/| hiveId | string | yes | — | the hive |/| hiveId | string | yes | — | the hive |\n| eventId | string | yes | — | dedup |/' good.md > envfield.md
+sed_multiline 's/| hiveId | string | yes | — | the hive |/| hiveId | string | yes | — | the hive |\n| eventId | string | yes | — | dedup |/' good.md > envfield.md
 expect "an envelope attribute in the payload fails" envfield.md 1 "FAIL: org.hivewatch.apiary.hive.weighed: payload field 'eventId' is not an envelope attribute"
 
 sed 's/| scaleModel | string | no | absent = model not recorded | calibration |/| scaleModel | string | no | | calibration |/' good.md > nodefault.md

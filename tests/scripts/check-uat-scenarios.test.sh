@@ -93,7 +93,10 @@ expect_error "wrong phase" 's/^phase: customer-validation/phase: quality/' "phas
 expect_error "artifact key" 's/^name: uat-scenarios-US-7/artifact: uat-scenarios-US-7/' "use 'name:'"
 expect_error "zero-padded ID with no letter" 's/^### UAT-7a:/### UAT-007:/' "UAT-007 is not UAT-<n><letter>"
 expect_error "another story's root" 's/^### UAT-7b:/### UAT-8b:/' "does not share the story's number root"
-expect_error "no trace" '0,/^\*\*Traces to:\*\* AC-US-7.1/s//**Traces to:** the export story/' "has no 'Traces to:'"
+# `1,/re/`, not GNU's `0,/re/`: BSD sed (macOS) has no line 0. The two are
+# the same here because line 1 of these fixtures is the `---` frontmatter fence.
+# The pattern is repeated in `s/re/…/` because BSD sed rejects an empty `s//` there.
+expect_error "no trace" '1,/^\*\*Traces to:\*\* AC-US-7.1/s/^\*\*Traces to:\*\* AC-US-7.1/**Traces to:** the export story/' "has no 'Traces to:'"
 expect_error "trace to another story" 's/^\*\*Traces to:\*\* AC-US-7.2/**Traces to:** AC-US-9.1/' "traces to another story's criterion"
 expect_error "HTTP call in steps" 's/^1. Open Exports./1. Call GET \/exports\/invoices?month=3./' "contains an HTTP call"
 expect_error "field assignment in outcome" 's/^- INV-2044 is not in the file./- invoice_status = void is excluded./' "contains a field assignment"
@@ -102,7 +105,7 @@ expect_error "SQL in steps" 's/^1. Export March.s invoices./1. SELECT * FROM inv
 expect_error "backticked identifier" 's/^- The file has one row, INV-2041, with Total 1,200.00./- `total_gross` equals 1200./' "backticked identifier"
 expect_error "no confirm by" 's/ — confirm by: it appears in Invoices, filter March//' "'confirm by'"
 expect_error "no preconditions items" '/^- INV-2044 €50.00 Void/d' "UAT-7b has no Preconditions items"
-expect_error "no environment" '0,/^\*\*Environment:\*\*/{/^\*\*Environment:\*\*/d}' "has no 'Environment:' line"
+expect_error "no environment" '1,/^\*\*Environment:\*\*/{/^\*\*Environment:\*\*/d;}' "has no 'Environment:' line"
 expect_error "result outside the four" 's/| Pass | rec\/2.mp4/| Passed with issues | rec\/2.mp4/' "is not Pass, Fail, Blocked or Not run"
 expect_error "Blocked with no reason" 's/| Blocked: tenant offline |/| Blocked |/' "Blocked with no reason"
 expect_error "Fail with no feedback ID" 's/| FB-14, High; workaround: edit the cell |/| workaround: edit the cell |/' "Fail with no feedback ID"

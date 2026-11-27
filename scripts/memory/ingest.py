@@ -328,7 +328,9 @@ def ingest_file(conn, embedder: Embedder, repo_root: Path, path: Path) -> Option
     parent_uri = ensure_ancestors(conn, embedder, repo_root, info["parents"], now_iso)
 
     raw_text = path.read_text(errors="replace")
-    rel_path = path.relative_to(repo_root).as_posix()
+    # Resolve both sides, as classify() does: on macOS /tmp and /var are links
+    # into /private, so an unresolved path is not "under" a resolved root.
+    rel_path = path.resolve().relative_to(repo_root.resolve()).as_posix()
     if info.get("self_collection"):
         abstract, overview, content = build_self_texts(info["self_collection"], raw_text)
     else:

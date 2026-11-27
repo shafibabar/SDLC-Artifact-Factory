@@ -135,7 +135,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ $SELECTOR_MODE -eq 1 ]]; then
-  mapfile -t RESOLVED < <(printf '%s\n' "${RESOLVED[@]}" | awk 'NF && !seen[$0]++')
+  # Deduplicate, keeping order. A read loop, not `mapfile` (Bash 4+; macOS
+  # ships Bash 3.2, where an empty array is also "unset" under `set -u`).
+  DEDUPED=()
+  while IFS= read -r _line; do
+    DEDUPED+=("$_line")
+  done < <(printf '%s\n' ${RESOLVED[@]+"${RESOLVED[@]}"} | awk 'NF && !seen[$0]++')
+  RESOLVED=(${DEDUPED[@]+"${DEDUPED[@]}"})
   echo "=== selected ==="
   if [[ ${#RESOLVED[@]} -eq 0 ]]; then
     echo "(no matching test files for this selection)"

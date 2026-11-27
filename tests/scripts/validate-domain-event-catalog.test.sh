@@ -104,7 +104,7 @@ expect "a version suffix fails" ver.md 1 "FAIL: SeedPacketClaimedV2: no version 
 sed 's/SeedPacketClaimed/seed_packet_claimed/g' good.md > snake.md
 expect "a non-PascalCase name fails" snake.md 1 "FAIL: seed_packet_claimed: PascalCase"
 
-sed 's/| listingId | the listing | key |/| listingId | the listing | key |\n| occurredAt | when | ordering |/' good.md > env.md
+sed_multiline 's/| listingId | the listing | key |/| listingId | the listing | key |\n| occurredAt | when | ordering |/' good.md > env.md
 expect "an envelope field in the payload fails" env.md 1 "payload field 'occurredAt' is not an envelope attribute"
 
 sed 's/| Postage | Whenever SeedPacketClaimed, then QueuePostage | listingId |/| Postage | queues postage | listingId |/' good.md > nopolicy.md
@@ -125,7 +125,7 @@ expect "a missing retention need fails" noret.md 1 "FAIL: ClaimHoldExtended: 're
 sed '/^| holdUntil /d' good.md > thin.md
 expect "an ID-only payload warns" thin.md 0 "WARN: ClaimHoldExtended: one payload field"
 
-sed 's/^| ClaimHoldExtended | Listing | internal | none |$/| ClaimHoldExtended | Listing | internal | none |\n| SeedPacketPosted | Listing | published | Members |/' good.md > orphan.md
+sed_multiline 's/^| ClaimHoldExtended | Listing | internal | none |$/| ClaimHoldExtended | Listing | internal | none |\n| SeedPacketPosted | Listing | published | Members |/' good.md > orphan.md
 expect "a summary row with no event block fails" orphan.md 1 "missing: SeedPacketPosted"
 
 sed '/^traces-to:/d' good.md > notrace.md

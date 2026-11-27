@@ -38,11 +38,11 @@ fi
 # Filling in an Alert Inventory row (page + ticket) and a Review Log row
 # makes it pass. Insert after each table's separator row (not the header),
 # so row order stays [header, separator, data...] as validate expects.
-sed -i '/^## Alert Inventory$/,/^$/{/^|---|---|---|---|---|$/a\
+sed_in_place '/^## Alert Inventory$/,/^$/{/^|---|---|---|---|---|$/a\
 | FastBurn | test-slo | page | 1h+5m, 14.4x | runbooks/test.md |\
 | Trickle | test-slo | ticket | 3d+6h, 1x | runbooks/test.md |
 }' "$FRESH"
-sed -i '/^## Review Log$/,/^$/{/^|---|---|---|---|---|---|$/a\
+sed_in_place '/^## Review Log$/,/^$/{/^|---|---|---|---|---|---|$/a\
 | 2026-07-24 | FastBurn | 1 | yes | no | keep |
 }' "$FRESH"
 
@@ -54,7 +54,7 @@ fi
 
 # Removing the Toil column from the Review Log header must fail that
 # specific check without regressing the others.
-sed -i 's/| Date | Alert | Fired count | Actioned? | Toil (repeat manual fix?) | Decision (keep\/tune\/delete\/automate) |/| Date | Alert | Fired count | Actioned? | Decision (keep\/tune\/delete\/automate) |/' "$FRESH"
+sed_in_place 's/| Date | Alert | Fired count | Actioned? | Toil (repeat manual fix?) | Decision (keep\/tune\/delete\/automate) |/| Date | Alert | Fired count | Actioned? | Decision (keep\/tune\/delete\/automate) |/' "$FRESH"
 OUTPUT2="$("$VALIDATE" "$FRESH" 2>&1)"
 if echo "$OUTPUT2" | grep -q "FAIL: '## Review Log' header has a Toil column"; then
   _pass "validate-alerting-rules-design: catches a Review Log missing its Toil column"

@@ -122,7 +122,7 @@ for a in m['artifacts']:
 json.dump(m, open(p, 'w'), indent=2)"
 VS="$P4/strategy/vision-statement.md"
 before="$(cat "$VS")"
-sed -i 's/^version: 1.2.0$/version: 1.3.0/' "$VS"
+sed_in_place 's/^version: 1.2.0$/version: 1.3.0/' "$VS"
 python3 -c "
 import json, sys
 print(json.dumps({'tool_name': 'Edit', 'tool_input': {'file_path': sys.argv[1]}, 'tool_response': {'originalFile': sys.argv[2]}, 'cwd': '/x'}))" "$VS" "$before" \
