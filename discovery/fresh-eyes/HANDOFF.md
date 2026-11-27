@@ -10,14 +10,14 @@ Work moved to another machine and another Claude account. Everything needed is i
 | All finished Wave 3 work | branch `fresh-eyes/wave-3-testing` |
 | Decisions (authoritative, with every follow-up) | `.sdlc-memory/tree/self/decisions/D048.md` on that branch |
 | Audit findings | `discovery/fresh-eyes/wave-3-findings.md` and `wave-3/` on that branch |
-| Interrupted rebuild: `go-contract-test` | #1489, draft PR #1506, branch `issue-1489-wave-3-skill-go-contract-test-research-grounded-re`; notes in `discovery/fresh-eyes/handoff/go-contract-test-notes.md` on that branch. The skill is unchanged. |
+| Finished rebuild: `go-contract-test` | #1489, PR #1506, merged into the wave branch. The research notes from its interrupted first attempt are kept in `discovery/fresh-eyes/handoff/go-contract-test-notes.md`; its sections 11 and 12 are superseded by the decisions of 2026-11-28 in D048. |
 | Per-skill record (eval runs, diagnoses, grader changes) | comments on each sub-issue |
 | Original campaign plan (was only on the old machine) | `discovery/fresh-eyes/handoff/fresh-eyes-plan.md` |
 | Project-board tooling state (normally gitignored) | `discovery/fresh-eyes/handoff/github-project-state.json` |
 
 ## Status
 
-Done and merged into the wave branch (20 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **10 of 24 skills**:
+Done and merged into the wave branch (20 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **11 of 24 skills**:
 
 | Skill | Eval runs | Eval cost | Final |
 |---|---|---|---|
@@ -31,18 +31,19 @@ Done and merged into the wave branch (20 sub-issues, board status Done): setup (
 | python-unit-test | 2 | $6.24 | pass, +0.22 |
 | go-integration-test | 4 | $13.38 | pass, +0.56 |
 | python-integration-test | 2 | $6.98 | pass, +0.67 |
-| **Total** | | **$84.87** | |
+| go-contract-test | 3 | $8.37 | pass, +1.00 |
+| **Total** | | **$93.24** | |
 
 Earlier chat and issue totals of $73.99, $87.90 and $98.37 were addition errors; $84.87 is the sum of the saved run results (which are gitignored and stay on the old machine).
 
-Also done (2026-11-28): **#1510**, every script and test runs on stock macOS as well as Linux; the portability check is a blocking gate step and CI runs on both systems. Eval re-runs for it: `adr-authoring` and `skill-authoring-standards`, both pass, $5.67 (wave eval spend now $90.54).
+Also done (2026-11-28): **#1510**, every script and test runs on stock macOS as well as Linux; the portability check is a blocking gate step and CI runs on both systems. Eval re-runs for it: `adr-authoring` and `skill-authoring-standards`, both pass, $5.67 (wave eval spend with the table above: $98.91).
 
 Remaining:
 
-1. **#1489** `go-contract-test` (in progress; six product-owner decisions listed on the issue are not yet asked).
+1. **#1490** `python-contract-test` next: it must follow the contract decisions of 2026-11-28 in D048 (Pact for every direct service-to-service call, daily run, deployment check), which `go-contract-test` (#1489, done) already carries.
 2. **#1507** Python coverage gate lists test-support code (decided, option B); re-evaluate `python-unit-test`. Separate branch.
 3. **#1490–#1502** the other 13 skills: python-contract, go/python e2e, load, chaos, mutation, performance, react-component, react-e2e.
-4. **#1503** close-out: follow-ups recorded on #1450 and #1503 (including re-running evals for `test-pyramid`, `go-unit-test`, `mock-generation`, edited after they passed), then a PR from the wave branch to `main` for the product owner's review.
+4. **#1503** close-out: follow-ups recorded on #1450 and #1503 (including re-running evals for `test-pyramid`, `go-unit-test`, `mock-generation`, edited after they passed), then a PR from the wave branch to `main` for the product owner's review. Also for #1503: align `test-pyramid`, `ci-pipeline` and `cd-pipeline` with the daily Pact run and the `can-i-deploy` deployment check.
 
 Estimate for the remaining eval spend: about $95–170, within the $450 wave ceiling (about $85 used).
 
