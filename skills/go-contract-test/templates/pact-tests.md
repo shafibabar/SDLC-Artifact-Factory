@@ -221,6 +221,134 @@ func mustEnv(t *testing.T, name string) string {
 
 When the provider reads from PostgreSQL, a state handler seeds **real, committed rows scoped to that state** (`test-fixture-design`), because the verifier's request arrives on another connection and cannot see an open transaction; `forget` then deletes exactly those rows.
 
+## When the provider checks a token: adapt
+
+Most providers sit behind token-checking middleware. The verifier replays the header the consumer recorded, and the real middleware rejects it: the run fails with `expected 200 but was 401`, buried among body and header mismatches. The fix keeps the **real router and the real middleware** and changes one thing only: the key they trust is made for this run, and a request filter swaps the recorded example token for one signed with it. Run on Go 1.27.4 with pact-go v2.9.1, chi v5.2.3 and golang-jwt v5.3.0 against an RS256 middleware checking signature, issuer, audience, expiry and scope. `classes.TokenRules` is this example's own way of handing the router its key and rules; use the provider's.
+
+### Consumer: add to `client_pact_test.go`
+
+```go
+const (
+	// exampleToken has the shape of a token and is not one: no key signed it,
+	// so the pact file holds no credential.
+	exampleToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJleGFtcGxlIn0.c2lnbmF0dXJl"
+	bearerShape  = `^Bearer [A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$`
+)
+
+// Regex on the shape: the mock then refuses a request with no token.
+// Like would accept any string at all.
+func withToken(b *consumer.V4RequestBuilder) {
+	b.Header("Authorization", matchers.Regex("Bearer "+exampleToken, bearerShape))
+}
+
+// Every interaction that needs a token: .WithRequest(http.MethodGet, "/v1/classes/"+salsa, withToken)
+
+// No header is recorded, so verification sends none.
+func TestPactSignupIsRefusedWithoutAToken(t *testing.T) {
+	err := newPact(t).
+		AddInteraction().
+		Given("class 7b0e3a52-6c1d-4f6e-9a57-2f1c5f0d9b11 is open with 4 seats left").
+		UponReceiving("a request for an open class without a token").
+		WithRequest(http.MethodGet, "/v1/classes/"+salsa).
+		WillRespondWith(http.StatusUnauthorized).
+		ExecuteTest(t, func(server consumer.MockServerConfig) error {
+			if _, err := clientFor(server, "").Class(context.Background(), salsa); !errors.Is(err, classesclient.ErrUnauthorized) {
+				return fmt.Errorf("err = %v, want ErrUnauthorized", err)
+			}
+			return nil
+		})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// One Provider State carries both facts: BeforeEach runs again before every
+// state of an interaction, so a second Given would undo the first.
+func TestPactSignupIsRefusedWithAnExpiredToken(t *testing.T) {
+	err := newPact(t).
+		AddInteraction().
+		Given("class 7b0e3a52-6c1d-4f6e-9a57-2f1c5f0d9b11 is open with 4 seats left and the caller's token has expired").
+		UponReceiving("a request for an open class with an expired token").
+		WithRequest(http.MethodGet, "/v1/classes/"+salsa, withToken).
+		WillRespondWith(http.StatusUnauthorized).
+		ExecuteTest(t, func(server consumer.MockServerConfig) error {
+			if _, err := clientFor(server, exampleToken).Class(context.Background(), salsa); !errors.Is(err, classesclient.ErrUnauthorized) {
+				return fmt.Errorf("err = %v, want ErrUnauthorized", err)
+			}
+			return nil
+		})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+```
+
+`clientFor(server, token)` builds the real client with that token; an empty token sends no header.
+
+### Provider: add to `provider_pact_test.go`
+
+`stateStore` gains a `tokenExpired bool` that `forget` clears, `set(tokenExpired, classes...)` writes and `expired()` reads; the expired-token state calls `store.set(true, …)`, every other state `store.set(false, …)`.
+
+```go
+// signToken signs with the key made for this run; it carries what the
+// consumer's real token carries.
+func signToken(t *testing.T, key *rsa.PrivateKey, expiry time.Time) string {
+	signed, err := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"iss": issuer, "aud": audience, "sub": "signup", "scope": "classes:read", "exp": expiry.Unix(),
+	}).SignedString(key)
+	if err != nil {
+		t.Errorf("sign the test token: %v", err)
+	}
+	return signed
+}
+
+// replaceToken swaps the recorded example token for one signed in this run.
+// It never adds a header: a request recorded without a token is sent bare.
+func replaceToken(t *testing.T, key *rsa.PrivateKey, store *stateStore) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Header.Get("Authorization") != "" {
+				expiry := time.Now().Add(5 * time.Minute)
+				if store.expired() {
+					expiry = time.Now().Add(-time.Minute)
+				}
+				r.Header.Set("Authorization", "Bearer "+signToken(t, key, expiry))
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// In TestPactClassesHonoursItsConsumers, before the VerifyRequest:
+//
+//	key, err := rsa.GenerateKey(rand.Reader, 2048) // exists only for this run
+//	...
+//	server := httptest.NewServer(classes.NewRouter(store, classes.TokenRules{
+//		Key: &key.PublicKey, Issuer: issuer, Audience: audience, Scope: "classes:read",
+//	}))
+//
+// and in the VerifyRequest:
+//
+//	RequestFilter: replaceToken(t, key, store),
+```
+
+### What was seen with a token
+
+| Situation | Result |
+|---|---|
+| Real middleware, no request filter | Fails, exit 1: `expected 200 but was 401` |
+| The filter above, key made per run | Passes. A provider demanding another audience still fails with 401, another scope with 403 |
+| **Token middleware removed or bypassed in the test router** | **Passes**, also for a pact with no token at all. Only the two refusal interactions notice (`expected 401 but was 200`) |
+| A filter that always sets the header | **Passes for a consumer that never sends a token**; the "no token" interaction is what goes red |
+| "Expired token → 401" with no filter | **Passes for the wrong reason** (the example token is unsigned) and stays green when the provider stops checking claims |
+| The same with the filter signing an expired token | Goes red when the provider stops checking expiry |
+| A working token recorded in the pact | The pact file, and the broker, then hold a credential |
+| Header matched with `Like` | The mock accepts `Bearer not a token at all` |
+| Two `Given` states on one interaction | The second setup wiped the first (`expected 401 but was 500`): `BeforeEach` runs before each state |
+| Provider drops only its audience check | **Stays green**: no interaction covers it. Pact proves a check only where a refusal interaction exists |
+
+The filter runs for interaction requests only, never for the Provider State call. `CustomProviderHeaders` does not exist in v2.9.1 (compile error); `RequestFilter` is the only header option. A state handler can also return the token for a consumer that recorded the header with `matchers.FromProviderState`; it works, but the consumer must opt in and the rule weakens to "any string", so the filter is the default here.
+
 ## What was seen
 
 | Situation | Result |
@@ -240,4 +368,5 @@ When the provider reads from PostgreSQL, a state handler seeds **real, committed
 
 - `go install github.com/pact-foundation/pact-go/v2@v2.9.1` gives a binary named `pact-go`; `pact-go install` downloads the native library to `/usr/local/lib` (needs `sudo`) or to `-d <folder>`. It also writes `~/.pact/pact-go.yml`.
 - Building needs cgo and a C compiler. With `-d`, pass `CGO_LDFLAGS=-L<folder>` and make the folder known to the loader. On macOS the official `go` binary dropped `DYLD_LIBRARY_PATH`, and the installer's rename step failed for a long folder path; `go test -exec "env DYLD_LIBRARY_PATH=<folder>"` worked. The Linux install path was not run for this skill.
+- Set `PACT_DO_NOT_TRACK=true` wherever Pact runs, a laptop included: the native library otherwise sends anonymous usage events (its version, the operating system).
 - Message pacts are not used: events are checked by schema (`./event-contract-tests.md`).

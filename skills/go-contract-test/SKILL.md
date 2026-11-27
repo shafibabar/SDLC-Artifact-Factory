@@ -12,7 +12,7 @@ description: >
   a new enum value in a response, removing a documented error response,
   retiring an endpoint after its sunset, buf breaking for gRPC, or a
   Consumer-Driven Contract with a partner. Produces go-contract-test.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -100,6 +100,7 @@ Worked and run: `./examples/01-lean-dance-studio.md` (two services, every HTTP c
 
 - **"Pact is overkill for a small product; start with schema checks and add Pact when teams split."** *Reason:* that was the old rule and it is reversed. *Instead:* Pact for every direct call at every size, on top of the description checks.
 - **Putting Pact in the pull-request workflow to "catch it earlier".** *Reason:* every build would need the native library and the broker. *Instead:* daily run, and say that the deployment check is the gate.
+- **Switching off or bypassing the token middleware so provider verification passes.** *Reason:* everything then passes, including a consumer that sends no token. *Instead:* keep the real middleware; a request filter swaps the recorded example token for one signed with a key made for the run, and never adds a header. The pact holds no working token.
 - **Reading the provider's green Pact run as "no consumer is broken".** *Reason:* a failing pending or work-in-progress pact exits 0. *Instead:* build the report from `can-i-deploy` answers.
 - **`oasdiff breaking` with no `--fail-on`, or `--fail-on ERR`.** *Reason:* with no flag it exits 0 even on a breaking change, so the check would never fail; `ERR` passes a removed request field. *Instead:* `--fail-on WARN` through the gate script. Say the "would never fail" consequence in words.
 - **Taking the previous commit, `HEAD~1` or the main branch as the baseline ("it is the same thing").** *Reason:* a break introduced an earlier commit ago, or merged but not yet deployed, is already in that baseline and passes. *Instead:* refuse it and compare with the description at the commit that is deployed; never accept it "provided it matches what is deployed".
@@ -121,11 +122,11 @@ Worked and run: `./examples/01-lean-dance-studio.md` (two services, every HTTP c
 |---|---|
 | `./references/http-contracts.md` | The API gate, conformance, consumers; what oasdiff and kin-openapi pass |
 | `./references/event-contracts.md` | Event checks; modes; what no check detects |
-| `./references/pact.md` | Pact flow, daily run, deployment check, selectors, pending, Provider States, broker |
+| `./references/pact.md` | Pact flow, daily run, deployment check, selectors, pending, Provider States, a provider that checks a token, broker |
 | `./references/grpc-contracts.md` | An internal gRPC API |
 | `./templates/http-contract-tests.md` | Writing conformance and consumer tests |
 | `./templates/event-contract-tests.md` | Writing producer and consumer event tests |
-| `./templates/pact-tests.md` | Writing Pact consumer and provider tests |
+| `./templates/pact-tests.md` | Writing Pact consumer and provider tests, including a provider behind token-checking middleware |
 | `./templates/workflows.md` | Pull-request gates, the daily Pact workflow, make targets, deployment steps |
 | `./templates/approval-records.md` | The exceptions and retirements files |
 | `./templates/pact-impact-report.md` | The daily report's format |
