@@ -10,7 +10,7 @@ description: >
   enterprise, writing evals under evals/<skill>/, or choosing a version bump.
   Consulted at the start of every skill-refactor session. Cross-cutting
   governance skill alongside glossary-management and methodology-review.
-version: 2.2.0
+version: 2.3.0
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-23
@@ -95,6 +95,7 @@ How the body is written matters as much as where its files sit. The product owne
 - **Validation loops.** The procedure ends with a loop, not a single check: validate → fix → validate again, until clean. Where the check is mechanical, it is a script.
 - **Plan, validate, execute.** For a change that is costly to undo (a rename across media, a migration, a published contract), the agent first writes the plan as a reviewable list, validates the plan (a script or the checklist), and only then carries it out.
 - **Bundled scripts.** A check or calculation that is deterministic goes in `scripts/` with a test, not in prose for the model to redo each time. Running a script costs only its output in context; prose costs its full length on every load.
+- **Portable scripts.** A script runs the same on Linux and on stock macOS (Bash 3.2, BSD `sed`/`awk`/`grep`); the worst differences are silent, exiting 0 with a different result. Before writing or changing a script, read `./references/portable-scripts.md` for what breaks and what to write instead.
 - **Spend context wisely.** The body holds only what the agent needs on every use. Detail sits behind a pointer that says when to open it. Don't explain what a capable model already knows; spend the words on what it gets wrong.
 
 ## Testing: Behaviour, Not Coherence
@@ -102,7 +103,7 @@ How the body is written matters as much as where its files sit. The product owne
 - **Evals.** Write cases at `evals/<skill>/<case>/prompt.md` with `graders/*.md`. Each asks something only the skill's content answers well, ideally content behind a pointer, so passing also proves progressive disclosure works. Run `tests/run-skill-evals.sh <skill>`. It passes only if every case passes **and** the skill beats the no-plugin baseline. A skill that scores the same without the plugin adds nothing Claude didn't already know.
 - **Separate authorship.** The session that rewrites a skill must not write its exam. A fresh subagent writes the cases and graders from the findings, decisions and `research/` sources alone, never seeing the rewritten skill: give it `./templates/eval-author-brief.md`, filled in. Commit its suite as `Freeze evals: <skill>` before the first run.
 - **The grader-change rule.** After the freeze, a failing case is fixed in the skill, not the grader. A prompt or grader may change only when it is shown wrong: it contradicts a source or decision, it is ambiguous, or it tests something outside the skill's scope. Never change one because the skill fails it. Log every change in the PR under **Eval changes after freeze**: file, the run that failed, old → new, and why. The runner lists every eval file changed since the freeze, so an unlogged change shows.
-- **Scripts.** Every `scripts/` file gets a synthetic-input test in `tests/scripts/`, with no model call.
+- **Scripts.** Every `scripts/` file gets a synthetic-input test in `tests/scripts/`, with no model call. The test builds its fixtures with portable tools too, and CI runs it on both Linux and macOS.
 - **Contract tests.** The existing `tests/skills/<name>.contract.sh` stays until the skill's evals pass, then retires.
 
 ## Declared Composability and Versioning
@@ -130,4 +131,5 @@ List every skill the prose names in the optional `related:` field. A prose "see 
 **Before calling it done:** cross-check the skill against every row of `./resources/skill-quality-rubric.md`, not just the gap that motivated the work, then run the checks:
 - `bash scripts/validate-skill-structure.sh skills/<name>/SKILL.md` — frontmatter, body length, and the full folder spec via `scripts/lint-skill-layout.py`;
 - `python3 scripts/lint-manifests.py` — schema and `sources:` existence;
+- `python3 scripts/lint-portability.py skills/<name>/scripts/*.sh` — when the skill owns scripts: nothing Linux-only;
 - `tests/run-skill-evals.sh <name>` — behaviour and baseline delta.

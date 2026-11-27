@@ -143,7 +143,9 @@ def lint_skill(skill_root: Path) -> list[dict]:
         elif child.is_dir() and child.name not in ALLOWED:
             findings.append(_finding("L2", child, skill_root,
                                      f"folder '{child.name}' is not one of: {', '.join(ALLOWED)}"))
-    if not entry.is_file():
+    # Compare real directory entries, not is_file(): on a file system that
+    # ignores letter case (macOS, Windows) `skill.md` answers to `SKILL.md`.
+    if "SKILL.md" not in {c.name for c in skill_root.iterdir() if c.is_file()}:
         findings.append(_finding("L1", entry, skill_root, "missing SKILL.md entry file"))
         return findings
 

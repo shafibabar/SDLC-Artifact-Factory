@@ -116,7 +116,10 @@ expect "a Command suffix fails" suffix.md 1 "FAIL: InspectHiveCommand: no 'Comma
 sed 's/^| \*\*Aggregate\*\* | Hive — by hiveId |$/| **Aggregate** | Hive and Apiary — by id |/' good.md > twoagg.md
 expect "two target Aggregates fail" twoagg.md 1 "targets one Aggregate"
 
-sed '0,/| \*\*Records\*\* | HiveInspected |/s//| **Records** | none |/' good.md > norec.md
+# `1,/re/`, not GNU's `0,/re/`: BSD sed (macOS) has no line 0. The two are
+# the same here because line 1 of these fixtures is the `---` frontmatter fence.
+# The pattern is repeated in `s/re/…/` because BSD sed rejects an empty `s//` there.
+sed '1,/| \*\*Records\*\* | HiveInspected |/s/| \*\*Records\*\* | HiveInspected |/| **Records** | none |/' good.md > norec.md
 expect "a Command that records nothing fails" norec.md 1 "FAIL: InspectHive: records an event"
 
 sed 's/| \*\*On a duplicate\*\* | returns the first outcome, rejection included; keys kept 7 days |/| **On a duplicate** | re-runs the Command against current state |/' good.md > rerun.md
@@ -128,7 +131,7 @@ expect "a Policy issuer not written as a policy fails" nopolicy.md 1 "a Policy i
 sed 's/| inspectorId | who inspected | authenticated context | — |/| inspectorId | who inspected | request | — |/' good.md > body.md
 expect "identity taken from the request fails" body.md 1 "FAIL: InspectHive: input 'inspectorId' comes from the authenticated context"
 
-sed 's/| inspectorId | who inspected | authenticated context | — |/| inspectorId | who inspected | authenticated context | — |\n| newKeeperId | who will keep the hive next | request | present |/' good.md > target.md
+sed_multiline 's/| inspectorId | who inspected | authenticated context | — |/| inspectorId | who inspected | authenticated context | — |\n| newKeeperId | who will keep the hive next | request | present |/' good.md > target.md
 expect "a person named as an ordinary input may come from the request" target.md 0 "INFO: 2 Command(s)"
 
 sed 's/| rule violated | Aggregate |/| rule violated | API handler |/' good.md > edge.md
@@ -143,7 +146,7 @@ expect "a missing concurrency decision fails" noconc.md 1 "FAIL: InspectHive: 'c
 sed 's/| \*\*Idempotency key\*\* | the DiseaseConfirmed event ID |/| **Idempotency key** | natural: one quarantine per hive |/' good.md > polkey.md
 expect "a Policy without an event-ID key warns" polkey.md 0 "WARN: QuarantineHive: issued by a Policy"
 
-sed 's/^| QuarantineHive | Hive | Policy | HiveQuarantined |$/| QuarantineHive | Hive | Policy | HiveQuarantined |\n| MoveHive | Hive | beekeeper | HiveMoved |/' good.md > orphan.md
+sed_multiline 's/^| QuarantineHive | Hive | Policy | HiveQuarantined |$/| QuarantineHive | Hive | Policy | HiveQuarantined |\n| MoveHive | Hive | beekeeper | HiveMoved |/' good.md > orphan.md
 expect "a summary row with no Command block fails" orphan.md 1 "missing: MoveHive"
 
 sed '/^traces-to:/d' good.md > notrace.md

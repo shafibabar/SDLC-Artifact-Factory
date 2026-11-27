@@ -37,7 +37,8 @@ fi
 TITLE="${3:-}"
 
 if [ -z "$TITLE" ]; then
-  TITLE="$(echo "$SLUG" | sed -E 's/(^|-)([a-z])/\1\U\2/g; s/-/ /g')"
+  # awk, not sed's \U: case conversion in sed is GNU-only and absent on macOS.
+  TITLE="$(echo "$SLUG" | awk -F- '{ for (i = 1; i <= NF; i++) $i = toupper(substr($i, 1, 1)) substr($i, 2); print }' OFS=' ')"
 fi
 
 if [ ! -f "$TEMPLATE" ]; then

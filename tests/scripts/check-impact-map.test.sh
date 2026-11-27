@@ -90,7 +90,7 @@ expect_error "no re-plan trigger" 's/^## Re-plan Trigger/## Notes/' "no '## Re-p
 sed -e 's/| ethical | none | T-3 |/| viability | none | T-3 |/' "$SCRATCH_DIR/ok.md" > "$SCRATCH_DIR/w.md"
 out="$(python3 "$CHK" "$SCRATCH_DIR/w.md")"; rc=$?
 [[ $rc -eq 0 && "$out" == *"WARNING: Selected Path: no ethical assumption"* ]] && _pass "$T: warns on no ethical assumption" || _fail "$T: warns on no ethical assumption" "rc=$rc $out"
-sed -e 's/| Confirms or cancels ahead instead of not turning up |/| Patient uses the reminders page |/' -e 's/^## Re-plan Trigger/## MVP Scope\n\n## Re-plan Trigger/' "$SCRATCH_DIR/ok.md" > "$SCRATCH_DIR/w2.md"
+sed_multiline -e 's/| Confirms or cancels ahead instead of not turning up |/| Patient uses the reminders page |/' -e 's/^## Re-plan Trigger/## MVP Scope\n\n## Re-plan Trigger/' "$SCRATCH_DIR/ok.md" > "$SCRATCH_DIR/w2.md"
 out="$(python3 "$CHK" "$SCRATCH_DIR/w2.md")"; rc=$?
 [[ $rc -eq 0 && "$out" == *"reads as feature usage"* && "$out" == *"an 'MVP' heading"* ]] && _pass "$T: warns on feature usage and MVP heading" || _fail "$T: warns on feature usage and MVP heading" "rc=$rc $out"
 python3 "$CHK" "$SCRATCH_DIR/missing.md" >/dev/null 2>&1; r=$?

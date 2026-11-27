@@ -118,10 +118,10 @@ expect "a sync detail block without a timeout fails" 1 "timeout stated" nodetail
 sed 's/^- \*\*Retry:\*\* 2 retries with jitter (a read)$/- **Retry:** 3 retries/' good.md > blinddetail.md
 expect "a sync detail retry that isn't idempotent or keyed fails" 1 "retry says idempotent" blinddetail.md
 
-sed 's/^## Cross-Context Reads$/## Coordination\n\n- **Race weekend:** choreographed; eventual\n\n## Cross-Context Reads/' good.md > coord.md
+sed_multiline 's/^## Cross-Context Reads$/## Coordination\n\n- **Race weekend:** choreographed; eventual\n\n## Cross-Context Reads/' good.md > coord.md
 expect "a coordinated flow missing the three axes fails" 1 "states communication, consistency and coordination" coord.md
 
-sed 's/^## Cross-Context Reads$/## Coordination\n\n- **Race weekend:** communication: async · consistency: eventual · coordination: choreographed (anthology saga)\n\n## Cross-Context Reads/' good.md > coordok.md
+sed_multiline 's/^## Cross-Context Reads$/## Coordination\n\n- **Race weekend:** communication: async · consistency: eventual · coordination: choreographed (anthology saga)\n\n## Cross-Context Reads/' good.md > coordok.md
 expect "a coordinated flow on three axes passes" 0 "" coordok.md
 
 sed 's/^- \*\*Profile:\*\* standard$/- **Profile:** lean/' good.md > leanlong.md

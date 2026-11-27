@@ -19,6 +19,11 @@
 #                                       relative pointers only. REPORT-only while the
 #                                       Fresh-Eyes waves migrate skills; flips to BLOCKING
 #                                       once every skill is clean (#1227).
+#   7. lint-portability.py   BLOCKING   Shell constructs that work on Linux but fail, or
+#                                       silently differ, on stock macOS (sed -i, GNU-only
+#                                       sed/awk/grep features, Bash 4 syntax, GNU-only
+#                                       commands). Blocking since #1510 left the tree at
+#                                       0 findings; a guarded use carries `portable-ok:`.
 #
 # The gate exits non-zero IFF a BLOCKING step failed. Report-only steps run,
 # print their findings, and never change the gate's exit code.
@@ -59,7 +64,7 @@ run_blocking_py() {
 # ---------------------------------------------------------------------------
 # Step 1 — Schema + arch tests  (BLOCKING)
 # ---------------------------------------------------------------------------
-section "STEP 1/6  Schema + arch tests            [BLOCKING]"
+section "STEP 1/7  Schema + arch tests            [BLOCKING]"
 shopt -s nullglob
 SCHEMA_TESTS=("$REPO_ROOT"/tests/schemas/*.schema.test.py)
 ARCH_TESTS=("$REPO_ROOT"/tests/arch/*.test.py)
@@ -76,7 +81,7 @@ fi
 # ---------------------------------------------------------------------------
 # Step 2 — Manifest linter  (BLOCKING)
 # ---------------------------------------------------------------------------
-section "STEP 2/6  lint-manifests.py               [BLOCKING]"
+section "STEP 2/7  lint-manifests.py               [BLOCKING]"
 "$PY" "$REPO_ROOT/scripts/lint-manifests.py"
 MANIFEST_RC=$?
 if [[ $MANIFEST_RC -ne 0 ]]; then
@@ -87,14 +92,14 @@ fi
 # ---------------------------------------------------------------------------
 # Step 3 — Duplication linter  (REPORT-ONLY, never fails)
 # ---------------------------------------------------------------------------
-section "STEP 3/6  lint-duplication.py             [REPORT-ONLY]"
+section "STEP 3/7  lint-duplication.py             [REPORT-ONLY]"
 "$PY" "$REPO_ROOT/scripts/lint-duplication.py" || true
 echo "(lint-duplication is report-only — its exit code never affects the gate.)"
 
 # ---------------------------------------------------------------------------
 # Step 4 — Relationship linter  (BLOCKING since P2 close-out)
 # ---------------------------------------------------------------------------
-section "STEP 4/6  lint-relationships.py           [BLOCKING]"
+section "STEP 4/7  lint-relationships.py           [BLOCKING]"
 REL_OUT="$("$PY" "$REPO_ROOT/scripts/lint-relationships.py" 2>&1)"
 REL_RC=$?
 echo "$REL_OUT"
@@ -115,7 +120,7 @@ fi
 # ---------------------------------------------------------------------------
 # Step 5 — Derived catalog staleness  (BLOCKING, P3)
 # ---------------------------------------------------------------------------
-section "STEP 5/6  build-catalog.py --check            [BLOCKING]"
+section "STEP 5/7  build-catalog.py --check            [BLOCKING]"
 "$PY" "$REPO_ROOT/scripts/arch/build-catalog.py" --check
 CATALOG_RC=$?
 if [[ $CATALOG_RC -ne 0 ]]; then
@@ -128,17 +133,30 @@ fi
 # ---------------------------------------------------------------------------
 # Step 6 — Skill folder-spec linter  (REPORT-ONLY until the Fresh-Eyes waves land)
 # ---------------------------------------------------------------------------
-section "STEP 6/6  lint-skill-layout.py            [REPORT-ONLY]"
+section "STEP 6/7  lint-skill-layout.py            [REPORT-ONLY]"
 "$PY" "$REPO_ROOT/scripts/lint-skill-layout.py" --summary || true
 echo "(lint-skill-layout is report-only until every skill is migrated — run it"
 echo " without --summary for the per-file findings.)"
+
+# ---------------------------------------------------------------------------
+# Step 7 — Shell portability linter  (BLOCKING, #1510)
+# ---------------------------------------------------------------------------
+section "STEP 7/7  lint-portability.py             [BLOCKING]"
+"$PY" "$REPO_ROOT/scripts/lint-portability.py"
+PORTABILITY_RC=$?
+if [[ $PORTABILITY_RC -ne 0 ]]; then
+  echo ">>> BLOCKING FAILURE (exit $PORTABILITY_RC): scripts/lint-portability.py"
+  echo "    A script uses something that fails or silently differs on stock macOS."
+  echo "    See skills/skill-authoring-standards/references/portable-scripts.md."
+  GATE_RC=1
+fi
 
 # ---------------------------------------------------------------------------
 # Verdict
 # ---------------------------------------------------------------------------
 section "GOVERNANCE GATE RESULT"
 if [[ $GATE_RC -eq 0 ]]; then
-  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests, lint-relationships, catalog)."
+  echo "PASS: all BLOCKING checks green (schema+arch tests, lint-manifests, lint-relationships, catalog, portability)."
   echo "      Report-only checks ran; their findings above do not gate."
 else
   echo "FAIL: one or more BLOCKING checks failed (see >>> markers above)."

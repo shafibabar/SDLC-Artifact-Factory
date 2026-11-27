@@ -30,13 +30,13 @@ else
 fi
 
 # Filling in all three tables with a real data row makes it pass entirely.
-sed -i '/## Domain Primitives/,/^$/{/|---|---|---|/a\
+sed_in_place '/## Domain Primitives/,/^$/{/|---|---|---|/a\
 | TenantID | NewTenantID | non-nil UUID |
 }' "$FRESH"
-sed -i '/## Policies/,/^$/{/|---|---|---|---|/a\
+sed_in_place '/## Policies/,/^$/{/|---|---|---|---|/a\
 | P1 | Tenant isolation | subject.tenant_id, resource.tenant_id | allow/deny |
 }' "$FRESH"
-sed -i '/## Per-Aggregate Trust-Boundary Decisions/,/^$/{/|---|---|---|---|/a\
+sed_in_place '/## Per-Aggregate Trust-Boundary Decisions/,/^$/{/|---|---|---|---|/a\
 | DataAsset | yes | yes | yes |
 }' "$FRESH"
 

@@ -86,7 +86,7 @@ expect_error "no narrated spine" 's/^## Narrated Spine/## Spine/' "no '## Narrat
 expect_error "enterprise needs re-cut log" 's/^profile: standard/profile: enterprise/' "no '## Re-cut Log' section"
 
 # 3. Lean needs only the spine and the map.
-sed -e 's/^profile: standard/profile: lean/' -e '/^## Must Check/,$d' -e '/^## Big Picture/,/^## Narrated Spine/{/^## Narrated Spine/!d}' "$SCRATCH_DIR/ok.md" > "$SCRATCH_DIR/lean.md"
+sed -e 's/^profile: standard/profile: lean/' -e '/^## Must Check/,$d' -e '/^## Big Picture/,/^## Narrated Spine/{/^## Narrated Spine/!d;}' "$SCRATCH_DIR/ok.md" > "$SCRATCH_DIR/lean.md"
 out="$(python3 "$CHK" "$SCRATCH_DIR/lean.md")"; rc=$?
 [[ $rc -eq 0 ]] && _pass "$T: lean one-page map passes" || _fail "$T: lean one-page map passes" "rc=$rc $out"
 

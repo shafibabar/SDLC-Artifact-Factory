@@ -199,7 +199,12 @@ ROW="| mutation | go | mutation-report 2026-11-20 | 1,860/1,900 | the 40 survivo
 mutate waived.md "$NONE" "$ROW"
 expect "a complete waiver above 90 passes" 0 "0 check(s) failed" waived.md
 waiver() { # waiver <label> <substring> <old> <new>
-  bad "$1" "$2" "$NONE" "${ROW/"$3"/"$4"}"
+  # Cut and rejoin, not ${ROW/"$3"/"$4"}: Bash 3.2 (macOS) keeps the quotes of a
+  # quoted replacement as literal characters, and newer Bash expands `&` in an
+  # unquoted one.
+  local row="$ROW"
+  [[ "$ROW" == *"$3"* ]] && row="${ROW%%"$3"*}$4${ROW#*"$3"}"
+  bad "$1" "$2" "$NONE" "$row"
 }
 waiver "waiver at exactly 90" "waiver 'mutation go': result is more than 90%" "1,860/1,900" "1,710/1,900"
 waiver "waiver below 90" "waiver 'mutation go': result is more than 90%" "1,860/1,900" "1,500/1,900"

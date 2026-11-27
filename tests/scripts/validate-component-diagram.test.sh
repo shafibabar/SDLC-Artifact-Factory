@@ -113,19 +113,19 @@ sed '/^- Anti-corruption adapter around the Harbour Sensor Feed$/d' good.md > no
 expect "no departure from the default fails (skip instead)" 1 "names at least one departure" nodep.md
 
 sed 's/^|     | calls  /|     | 1. calls/' good.md > step.md
-sed -i 's/^|  Gauge Handlers \[Component: entry point\]  /|  (1) Gauge Handlers [Component: entry point]/' step.md
+sed_in_place 's/^|  Gauge Handlers \[Component: entry point\]  /|  (1) Gauge Handlers [Component: entry point]/' step.md
 expect "step numbers on the picture fail" 1 "no step numbers" step.md
 
 sed 's/--uses-->/<--uses-->/' good.md > twoway.md
 expect "a two-way arrow fails" 1 "no two-way arrows" twoway.md
 
-{ cat good.md | sed 's/^   Sensor Adapter --- reads tide levels \[HTTPS\] ---> Harbour Sensor Feed$/+-- Harbour Service [Container: API, Go] ---+\n   Sensor Adapter --- reads [HTTPS] ---> Harbour Sensor Feed/'; } > twoframes.md
+{ cat good.md | sed_multiline 's/^   Sensor Adapter --- reads tide levels \[HTTPS\] ---> Harbour Sensor Feed$/+-- Harbour Service [Container: API, Go] ---+\n   Sensor Adapter --- reads [HTTPS] ---> Harbour Sensor Feed/'; } > twoframes.md
 expect "two container boundaries fail" 1 "exactly one container boundary" twoframes.md
 
 sed 's/^| Gauge Handlers | Gauge Use Cases | calls | inward |$/| Gauge Handlers | Gauge Use Cases | HTTP | inward |/' good.md > proto.md
 expect "a protocol between two components fails" 1 "no protocol between two components" proto.md
 
-sed 's/^| Gauge Use Cases | Gauge Domain | uses via port | inward |$/| Gauge Use Cases | Gauge Domain | uses via port | inward |\n| Gauge Domain | Gauge Use Cases | calls | outward |/' good.md > cycle.md
+sed_multiline 's/^| Gauge Use Cases | Gauge Domain | uses via port | inward |$/| Gauge Use Cases | Gauge Domain | uses via port | inward |\n| Gauge Domain | Gauge Use Cases | calls | outward |/' good.md > cycle.md
 expect "two components depending on each other fail" 1 "no two components depend on each other" cycle.md
 
 sed 's/^- \*\*Check:\*\*.*$/- **Check:** [none]/' good.md > noff.md

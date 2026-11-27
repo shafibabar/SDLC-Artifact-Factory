@@ -98,7 +98,10 @@ expect "a wish as a trigger fails" wish.md 1 "FAIL: Tides: the trigger is eviden
 sed 's/^| \*\*Staleness accepted\*\* | 30 seconds — skippers plan by the hour |$/| **Staleness accepted** | immediate |/' good.md > stale.md
 expect "a projected context claiming immediate consistency fails" stale.md 1 "projected views accept some staleness"
 
-sed '0,/^| \*\*Event sourced\*\* | no |$/s//| **Event sourced** | yes — Mooring; projections are required |/' good.md > es.md
+# `1,/re/`, not GNU's `0,/re/`: BSD sed (macOS) has no line 0. The two are
+# the same here because line 1 of these fixtures is the `---` frontmatter fence.
+# The pattern is repeated in `s/re/…/` because BSD sed rejects an empty `s//` there.
+sed '1,/^| \*\*Event sourced\*\* | no |$/s/^| \*\*Event sourced\*\* | no |$/| **Event sourced** | yes — Mooring; projections are required |/' good.md > es.md
 expect "an event-sourced context on a Simple Read Model fails" es.md 1 "FAIL: Moorings: an event-sourced context is on projections"
 
 sed 's/^| Berths free tonight | simple read model | one join over two tables |$/| Berths free tonight | projection: BerthBoard | faster |/' good.md > qproj.md
@@ -107,7 +110,7 @@ expect "a projection query in a rung-1 context fails" qproj.md 1 "is served by a
 sed 's/^| \*\*Read side\*\* | simple read model |$/| **Read side** | full CQRS |/' good.md > side.md
 expect "an unknown read side fails" side.md 1 "read side is 'simple read model' or 'projections'"
 
-sed '0,/^| \*\*Revisit when\*\* | a second screen.*$/s//| **Revisit when** | |/' good.md > norev.md
+sed '1,/^| \*\*Revisit when\*\* | a second screen.*$/s/^| \*\*Revisit when\*\* | a second screen.*$/| **Revisit when** | |/' good.md > norev.md
 expect "a missing revisit-when fails" norev.md 1 "FAIL: Moorings: 'revisit when' is filled in"
 
 sed 's/^| Skipper.s booking with tide window | Moorings, Tides | API Composition | none — composition | — |$/| Skipper booking | Moorings, Tides | CQRS view | | |/' good.md > xview.md
@@ -116,7 +119,7 @@ expect "a cross-service CQRS view with no trigger or owner fails" xview.md 1 "a 
 sed 's/^| Skipper.s booking with tide window | Moorings, Tides | API Composition | none — composition | — |$/| Skipper booking | Moorings, Tides | shared database | — | — |/' good.md > shared.md
 expect "a shared-database approach fails" shared.md 1 "approach is API Composition or CQRS view"
 
-sed 's/^| Tides | projections | harbour board load | 30 seconds |$/| Tides | projections | harbour board load | 30 seconds |\n| Weather | simple read model | none | immediate |/' good.md > orphan.md
+sed_multiline 's/^| Tides | projections | harbour board load | 30 seconds |$/| Tides | projections | harbour board load | 30 seconds |\n| Weather | simple read model | none | immediate |/' good.md > orphan.md
 expect "a summary row with no context block fails" orphan.md 1 "missing: Weather"
 
 sed '/^traces-to:/d' good.md > notrace.md

@@ -161,7 +161,7 @@ P
 ok "a complete file with a real map path (no EM- ID) passes, 'as well' included"
 
 # Path forms
-write_good; sed -i 's#Example map: ideate/#Example map: artifacts/acme/ideate/#' "$GOOD"; ok "a map path starting artifacts/<product>/ is accepted"
+write_good; sed_in_place 's#Example map: ideate/#Example map: artifacts/acme/ideate/#' "$GOOD"; ok "a map path starting artifacts/<product>/ is accepted"
 
 # A rules-only story passes
 write_good
@@ -205,7 +205,7 @@ bad "vague 'works well'" "ambiguous word" 't.replace("Then the locker stays shut
 bad "HTTP in a criterion" "technical" 't.replace("Then the locker stays shut", "Then GET /parcels returns nothing")'
 bad "response time as a criterion" "quality target" 't.replace("Then the locker stays shut", "Then the p95 latency is under 200 ms")'
 bad "criterion outside the three angles" "sits under Happy, Negative or Edge" 't.replace("## Explicitly Out of Scope", "## Other\n\n### AC-US-7.9: Extra\n- From: R1 (R1.E1)\n\n## Explicitly Out of Scope")'
-write_map; write_good; sed -i 's/Then the locker stays shut/Then the database shows nothing/' "$GOOD"
+write_map; write_good; sed_in_place 's/Then the locker stays shut/Then the database shows nothing/' "$GOOD"
 OUT="$("$VALIDATE" "$GOOD" 2>&1)"; RC=$?
 if [ "$RC" -eq 0 ] && echo "$OUT" | grep -q "^WARN: AC-US-7.3 says 'database'"; then _pass "validate-criteria: a technical word warns without failing"; else _fail "validate-criteria: a technical word warns without failing" "exit $RC"; fi
 bad "assumption left in" "no assumption or unknown" 't.replace("Then the locker stays shut", "Then the outcome is unknown (Q-2)")'

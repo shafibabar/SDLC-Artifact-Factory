@@ -1,13 +1,24 @@
 name: governance
 
-# Architecture Review governance gate (P1.9, closes #790).
+# Architecture Review governance gate (P1.9, closes #790), run on Linux and on
+# macOS (#1510): every script in this repository must behave the same on both.
 #
-# Runs scripts/lint-all.sh — the single gate that bundles, in order:
-#   * schema + arch tests           (BLOCKING)
-#   * scripts/lint-manifests.py     (BLOCKING)
-#   * scripts/lint-duplication.py   (report-only)
-#   * scripts/lint-relationships.py (reporting-only-for-now — tracked P2 backlog)
-# The job fails iff a BLOCKING step fails; the report-only steps never fail it.
+# Each job runs:
+#   1. scripts/lint-all.sh — the single gate that bundles, in order:
+#        * schema + arch tests           (BLOCKING)
+#        * scripts/lint-manifests.py     (BLOCKING)
+#        * scripts/lint-duplication.py   (report-only)
+#        * scripts/lint-relationships.py (BLOCKING)
+#        * build-catalog.py --check      (BLOCKING)
+#        * scripts/lint-skill-layout.py  (report-only)
+#        * scripts/lint-portability.py   (BLOCKING)
+#      The step fails iff a BLOCKING check fails.
+#   2. tests/run-smoke-tests.sh scripts schemas arch — the tests that need no
+#      model call. The pass counts on the two systems must match.
+#
+# The macOS job puts only the system folders (and the Python that was set up)
+# on the PATH and starts /bin/bash, which is Bash 3.2, so a script that leans on
+# Homebrew's GNU tools or on a newer Bash fails here rather than on a user's Mac.
 
 on:
   pull_request:
@@ -16,8 +27,12 @@ on:
 
 jobs:
   governance:
-    name: governance gate (schemas + linters)
-    runs-on: ubuntu-latest
+    name: governance gate + script tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
@@ -30,5 +45,21 @@ jobs:
       - name: Install linter dependencies
         run: pip install pyyaml jsonschema
 
-      - name: Run the governance gate
-        run: scripts/lint-all.sh
+      - name: Set a git identity for the tests that build a scratch repository
+        run: |
+          git config --global user.email "ci@example.invalid"
+          git config --global user.name "ci"
+
+      - name: Run the governance gate and the script tests (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          bash scripts/lint-all.sh
+          bash tests/run-smoke-tests.sh scripts schemas arch
+
+      - name: Run the governance gate and the script tests (stock macOS tools)
+        if: runner.os == 'macOS'
+        run: |
+          STOCK_PATH="$(dirname "$(command -v python3)"):/usr/bin:/bin:/usr/sbin:/sbin"
+          env PATH="$STOCK_PATH" /bin/bash --version | head -1
+          env PATH="$STOCK_PATH" /bin/bash scripts/lint-all.sh
+          env PATH="$STOCK_PATH" /bin/bash tests/run-smoke-tests.sh scripts schemas arch

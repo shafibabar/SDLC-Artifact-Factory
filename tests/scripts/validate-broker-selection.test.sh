@@ -113,7 +113,7 @@ Every flow stays inside one deployable, so events are published in-process. This
 
 - none: nothing is open yet.
 EOF
-sed -i 's/^- none: nothing is open yet\./- None: no questions yet./' nobroker.md
+sed_in_place 's/^- none: nothing is open yet\./- None: no questions yet./' nobroker.md
 
 expect "a complete document passes" 0 "0 check(s) failed" good.md
 expect "a no-broker document passes" 0 "0 check(s) failed" nobroker.md

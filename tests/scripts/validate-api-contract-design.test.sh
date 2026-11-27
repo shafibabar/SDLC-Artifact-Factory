@@ -30,7 +30,7 @@ else
 fi
 
 # Replacing the placeholder row with a real endpoint makes it pass entirely.
-sed -i 's/| \[GET\/POST\/PUT\/PATCH\/DELETE\] | \[\/v1\/resource-path\] | \[Command or Read Model name it maps to\] | \[BearerAuth \/ none\] | \[Yes — Idempotency-Key supported \/ No — safe method\] |/| GET | \/v1\/compliance-gaps | ComplianceGapSummary Read Model | BearerAuth | No — safe method |/' "$FRESH"
+sed_in_place 's/| \[GET\/POST\/PUT\/PATCH\/DELETE\] | \[\/v1\/resource-path\] | \[Command or Read Model name it maps to\] | \[BearerAuth \/ none\] | \[Yes — Idempotency-Key supported \/ No — safe method\] |/| GET | \/v1\/compliance-gaps | ComplianceGapSummary Read Model | BearerAuth | No — safe method |/' "$FRESH"
 
 if "$VALIDATE" "$FRESH" >/dev/null 2>&1; then
   _pass "validate-api-contract-design: replacing the placeholder row with a real endpoint passes all checks"
@@ -40,7 +40,7 @@ fi
 
 # A doc missing a required Output Format section entirely must fail that
 # specific check without regressing the others.
-sed -i '/## Consumer Registry/,$d' "$FRESH"
+sed_in_place '/## Consumer Registry/,$d' "$FRESH"
 OUTPUT2="$("$VALIDATE" "$FRESH" 2>&1)"
 if echo "$OUTPUT2" | grep -q "FAIL: '## Consumer Registry' section present" && echo "$OUTPUT2" | grep -q "1 check(s) failed"; then
   _pass "validate-api-contract-design: catches a missing Output Format section without false-failing the filled Endpoints table"

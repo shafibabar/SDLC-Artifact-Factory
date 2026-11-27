@@ -117,7 +117,7 @@ One application: the ingress routes to it and it validates tokens itself. A gate
 
 - None for now.
 EOF
-sed -i 's/^- None for now\./- None: nothing is open./' nogateway.md
+sed_in_place 's/^- None for now\./- None: nothing is open./' nogateway.md
 
 expect "a complete design passes" 0 "0 check(s) failed" good.md
 expect "a no-gateway design passes" 0 "0 check(s) failed" nogateway.md

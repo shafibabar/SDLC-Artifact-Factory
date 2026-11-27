@@ -67,8 +67,11 @@ expect_error std.md "wrong name" 's/^name: user-story-backlog/name: user-stories
 expect_error std.md "strategy phase rejected" 's/^phase: ideate/phase: strategy/' "phase is 'strategy'"
 expect_error std.md "missing summary" '/^summary:/d' "missing 'summary'"
 expect_error std.md "bad profile" 's/^profile: standard/profile: huge/' "is not lean, standard or enterprise"
-expect_error std.md "MoSCoW priority rejected" '0,/^- Priority (provisional): high/s//- Priority (provisional): Must/' "uses MoSCoW"
-expect_error std.md "unlabelled priority" '0,/^- Priority (provisional): high/s//- Priority: high/' "label the priority"
+# `1,/re/`, not GNU's `0,/re/`: BSD sed (macOS) has no line 0. The two are
+# the same here because line 1 of these fixtures is the `---` frontmatter fence.
+# The pattern is repeated in `s/re/…/` because BSD sed rejects an empty `s//` there.
+expect_error std.md "MoSCoW priority rejected" '1,/^- Priority (provisional): high/s/^- Priority (provisional): high/- Priority (provisional): Must/' "uses MoSCoW"
+expect_error std.md "unlabelled priority" '1,/^- Priority (provisional): high/s/^- Priority (provisional): high/- Priority: high/' "label the priority"
 expect_error std.md "no card" 's/^As a patient (P-3), I want.*/Patients get a confirm request./' "no card"
 expect_error std.md "as a user" 's/^As a patient (P-3),/As a user,/' "name a persona"
 expect_error std.md "system as actor" 's/^As a patient (P-3),/As the system,/' "a system is the actor"

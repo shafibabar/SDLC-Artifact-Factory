@@ -22,7 +22,7 @@ NAME="hooks-wiring"
 # (this sandbox does) — acceptEdits still auto-accepts writes non-interactively.
 mkdir -p "$SCRATCH_DIR/artifacts/testproduct/strategy"
 BAD_PATH="$SCRATCH_DIR/artifacts/testproduct/strategy/vision.md"
-timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
+run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
   --permission-mode acceptEdits -p \
   "Use the Write tool to create a file at exactly this path: $BAD_PATH — with this exact content and nothing else: '# Vision\n\nNo frontmatter here.\n'. Do not do anything else, do not read any other files, just attempt this one write and then stop." \
   --output-format text >/dev/null 2>&1
@@ -41,7 +41,7 @@ fi
 # have created it. Proves hooks.json's PostToolUse/Write binding fires.
 GOOD_PATH="$SCRATCH_DIR/artifacts/testproduct2/strategy/vision.md"
 mkdir -p "$SCRATCH_DIR/artifacts/testproduct2/strategy"
-timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
+run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
   --permission-mode acceptEdits -p \
   "Use the Write tool to create a file at exactly this path: $GOOD_PATH — with this exact content and nothing else:
 
@@ -86,7 +86,7 @@ DEFECT_PATH="$SCRATCH_DIR/artifacts/testproduct3/ideate/acceptance-criteria.md"
 OTHER_PATH="$SCRATCH_DIR/notes.md"
 DEBUG_LOG="$SCRATCH_DIR/methodology-hook.debug.txt"
 mkdir -p "$SCRATCH_DIR/artifacts/testproduct3/ideate"
-timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
+run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
   --permission-mode acceptEdits --debug-file "$DEBUG_LOG" -p \
   "Make exactly two Write tool calls and nothing else. First, create $OTHER_PATH containing just: scratch notes. Second, create $DEFECT_PATH with exactly this content:
 
@@ -132,7 +132,7 @@ EDIT_LOG="$SCRATCH_DIR/edit-hooks.debug.txt"
 printf -- '---\nname: acceptance-criteria\nversion: 1.0.0\nphase: ideate\nowner: requirements-analyst\ncreated: 2026-10-18\nsummary: Acceptance criteria for placing a lunch order.\n---\n\n# Acceptance Criteria\n\nStory: US-001 As an employee I want to order lunch so I eat on time.\n\nScenario: Employee places an order\n  Given an employee is signed in and ordering is open\n  When the employee orders 3 lunches\n  Then the order is confirmed\n' > "$AC"
 echo '{"tool_name":"Write","tool_input":{"file_path":"'"$AC"'"},"cwd":"'"$P5"'"}' | "$REPO_ROOT/scripts/post-artifact-created.sh" >/dev/null 2>&1
 (cd "$P5" && SDLC_PRODUCT_ROOT="$P5" python3 "$REPO_ROOT/scripts/product-state.py" approve ideate/acceptance-criteria.md >/dev/null)
-(cd "$P5" && timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$P5" \
+(cd "$P5" && run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$P5" \
   --permission-mode acceptEdits --debug-file "$EDIT_LOG" -p \
   "Make exactly two Edit tool calls on $AC and nothing else. Edit 1: replace the line 'summary: Acceptance criteria for placing a lunch order.' plus its newline with nothing. Whatever happens, then do Edit 2: replace 'When the employee orders 3 lunches' with 'When I call POST /api/v1/orders with qty=3'. Then stop. Do not fix anything a hook reports." \
   --output-format text >/dev/null 2>&1)
@@ -159,7 +159,7 @@ P6="$SCRATCH_DIR/product6"; mkdir -p "$P6/.sdlc-memory" "$P6/artifacts/demo/stra
 touch "$P6/.sdlc-memory/.skip-install"
 AGENT_LOG="$SCRATCH_DIR/agent-write.debug.txt"
 VS6="$P6/artifacts/demo/strategy/vision-statement.md"
-(cd "$P6" && timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$P6" \
+(cd "$P6" && run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$P6" \
   --permission-mode auto --debug-file "$AGENT_LOG" -p \
   "Use the Agent tool exactly once with subagent_type 'sdlc-artifact-factory:product-strategist' and this prompt: 'Do no other work and read nothing. Use the Write tool to create $VS6 with exactly this content, then stop:
 ---
