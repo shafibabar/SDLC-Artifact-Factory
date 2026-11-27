@@ -64,6 +64,11 @@ Estimate for the remaining eval spend: about $95–170, within the $450 wave cei
 - A run hit by a usage limit is invalid, not a failure: check per-attempt errors before judging a result, then re-run after the reset.
 - A frozen grader changes only when shown wrong (verify, original author makes the smallest edit, log it).
 
+## Added on `main` the day of the move (#1508)
+
+- `tests/run-skill-evals.sh` now posts each eval run to the issue named by the `issue-<number>-…` branch (`scripts/record-eval-run.py`). Check it appeared, then add the diagnosis comment; a subagent that runs evals passes `--run-by subagent`. See CLAUDE.md § Work Record for the exact bold lead-ins a tool reads.
+- The `**Claude prompt**` and `**Interruption**` comments come from a **user-level** hook, which is not in this repository: set it up on the new machine if wanted.
+
 ## Lessons that cut eval re-runs
 
 - Replies fail mostly because a rule is followed but not **said**. Each rebuilt skill has "What every answer states".
