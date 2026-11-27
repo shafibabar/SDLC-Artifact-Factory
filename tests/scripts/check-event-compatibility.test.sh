@@ -15,7 +15,7 @@ FAILURES=0
 # when the earlier schema is closed (additionalProperties false) and one of its
 # fields is gone. TRANSITIVE modes compare with every earlier version.
 cat > "$TMP/registry.py" <<'PY'
-import json, sys, http.server, urllib.parse
+import json, sys, http.server, urllib.parse, socketserver
 
 subjects, modes = {}, {}
 KNOWN = {"BACKWARD", "BACKWARD_TRANSITIVE", "FORWARD", "FORWARD_TRANSITIVE", "FULL", "FULL_TRANSITIVE", "NONE"}
@@ -64,7 +64,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
         problems = [p for p in (clash(old, schema) for old in earlier) if p]
         self.reply(200, {"is_compatible": not problems, "messages": problems})
 
-server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+class LoopbackServer(http.server.HTTPServer):
+    # HTTPServer.server_bind looks up the host's full name (socket.getfqdn),
+    # which takes tens of seconds on a macOS machine with no reverse DNS (the
+    # GitHub macOS runner): the port file then arrives after the deadline.
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
+
+server = LoopbackServer(("127.0.0.1", 0), Handler)
 with open(sys.argv[1], "w") as handle:
     handle.write(str(server.server_address[1]))
 server.serve_forever()
