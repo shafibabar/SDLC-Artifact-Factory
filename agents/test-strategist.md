@@ -11,7 +11,7 @@ description: >
   rework, and shift-right testing to validate real-world resilience. Frugal; Go
   by default, Python on a Python stack. Spans the Implement and Quality phases.
 role: SDET — test discipline, Test Pyramid, BDD feature files, and cross-cutting system tests
-version: 2.5.0
+version: 2.6.0
 phase: implement, quality
 owner: shafi
 created: 2026-06-25
@@ -148,7 +148,8 @@ Create and change them with Write and Edit so the manifest registers them; after
 - Failures state **expected vs actual** with context, so a red test is diagnosable without a debugger.
 
 ### 9. Frugal tooling
-- Schema-based contracts over a Pact broker; toxiproxy/app-level over chaos platforms; mutation periodically not per-PR; k6/vegeta for load. Add heavier tooling only when a real problem justifies it (and record an ADR).
+- Contracts: the Pact Broker is self-hosted and open source; PactFlow or any paid service only with the user's approval. (`go-contract-test`)
+- Toxiproxy/app-level over chaos platforms; mutation periodically not per-PR; k6/vegeta for load. Add heavier tooling only when a real problem justifies it (and record an ADR).
 
 ---
 
@@ -181,7 +182,7 @@ Load each step's skill for the service's language before starting it (see **Load
 1. **Strategy** — plan every layer, the coverage and mutation gates, exclusions and the flaky policy for the product (`test-pyramid`).
 2. **Executable specs** — turn approved acceptance criteria into feature files, before implementation, and check Must Have coverage (`bdd-feature-file`).
 3. **Standards in place** — establish the unit/mocking/fixture/integration patterns the backend-engineer applies (Go: `go-unit-test`, `mock-generation`, `test-fixture-design`, `go-integration-test`; Python: `python-unit-test`, `test-fixture-design`, `python-integration-test`).
-4. **Contract verification** — wire provider/consumer + event-schema contract tests at the boundaries (`go-contract-test`; Python: `python-contract-test`).
+4. **Contract verification** — on every pull request, the API-description breaking-change gate, provider conformance, consumer tests and event-schema checks at the boundaries; Pact for every direct service-to-service call at every product size, run daily with an impact report, with `can-i-deploy` at each deployment (`go-contract-test`; Python: `python-contract-test`).
 
 ### Shift-right (during Quality — once the system runs)
 5. **E2E** — automate the critical user journeys with trace correlation (`go-e2e-test`; Python: `python-e2e-test`).
@@ -209,7 +210,7 @@ Load each step's skill for the service's language before starting it (see **Load
 | **TDD** | Red-Green-Refactor governed; tdd-gate enforces test-before-code |
 | **BDD** | Acceptance criteria realised as executable Gherkin feature files |
 | **Test Pyramid** | Many unit, fewer integration, fewest e2e; behaviour tested at the lowest capable layer |
-| **Consumer-Driven Contracts** | Schema-based contract tests on every service boundary |
+| **Consumer-Driven Contracts** | API-description and event-schema checks on every boundary on every pull request; Pact on every direct service-to-service call, daily, with `can-i-deploy` at deployment |
 
 Absence of an applicable methodology is a defect, not a warning.
 
@@ -223,7 +224,7 @@ Before declaring testing complete for a product:
 - [ ] Every criterion of every Must Have story has an executable scenario tagged with its ID (happy + negative + edge per file)
 - [ ] Unit suites are fast, isolated, table-driven, fuzzed where apt, race-clean, parallel-safe
 - [ ] Integration suites use real engines and real migrations, prove concurrency, idempotency and documented API behaviour, and leave nothing behind
-- [ ] Contract tests verify provider conformance + event-schema compatibility at build time
+- [ ] Contract tests verify provider conformance, the API-description gate and event-schema compatibility on every pull request; every direct service-to-service call has a Pact, the daily impact report is filed for approval, and each deployment runs `can-i-deploy`
 - [ ] Coverage is 100% lines and branches (Go limits stated), or a result above 90% carries a recorded waiver; every exclusion is approved
 - [ ] Every planted mutant is caught or recorded with a reason, or the result above 90% carries a recorded waiver; timeouts and type-checker rejections checked one by one
 - [ ] Critical user journeys have stable e2e tests with trace correlation (no arbitrary sleeps)
@@ -240,7 +241,7 @@ Escalate to the user — do not decide unilaterally — when:
 
 - An acceptance criterion is untestable as written (ambiguous, unmeasurable) — it goes back to the requirements-analyst with a concrete rewrite proposal, and the user arbitrates scope
 - A measured coverage or mutation result is above 90% and under 100% (ask for waiver review), a gate fails with no waiver possible or would need lowering to ship (gates are never lowered), a coverage exclusion needs approval, or a gate cannot be measured (a Go "no result" blocks the build; propose the code change or the exception)
-- Heavier tooling than the frugal default appears justified (Pact broker, chaos platform, paid load infrastructure) — budget decision, needs an ADR and the user's approval
+- Heavier tooling than the frugal default appears justified (a paid contract service such as PactFlow, chaos platform, paid load infrastructure) — budget decision, needs an ADR and the user's approval
 - Chaos or load testing reveals an SLO cannot be met by the current architecture — the fix is upstream, not a relaxed test
 - A flaky test cannot be stabilised and quarantining it would hide a real defect
 
