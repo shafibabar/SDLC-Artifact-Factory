@@ -83,7 +83,7 @@ _SED_SUBST = re.compile(r"s([/#|,@!:])((?:\\.|(?!\1).)*)\1((?:\\.|(?!\1).)*)\1")
 _GREP_PERL = re.compile(r"\bgrep\s+(?:-\S+\s+)*-[A-Za-z]*P|\bgrep\s+(?:-\S+\s+)*--perl-regexp")
 _AWK_GNU = re.compile(
     r"\b(?:gensub|asorti?|strftime|systime|mktime|patsplit)\s*\(|\bIGNORECASE\b|\bPROCINFO\b"
-    r"|\\[<>]|\bmatch\s*\([^()]*,[^()]*,[^()]*\)"
+    r"|\\[<>]|\bmatch\s*\(.*/\s*,\s*[A-Za-z_][A-Za-z_0-9]*\s*\)"
 )
 _BASH4 = re.compile(
     r"\b(?:mapfile|readarray|coproc)\b"
@@ -99,7 +99,7 @@ _BASH4 = re.compile(
     r"|(?:\bsource|(?:^|[;&|]\s*)\.)\s+<\("
 )
 _GNU_CMD = re.compile(
-    r"(?:^|[|;&`]|\$\()\s*(?:timeout|tac|nproc|shuf|numfmt)\b(?=\s*(?:$|[-\"'$0-9|)<]))"
+    r"(?:^|[|;&`]|\$\()\s*(?:timeout\b(?=\s*(?:$|[-\"'$0-9]))|(?:tac|nproc|shuf|numfmt)\b(?!\s*=))"
     r"|\bstat\s+(?:-\S+\s+)*(?:-c\b|--format|--printf)"
     r"|\bdate\s+(?:-\S+\s+)*(?:-d\b|--date)"
     r"|\bfind\b.*\s-printf\b"

@@ -77,7 +77,7 @@ fi
 # 6. the relationship step is BLOCKING since P2 close-out (it was REPORTING ONLY
 #    while the backlog stood). Pin the label so a silent regression to
 #    report-only is caught.
-if grep -qE "STEP 4/6[[:space:]]+lint-relationships\.py[[:space:]]+\[BLOCKING\]" <<<"$GATE_OUT"; then
+if grep -qE "STEP 4/7[[:space:]]+lint-relationships\.py[[:space:]]+\[BLOCKING\]" <<<"$GATE_OUT"; then
   ok "lint-relationships labelled BLOCKING"
 else
   bad "lint-relationships labelled BLOCKING" "label absent or still REPORTING ONLY"
@@ -85,13 +85,13 @@ fi
 
 # 7. the P3 catalog-staleness step runs, is labelled BLOCKING, and reports the
 #    committed catalog as current on a green tree
-if grep -qE "STEP 5/6[[:space:]]+build-catalog\.py --check[[:space:]]+\[BLOCKING\]" <<<"$GATE_OUT"; then
+if grep -qE "STEP 5/7[[:space:]]+build-catalog\.py --check[[:space:]]+\[BLOCKING\]" <<<"$GATE_OUT"; then
   ok "catalog staleness step present and labelled BLOCKING"
 else
   bad "catalog staleness step present and labelled BLOCKING" "step 5 banner absent"
 fi
 
-if grep -qE "STEP 6/6[[:space:]]+lint-skill-layout\.py[[:space:]]+\[REPORT-ONLY\]" <<<"$GATE_OUT"; then
+if grep -qE "STEP 6/7[[:space:]]+lint-skill-layout\.py[[:space:]]+\[REPORT-ONLY\]" <<<"$GATE_OUT"; then
   ok "gate runs lint-skill-layout as step 6, REPORT-ONLY"
 else
   bad "gate runs lint-skill-layout as step 6, REPORT-ONLY" "step 6 banner absent"
@@ -100,6 +100,17 @@ if grep -q "lint-skill-layout summary:" <<<"$GATE_OUT"; then
   ok "step 6 prints the layout summary"
 else
   bad "step 6 prints the layout summary" "summary block absent"
+fi
+
+if grep -qE "STEP 7/7[[:space:]]+lint-portability\.py[[:space:]]+\[REPORT-ONLY\]" <<<"$GATE_OUT"; then
+  ok "gate runs lint-portability as step 7, REPORT-ONLY"
+else
+  bad "gate runs lint-portability as step 7, REPORT-ONLY" "step 7 banner absent"
+fi
+if grep -q "lint-portability summary:" <<<"$GATE_OUT"; then
+  ok "step 7 prints the portability summary"
+else
+  bad "step 7 prints the portability summary" "summary block absent"
 fi
 
 if grep -q "catalog is current" <<<"$GATE_OUT"; then
