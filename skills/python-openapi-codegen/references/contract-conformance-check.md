@@ -97,8 +97,9 @@ echo "PASS: derived schema conforms to the approved contract."
 ## Wiring Into the Pipeline
 
 This is a GitHub Actions job (the repo CI/CD default), gating the same PR as the tests. It runs
-alongside — not instead of — `mypy`/`pyright` (the static-type gate) and `schemathesis`
-(`python-contract-test`, which property-tests the live app *against* the same OpenAPI schema).
+alongside — not instead of — `mypy`/`pyright` (the static-type gate) and the provider conformance
+test of `python-contract-test` (which sends real requests through the app and checks each response
+against the authored `api/openapi.yaml`).
 
 ```yaml
 # .github/workflows/api-conformance.yml (excerpt)

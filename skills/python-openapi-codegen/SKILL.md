@@ -8,7 +8,7 @@ description: >
   generated schema as a conformance check, so the OpenAPI contract stays the
   source of truth (per api-contract-design). The Python analog of
   go-openapi-codegen.
-version: 1.0.0
+version: 1.0.1
 phase: implement
 owner: backend-engineer
 created: 2026-07-31
