@@ -82,6 +82,16 @@ STUB_LIST="$M/a|a.go,"
 expect "tags reach go test" 0 "PASS" --tags extra "$M"
 if grep -q -- "-test=-tags=extra" "$TMP/log"; then echo "PASS: tags passed"; else echo "FAIL: tags"; FAILED=1; fi
 expect "unknown argument" 2 "unknown argument" -race "$M"
+# test support: not run through gobco, listed; shipped imports fail
+mkdir -p "$M/internal/test/db"; printf 'package db\n\nfunc T(n int) {\n\tif n > 0 {\n\t}\n}\n' > "$M/internal/test/db/tx.go"
+export STUB_STATS="[$(row a.go 1 1)]"
+: > "$TMP/log"
+STUB_LIST="$M/a|a.go,x_moq.go,
+$M/internal/test/db|tx.go," expect "test support passes with no entry and is listed" 0 "excluded internal/test/db/tx.go: test support" "$M"
+if ! grep -q "internal/test" "$TMP/log"; then echo "PASS: gobco not run on test support"; else echo "FAIL: gobco ran"; FAILED=1; fi
+printf 'package a\n\nimport (\n\t"example.test/m/internal/test/db"\n)\n' > "$M/a/ship.go"
+expect "shipped import of test support fails" 1 "a/ship.go: imports example.test/m/internal/test/db" "$M"
+rm "$M/a/ship.go"; rm -r "$M/internal"
 # go-makefile's cover recipe: either gate's non-zero exit stops make.
 Q="$SCRIPT_DIR/../../skills/go-makefile/references/quality-gate-targets.md"
 if command -v make >/dev/null 2>&1; then

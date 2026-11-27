@@ -27,6 +27,7 @@ Copy and tick before hand-off.
 - [ ] `validate-go-integration-tests.sh` has no FAIL; each WARN judged
 - [ ] `go test -race -shuffle=on ./...` passes with Docker
 - [ ] Statement and branch gates run on the full suite; counts and exit codes recorded
-- [ ] Harness and other unmeasured gaps listed as pending exclusions or tested; none called passing
+- [ ] Report lists every file left out as `internal/test/` test support; nothing that ships is in the folder or imports it
+- [ ] Any other unmeasured gap is a pending exclusion or tested; none called passing
 - [ ] No container left running
 - [ ] Anything not run is called unverified

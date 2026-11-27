@@ -445,9 +445,18 @@ The guard test shows why the role switch matters: as the container's superuser, 
 
 | Gate | Result | Where the gaps are |
 |---|---|---|
-| Statement blocks | 132/198, **FAIL** | 49 blocks in `internal/test/`, 5 in `store.go` |
-| Branches (gobco 1.3.4) | 13/92, **FAIL** | Harness, and 5 error branches in `store.go` |
+| Statement blocks | 28/33, **FAIL** | 5 blocks in `store.go` |
+| Branches (gobco 1.3.4) | 13/18, **FAIL** | 5 error branches in `store.go` |
 
-**Next:** fault cases for the five `store.go` branches. **For the product owner:** harness exclusions; confirmation of the tenancy design and of who may bypass row-level security (support, reporting, migrations); the release that makes `size_code` required.
+Left out as the approved test-support class, listed by both gates and in the report:
+
+```text
+excluded internal/test/await.go: test support (class approved by the product owner)
+excluded internal/test/containers.go: test support (class approved by the product owner)
+excluded internal/test/db/scope.go: test support (class approved by the product owner)
+excluded internal/test/db/tx.go: test support (class approved by the product owner)
+```
+
+**Next:** fault cases for the five `store.go` branches. **For the product owner:** confirmation of the tenancy design and of who may bypass row-level security (support, reporting, migrations); the release that makes `size_code` required.
 
 Unproven here: the production login's actual role membership (check it against the deployed environment), lock time of the migration on a large table, several regions, parallel CI shards. A sharded run gives no coverage verdict; the gates run the full suite.

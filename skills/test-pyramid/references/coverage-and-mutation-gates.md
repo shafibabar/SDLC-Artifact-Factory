@@ -7,7 +7,7 @@ The rules; waivers and how a result becomes a percentage; coverage: Go, Python, 
 
 ## The rules
 
-- Coverage: 100% of lines and branches. Only machine-generated code is excluded; every other exclusion is listed with a reason for the product owner's approval.
+- Coverage: 100% of lines and branches. Only machine-generated code and Go test support under the module's `internal/test/` (a class approved for every product, listed in every report, never shipped code; `go-unit-test`'s gates fail if non-test code imports it) are excluded without per-file approval; every other exclusion is listed with a reason for the product owner's approval.
 - Mutation: every planted mutant is caught by a test, or recorded with the reason it cannot be (behaviour unchanged). A timeout or a type-checker rejection counts as caught only after each one is individually checked and recorded with a one-line reason; never automatically.
 - The full gate runs all suites in scope. A partial run reports no coverage verdict, so keep thresholds out of shared configuration that partial runs read.
 - A missing, stale or empty report is a failure. So is a run that selected zero tests.

@@ -84,6 +84,12 @@ echo 'package x_test
 func TestAdd(t *testing.T) {}' > "$TMP/unit/add_test.go"
 check "unit tests only: count of integration files is shown" 0 "0 of them" "$TMP/unit"
 
+mkdir -p "$TMP/ship/internal/test" "$TMP/ship/cmd"
+printf 'package main\n\nimport (\n\t"example.test/m/internal/test/db"\n)\n' > "$TMP/ship/cmd/main.go"
+check "shipped code importing test support" 1 "FAIL SHIPPED .*main.go:4" "$TMP/ship/cmd"
+printf 'package main\n' > "$TMP/ship/internal/test/run.go"
+check "package main in test support" 1 "FAIL SHIPPED .*run.go" "$TMP/ship/internal"
+
 # The shipped examples must satisfy the validator (Go blocks extracted from Markdown).
 python3 -I - "$REPO_ROOT/skills/go-integration-test" "$TMP/shipped" <<'PY'
 import os, re, sys
@@ -97,7 +103,7 @@ for folder in ("templates", "examples"):
             os.makedirs(os.path.dirname(target), exist_ok=True)
             open(target, "w", encoding="utf-8").write(body)
             count += 1
-print(count)
+assert count > 0, "no Go blocks extracted"
 PY
 check "shipped templates and examples are clean" 0 ": 0 FAIL, 0 WARN" "$TMP/shipped"
 

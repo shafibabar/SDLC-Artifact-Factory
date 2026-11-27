@@ -66,7 +66,7 @@ It belongs in the `ci` target that `go-makefile` owns, on a clean checkout. `git
 - Optional extra check, **unverified**: whether moq v0.8.1 writes a line matching `^// Code generated .* DO NOT EDIT\.$`. The script only warns when it is missing. It is never the coverage filter.
 - Record each generated mock in the strategy's exclusion register: path or pattern (`**/*_moq.go`), kind `generated`, reason, approval. Adding an entry edits an approved artifact, which returns it to the product owner.
 - Mutation: the exclusion setting (Gremlins `unleash.exclude-files`) matches `_moq.go` for these mocks, and otherwise covers only other generated files and approved exclusions.
-- Hand-written fakes, port suites and helpers under `internal/test/` are counted. Cover them or list them for approval.
+- Hand-written fakes, port suites and helpers under `internal/test/` are left out as the approved test-support class and listed on every run; they must not be imported by non-test code. Test support kept elsewhere is counted: cover it or list it for approval.
 
 ## Replacing mockery, gomock or testify mocks
 

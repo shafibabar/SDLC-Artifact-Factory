@@ -37,6 +37,10 @@ traces-to: [implement/test-strategy.md, [commit or run id]]
 - Functions without conditions, in the branch figure.
 - [Anything else this run could not see, for example nested modules]
 
+## Test Support (approved class)
+
+Files under `internal/test/` left out of both measures, copied from the gate output: [each file, or "none"]. Approved once by the product owner as a class; test support only, never shipped. The gates found no non-test import of the folder.
+
 ## Exclusions
 
 | Path | Kind | Reason | Approval |

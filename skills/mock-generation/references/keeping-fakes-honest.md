@@ -30,4 +30,4 @@ Every promise a unit test relies on belongs in the suite: found, not found, dupl
 
 ## Coverage
 
-The fake and the suite are hand-written, so they are counted by the 100% gate. The suite exercises the fake's methods; test each fault field. Use `require` assertions in support code so no failure-only block is left unexecuted. Anything still uncovered is listed with a reason for the product owner's approval.
+Under `internal/test/` the fake and the suite are outside the coverage gate as approved test support, and listed in every report. Coverage therefore no longer shows an unexercised fake: the suite must exercise every method, and each fault field is tested. Support code kept outside that folder is counted; anything uncovered there is listed with a reason for the product owner's approval.

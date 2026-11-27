@@ -6084,7 +6084,7 @@
           "makefile",
           "race-detector"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -6617,7 +6617,7 @@
           "tdd",
           "unit-test"
         ],
-        "version": "4.0.0"
+        "version": "5.0.0"
       },
       {
         "created": "2026-07-31",
@@ -7391,7 +7391,7 @@
           "test-doubles",
           "unmanaged-dependency"
         ],
-        "version": "3.0.0"
+        "version": "4.0.0"
       },
       {
         "created": "2026-06-24",
@@ -10589,7 +10589,7 @@
           "test-pyramid",
           "testing"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",

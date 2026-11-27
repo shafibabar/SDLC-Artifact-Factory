@@ -252,11 +252,20 @@ ok      example.com/choir/internal/loans
 
 ## Coverage, as measured
 
-| Gate | Result | Where the gaps are |
-|---|---|---|
-| Statement blocks | 114/187, **FAIL** | All 55 blocks in `internal/test/`; none in `internal/loans` |
-| Branches (gobco 1.3.4) | 12/86, **FAIL** | None in `internal/loans` |
+| Gate | Result |
+|---|---|
+| Statement blocks | 22/22, exit 0 |
+| Branches (gobco 1.3.4) | 12/12, exit 0 |
 
-The repository is fully covered with a real database; the build is still blocked by the harness. **Decision for the product owner:** approve each harness file as a listed exclusion, with its reason ("test harness; error paths need container faults"), or have tests written for it. Until then the exclusions are pending and neither gate passes.
+Both gates list the test support they leave out, and the coverage report repeats the list:
+
+```text
+excluded internal/test/await.go: test support (class approved by the product owner)
+excluded internal/test/containers.go: test support (class approved by the product owner)
+excluded internal/test/db/scope.go: test support (class approved by the product owner)
+excluded internal/test/db/tx.go: test support (class approved by the product owner)
+```
+
+This is the approved class: no entry in an exclusion file. It holds because nothing that ships imports `internal/test/`. Tried in a copy: a production file `internal/loans/shipped.go` importing the harness still builds, and both gates exit 1 with `shipped code reaches into internal/test/`.
 
 Not run: Ryuk (disabled in this run), any CI runner.

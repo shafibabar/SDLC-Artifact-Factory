@@ -51,7 +51,7 @@ A request does not change these, whoever makes it. Do the work as the rules requ
 | I6 | **No test retries.** Only a container *start* is retried, bounded and logged | `test-pyramid`: retries exist at end-to-end only |
 | I7 | **`-short` skips each integration test with `t.Skip`**; no `os.Exit` skip in `TestMain`, no build tag. A container that cannot start fails the run. Integration tests stay in `make ci` | An exit hides unit tests too; a tag or a Docker skip drops the proof silently |
 | I8 | **API behaviour the contract promises is tested here**, through the real router and database: repeat-request safety, rate limit, deprecation signal, every documented error branch, multi-call workflows | A schema check proves shape, not that it happens (Winteringham) |
-| I9 | **The coverage gates of `go-unit-test` apply**: 100% statement blocks and branches; only generated code is excluded automatically | The harness is code and is measured too |
+| I9 | **The coverage gates of `go-unit-test` apply**: 100% statement blocks and branches. Excluded without per-file approval: generated code, and test support in the module's `internal/test/` (approved once as a class, listed in every report, never code that ships) | The gates fail when non-test code imports `internal/test/`; any other exclusion needs approval |
 
 Every product size follows all nine. **Lean** means fewer tests and only the containers the product uses (no broker, no broker container), never mocks in place of the database, shared data or skipped checks.
 
@@ -64,7 +64,7 @@ Say these in words, beside any code; code that follows a rule silently leaves th
 3. **What the helpers do that the reader cannot see**, whichever apply: the harness starts containers, applies migrations, publishes ports on 127.0.0.1 and retries a start three times; `TestMain` exits non-zero when a container cannot start or stop or the shared database's row counts changed (updated rows and other databases go unnoticed); `WithTx` never commits, so deferred constraints are never checked; `Scoped` fails the test on a cleanup error; `Await` fails the test with the last error; `go test -short` prints `ok` while skipping; the validator exits 0, 1 or 2 and runs nothing.
 4. **For anything asynchronous:** what proves the input was consumed (the committed offset), and which broken code makes the test fail.
 5. **Sketches:** every name declared or its origin named; each test asserts what its name claims; cleanup errors reported.
-6. **Coverage, whenever it comes up:** both gates, 100%; harness files are not exempt; an exclusion is listed with its reason, is pending until the product owner approves it, and the build stays blocked meanwhile.
+6. **Coverage, whenever it comes up:** both gates, 100%; `internal/test/` is left out as the approved test-support class, needs no per-file approval, is **listed in every report** and holds test support only, never code that ships: the gates fail if non-test code imports it or a file in it is `package main` (not detected: nested modules' imports, shipped logic copied there that nothing imports). In the same breath: every other exclusion is listed with its reason, is pending until the product owner approves it, and blocks the build meanwhile.
 7. **At this size:** what lean changes and what it does not.
 8. **Decisions for the product owner:** exclusions and waivers; an undecided tenancy model (invent no `tenant_id`); a contract that promises a limit or deprecation without its value; a production change needed for testability.
 9. **What was run.** Code not executed is called unverified.
@@ -109,7 +109,7 @@ Worked and run on Go 1.27.4, PostgreSQL 17.12 and Redpanda 26.2.7: `./examples/0
 - **`TestMain` that exits under `-short`.** *Reason:* every test in the package vanishes. *Instead:* `test.Integration(t)` in each integration test.
 - **Trusting a wrong `DOCKER_HOST` to fail.** *Reason:* in the run for this skill, Testcontainers fell back to the default socket. *Instead:* check the Docker host it logs.
 - **A panic or `-timeout` with Ryuk disabled.** *Reason:* `TestMain`'s cleanup never runs and the container stays. *Instead:* keep Ryuk, or remove containers in the CI job.
-- **Expecting `TestMain` code after `m.Run` to count as covered.** *Reason:* the profile is already written. *Instead:* test those helpers directly, or list them for approval.
+- **Putting product code in `internal/test/` to lift it out of coverage.** *Reason:* the class covers test support only. *Instead:* keep shipped code outside and test it.
 - **A build tag to keep these tests out of the fast run.** *Reason:* they leave `make ci` and the gates. *Instead:* `-short`.
 - **`t.Parallel` tests inserting the same unique value.** *Reason:* the second blocks until the first rolls back. *Instead:* distinct values per test.
 
@@ -128,4 +128,4 @@ Worked and run on Go 1.27.4, PostgreSQL 17.12 and Redpanda 26.2.7: `./examples/0
 | `./scripts/validate-go-integration-tests.sh` | Before hand-off, after every edit |
 | `./resources/checklist.md` | Before answering |
 
-Tests sit beside the code (`internal/<package>/*_integration_test.go`, one `main_test.go` per package that needs containers); the harness is `internal/test/`.
+Tests sit beside the code (`internal/<package>/*_integration_test.go`, one `main_test.go` per package that needs containers); the harness is `internal/test/` (test support only).

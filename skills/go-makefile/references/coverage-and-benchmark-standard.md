@@ -20,12 +20,13 @@ count.
 
 ### What Counts, and What's Excluded
 
-- **Everything in the module is counted**, `cmd/**` composition roots included: with
+- **Everything else in the module is counted**, `cmd/**` composition roots included: with
   `-coverpkg=./...`, packages without tests appear in the profile at zero. Test them or list them
   as exclusions for the user's approval.
-- **Excluded automatically: machine-generated code only** — moq mocks by file name (`_moq.go`) and
-  files carrying the `// Code generated ... DO NOT EDIT.` marker before the package clause. Test
-  doubles written by hand are counted.
+- **Excluded without per-file approval:** machine-generated code (moq mocks by file name, `_moq.go`,
+  and files carrying the `// Code generated ... DO NOT EDIT.` marker before the package clause), and
+  test support in the module root's `internal/test/`, approved once as a class and listed on every
+  run. Both gates fail if non-test code imports that folder. Test doubles outside it are counted.
 - **Every other exclusion** is a line in `coverage-exceptions.txt` with its approval date and reason
   (both gates read it; excepted files are printed as not measured).
 

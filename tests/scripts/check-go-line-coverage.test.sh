@@ -90,4 +90,26 @@ printf '//go:build ignore\n\npackage main\n' > "$M/a/tool.go"
 printf 'package a\n' > "$M/a/a_test.go"
 mkdir -p "$M/vendor/v" "$M/testdata" "$M/_x"; for f in vendor/v/v.go testdata/t.go _x/x.go; do printf 'package v\n' > "$M/$f"; done
 expect "ignore tool, test, vendor and testdata files do not block" 0 "PASS" "$M"
+# test support: internal/test/ is an approved class; shipped code may not use it
+mkdir -p "$M/internal/test/db" "$M/internal/testing" "$M/cmd/s"
+printf 'package test\n' > "$M/internal/test/h.go"; printf '//go:build extra\n\npackage db\n' > "$M/internal/test/db/tx.go"
+printf 'package a\n\nimport "example.test/m/internal/test"\n' > "$M/a/a_test.go"
+sup="$(prof sup "$P/a/a.go:3.1,4.2 2 1" "$P/internal/test/h.go:3.1,4.2 9 0")"
+STUB_PROFILE="$sup" expect "test support is left out with no entry" 0 "Statement coverage: 2/2" "$M"
+STUB_PROFILE="$sup" expect "every support file is listed, built or not" 0 "excluded internal/test/db/tx.go: test support" "$M"
+printf 'package testing\n' > "$M/internal/testing/t.go"
+STUB_BUILT="$STUB_BUILT
+$R/internal/testing/t.go" STUB_PROFILE="$(prof near "$P/a/a.go:3.1,4.2 2 1" "$P/internal/testing/t.go:1.1,2.2 1 0")" \
+  expect "a similar folder name is not in the class" 1 "internal/testing/t.go:1.1" "$M"
+rm -r "$M/internal/testing"
+for form in 'import "example.test/m/internal/test"' 'import h "example.test/m/internal/test/db"' \
+  $'import (\n\t"fmt"\n\t// note\n\t_ "example.test/m/internal/test/db"\n)' 'import `example.test/m/internal/test`'; do
+  printf '//go:build extra\n\n// Package s ships.\npackage main\n\n%s\n' "$form" > "$M/cmd/s/main.go"
+  STUB_PROFILE="$sup" expect "shipped import fails: $(tr '\n\t' '  ' <<<"$form")" 1 "cmd/s/main.go: imports example.test/m/internal/test" "$M"
+done
+printf 'package main\n\n// import "example.test/m/internal/test"\nvar s = `import "example.test/m/internal/test"`\n' > "$M/cmd/s/main.go"
+STUB_BUILT="$STUB_BUILT
+$R/cmd/s/main.go" STUB_PROFILE="$sup" expect "a comment or string is not an import" 0 "PASS" "$M"
+rm -r "$M/cmd"; printf 'package main\n' > "$M/internal/test/run.go"
+STUB_PROFILE="$sup" expect "package main in the folder fails" 1 "package main under internal/test" "$M"
 exit $FAILED

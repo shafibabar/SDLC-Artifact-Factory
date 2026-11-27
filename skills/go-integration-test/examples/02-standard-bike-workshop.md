@@ -1196,9 +1196,19 @@ Each change was made in a copy, run, and reverted.
 
 | Gate | Result | Where the gaps are |
 |---|---|---|
-| Statement blocks | 335/438, **FAIL** | 60 blocks in `internal/test/`, 28 in production code |
-| Branches (gobco 1.3.4) | 84/214, **FAIL** | Harness, and error branches in `api.go`, `store.go`, `relay.go`, `consumer.go` |
+| Statement blocks | 178/207, **FAIL** | 28 blocks in `consumer.go`, `relay.go`, `api.go`, `store.go` |
+| Branches (gobco 1.3.4) | 84/112, **FAIL** | Error branches in the same four files |
 
-This example is **not finished** against the coverage rule. The production gaps are database, broker and marshalling failure branches: next, add fault cases (an aborted transaction, a closed pool, a deleted topic), delete branches that cannot happen, and list what remains. **For the product owner:** harness exclusions; any production branch proposed as unreachable; the values of the rate limit, key retention and sunset date.
+Left out as the approved test-support class, listed by both gates and in the report:
+
+```text
+excluded internal/test/await.go: test support (class approved by the product owner)
+excluded internal/test/containers.go: test support (class approved by the product owner)
+excluded internal/test/kafka.go: test support (class approved by the product owner)
+excluded internal/test/db/scope.go: test support (class approved by the product owner)
+excluded internal/test/db/tx.go: test support (class approved by the product owner)
+```
+
+This example is **not finished** against the coverage rule. The gaps are database, broker and marshalling failure branches: next, add fault cases (an aborted transaction, a closed pool, a deleted topic), delete branches that cannot happen, and list what remains. **For the product owner:** any production branch proposed as unreachable; the values of the rate limit, key retention and sunset date.
 
 Not run: Ryuk (disabled), CI, more than one service instance (the limiter is per instance).

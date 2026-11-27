@@ -58,5 +58,7 @@ Integration tests count towards the statement and branch gates, which `go-unit-t
 
 - Both gates work with this `TestMain` (it calls `os.Exit` explicitly, which gobco needs). The branch gate runs package by package, so containers start again for it.
 - The branch gate counts only a package's own tests.
-- `internal/test/` is measured like any other code and none of the examples' harness error paths are covered. Code `TestMain` runs after `m.Run` is not recorded. So the gates **fail** until the harness is tested or each file is listed as an exclusion with a reason and approved by the product owner. Pending is not approved; the build stays blocked.
+- **`internal/test/` is excluded as a class** the product owner approved for every product: no entry in the exclusion file, and both gates list each file on every run, as the report must. It is the module root's folder only, for test support only.
+- **Guard:** both gates fail (exit 1, no waiver) when a non-test file elsewhere in the module, under any build tag, imports that folder, or a file in it is `package main`. Not detected: imports from a nested module, and shipped logic copied into the folder that nothing imports; review covers those.
+- Code `TestMain` runs after `m.Run` is not recorded in the profile.
 - Error branches in repositories can often be reached honestly with a real database: run a failing statement first in the test's transaction, and the next call returns a real error.

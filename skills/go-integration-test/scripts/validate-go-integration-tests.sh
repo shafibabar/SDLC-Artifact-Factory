@@ -6,6 +6,10 @@
 # known mistakes, it does not prove a test is good. A clean result on a
 # directory that holds no integration test says only that nothing matched; the
 # count of *_integration_test.go files is printed.
+# SHIPPED applies to the other .go files given: code that is not a test and not
+# in internal/test/ must not import it, and nothing in it may be package main
+# (the folder is left out of coverage as test support). The coverage gates of
+# go-unit-test check the same for the whole module.
 # Exit 0 = no FAIL (WARNs need judgement), 1 = at least one FAIL,
 # 2 = usage error, missing path or nothing to check.
 set -uo pipefail
@@ -33,7 +37,25 @@ def in_scope(path):
     return full.endswith("_test.go") or (full.endswith(".go") and "/internal/test/" in full)
 
 files = [f for f in found if in_scope(f)]
-if not files:
+others = [f for f in found if f.endswith(".go") and not in_scope(f)]
+
+def imports_support(path):
+    text = open(path, encoding="utf-8", errors="replace").read()
+    code = re.sub(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|`[^`]*`',
+                  lambda m: " " if m.group(0).startswith("/") else m.group(0), text, flags=re.S)
+    clauses = re.findall(r'^\s*import\b\s*(\([^)]*\)|[^\n]*)', code, re.M)
+    for clause in clauses:
+        found_at = re.search(r'["`][^"`\n]*/internal/test(/[^"`\n]*)?["`]', clause)
+        if found_at:
+            return code[:code.find(found_at.group(0))].count("\n") + 1
+    return 0
+
+shipped = [(f, line, "non-test code imports internal/test; test support must not ship")
+           for f in others for line in [imports_support(f)] if line]
+shipped += [(f, 1, "package main under internal/test can be built and shipped")
+            for f in files if not f.endswith("_test.go")
+            and re.search(r"^package\s+main\b", open(f, encoding="utf-8", errors="replace").read(), re.M)]
+if not files and not shipped:
     print("ERROR: no *_test.go or internal/test/*.go files; nothing was checked")
     sys.exit(2)
 
@@ -87,6 +109,8 @@ BARE = [
     ("FAIL", "CLEANERR", r"^\s*_\s*(,\s*_\s*)?=\s*[\w.]+\.(Exec|DeleteTopic\w*)\(", "cleanup error ignored; report it on the test"),
 ]
 
+for path, line, message in shipped:
+    report("FAIL", "SHIPPED", path, line, message)
 integration = 0
 for path in files:
     try:

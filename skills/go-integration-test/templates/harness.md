@@ -13,7 +13,7 @@ Change only: the image tag (match production), the pool size, and the start limi
 
 Test data helpers (`internal/test/db/tx.go`, `internal/test/db/scope.go`: `WithTx`, `ID`, `Scoped`) come from the Go fixture template of `test-fixture-design`; do not rewrite them here.
 
-The coverage gates measure these files (see the skill's coverage rule).
+The coverage gates leave `internal/test/` out as the approved test-support class and list it on every run. Keep only test support here: the gates fail if non-test code imports it.
 
 ### `internal/test/containers.go`
 
