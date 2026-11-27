@@ -14,7 +14,7 @@ cd "$SCRATCH_DIR"
 expect() { # expect <label> <file> <exit> [substring that must appear]
   local out code
   out="$("$VALIDATE" "$2" 2>&1)"; code=$?
-  if [ "$code" -eq "$3" ] && { [ -z "${4:-}" ] || echo "$out" | grep -qF -- "$4"; }; then
+  if [ "$code" -eq "$3" ] && { [ -z "${4:-}" ] || echo "$out" | grep -F -- "$4" >/dev/null; }; then
     _pass "validate-aggregate-design: $1"
   else
     _fail "validate-aggregate-design: $1" "exit $code; $(echo "$out" | grep -E 'FAIL|WARN' | head -5)"
@@ -115,7 +115,7 @@ expect "a lean document without Domain Events, Commands and Read Models fails" l
   printf '\n## Read Models\n\n| Context | Read Model | Answers | Built from | Staleness accepted |\n|---|---|---|---|---|\n| Firing | Schedule | what fires when | events | seconds |\n'; } > leanfull.md
 expect "a complete lean document passes" leanfull.md 0 "INFO: 1 Aggregate(s), 1 use case(s)"
 expect "a mid-name past-tense verb is not flagged, a missing one warns" leanfull.md 0 "WARN: event 'FiringSchedule' may not be past tense"
-if "$VALIDATE" leanfull.md 2>&1 | grep -q "LoadBookedIntoFiring"; then
+if "$VALIDATE" leanfull.md 2>&1 | grep "LoadBookedIntoFiring" >/dev/null; then
   _fail "validate-aggregate-design: 'LoadBookedIntoFiring' is read as past tense" "it was flagged"
 else
   _pass "validate-aggregate-design: 'LoadBookedIntoFiring' is read as past tense"

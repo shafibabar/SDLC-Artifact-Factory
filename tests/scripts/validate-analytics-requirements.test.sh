@@ -23,7 +23,7 @@ else
   _fail "validate-analytics-requirements: a fresh scaffold with empty tables fails" "got exit $EXIT_CODE"
 fi
 
-if echo "$OUTPUT" | grep -q "2 check(s) failed" && echo "$OUTPUT" | grep -q "PASS: frontmatter has 'name'"; then
+if echo "$OUTPUT" | grep "2 check(s) failed" >/dev/null && echo "$OUTPUT" | grep "PASS: frontmatter has 'name'" >/dev/null; then
   _pass "validate-analytics-requirements: fails exactly the 2 empty tables, not the correct frontmatter"
 else
   _fail "validate-analytics-requirements: fails exactly the 2 empty tables, not the correct frontmatter" "expected 2 failures and passing frontmatter checks"
@@ -47,7 +47,7 @@ fi
 # specific check without regressing the others.
 sed_in_place '/## Deferred \/ Rejected Requests/,$d' "$FRESH"
 OUTPUT2="$("$VALIDATE" "$FRESH" 2>&1)"
-if echo "$OUTPUT2" | grep -q "FAIL: '## Deferred / Rejected Requests' section present" && echo "$OUTPUT2" | grep -q "1 check(s) failed"; then
+if echo "$OUTPUT2" | grep "FAIL: '## Deferred / Rejected Requests' section present" >/dev/null && echo "$OUTPUT2" | grep "1 check(s) failed" >/dev/null; then
   _pass "validate-analytics-requirements: catches a missing Output Format section without false-failing the filled tables"
 else
   _fail "validate-analytics-requirements: catches a missing Output Format section without false-failing the filled tables" "expected exactly 1 failure naming the missing section"

@@ -23,13 +23,13 @@ else
   _fail "validate-alerting-rules-design: a fresh scaffold with empty tables fails" "got exit $EXIT_CODE"
 fi
 
-if echo "$OUTPUT" | grep -q "3 check(s) failed"; then
+if echo "$OUTPUT" | grep "3 check(s) failed" >/dev/null; then
   _pass "validate-alerting-rules-design: reports exactly 3 failed checks on a fresh scaffold"
 else
   _fail "validate-alerting-rules-design: reports exactly 3 failed checks on a fresh scaffold" "expected '3 check(s) failed', got: $(echo "$OUTPUT" | tail -1)"
 fi
 
-if echo "$OUTPUT" | grep -q "PASS: '## Alert Inventory' section present" && echo "$OUTPUT" | grep -q "PASS: frontmatter has 'owner'"; then
+if echo "$OUTPUT" | grep "PASS: '## Alert Inventory' section present" >/dev/null && echo "$OUTPUT" | grep "PASS: frontmatter has 'owner'" >/dev/null; then
   _pass "validate-alerting-rules-design: does not false-fail checks that are already correct on a fresh scaffold"
 else
   _fail "validate-alerting-rules-design: does not false-fail checks that are already correct on a fresh scaffold" "expected the section-presence and frontmatter checks to pass"
@@ -56,7 +56,7 @@ fi
 # specific check without regressing the others.
 sed_in_place 's/| Date | Alert | Fired count | Actioned? | Toil (repeat manual fix?) | Decision (keep\/tune\/delete\/automate) |/| Date | Alert | Fired count | Actioned? | Decision (keep\/tune\/delete\/automate) |/' "$FRESH"
 OUTPUT2="$("$VALIDATE" "$FRESH" 2>&1)"
-if echo "$OUTPUT2" | grep -q "FAIL: '## Review Log' header has a Toil column"; then
+if echo "$OUTPUT2" | grep "FAIL: '## Review Log' header has a Toil column" >/dev/null; then
   _pass "validate-alerting-rules-design: catches a Review Log missing its Toil column"
 else
   _fail "validate-alerting-rules-design: catches a Review Log missing its Toil column" "expected a FAIL line for the missing Toil column"

@@ -34,7 +34,7 @@ if [ ! -f "$MAP" ]; then
   echo "error: no example map at $MAP. Draw it first (example-mapping); criteria are never drafted without it." >&2
   exit 1
 fi
-if ! sed -n '/^---$/,/^---$/p' "$MAP" | grep -qE '^readiness:[[:space:]]*ready[[:space:]]*$'; then
+if ! sed -n '/^---$/,/^---$/p' "$MAP" | grep -E '^readiness:[[:space:]]*ready[[:space:]]*$' >/dev/null; then
   echo "error: $MAP is not ready. Get the product owner's answers to its open questions first." >&2
   exit 1
 fi

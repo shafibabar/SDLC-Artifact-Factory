@@ -21,7 +21,7 @@ expect() { # expect <label> <exit> <substring> <file>
   local label="$1" want="$2" sub="$3" file="$4"
   local out code
   out="$("$VALIDATE" "$file" 2>&1)"; code=$?
-  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -qF -- "$sub"; }; then
+  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -F -- "$sub" >/dev/null; }; then
     _pass "validate-openapi-spec: $label"
   else
     _fail "validate-openapi-spec: $label" "exit $code; $(echo "$out" | grep -E 'FAIL|WARN' | head -5)"
@@ -147,7 +147,7 @@ EOF
 expect "a complete spec passes" 0 "0 check(s) failed" good.yaml
 expect "missing file is a usage error" 2 "" nosuch.yaml
 out="$("$VALIDATE" 2>&1)"; code=$?
-if [ "$code" -eq 2 ] && echo "$out" | grep -qF "Usage"; then
+if [ "$code" -eq 2 ] && echo "$out" | grep -F "Usage" >/dev/null; then
   _pass "validate-openapi-spec: no arguments is a usage error"
 else
   _fail "validate-openapi-spec: no arguments is a usage error" "exit $code"
