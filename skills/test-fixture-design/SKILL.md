@@ -9,7 +9,7 @@ description: >
   concurrent-commit tests, fixed clocks, IDs and random seeds, golden files and
   -update, stored old event fixtures, tenant-scoped test data, or test data in
   a shared, staging or production database. Go and Python.
-version: 3.0.0
+version: 3.0.1
 phase: implement
 owner: test-strategist
 created: 2026-06-25

@@ -19,7 +19,7 @@ description: >
   architecture's Consumer-Driven Contracts (`context-map-patterns`,
   `integration-design`). Authored and applied by the test-strategist during
   Implement and Quality.
-version: 2.0.1
+version: 2.0.2
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -94,7 +94,7 @@ Neither tier hand-manages a semantic contract version — both tie versioning to
 | Event compatibility | Emitted events schema-validated + `BACKWARD`-compat checked | Event shape changes unverified |
 | Pact interactions exact | Consumer test's mock built from real client code against recorded interactions, not a hand-rolled fake | Hand-written stub substituted for the Pact-generated mock |
 | Provider States correct | One named state per handler, exact string match, unrecognized state fails loudly | Generic/substring-matching handler; silent no-op on a misspelled state |
-| Provider State fixtures durable | Real, tenant-scoped commits (`go-integration-test`'s real-commit exception) | Transaction-rollback isolation used for fixtures the Verifier's separate request can't see |
+| Provider State fixtures durable | Real commits of scoped data (`go-integration-test`'s real-commit case) | Transaction-rollback isolation used for fixtures the Verifier's separate request can't see |
 | Deploy gated on compatibility | `can-i-deploy` (or file-pinning HEAD+deployed check) blocks deploy on failure | Deploy proceeds regardless of contract-verification result |
 | Frugal broker choice | Self-hosted, open-source Pact Broker; PactFlow flagged and approved explicitly if ever considered | Commercial SaaS adopted without an explicit frugality-constraint check |
 | Build-time catch | Contract breaks fail CI before deploy, on both sides independently | Breaks discovered in production |

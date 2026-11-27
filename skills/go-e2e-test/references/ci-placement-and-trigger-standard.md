@@ -9,7 +9,7 @@ The full journey suite runs less often than unit or integration tests. This is n
 | Layer | Setup cost per run | Who pays it |
 |---|---|---|
 | Unit (`go-unit-test`) | Microseconds — in-memory fakes | Every `go test ./...` invocation |
-| Integration (`go-integration-test`) | ~1–3s Postgres, ~3–5s Redpanda — shared per package via `TestMain` | Every `make ci` run, every PR |
+| Integration (`go-integration-test`) | Container start-up, once per package via `TestMain` | Every `make ci` run, every PR |
 | **E2E (this skill)** | `kind create cluster` plus a multi-service Helm install — minutes, not seconds, per `environment-provisioning-standard.md` | Whoever triggers it |
 
 `go-mutation-test` already establishes the reasoning pattern this standard reuses: multiply a per-run cost that is small in isolation by a realistic per-day PR volume, and a cost that looks affordable once becomes the dominant cost in the entire pipeline if it runs on every PR. A `kind` cluster running every service a journey touches costs low-single-digit minutes to provision, install, and tear down — call it comparable to or larger than the rest of `make ci` combined. Paid once nightly, that is an affordable, predictable cost. Paid on every PR across a normal day's PR volume, it would multiply into the majority of the CI budget for a signal that changes far more slowly than the code changes that would be triggering it.

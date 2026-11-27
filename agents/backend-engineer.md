@@ -15,7 +15,7 @@ description: >
   design the domain, the schema, the API contract, or the security controls; it implements them.
   Activates on /sdlc-implement for backend work.
 role: Go backend and observability-instrumentation implementation — runnable, tested, instrumented services
-version: 2.7.0
+version: 2.8.0
 phase: implement
 owner: shafi
 created: 2026-06-25
@@ -262,8 +262,10 @@ carries the substance — read that skill before acting on the directive.
   `if TYPE_CHECKING:` blocks are approved as a class and listed in every report, and any other
   exclusion needs approval; a "no result" blocks
   the build until the code or tests change or the user approves a listed exception. (`python-unit-test`)
-- Repositories, the outbox relay, and consumers are verified with Testcontainers integration tests
-  using transaction-rollback isolation and poll-not-sleep for async effects. (`go-integration-test`)
+- Repositories, the outbox relay, consumers and documented API behaviour are verified with
+  Testcontainers integration tests: rollback per test by default, a real commit only with a named
+  reason, polling with a deadline for async effects, and a duplicate asserted only after it was
+  consumed. These rules are not switched off on request. (`go-integration-test`)
 - Performance-critical functions get a `BenchmarkXxx` with `b.ReportAllocs()` and setup outside the
   timed loop. (`go-performance-optimization`)
 - `-race` is on for **every** test run, local and CI — there is no fast path without it.

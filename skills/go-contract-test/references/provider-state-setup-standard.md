@@ -33,9 +33,9 @@ Rules:
 
 ## Why This Needs Real Commits, Not Transaction Rollback
 
-`go-integration-test`'s default test isolation is transaction rollback per test (`references/test-isolation-standard.md` there) — a test wraps its work in a `pool.Begin(ctx)` transaction never committed. Provider State setup **cannot** use that default: the Pact Verifier issues its HTTP request as a real, separate call against the provider's real running server, in its own goroutine/process — there is no shared transaction for that request's handler to see uncommitted rows in. This is a direct instance of `go-integration-test`'s stated real-commit exception ("a test whose subject is commit/transaction-boundary behavior itself... cannot use an uncommitted wrapper") extended to provider verification generally: fixture data must actually be visible to a request the test itself did not issue.
+`go-integration-test`'s default test isolation is transaction rollback per test — a test wraps its work in a `pool.Begin(ctx)` transaction never committed. Provider State setup **cannot** use that default: the Pact Verifier issues its HTTP request as a real, separate call against the provider's real running server, in its own goroutine/process — there is no shared transaction for that request's handler to see uncommitted rows in. This is `go-integration-test`'s real-commit case (another connection must see the rows): fixture data must actually be visible to a request the test itself did not issue.
 
-Use the same tenant-scoped-commit pattern `go-integration-test` uses for its own real-commit exception: seed through a `freshTenant(t, pool)`-scoped id, and register `t.Cleanup` to delete only that tenant's rows after the verifier run completes — never a global schema reset between interactions, which would make provider verification the slowest, flakiest job in either pipeline.
+Seed scoped data (`test-fixture-design`): keys only this verification uses, cleanup registered before the first write that deletes only those rows and reports its errors — never a global schema reset between interactions, which would make provider verification the slowest, flakiest job in either pipeline.
 
 ## Ordering and Isolation Across Interactions
 

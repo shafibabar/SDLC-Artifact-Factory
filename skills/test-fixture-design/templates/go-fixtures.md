@@ -2,7 +2,7 @@
 
 Copy only what the test needs into the paths shown; replace `<module>`, `Booking` and table names with the product's. Unverified: these have not been compiled. Shared helpers live under `internal/test/`.
 
-`testPool` is the shared `*pgxpool.Pool` that `go-integration-test`'s `TestMain` opens against the container it started. Never build it from `DATABASE_URL`.
+`testPool` stands for the shared `*pgxpool.Pool` that `go-integration-test`'s `TestMain` opens against the container it started (`pg.Pool` in its harness). Never build it from `DATABASE_URL`.
 
 ## internal/test/db/tx.go (default: roll back each test)
 
