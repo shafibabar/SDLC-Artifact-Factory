@@ -37,7 +37,7 @@ fi
 
 # Fill a closed-beta record whose frameworks are not SOC 2.
 fill() {
-  sed -i \
+  sed_in_place \
     -e 's|^\[Closed alpha / Closed beta / Open beta / GA\]$|Closed beta|' \
     -e 's|^\[Names, companies, ICP-fit rationale, named contact\]$|Three screened design partners.|' \
     -e 's#^| \[name, company\] .*#| Ferris \& Lowe | y | y | y | Dana Ferris | merged-firm spreadsheet | y | in |#' \

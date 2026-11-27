@@ -35,6 +35,53 @@ smoke_test_scratch_init() {
   trap 'rm -rf "$SCRATCH_DIR"' EXIT
 }
 
+# sed_in_place [sed options and script...] <file>
+# Edits a file in place the same way on Linux and macOS. `sed -i` cannot be
+# used: GNU sed takes it bare, BSD sed (macOS) reads the next word as a backup
+# suffix and then treats the file name as the script.
+sed_in_place() {
+  local n=$# file tmp rc
+  file="${!n}"
+  tmp="$(mktemp "${TMPDIR:-/tmp}/sdlc-sed-in-place.XXXXXX")"
+  sed "${@:1:$((n - 1))}" "$file" > "$tmp"
+  rc=$?
+  # cat, not mv: keeps the file's mode and any link pointing at it.
+  [[ $rc -eq 0 ]] && cat "$tmp" > "$file"
+  rm -f "$tmp"
+  return $rc
+}
+
+# sed_multiline [sed arguments...]
+# sed, with `\n` in a script meaning a line break on Linux and macOS alike.
+# GNU sed reads `\n` in a replacement as a line break; BSD sed (macOS) prints
+# the letter n and exits 0. A backslash followed by a real line break is the
+# form both accept, so each `\n` is rewritten to that before sed sees it.
+sed_multiline() {
+  local args=() arg line_break=$'\\\n'
+  for arg in "$@"; do
+    args+=("${arg//\\n/$line_break}")
+  done
+  sed "${args[@]}"
+}
+
+# run_with_timeout <seconds> <command...>
+# Runs a command, stopping it after <seconds>; exits 124 when it had to, as
+# GNU `timeout` does. `timeout` itself is absent on stock macOS.
+run_with_timeout() {
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$@"  # portable-ok: used only when present
+    return $?
+  fi
+  python3 - "$@" <<'PY'
+import subprocess, sys
+seconds, command = float(sys.argv[1]), sys.argv[2:]
+try:
+    sys.exit(subprocess.run(command, timeout=seconds).returncode)
+except subprocess.TimeoutExpired:
+    sys.exit(124)
+PY
+}
+
 _pass() {
   local name="$1"
   echo "PASS: $name"
@@ -55,7 +102,7 @@ smoke_test_skill() {
   local name="$1" question="$2" expect="$3"
   local prompt="Using ONLY the '${name}' skill from this plugin (do not use general knowledge, do not consult any other skill), answer this question in one or two sentences: ${question}"
   local output
-  output="$(timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" -p "$prompt" --output-format text 2>&1)"
+  output="$(run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" -p "$prompt" --output-format text 2>&1)"
   if [[ -z "$output" ]]; then
     _fail "skills/$name" "empty response (timeout or invocation error)"
     return 1
@@ -75,7 +122,7 @@ smoke_test_agent() {
   local name="$1" question="$2" expect="$3"
   local prompt="Use the Agent tool to dispatch the '${name}' subagent with exactly this prompt, and report back its answer verbatim: \"Answer in one sentence, from your own agent file content only: ${question}\""
   local output
-  output="$(timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" -p "$prompt" --output-format text 2>&1)"
+  output="$(run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" -p "$prompt" --output-format text 2>&1)"
   if [[ -z "$output" ]]; then
     _fail "agents/$name" "empty response (timeout or invocation error)"
     return 1
@@ -106,7 +153,7 @@ smoke_test_command_contains() {
   if [[ -n "${SMOKE_CWD:-}" ]]; then
     allow=(--allowedTools "Bash($REPO_ROOT/scripts/product-state.py:*),Bash($REPO_ROOT/scripts/memory/run.sh:*)")
   fi
-  output="$(cd "${SMOKE_CWD:-$PWD}" && timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" "${allow[@]}" -p "$invocation" --output-format text 2>&1)"
+  output="$(cd "${SMOKE_CWD:-$PWD}" && run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" "${allow[@]}" -p "$invocation" --output-format text 2>&1)"
   if [[ -z "$output" ]]; then
     _fail "commands/$name" "empty response (timeout or invocation error)"
     return 1
@@ -176,7 +223,7 @@ smoke_test_script() {
 smoke_test_acceptance() {
   local name="$1" prompt="$2" expected_path="$3" validator_fn="$4"
   local output reason
-  output="$(timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
+  output="$(run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" --add-dir "$SCRATCH_DIR" \
     --permission-mode auto -p "$prompt" --output-format text 2>&1)"
   if [[ ! -f "$expected_path" ]]; then
     _fail "$name" "expected artifact not found at $expected_path. Agent output: ${output:0:300}"
@@ -196,7 +243,7 @@ smoke_test_summary() {
   echo "--- Summary: $PASS_COUNT passed, $FAIL_COUNT failed ---"
   if [[ $FAIL_COUNT -gt 0 ]]; then
     echo "Failed:"
-    for t in "${FAILED_TESTS[@]}"; do echo "  - $t"; done
+    for t in ${FAILED_TESTS[@]+"${FAILED_TESTS[@]}"}; do echo "  - $t"; done
     return 1
   fi
   return 0

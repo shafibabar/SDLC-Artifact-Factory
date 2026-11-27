@@ -30,10 +30,10 @@ else
 fi
 
 # Filling in both tables with a real data row makes it pass entirely.
-sed -i '/## Requirements Table/,/^$/{/|---|---|---|---|---|---|/a\
+sed_in_place '/## Requirements Table/,/^$/{/|---|---|---|---|---|---|/a\
 | Which sources have gaps? | Prioritise remediation | Count of open gaps | compliance_gap_summary | 15 min | data-engineer |
 }' "$FRESH"
-sed -i '/## Vanity-Metric Review/,/^$/{/|---|---|---|---|---|---|---|---|/a\
+sed_in_place '/## Vanity-Metric Review/,/^$/{/|---|---|---|---|---|---|---|---|/a\
 | Open gap count | yes | yes | yes | no | yes | yes | accepted |
 }' "$FRESH"
 
@@ -45,7 +45,7 @@ fi
 
 # A doc missing a required Output Format section entirely must fail that
 # specific check without regressing the others.
-sed -i '/## Deferred \/ Rejected Requests/,$d' "$FRESH"
+sed_in_place '/## Deferred \/ Rejected Requests/,$d' "$FRESH"
 OUTPUT2="$("$VALIDATE" "$FRESH" 2>&1)"
 if echo "$OUTPUT2" | grep -q "FAIL: '## Deferred / Rejected Requests' section present" && echo "$OUTPUT2" | grep -q "1 check(s) failed"; then
   _pass "validate-analytics-requirements: catches a missing Output Format section without false-failing the filled tables"

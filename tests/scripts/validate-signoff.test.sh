@@ -42,14 +42,14 @@ fi
 
 # Fill a two-party full sign-off.
 fill_two_party() {
-  sed -i 's/^- \[Name\] (product owner).*/- Ines Duarte (product owner) — agreed 2026-08-20, review/' "$1"
-  sed -i 's/\[Name, role, company\] (customer representative).*/Arjun Patel, ops lead, Acme Corp (customer representative) — agreed 2026-08-20, email/' "$1"
-  sed -i 's/\[What is knowingly accepted.*/FB-3 (Low) accepted by Ines Duarte./' "$1"
-  sed -i 's/\[canary-deployment widen\/hold\/revert instruction; feature-flag-design scope change\]/canary-deployment widens to 100% and terminates./' "$1"
-  sed -i 's/^- \[ \]/- [x]/' "$1"
+  sed_in_place 's/^- \[Name\] (product owner).*/- Ines Duarte (product owner) — agreed 2026-08-20, review/' "$1"
+  sed_in_place 's/\[Name, role, company\] (customer representative).*/Arjun Patel, ops lead, Acme Corp (customer representative) — agreed 2026-08-20, email/' "$1"
+  sed_in_place 's/\[What is knowingly accepted.*/FB-3 (Low) accepted by Ines Duarte./' "$1"
+  sed_in_place 's/\[canary-deployment widen\/hold\/revert instruction; feature-flag-design scope change\]/canary-deployment widens to 100% and terminates./' "$1"
+  sed_in_place 's/^- \[ \]/- [x]/' "$1"
 }
 set_decision() {
-  sed -i -E "s/^## Decision: .*/## Decision: $2/" "$1"
+  sed_in_place -E "s/^## Decision: .*/## Decision: $2/" "$1"
 }
 
 cp "$FRESH" full.md
@@ -72,7 +72,7 @@ fi
 
 # Defect rule: a sign-off with the Critical line unchecked fails; a NO-GO with it unchecked does not.
 cp full.md critical.md
-sed -i 's/^- \[x\] Zero open Critical/- [ ] Zero open Critical/' critical.md
+sed_in_place 's/^- \[x\] Zero open Critical/- [ ] Zero open Critical/' critical.md
 if run_validate critical.md | grep -q "FAIL: no full or conditional sign-off while open Critical"; then
   _pass "validate-signoff: a full sign-off with open Critical defects fails"
 else
@@ -88,7 +88,7 @@ fi
 # Solo-operator exception: no customer rep, but a filled Exception passes.
 cp "$FRESH" solo.md
 fill_two_party solo.md
-sed -i '/(customer representative)/d' solo.md
+sed_in_place '/(customer representative)/d' solo.md
 set_decision solo.md "FULL SIGN-OFF"
 if run_validate solo.md | grep -q "FAIL: customer representative named, or a filled solo-operator Exception"; then
   _pass "validate-signoff: no representative and an unfilled Exception fails"
@@ -115,7 +115,7 @@ if "$VALIDATE" solo.md >/dev/null 2>&1; then
 else
   _fail "validate-signoff: a filled solo-operator Exception passes without a representative" "$("$VALIDATE" solo.md | grep FAIL)"
 fi
-sed -i 's/Independence level (ISTQB): none/Independence level (ISTQB): within team/' solo.md
+sed_in_place 's/Independence level (ISTQB): none/Independence level (ISTQB): within team/' solo.md
 if run_validate solo.md | grep -q "FAIL: customer representative named, or a filled solo-operator Exception"; then
   _pass "validate-signoff: an Exception that does not declare independence 'none' fails"
 else
@@ -125,19 +125,19 @@ fi
 # Conditional: conditions need owner + target date; a High needs workaround + re-test.
 cp full.md cond.md
 set_decision cond.md "CONDITIONAL SIGN-OFF"
-sed -i 's/^- \[Issue ID, severity\].*/- FB-7 (High) — workaround: use the Replies tab — owner: backend-engineer — target date: 2026-09-01 — re-test: UAT-4b/' cond.md
+sed_in_place 's/^- \[Issue ID, severity\].*/- FB-7 (High) — workaround: use the Replies tab — owner: backend-engineer — target date: 2026-09-01 — re-test: UAT-4b/' cond.md
 if "$VALIDATE" cond.md >/dev/null 2>&1; then
   _pass "validate-signoff: a complete High condition passes"
 else
   _fail "validate-signoff: a complete High condition passes" "$("$VALIDATE" cond.md | grep FAIL)"
 fi
-sed -i 's/ — re-test: UAT-4b//' cond.md
+sed_in_place 's/ — re-test: UAT-4b//' cond.md
 if run_validate cond.md | grep -q "FAIL: every High condition names a workaround and a re-test"; then
   _pass "validate-signoff: a High condition with no re-test fails"
 else
   _fail "validate-signoff: a High condition with no re-test fails" "expected the High check to fail"
 fi
-sed -i 's/ — target date: 2026-09-01//' cond.md
+sed_in_place 's/ — target date: 2026-09-01//' cond.md
 if run_validate cond.md | grep -q "FAIL: every condition names an owner and a target date"; then
   _pass "validate-signoff: a condition with no target date fails"
 else

@@ -35,6 +35,8 @@ Done and merged into the wave branch (20 sub-issues, board status Done): setup (
 
 Earlier chat and issue totals of $73.99, $87.90 and $98.37 were addition errors; $84.87 is the sum of the saved run results (which are gitignored and stay on the old machine).
 
+Also done (2026-11-28): **#1510**, every script and test runs on stock macOS as well as Linux; the portability check is a blocking gate step and CI runs on both systems. Eval re-runs for it: `adr-authoring` and `skill-authoring-standards`, both pass, $5.67 (wave eval spend now $90.54).
+
 Remaining:
 
 1. **#1489** `go-contract-test` (in progress; six product-owner decisions listed on the issue are not yet asked).
@@ -47,10 +49,10 @@ Estimate for the remaining eval spend: about $95–170, within the $450 wave cei
 ## Set up the new machine
 
 1. `git fetch origin`. If `main` has local changes, commit them to a branch or `git stash` them first; ask the product owner, never discard.
-2. `git checkout fresh-eyes/wave-3-testing && git pull`.
+2. `git checkout fresh-eyes/wave-3-testing && git pull`. Start each sub-issue from this branch: `/exec-start <n>` targets the branch you are on.
 3. Restore the board tooling state: `cp discovery/fresh-eyes/handoff/github-project-state.json scripts/github-project/.state.json` (get the file from `main` with `git show origin/main:discovery/fresh-eyes/handoff/github-project-state.json` if the branch lacks it). Without it, `exec_complete.py` does not know a sub-issue's base branch and will not merge it.
 4. Needed locally: `gh` signed in as the repository owner with `repo` and `project` scopes (`gh auth status`; `gh auth refresh -s repo,project`), Python 3 with `jsonschema`, the `claude` CLI (evals make real model calls on the signed-in account), Docker Desktop with WSL integration, and Node for the React skills. Go and Python test tools are downloaded into temporary folders by each rebuild; nothing is installed system-wide.
-5. Check the setup: `bash scripts/lint-all.sh` and `bash tests/run-smoke-tests.sh scripts schemas arch` (last green: 2183 passed on the wave branch).
+5. Check the setup: `bash scripts/lint-all.sh` and `bash tests/run-smoke-tests.sh scripts schemas arch` (last green: 2290 passed on Linux and on stock macOS alike, #1510). The scripts need only the system's own tools: on a Mac, Homebrew's GNU tools (`gnu-sed`, `gawk`, `grep`, `coreutils`, `findutils`, a newer `bash`) and the `~/.zshrc` lines that put them first on the `PATH` are **not** needed and can be removed. Docker Desktop's WSL integration applies to Windows only.
 6. For #1489: `git checkout issue-1489-wave-3-skill-go-contract-test-research-grounded-re` and read the notes.
 
 ## How the work is run (product owner's working preferences)

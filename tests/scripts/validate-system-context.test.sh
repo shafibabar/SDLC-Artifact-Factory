@@ -128,7 +128,7 @@ expect "a catalog element missing from the diagram fails" notondiag.md 1 "appear
 sed 's/|--------->|/|<-------->|/' good.md > twohead.md
 expect "a two-headed arrow on the diagram fails" twohead.md 1 "no two-headed arrow"
 
-sed 's/^| \[Person\]           |$/| [Person]           |\n| PostgreSQL         |/' good.md > tech.md
+sed_multiline 's/^| \[Person\]           |$/| [Person]           |\n| PostgreSQL         |/' good.md > tech.md
 expect "technology on the diagram fails" tech.md 1 "no containers, technology or infrastructure on the diagram"
 
 sed 's/^- \*\*Out of scope:\*\*.*$/- **Out of scope:** [none yet]/' good.md > scope.md

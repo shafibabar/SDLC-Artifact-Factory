@@ -109,7 +109,7 @@ expect "code in the design fails (D047-10)" code.md 1 "FAIL: no code in the desi
 sed 's/^name: aggregate-design$/name: domain-model/; /^bounded-context:/d' good.md > lean.md
 expect "a lean document without Domain Events, Commands and Read Models fails" lean.md 1 "FAIL: lean document has a '## Domain Events' section"
 
-{ sed 's/| \*\*Root\*\* |/| **Context** | Firing |\n| **Root** |/; s/| \*\*Records touched\*\* |/| **Context** | Studio |\n| **Records touched** |/' lean.md
+{ sed_multiline 's/| \*\*Root\*\* |/| **Context** | Firing |\n| **Root** |/; s/| \*\*Records touched\*\* |/| **Context** | Studio |\n| **Records touched** |/' lean.md
   printf '\n## Domain Events\n\n| Context | Event (past tense) | Raised by | Carries | Who reacts |\n|---|---|---|---|---|\n| Firing | LoadBookedIntoFiring | BookLoad | load | schedule view |\n| Firing | FiringSchedule | ScheduleFiring | firing | members |\n'
   printf '\n## Commands\n\n| Context | Command | Guard | Handled by | Idempotency |\n|---|---|---|---|---|\n| Firing | BookLoad | space left | Kiln | request id |\n'
   printf '\n## Read Models\n\n| Context | Read Model | Answers | Built from | Staleness accepted |\n|---|---|---|---|---|\n| Firing | Schedule | what fires when | events | seconds |\n'; } > leanfull.md

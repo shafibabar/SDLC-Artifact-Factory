@@ -149,7 +149,7 @@ expect "no readers fails" 1 "names its readers" readers.md
 sed 's/^- \*\*Profile:\*\* lean$/- **Profile:** small/' good.md > profile.md
 expect "an unknown profile fails" 1 "states the profile" profile.md
 
-{ sed 's/^| ferrylog | Ferrylog App, Ferrylog DB | Crossings, Manifests | modular monolith (lean) |$/| ferrylog | Ferrylog App, Ferrylog DB | Crossings | modular monolith (lean) |\n| manifests | Manifests App | Manifests | cleaner |/' good.md; } > split.md
+{ sed_multiline 's/^| ferrylog | Ferrylog App, Ferrylog DB | Crossings, Manifests | modular monolith (lean) |$/| ferrylog | Ferrylog App, Ferrylog DB | Crossings | modular monolith (lean) |\n| manifests | Manifests App | Manifests | cleaner |/' good.md; } > split.md
 expect "a split with no named force fails" 1 "names its forces" split.md
 
 sed 's/| \[Container: Application\] Ferrylog App |/| [Container: Application] Ferrylog App x3 |/' good.md > replicas.md
@@ -161,7 +161,7 @@ expect "a container with no technology fails" 1 "has a technology label" notech.
 sed 's/^| Ferrylog DB | Database | PostgreSQL, pgx | ferrylog |/| Ferrylog DB | Database | PostgreSQL, pgx | other |/' good.md > nodep.md
 expect "a container in no listed deployable fails" 1 "belongs to a deployable" nodep.md
 
-{ cat good.md | sed 's/^| ferrylog | Ferrylog App, Ferrylog DB | Crossings, Manifests | modular monolith (lean) |$/| ferrylog | Ferrylog App, Ferrylog DB | Crossings | modular monolith (lean) |\n| manifests | Manifests API | Manifests | security: regulated manifests |/; s/^| Ferrylog DB | Database | PostgreSQL, pgx | ferrylog | One schema per module |$/| Ferrylog DB | Database | PostgreSQL, pgx | ferrylog | One schema per module |\n| Manifests API | API | Go, net\/http + chi | manifests | Manifests |/; s/^| Ferrylog App | Port Authority Feed | Sends manifests to | HTTPS | sync |$/| Ferrylog App | Port Authority Feed | Sends manifests to | HTTPS | sync |\n| Manifests API | Ferrylog DB | Reads crossing rows in | SQL | sync |/; s/^| Ferrylog DB | managed PostgreSQL | 1 | |$/| Ferrylog DB | managed PostgreSQL | 1 | |\n| Manifests API | namespace manifests | 1 | |/; s/\[Container: Database\] Ferrylog DB/[Container: Database] Ferrylog DB  Manifests API/' ; } > shared.md
+{ cat good.md | sed_multiline 's/^| ferrylog | Ferrylog App, Ferrylog DB | Crossings, Manifests | modular monolith (lean) |$/| ferrylog | Ferrylog App, Ferrylog DB | Crossings | modular monolith (lean) |\n| manifests | Manifests API | Manifests | security: regulated manifests |/; s/^| Ferrylog DB | Database | PostgreSQL, pgx | ferrylog | One schema per module |$/| Ferrylog DB | Database | PostgreSQL, pgx | ferrylog | One schema per module |\n| Manifests API | API | Go, net\/http + chi | manifests | Manifests |/; s/^| Ferrylog App | Port Authority Feed | Sends manifests to | HTTPS | sync |$/| Ferrylog App | Port Authority Feed | Sends manifests to | HTTPS | sync |\n| Manifests API | Ferrylog DB | Reads crossing rows in | SQL | sync |/; s/^| Ferrylog DB | managed PostgreSQL | 1 | |$/| Ferrylog DB | managed PostgreSQL | 1 | |\n| Manifests API | namespace manifests | 1 | |/; s/\[Container: Database\] Ferrylog DB/[Container: Database] Ferrylog DB  Manifests API/' ; } > shared.md
 expect "a database reached from another deployable fails" 1 "no shared database" shared.md
 
 sed 's/| Sends manifests to | HTTPS | sync |/| uses | HTTPS | sync |/' good.md > vague.md

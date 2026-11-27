@@ -43,7 +43,8 @@ DATE="$(date +%Y-%m-%d)"
 
 # Title-cased form for the '<Product>' placeholder in the H1 heading, e.g.
 # "data-estate-mapping" -> "Data Estate Mapping".
-PRODUCT_TITLE="$(echo "$PRODUCT" | tr '-' ' ' | sed -E 's/(^| )([a-z])/\1\U\2/g')"
+# awk, not sed's \U: case conversion in sed is GNU-only and absent on macOS.
+PRODUCT_TITLE="$(echo "$PRODUCT" | awk -F- '{ for (i = 1; i <= NF; i++) $i = toupper(substr($i, 1, 1)) substr($i, 2); print }' OFS=' ')"
 
 # Escape sed-special characters before using these as replacements. Each
 # placeholder below is a distinct bracketed token ('<product-name>' is not

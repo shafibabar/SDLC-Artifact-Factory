@@ -129,7 +129,7 @@ No scenario is rated high on architectural impact in the handoff, so the design 
 
 - None: nothing is open at lean.
 EOF
-sed -i 's/^- None: nothing is open at lean\./- None: no questions yet./' lean-none.md
+sed_in_place 's/^- None: nothing is open at lean\./- None: no questions yet./' lean-none.md
 
 expect "a complete standard record passes" 0 "0 check(s) failed" good.md
 expect "a lean record with no high scenario passes" 0 "0 check(s) failed" lean-none.md

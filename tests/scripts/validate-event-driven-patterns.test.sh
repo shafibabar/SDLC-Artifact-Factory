@@ -134,7 +134,7 @@ cat > lean.md <<'EOF'
 EOF
 expect "a short lean section with no broker passes" 0 "" lean.md
 
-sed 's/^### Open Questions/### Topics and Ordering\n\n| Topic | Partition key | Ordering guaranteed | Consumer groups | Retention |\n|---|---|---|---|---|\n| t | k | o | g | r |\n\n### Open Questions/' lean.md > leantopics.md
+sed_multiline 's/^### Open Questions/### Topics and Ordering\n\n| Topic | Partition key | Ordering guaranteed | Consumer groups | Retention |\n|---|---|---|---|---|\n| t | k | o | g | r |\n\n### Open Questions/' lean.md > leantopics.md
 expect "lean with no broker but a topics table fails" 1 "no topics or delivery tables" leantopics.md
 
 sed 's/^- \*\*Broker:\*\*.*$/- **Broker:** [broker]/' good.md > nobroker.md

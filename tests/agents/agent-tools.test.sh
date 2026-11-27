@@ -20,7 +20,7 @@ touch "$SCRATCH_DIR/.sdlc-memory/.skip-install"
 git -C "$SCRATCH_DIR" init -q
 
 for agent in backend-engineer product-strategist ux-architect; do
-  reply=$(cd "$SCRATCH_DIR" && timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" \
+  reply=$(cd "$SCRATCH_DIR" && run_with_timeout "$TIMEOUT_SECS" claude --plugin-dir "$REPO_ROOT" \
     --permission-mode acceptEdits -p \
     "Use the Agent tool exactly once with subagent_type 'sdlc-artifact-factory:$agent' and this prompt: 'Do not do any work. Reply only with a comma-separated list of the exact names of every tool you can call right now, nothing else.' Then print only the subagent's reply, verbatim." \
     --output-format text 2>&1)

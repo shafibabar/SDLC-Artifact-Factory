@@ -139,7 +139,7 @@ expect "a projection with no events fails" noevents.md 1 "has an Events table"
 sed 's/^| VanStockBoard | a driver: which titles are on the van today | projection | 20 seconds |$/| VanStockBoard | a driver | simple read model | immediate |/' good.md > rungmis.md
 expect "a summary rung that differs from the block fails" rungmis.md 1 "the summary rung matches its block"
 
-sed 's/^| VanStockBoard | a driver: which titles are on the van today | projection | 20 seconds |$/&\n| OverdueLetters | staff | simple read model | immediate |/' good.md > orphan.md
+sed_multiline 's/^| VanStockBoard | a driver: which titles are on the van today | projection | 20 seconds |$/&\n| OverdueLetters | staff | simple read model | immediate |/' good.md > orphan.md
 expect "a summary row with no block fails" orphan.md 1 "missing: OverdueLetters"
 
 sed 's/^| \*\*Rung\*\* | projection |$/| **Rung** | full CQRS |/' good.md > rung.md
