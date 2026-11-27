@@ -2,6 +2,8 @@
 
 Copy only when the product has a broker, beside `harness.py` as `tests/integration/broker.py`. Run on Python 3.14.4 with testcontainers 4.15.0, aiokafka 0.15.0 and `redpandadata/redpanda:v26.2.7`.
 
+Its async fixtures need `asyncio_mode = "auto"` in `[tool.pytest.ini_options]` (or `@pytest_asyncio.fixture`).
+
 ## Dependencies
 
 `aiokafka==0.15.0` in `[project] dependencies`.

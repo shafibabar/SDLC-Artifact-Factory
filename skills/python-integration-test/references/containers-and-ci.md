@@ -42,18 +42,35 @@ Add no `sleep` and no `wait_for_logs` (deprecated). A custom PostgreSQL image wa
 
 ## Event loops
 
-An asyncpg connection, pool or aiokafka client works only on the event loop that created it. The shared settings give each test and fixture its own loop, so:
+An asyncpg connection, pool or aiokafka client works only on the event loop that created it. Under the shared settings each test has its own loop, shared by its function-scoped async fixtures. So the harness shares no async resource across loops:
 
 - containers and migrations are **synchronous** session fixtures (Alembic's `env.py` calls `asyncio.run`; seen inside an async test: `asyncio.run() cannot be called from a running event loop`);
 - connections, pools, producers and consumers are **function-scoped async** fixtures.
 
-A session-scoped pool is not needed. Seen when one was tried:
+### Which setting affects what
 
-| Settings | Result |
+| Setting | Affects | Does not affect |
+|---|---|---|
+| `asyncio_default_fixture_loop_scope` | The loop of async fixtures | Synchronous fixtures, tests |
+| `asyncio_default_test_loop_scope` | The loop of async tests | Fixtures |
+
+Seen: a synchronous session fixture had no running loop and could call `asyncio.run` under every combination below. Per object, the same is set with `loop_scope=` on `@pytest_asyncio.fixture` and `@pytest.mark.asyncio`.
+
+### A session-scoped async resource
+
+| Settings | Result (seen) |
 |---|---|
-| The shared settings (both loop scopes `function`) | `ScopeMismatch` |
-| Only `asyncio_default_fixture_loop_scope = "session"` | `InterfaceError: ... another operation is in progress`: fixture and test are on different loops |
-| Both loop scopes `session` | Passes, but changes the loop for every unit test too; not used |
+| Both `function` (shared settings) | `ScopeMismatch` |
+| Only the test loop scope `session` | `ScopeMismatch` |
+| Only the fixture loop scope `session` | Fixture and test on different loops; with an asyncpg pool, `InterfaceError: ... another operation is in progress` |
+| Both `session` | Passes |
+| `scope="session", loop_scope="session"` on the fixture and `@pytest.mark.asyncio(loop_scope="session")` on its tests | Passes, settings unchanged |
+
+Two remedies are valid for a loop mismatch: **run the tests on the session loop too** (settings, or the marker), or **share no async resource across loops**. The harness takes the second, so the settings shared with unit tests stay as they are.
+
+### Async fixtures need auto mode or the plugin's decorator
+
+The harness and the examples use plain `@pytest.fixture` on `async def`, which works only with `asyncio_mode = "auto"`. Seen in strict mode (the pytest-asyncio default): the test errors. Under strict mode use `@pytest_asyncio.fixture` and mark the tests `@pytest.mark.asyncio` (seen to pass).
 
 ## Excluding slow tests
 
@@ -83,4 +100,4 @@ The harness covers PostgreSQL and Redpanda only. For MongoDB, a graph extension,
 
 ## Coverage
 
-Integration tests count towards the line and branch gate of `python-unit-test`, run on the full suite. Seen: all three examples reached 100% of both measures with this harness. The gate measures the source folders only, so the harness under `tests/` is outside it: add no exclusion or `omit` entry for it, list it in the report as test support, and never move code that ships into `tests/`. The validator fails shipped code that imports `tests`; code copied into `tests/` that nothing imports goes unnoticed.
+Integration tests count towards the line and branch gate of `python-unit-test`, run on the full suite. Coverage flags (`--cov...`, `--cov-fail-under`) belong on the full gate command the `make` target runs (the gate script passes them), never in `addopts` or shared config, because subset runs then fail. Seen: all three examples reached 100% of both measures with this harness. The gate measures the source folders only, so the harness under `tests/` is outside it: add no exclusion or `omit` entry for it, list it in the report as test support, and never move code that ships into `tests/`. The validator fails shipped code that imports `tests`; code copied into `tests/` that nothing imports goes unnoticed.

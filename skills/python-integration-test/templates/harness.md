@@ -17,7 +17,14 @@ dependencies = ["asyncpg==0.32.0", "alembic==1.20.1", "sqlalchemy[asyncio]==2.1.
 dev = ["testcontainers==4.15.0", "httpx==0.29.0"]   # httpx only for API behaviour tests
 ```
 
-The table already registers the `integration` marker, sets `pythonpath = [".", "src"]` and function-scoped event loops. These fixtures are built for that: containers and migrations are synchronous session fixtures, and every connection is opened on the test's own loop. Add no coverage flag and no `-m` to `addopts`.
+The harness's async fixtures are plain `@pytest.fixture` functions, so the table must keep:
+
+```toml
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+```
+
+The table already registers the `integration` marker, sets `pythonpath = [".", "src"]` and function-scoped event loops. These fixtures are built for that: containers and migrations are synchronous session fixtures, and every connection is opened on the test's own loop. Add no `-m` to `addopts`. Coverage flags (`--cov...`, `--cov-fail-under`) belong on the full gate command the `make` target runs, never in `addopts` or shared config, because subset runs then fail.
 
 Alembic: `alembic.ini` and `migrations/env.py` come from `python-migration`, whose `env.py` takes a URL set by the caller before `DATABASE_URL`.
 

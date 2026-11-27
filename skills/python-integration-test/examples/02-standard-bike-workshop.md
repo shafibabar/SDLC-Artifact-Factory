@@ -464,6 +464,8 @@ class ReminderConsumer:
 
 ## Tests
 
+The async tests and `@pytest.fixture` async fixtures below need `asyncio_mode = "auto"` in `[tool.pytest.ini_options]`.
+
 ### `tests/integration/adapters/test_postgres.py`
 
 ```python

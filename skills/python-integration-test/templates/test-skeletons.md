@@ -4,6 +4,8 @@ Copy what the test needs into `tests/integration/<layer>/test_<module>.py` (the 
 
 The `integration` marker is added by `conftest.py`; do not repeat it. Broker tests (duplicate delivery, dead letters, relay) are copied from `../examples/02-standard-bike-workshop.md`.
 
+These async tests and the harness fixtures they use need `asyncio_mode = "auto"` in `[tool.pytest.ini_options]`.
+
 ## Rollback (default), real commit, API behaviour
 
 ### `tests/integration/adapters/test_things.py`

@@ -21,7 +21,7 @@ No relay, consumer or API promise exists, so none is tested and no broker harnes
 
 ## Files
 
-`pyproject.toml` pytest settings from `python-unit-test`; `alembic.ini` and `migrations/env.py` copied from `python-migration`; `harness.py` and `conftest.py` copied unchanged into `tests/integration/`; empty `__init__.py` files. `domain/errors.py` also needs its own test under `tests/unit/` for the `tdd-gate` hook (`python-unit-test`; not shown).
+`pyproject.toml` pytest settings from `python-unit-test` (the async tests and fixtures need its `asyncio_mode = "auto"`); `alembic.ini` and `migrations/env.py` copied from `python-migration`; `harness.py` and `conftest.py` copied unchanged into `tests/integration/`; empty `__init__.py` files. `domain/errors.py` also needs its own test under `tests/unit/` for the `tdd-gate` hook (`python-unit-test`; not shown).
 
 ### `migrations/versions/0001_create_loans.py`
 
