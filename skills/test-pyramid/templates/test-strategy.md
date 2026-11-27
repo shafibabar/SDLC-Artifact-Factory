@@ -60,7 +60,7 @@ Every Must Have criterion has at least one executable scenario. Smoke is read-on
 
 ## Coverage Gate
 
-**Rule:** 100% of lines and branches. Only machine-generated code is excluded automatically.
+**Rule:** 100% of lines and branches. Only machine-generated code is excluded automatically, plus Go test support under `internal/test/` (approved class, listed in every report, never shipped).
 
 <!-- Keep one row per language. Go: 100% of statement blocks (hard gate) plus gobco branch coverage after a trial;
      Not measured names select, range and zero-iteration loops; a failed trial returns to the product owner.

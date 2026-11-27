@@ -6,7 +6,7 @@ Self-contained. Use when running, reading or reporting Go coverage. The policy b
 
 - 100% of lines and branches. Go's own tool counts statement blocks and has no branch coverage, so: 100% of statement blocks as a hard gate, plus `gobco` branch coverage, with the unmeasured cases stated in each report.
 - Decided after the trial (product owner, 2026-11-26): keep `gobco`, strictly. A **no result** (tool failure or unmeasured file) blocks the build. Remedy: change the code so it can be measured, or an exception listed for the product owner's approval. Never report unmeasured code as passing; never drop to statements only.
-- Only machine-generated code is excluded automatically. Every other exclusion is listed with a reason for the product owner's approval.
+- Excluded without per-file approval: machine-generated code, and the test-support class (product owner, 2026-11-27): the shared scaffolding under the module root's `internal/test/`, listed in every report, test support only, never code that ships. Every other exclusion is listed with a reason for the product owner's approval.
 - Statement and branch results are judged separately. Above 90% and under 100% fails unless the product owner reviews the gap and waives it with recorded comments; 90% or below has no waiver; no result means nothing to waive. A waiver covers one run. Testing layers are never waived.
 - Compute from counts, never a rounded figure: waivable only if `covered x 10 > total x 9` and `covered < total`.
 - The verdict comes from the full run of all suites in scope. A unit-only or filtered run gives no verdict.
@@ -25,14 +25,17 @@ Copy `../scripts/check-go-line-coverage.sh` and `../scripts/check-go-branch-cove
 | Runs | `go test -count=1 -race -covermode=atomic -coverpkg=./...` | `gobco -branch` once per package, fresh statistics file |
 | Counts | Blocks from any package's tests | **Only the package's own tests** |
 | Passes when | No block has a zero count | Every measured condition was true and false |
-| Leaves out | `_moq.go` by name, generated marker, approved entries | The same |
+| Leaves out | `internal/test/` (listed), `_moq.go` by name, generated marker, approved entries | The same; gobco is not run there |
+| Fails (exit 1, no waiver) | Non-test code imports `internal/test/`, or a file there is `package main` | The same |
 | No result when | Tests fail; build constraints leave a production file out, even a whole folder `go list` does not show | The same files; gobco fails; a file with conditions is measured as none |
 
 Why not the printed figure: with 1 of 2503 statements not run, `go test -cover` and `go tool cover -func` both printed `100.0%`.
 
 Exclusion file, one line each, approved entries only (pending is refused): `internal/x/y.go | approved YYYY-MM-DD | reason`. It mirrors the strategy's exclusion register; `go-makefile` passes `coverage-exceptions.txt` to both gates. Excepted files are printed as not measured. The branch gate skips a package only when every production file in it is excepted. `cmd/**` composition roots are counted (packages without tests appear at 0%): test them or list them.
 
-Because the branch gate counts only own-package tests, every package with conditions needs tests of its own, including hand-written fakes under `internal/test/`.
+Because the branch gate counts only own-package tests, every package with conditions needs tests of its own, including hand-written fakes kept outside `internal/test/`. A fake inside that folder is outside the gate, and is still held to its port's behaviour suite (`mock-generation`).
+
+The guard reads the imports of every non-test `.go` file of the module, under any build tag. It does not read nested modules, and cannot tell that logic copied into the folder, and imported by nothing, was meant to ship.
 
 ## Not measured, stated in every report
 

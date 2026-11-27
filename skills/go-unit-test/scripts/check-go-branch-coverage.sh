@@ -15,6 +15,11 @@
 # change the code so it can be measured, or an exception approved by the product
 # owner in --exclusions. A package is skipped only when every file in it is
 # excepted.
+# Test support: production-named files under <module-root>/internal/test/ are left
+# out as a class approved by the product owner (no entry needed) and listed on
+# every run. The gate fails (exit 1) if a non-test file elsewhere in the module
+# imports that folder, or a file in it is package main. Not detected: imports from
+# nested modules, and shipped logic copied into the folder that nothing imports.
 # Any non-zero exit blocks the build.
 # Exit 0 = all measured outcomes seen; 1 = a gap; 2 = no result for at least
 # one package: nothing to waive.
@@ -69,6 +74,64 @@ version = subprocess.run([gobco, "-version"], capture_output=True, text=True).st
 if version != PINNED:
     die(f"gobco version is '{version}', the pinned version is {PINNED}")
 
+SUPPORT = "internal/test"
+
+def in_support(rel):
+    return rel.replace(os.sep, "/").startswith(SUPPORT + "/")
+
+def test_support(root, module):
+    """The approved test-support class: (production files under internal/test, the
+    ways shipped code reaches into it). Reads every non-test .go file of this
+    module, whatever its build tags; nested modules are not read."""
+    listed, shipped = [], []
+    target = module + "/" + SUPPORT
+    token = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'|`[^`]*`', re.S)
+    clause = re.compile(r'[\s;]*import\b\s*(\([^)]*\)|(?:[\w.]+\s*)?(?:"[^"\n]*"|`[^`]*`))')
+    for base, dirs, names in os.walk(root):
+        dirs[:] = sorted(d for d in dirs if d not in ("vendor", "testdata") and d[0] not in "._"
+                         and not os.path.isfile(os.path.join(base, d, "go.mod")))
+        for name in sorted(names):
+            if not name.endswith(".go") or name.endswith("_test.go") or name[0] in "._":
+                continue
+            path = os.path.join(base, name)
+            rel = os.path.relpath(path, root).replace(os.sep, "/")
+            text = open(path, encoding="utf-8-sig", errors="replace").read()
+            code = token.sub(lambda m: " " if m.group(0).startswith("/") else m.group(0), text)
+            if re.search(r"^//go:build ignore\b", text, re.M):
+                continue
+            package = re.search(r"^\s*package\s+(\w+)", code, re.M)
+            if in_support(rel):
+                listed.append(rel)
+                if package and package.group(1) == "main":
+                    shipped.append(f"{rel}: package main under {SUPPORT}/ can be built and shipped")
+                continue
+            position = package.end() if package else 0
+            while True:
+                found = clause.match(code, position)
+                if not found:
+                    break
+                position = found.end()
+                for imported in re.findall(r'["`]([^"`\n]*)["`]', found.group(1)):
+                    if imported == target or imported.startswith(target + "/"):
+                        shipped.append(f"{rel}: imports {imported}")
+    return listed, shipped
+
+def check_support(root, module):
+    listed, shipped = test_support(root, module)
+    if shipped:
+        for item in shipped:
+            print("  " + item)
+        print(f"FAIL: shipped code reaches into {SUPPORT}/, which is excluded as test support only. "
+              "Move that code out of the folder. No waiver or exception covers this.")
+        sys.exit(1)
+    for rel in listed:
+        print(f"excluded {rel}: test support (class approved by the product owner)")
+
+found = re.search(r"^module\s+\"?([^\s\"]+)", open(os.path.join(root, "go.mod"), encoding="utf-8").read(), re.M)
+if not found:
+    die("go.mod has no module line")
+check_support(root, found.group(1))
+
 tags = ["-tags", opts["--tags"]] if opts["--tags"] else []
 fields = '{{.Dir}}|{{join .GoFiles ","}},{{join .CgoFiles ","}}'
 try:
@@ -89,7 +152,7 @@ def unbuilt(root, built):
             path = os.path.join(base, name)
             rel = os.path.relpath(path, root)
             if (not name.endswith(".go") or name.endswith(("_test.go", "_moq.go")) or name[0] in "._"
-                    or path in built or rel in approved):
+                    or path in built or rel in approved or in_support(rel)):
                 continue
             head = re.split(r"^package\s", open(path, encoding="utf-8", errors="replace").read(),
                             maxsplit=1, flags=re.M)[0]
@@ -121,6 +184,8 @@ for number, row in enumerate(listed.stdout.strip().splitlines()):
     directory, built = row.split("|")
     rel_dir = os.path.relpath(os.path.realpath(directory), root)
     label = "." if rel_dir == "." else "./" + rel_dir
+    if in_support(rel_dir + "/"):
+        continue            # listed by check_support
     sources = {}
     for name in filter(None, built.split(",")):
         built_files.add(os.path.join(os.path.realpath(directory), name))

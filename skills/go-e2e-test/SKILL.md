@@ -20,7 +20,7 @@ description: >
   and the worked API-level journey test with trace correlation
   (references/journey-test-and-trace-correlation.md). Authored and run by
   the test-strategist. Used during Quality.
-version: 2.1.0
+version: 2.1.1
 phase: quality
 owner: test-strategist
 created: 2026-06-25

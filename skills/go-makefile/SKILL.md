@@ -16,7 +16,7 @@ description: >
   references/quality-gate-targets.md; coverage/benchmark mechanics in
   references/coverage-and-benchmark-standard.md. Used by the backend-engineer
   during Implement.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: backend-engineer
 created: 2026-06-25
@@ -116,8 +116,8 @@ mechanism for it, not a second source of truth. `cover` runs `go-unit-test`'s
 `check-go-line-coverage.sh` (statement blocks) then `check-go-branch-coverage.sh` (`gobco`), on exact
 counts, never a printed percentage. A gap blocks the build, and so does a **no result** (tool failure
 or unmeasured file): change the code so it can be measured, or list an exception for the user's
-approval; never fall back to statements only. Only machine-generated code is excluded automatically
-(`_moq.go` by name, the generated-code marker); `cmd/**` is counted. Wiring and rationale: `references/coverage-and-benchmark-standard.md`.
+approval; never fall back to statements only. Excluded without per-file approval: machine-generated code
+(`_moq.go` by name, the generated-code marker) and `internal/test/` test support (approved class, listed, never shipped; the gates fail if non-test code imports it); `cmd/**` is counted. Wiring and rationale: `references/coverage-and-benchmark-standard.md`.
 
 ---
 
@@ -188,7 +188,7 @@ caught violation. Full config: `references/quality-gate-targets.md`.
 | CI-Parity | Every target runs identically local and in CI; no CI-only branch or secret-gated logic | A target that only works in CI, or a "fast local" variant of a gate |
 | Race always on | `test`/`cover` always pass `-race`; `cover` uses `-covermode=atomic` | A test target without the race detector; `count`/`set` coverage mode under `-race` |
 | Single CI entry, order preserved | `make ci` runs `tidy, generate, vet, lint, arch, vuln, cover` in that order | CI re-listing ad-hoc commands; gates reordered without cost justification |
-| Coverage enforced and correctly scoped | A statement or branch gap, or a no result, fails the build; only `_moq.go` files and generated-marker files excluded automatically, other exclusions approved | Coverage measured but not gating; a percentage threshold below 100 or read from rounded output; an unapproved exclude-list |
+| Coverage enforced and correctly scoped | A statement or branch gap, or a no result, fails the build; only `_moq.go` files, generated-marker files and `internal/test/` test support excluded without approval, other exclusions approved | Coverage measured but not gating; a percentage threshold below 100 or read from rounded output; an unapproved exclude-list |
 | `arch` matches the authoritative script | Three-layer `check_layer` walk identical to `go-project-structure/references/architecture-fitness-functions.md` | A different or partial import-check mechanism |
 | `vuln` scope stated correctly | Source/call-graph only, explicitly distinct from Trivy's image scan | `vuln` and image scanning conflated as redundant |
 | Bench/CI-gate boundary respected | `bench` single-run only; `benchstat` regression gating lives in `go-performance-test` | `benchstat` comparison logic duplicated into this Makefile |

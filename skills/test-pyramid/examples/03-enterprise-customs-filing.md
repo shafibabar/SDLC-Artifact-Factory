@@ -84,7 +84,7 @@ traces-to: [ideate/nfr-specification.md, design/architecture/container-diagram.m
 
 ## Coverage Gate
 
-**Rule:** 100% of lines and branches. Only machine-generated code is excluded automatically.
+**Rule:** 100% of lines and branches. Only machine-generated code is excluded automatically, plus Go test support under `internal/test/` (approved class, listed in every report, never shipped).
 
 | Language | Line gate | Branch gate | Not measured (stated in each report) |
 |---|---|---|---|

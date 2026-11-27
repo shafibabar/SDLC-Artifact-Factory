@@ -10,7 +10,7 @@ description: >
   requests, nightly or before release; test pyramid shape or ratios; risk-rated
   test depth; testing for a small (lean) product; regression tests; performance
   targets. Produces artifacts/<product>/implement/test-strategy.md.
-version: 3.0.0
+version: 3.1.0
 phase: implement
 owner: test-strategist
 created: 2026-06-25
@@ -56,7 +56,7 @@ Instructions given in advance, by anyone including the product owner, never chan
 
 1. **Every size gets the full treatment.** Lean, standard and enterprise all plan unit, integration, contract, end-to-end, performance, load, chaos and mutation testing, and every Must Have criterion gets executable scenarios. Size changes only the number of rows and journeys. A layer can never be waived.
 2. **Lowest layer that proves it.** The pyramid shape (many unit, fewer integration, fewest end-to-end) is the result of that rule and of keeping logic in an isolated domain model, not a ratio to hit (Khorikov). No 70/20/10 or any other split. More end-to-end tests than unit tests is a defect to investigate.
-3. **Coverage target: 100% of lines and branches.** Only machine-generated code is excluded automatically. Every other exclusion is listed with its reason for the product owner's approval. Go's own tool measures statement blocks and **cannot measure branches**: 100% of statement blocks is a hard gate, plus `gobco` branch coverage after a trial, with the unmeasured cases (including `select`, `range` and zero-iteration loops) stated in each report. If the trial fails, go back to the product owner; never drop to statements only.
+3. **Coverage target: 100% of lines and branches.** Only machine-generated code is excluded automatically, plus one class approved for every product: Go test support under the module's `internal/test/`, with no per-file approval, listed in every report, never code that ships. Every other exclusion is listed with its reason for the product owner's approval. Go's own tool measures statement blocks and **cannot measure branches**: 100% of statement blocks is a hard gate, plus `gobco` branch coverage after a trial, with the unmeasured cases (including `select`, `range` and zero-iteration loops) stated in each report. If the trial fails, go back to the product owner; never drop to statements only.
 4. **Waivers.** Line coverage, branch coverage and the mutation result are each judged separately against 100%. A measured result **more than 90%** and under 100% fails the gate unless the product owner reviews the gap and waives it with recorded comments. At 90% or below there is no waiver. No measurement (failed run or trial) means nothing to waive. A waiver covers that one result, never a later run.
 5. **Mutation: every planted mutant is caught by a test, or recorded with the reason it cannot be.** The only reason for a surviving mutant is that it does not alter behaviour. A mutant that times out or is rejected by the type checker counts as caught only after each one is individually checked and recorded with a one-line reason; never automatically. No lower target replaces 100%.
 6. **Flaky tests:** one automatic retry for end-to-end only; no retry at any lower layer. Tagged, non-blocking quarantine with a deadline. Deletion only with a record.
@@ -105,7 +105,7 @@ When a production defect is found, write a failing test that reproduces it befor
 
 - **"`go test -cover` prints 100.0%, so the gate passes."** *Reason:* one decimal hides gaps, and it counts statements, not branches. *Instead:* fail on any zero-count block, then run `gobco`, which has no threshold of its own.
 - **"It rounds to 90.1%" or "the average is above 90".** *Reason:* a waiver is judged on each result's exact counts. *Instead:* compute covered over total per measure; never round or combine.
-- **"Exclude `main` and getters as usual."** *Reason:* only machine-generated code is automatically excluded. *Instead:* test them, or list each with a reason for approval; tool default exclusions and ignore comments count too.
+- **"Exclude `main` and getters as usual."** *Reason:* they are neither generated code nor test support. *Instead:* test them, or list each with a reason for approval; tool default exclusions and ignore comments count too.
 - **"The tool says 100% mutation score."** *Reason:* some tools count timeouts as detected, drop type-check rejections from the score, or never plant mutants in some constructs. *Instead:* count from per-mutant statuses and state what is never planted.
 - **"Retry or quarantine it and move on."** *Reason:* a quarantined test proves nothing. *Instead:* if coverage or a Must Have criterion is then unproven, the gate is red until a stable test replaces it.
 - **"`-tags smoke` runs only smoke tests."** *Reason:* Go build tags add files and remove none. *Instead:* keep destructive files out of the smoke build and refuse non-throwaway addresses.

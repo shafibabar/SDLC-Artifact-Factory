@@ -21,5 +21,6 @@ Copy and tick before hand-off.
 - [ ] `go test -race -shuffle=on ./...` passes
 - [ ] Line gate and branch gate run on the full suite; exit codes and counts recorded
 - [ ] Every "no result" resolved by a code change or an approved exception; none reported as passing
-- [ ] Coverage report filled: unmeasured cases, exclusions and their approval, excepted files
+- [ ] Coverage report filled: unmeasured cases, `internal/test/` files listed, other exclusions and their approval, excepted files
+- [ ] Nothing that ships is in `internal/test/`
 - [ ] Anything not run is called unverified

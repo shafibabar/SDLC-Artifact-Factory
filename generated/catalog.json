@@ -1940,7 +1940,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.7.0"
+        "version": "2.8.0"
       },
       {
         "created": "2026-06-25",
@@ -2510,7 +2510,7 @@
           "Skill",
           "Write"
         ],
-        "version": "2.3.0"
+        "version": "2.4.0"
       },
       {
         "created": "2026-06-25",
@@ -5616,7 +5616,7 @@
           "quality",
           "schema"
         ],
-        "version": "2.0.1"
+        "version": "2.0.2"
       },
       {
         "created": "2026-06-25",
@@ -5749,7 +5749,7 @@
           "quarantine",
           "shift-right"
         ],
-        "version": "2.1.0"
+        "version": "2.1.1"
       },
       {
         "created": "2026-06-25",
@@ -5939,14 +5939,14 @@
         "dir": "skills/go-integration-test",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "go-integration-test",
         "owner": "test-strategist",
         "phase": "implement",
@@ -5954,27 +5954,49 @@
           "go-integration-test"
         ],
         "related": [
+          "api-contract-design",
           "distributed-tracing-design",
+          "go-chaos-test",
+          "go-chi-handler",
+          "go-contract-test",
+          "go-e2e-test",
           "go-event-consumer",
           "go-event-publisher",
+          "go-makefile",
+          "go-middleware",
           "go-migration",
           "go-repository-pattern",
+          "go-service-layer",
           "go-unit-test",
-          "test-fixture-design"
+          "mock-generation",
+          "multi-tenancy-design",
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/continuous-delivery-humble-farley.md",
+          "research/software-architecture/concurrency-in-go-cox-buday.md",
+          "research/testing/go-coverage-official-docs.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/software-testing-craftsman-jorgensen.md",
+          "research/testing/testcontainers-go-official-docs.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
+          "api-behaviour",
           "ci",
           "go",
-          "hermetic",
           "implement",
           "integration-test",
+          "isolation",
+          "migrations",
           "postgres",
           "redpanda",
           "testcontainers"
         ],
-        "version": "2.0.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -6062,7 +6084,7 @@
           "makefile",
           "race-detector"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -6595,7 +6617,7 @@
           "tdd",
           "unit-test"
         ],
-        "version": "4.0.0"
+        "version": "5.0.0"
       },
       {
         "created": "2026-07-31",
@@ -7369,7 +7391,7 @@
           "test-doubles",
           "unmanaged-dependency"
         ],
-        "version": "3.0.0"
+        "version": "4.0.0"
       },
       {
         "created": "2026-06-24",
@@ -10484,7 +10506,7 @@
           "seeding",
           "test-data"
         ],
-        "version": "3.0.0"
+        "version": "3.0.1"
       },
       {
         "created": "2026-06-25",
@@ -10567,7 +10589,7 @@
           "test-pyramid",
           "testing"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -11216,8 +11238,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1231,
-    "edges_skill_sources": 334,
+    "edges_skill_related": 1242,
+    "edges_skill_sources": 342,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11229,20 +11251,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 94,
+    "research_files_cited": 96,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 129,
+    "skills_with_contract_test": 128,
     "skills_with_domain": 190,
-    "skills_with_evals": 60,
-    "skills_with_examples": 60,
+    "skills_with_evals": 61,
+    "skills_with_examples": 61,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 59,
-    "skills_with_scripts": 53,
-    "skills_with_sources": 61,
+    "skills_with_resources": 60,
+    "skills_with_scripts": 54,
+    "skills_with_sources": 62,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 58
+    "skills_with_templates": 59
   },
   "edges": {
     "agent_produces": [
@@ -15097,7 +15119,27 @@
         "skill": "go-grpc-handler"
       },
       {
+        "related": "api-contract-design",
+        "skill": "go-integration-test"
+      },
+      {
         "related": "distributed-tracing-design",
+        "skill": "go-integration-test"
+      },
+      {
+        "related": "go-chaos-test",
+        "skill": "go-integration-test"
+      },
+      {
+        "related": "go-chi-handler",
+        "skill": "go-integration-test"
+      },
+      {
+        "related": "go-contract-test",
+        "skill": "go-integration-test"
+      },
+      {
+        "related": "go-e2e-test",
         "skill": "go-integration-test"
       },
       {
@@ -15109,6 +15151,14 @@
         "skill": "go-integration-test"
       },
       {
+        "related": "go-makefile",
+        "skill": "go-integration-test"
+      },
+      {
+        "related": "go-middleware",
+        "skill": "go-integration-test"
+      },
+      {
         "related": "go-migration",
         "skill": "go-integration-test"
       },
@@ -15117,11 +15167,27 @@
         "skill": "go-integration-test"
       },
       {
+        "related": "go-service-layer",
+        "skill": "go-integration-test"
+      },
+      {
         "related": "go-unit-test",
         "skill": "go-integration-test"
       },
       {
+        "related": "mock-generation",
+        "skill": "go-integration-test"
+      },
+      {
+        "related": "multi-tenancy-design",
+        "skill": "go-integration-test"
+      },
+      {
         "related": "test-fixture-design",
+        "skill": "go-integration-test"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "go-integration-test"
       },
       {
@@ -18553,6 +18619,38 @@
       {
         "skill": "glossary-management",
         "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/devops-and-delivery/continuous-delivery-humble-farley.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/software-architecture/concurrency-in-go-cox-buday.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/testing/go-coverage-official-docs.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/testing/software-testing-craftsman-jorgensen.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/testing/testcontainers-go-official-docs.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "go-integration-test",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "go-repository-pattern",

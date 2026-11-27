@@ -12,7 +12,7 @@ Self-contained input and output. All code compiled and run on Go 1.27.4 with moq
 |---|---|---|
 | `booking` | Domain logic | Decision table (late x premium x waitlisted = 8 rules, none collapsed) and every state against every event |
 | `application.CancelBooking` | Controller | One row per way it can end, with a fake and a mock |
-| `fakes.BookingRepo` | Test support, counted | Its own test |
+| `fakes.BookingRepo` | Test support under `internal/test/`: outside the coverage gates as the approved class, listed in the report | Its own test |
 
 Refused: the repository mock and "`Save` is called". The repository is ours, so the test reads the stored booking. The waitlist message leaves the application, so it gets a moq mock and call assertions.
 
@@ -425,24 +425,18 @@ func TestCancelBooking(t *testing.T) {
 ## Gate output
 
 ```text
+excluded internal/test/fakes/booking_repo.go: test support (class approved by the product owner)
 excluded internal/application/waitlist_notifier_moq.go: generated mock (by name)
-Statement coverage: 46/46 statements, 0 block(s) not run
-Branch coverage (gobco 1.3.4): 26/26 outcomes
+Statement coverage: 33/33 statements, 0 block(s) not run
+Branch coverage (gobco 1.3.4): 22/22 outcomes
 ```
 
-With `booking_repo_test.go` removed, the statement gate still passed 46/46 (the application tests ran the fake) and the branch gate failed:
-
-```text
-  internal/test/fakes/booking_repo.go:31:5: '!ok' never evaluated
-  internal/test/fakes/booking_repo.go:42:28: 'err != nil' never evaluated
-Branch coverage (gobco 1.3.4): 22/26 outcomes
-FAIL: the gate is 100% of measured branches. 90% or below: no waiver.
-```
+The fake keeps its own test although the gates no longer count it: the application tests rely on its behaviour.
 
 ## What the answer says
 
 - `Fail["ByID"]` makes the fake return that error; `Save` stores nothing when told to fail; the fake hands out copies and is built per test. The compile-time line checks signatures only: `mock-generation` requires the same promises to be run against the real repository.
 - A moq mock verifies nothing by itself: the test asserts `SlotFreedCalls()`, including zero.
 - "Send fails after the save" records current behaviour: the booking stays cancelled and the fee is returned with an error. Whether that is wanted is a decision for the product owner.
-- Excluded: the generated mock only. Unmeasured: `select`; `range` and zero-iteration loops; booleans outside conditions; functions without conditions.
+- Excluded: the generated mock, and `internal/test/fakes/booking_repo.go` as test support (approved class; no production file imports it). Unmeasured: `select`; `range` and zero-iteration loops; booleans outside conditions; functions without conditions.
 - Run: `go test -race -shuffle=on`, both gates. Not run: the integration tests against a real database.

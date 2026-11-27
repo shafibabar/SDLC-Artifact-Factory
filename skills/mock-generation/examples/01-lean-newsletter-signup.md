@@ -78,4 +78,4 @@ func TestSignUp_ExistingAddressSendsNothing(t *testing.T) {
 }
 ```
 
-The fake gets a behaviour suite (`../references/keeping-fakes-honest.md`) run against it and against the real repository. The mock verifies nothing by itself: without the `SendWelcomeCalls` assertions a missing email would pass. The coverage filter excludes files ending `_moq.go` by name (`grep -v '_moq\.go:'` on the profile), so `welcome_sender_moq.go` is out and listed in the exclusion register; the fake is counted. A filter matching only `_mock.go` must be corrected to `_moq.go`.
+The fake gets a behaviour suite (`../references/keeping-fakes-honest.md`) run against it and against the real repository. The mock verifies nothing by itself: without the `SendWelcomeCalls` assertions a missing email would pass. The coverage filter excludes files ending `_moq.go` by name (`grep -v '_moq\.go:'` on the profile), so `welcome_sender_moq.go` is out and listed in the exclusion register; the fake, under `internal/test/`, is out as approved test support and listed too. A filter matching only `_mock.go` must be corrected to `_moq.go`.
