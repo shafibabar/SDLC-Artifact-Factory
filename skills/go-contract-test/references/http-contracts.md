@@ -41,7 +41,9 @@ The script runs `oasdiff breaking --fail-on WARN --severity-levels <file> --conf
 
 ## Exceptions
 
-The only way past the gate is a line in `api/contract-exceptions.txt`, approved by the product owner (`./templates/approval-records.md`). The script prints every line on every run and fails on a line without `approved-by:` and `approved-on:`. The most common case is a new enum value in a response: it fails by default, and each case is approved separately. Never `|| true`, `continue-on-error`, a lowered severity or a deleted baseline.
+One change, and only one, can pass the gate by approval: **a new enum value in a response**. It fails by default; the product owner approves each case separately, and the approval is a line in `api/contract-exceptions.txt` (`../templates/approval-records.md`). The script prints every line on every run, fails on a line without `approved-by:` and `approved-on:`, and fails on a line that is about anything else.
+
+Every other finding has **no exception**, whoever approves it and whether or not a caller is known to depend on it: a removed or renamed response field (optional included), a removed documented error response, a type change, a removed endpoint before its sunset. These are breaking changes, and `api-contract-design` gives the only route: a new major version run beside the old one, the old one never changed in place. Say "this fails and is not let through", never "record an exception". Never `|| true`, `continue-on-error`, a lowered severity or a deleted baseline.
 
 ## Retiring an endpoint
 

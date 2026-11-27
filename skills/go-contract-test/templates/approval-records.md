@@ -13,6 +13,7 @@ GET /v1/sailings/{id} added the new `delayed` enum value to the `status` respons
 ```
 
 - A new enum value in a response fails the gate by default. Each case is approved separately by the product owner; there is no blanket rule and no wildcard line.
+- This file is for a new enum value in a response and nothing else. The gate fails on a line about any other change (a removed response field, a removed error response): those have no exception and ship as a new major version.
 - A line without `approved-by:` and `approved-on:` fails the gate (exit 1).
 - Remove a line once the change is deployed: the deployed description then contains it.
 

@@ -85,6 +85,8 @@ def approved(line):
     on = re.search(r"approved-on:\s*(\S+)", line)
     return bool(by and on and DATE.match(on.group(1).rstrip("|,;")))
 
+ENUM_ADDED = re.compile(r"added the new .+ enum value to .*response")
+
 exceptions = []
 if "exceptions" in opts:
     for number, line in enumerate(read(opts["exceptions"], "exceptions file").splitlines(), 1):
@@ -96,6 +98,15 @@ for number, line in exceptions:
     print(f"  EXCEPTION line {number}: {line}")
     if not approved(line):
         print(f"  FAIL line {number}: no 'approved-by:' and 'approved-on: YYYY-MM-DD'; an exception counts only once the product owner approved it")
+        bad = True
+    # An exception covers one thing only: a new enum value in a response, in
+    # the words oasdiff prints for it. A removed or renamed response field, a
+    # removed error response or any other breaking change has no exception; it
+    # ships as a new major version beside the old one (api-contract-design).
+    if not ENUM_ADDED.search(line.split("|", 1)[0]):
+        print(f"  FAIL line {number}: an exception covers only a new enum value in a response "
+              "('added the new `x` enum value to the `y` response property'); any other breaking change "
+              "has no exception and ships as a new major version")
         bad = True
 if bad:
     sys.exit(1)

@@ -9,7 +9,7 @@ Copy and tick before hand-off. A line that does not apply is struck through with
 ## Every pull request: API description
 - [ ] `check-openapi-breaking.sh` compares with the **deployed** description; a missing baseline fails; a first release is stated
 - [ ] `--fail-on WARN`, the shipped severity file and the script's own empty config are in use; no `MISSING-VERSION-BUMP`, `|| true` or `continue-on-error`
-- [ ] Every exception line carries the product owner's name and date; the run printed them
+- [ ] Every exception line is a new enum value in a response and carries the product owner's name and date; the run printed them. No exception was offered for a removed field or a removed error response
 - [ ] Every removed endpoint has a retirement line with sunset date, no-caller evidence and sign-off
 - [ ] Conformance drives the real router; `IncludeResponseStatus` set; every documented status exercised; no `default` response left
 - [ ] Each consumer test runs the real client against a double checked against the provider's description, and asserts values
