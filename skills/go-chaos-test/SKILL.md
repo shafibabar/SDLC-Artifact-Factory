@@ -13,7 +13,7 @@ description: >
   REFUSED or INVALID, the chaos-experiment report; or "kill pods in
   production", "run chaos on staging", "is one fast failure proof the breaker
   works", "add chaos to the pull request". Produces chaos-experiment-suite.
-version: 3.0.0
+version: 3.1.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25

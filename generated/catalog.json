@@ -117,7 +117,8 @@
     "chaos-experiment-suite": {
       "agents": [],
       "skills": [
-        "go-chaos-test"
+        "go-chaos-test",
+        "python-chaos-test"
       ]
     },
     "ci-pipeline-workflow": {
@@ -840,12 +841,6 @@
       "agents": [],
       "skills": [
         "python-performance-optimization"
-      ]
-    },
-    "python-chaos-test": {
-      "agents": [],
-      "skills": [
-        "python-chaos-test"
       ]
     },
     "python-composition-root": {
@@ -1773,7 +1768,6 @@
         "mutation-report",
         "performance-regression-gate",
         "pytest-suite",
-        "python-chaos-test",
         "python-contract-test",
         "python-e2e-test-suite",
         "python-integration-test",
@@ -5502,7 +5496,7 @@
           "steady-state",
           "toxiproxy"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -8150,40 +8144,73 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "python-chaos-test",
         "owner": "test-strategist",
         "phase": "quality",
         "produces": [
-          "python-chaos-test"
+          "chaos-experiment-suite"
         ],
         "related": [
+          "ci-pipeline",
           "disaster-recovery-plan",
+          "glossary-management",
           "go-chaos-test",
-          "python-integration-test"
+          "integration-design",
+          "python-async-concurrency",
+          "python-e2e-test",
+          "python-error-handling",
+          "python-integration-test",
+          "python-load-test",
+          "python-makefile",
+          "python-middleware",
+          "python-unit-test",
+          "slo-definition",
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/devops-handbook-kim-humble-debois-willis.md",
+          "research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/python-backend-development-halstead.md",
+          "research/testing/chaos-engineering-method-official-docs.md",
+          "research/testing/chaos-mesh-and-toxiproxy-details-official-docs.md",
+          "research/testing/chaos-mesh-official-docs.md",
+          "research/testing/httpx-guards-and-polling-official-docs.md",
+          "research/testing/kind-official-docs.md",
+          "research/testing/pytest-asyncio-official-docs.md",
+          "research/testing/pytest-e2e-mechanics-official-docs.md",
+          "research/testing/python-resilience-libraries-official-docs.md",
+          "research/testing/python-service-saturation-official-docs.md",
+          "research/testing/toxiproxy-official-docs.md"
+        ],
         "status": "stable",
         "tags": [
+          "abort",
           "asyncio",
-          "blast-radius",
+          "bulkhead",
           "chaos",
+          "chaos-mesh",
           "circuit-breaker",
-          "consumer-recovery",
+          "event-loop",
           "fault-injection",
+          "httpx",
+          "kind",
+          "pytest",
           "python",
           "quality",
           "resilience",
-          "tenant",
-          "testcontainers",
+          "retry",
+          "steady-state",
           "toxiproxy"
         ],
-        "version": "1.2.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-31",
@@ -11436,14 +11463,14 @@
   },
   "counts": {
     "agents": 13,
-    "artifacts": 187,
+    "artifacts": 186,
     "commands": 15,
     "domains": 14,
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1332,
-    "edges_skill_sources": 431,
+    "edges_skill_related": 1345,
+    "edges_skill_sources": 445,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11455,20 +11482,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 126,
+    "research_files_cited": 127,
     "skills_with_assets": 6,
     "skills_with_contract_test": 120,
     "skills_with_domain": 190,
     "skills_with_evals": 69,
-    "skills_with_examples": 69,
+    "skills_with_examples": 70,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 68,
-    "skills_with_scripts": 62,
-    "skills_with_sources": 70,
+    "skills_with_resources": 69,
+    "skills_with_scripts": 63,
+    "skills_with_sources": 71,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 67
+    "skills_with_templates": 68
   },
   "edges": {
     "agent_produces": [
@@ -13013,7 +13040,7 @@
         "skill": "python-async-concurrency"
       },
       {
-        "artifact": "python-chaos-test",
+        "artifact": "chaos-experiment-suite",
         "skill": "python-chaos-test"
       },
       {
@@ -16643,7 +16670,15 @@
         "skill": "python-async-concurrency"
       },
       {
+        "related": "ci-pipeline",
+        "skill": "python-chaos-test"
+      },
+      {
         "related": "disaster-recovery-plan",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "glossary-management",
         "skill": "python-chaos-test"
       },
       {
@@ -16651,7 +16686,51 @@
         "skill": "python-chaos-test"
       },
       {
+        "related": "integration-design",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "python-async-concurrency",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "python-e2e-test",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "python-error-handling",
+        "skill": "python-chaos-test"
+      },
+      {
         "related": "python-integration-test",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "python-load-test",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "python-makefile",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "python-middleware",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "python-unit-test",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "slo-definition",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "test-fixture-design",
+        "skill": "python-chaos-test"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "python-chaos-test"
       },
       {
@@ -19727,6 +19806,62 @@
       {
         "skill": "pricing-and-packaging",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/devops-and-delivery/devops-handbook-kim-humble-debois-willis.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/software-architecture/python-backend-development-halstead.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/chaos-engineering-method-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/chaos-mesh-and-toxiproxy-details-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/chaos-mesh-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/httpx-guards-and-polling-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/kind-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/pytest-asyncio-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/pytest-e2e-mechanics-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/python-resilience-libraries-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/python-service-saturation-official-docs.md"
+      },
+      {
+        "skill": "python-chaos-test",
+        "source": "research/testing/toxiproxy-official-docs.md"
       },
       {
         "skill": "python-contract-test",
