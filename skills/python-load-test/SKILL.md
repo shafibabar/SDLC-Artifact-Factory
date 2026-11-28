@@ -1,183 +1,141 @@
 ---
 name: python-load-test
 description: >
-  Teaches how to write Python load tests — locust
-  (Python-native, user-behavior classes) or k6 as a black-box generator
-  running OUTSIDE the target, closed-vs-open workload models, ramp/soak/spike
-  profiles, and pass criteria tied to SLOs (P95 latency, error rate under
-  load). The Python analog of go-load-test. Authored and
-  applied by the test-strategist.
-version: 1.2.0
+  Use when test-strategist, platform-engineer or anyone writes, reviews, runs
+  or fixes load tests for a Python (FastAPI, uvicorn, asyncpg) service in the
+  Quality phase: k6 scripts and thresholds, a load profile from NFR-PERF rows
+  and SLOs, uvicorn workers and replicas, the per-process rate limiter and
+  when 429 begins, uvicorn's own 503 from --limit-concurrency, asyncpg pool
+  exhaustion and acquire timeouts, event-loop lag under load, prometheus
+  multiprocess mode, the open arrival-rate model versus locust users and
+  coordinated omission, dropped_iterations, smoke, average-load, stress,
+  soak, spike and breakpoint tests, k6 exit status 99, the nightly
+  indicative check in the kind cluster (make load-indicative), the verdict
+  in a designated performance environment (make load-verdict), the
+  designation record and signed impact statement, the load-test report, or
+  "can we load test staging / production / on every pull request", "replace
+  locust", "does it meet the p95 target". Produces load-test-suite.
+version: 2.0.0
 phase: quality
 owner: test-strategist
 created: 2026-07-31
-tags: [quality, python, load-test, locust, k6, slo, throughput, latency, backpressure, shift-right]
+tags: [quality, python, fastapi, uvicorn, asyncpg, load-test, k6, slo, nfr, arrival-rate, thresholds, rate-limit, performance-environment]
 produces: load-test-suite
 domain: testing
 status: stable
-related: [go-load-test, python-performance-test, slo-definition, nfr-specification]
-tools: [Bash]
+related: [go-load-test, python-e2e-test, python-performance-test, python-chaos-test, python-integration-test, python-middleware, python-dockerfile, python-makefile, python-service-layer, python-service-skeleton, nfr-specification, slo-definition, test-pyramid, test-fixture-design, prometheus-metrics-design, alerting-rules-design, environment-config, ci-pipeline, cd-pipeline]
+sources:
+  - research/testing/python-service-saturation-official-docs.md
+  - research/testing/k6-gating-and-running-official-docs.md
+  - research/testing/k6-official-docs.md
+  - research/testing/load-test-method-official-docs.md
+  - research/testing/load-test-environment-official-docs.md
+  - research/software-architecture/python-backend-development-halstead.md
+  - research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md
+  - research/devops-and-delivery/continuous-delivery-humble-farley.md
 ---
 
 # Python Load Test
 
 ## Purpose
 
-Unit, integration, and even `python-performance-test`'s in-process `pytest-benchmark` gate say
-nothing about the deployed FastAPI service under real, sustained traffic. Load testing answers what
-those layers structurally cannot: real requests/sec, real P95/P99 under network/Linkerd-mTLS/
-`asyncpg`-pool overhead, when the async service starts shedding, and whether it holds the Service
-Level Objectives `slo-definition` set — the **shift-right** proof closing the gap between "the
-coroutine's own logic is fast" and "the system holds up in production-like conditions." Authored and
-run by the test-strategist during Quality.
+This skill owns how a Python product is tested under load: requests driven at the **deployed** service from outside, judged against the targets the product stated. `test-strategist` authors and runs it; `platform-engineer` supplies the environments. The gate, the k6 scripts, the runner, the records and the report writer are the ones `go-load-test` owns, kept here as copies a test holds identical (`tests/scripts/python-load-copies.test.sh`); a product with Go and Python services runs one load suite. What is Python's is the server's shape: the rate limiter, uvicorn's concurrency limit and the database pool are **counted per process**, uvicorn can answer 503 before the application sees a request, a pool waits forever by default, and one blocking call stops the event loop. Halstead's recommendation stands: k6 is the one tool, no locust. In-process speed belongs to `python-performance-test`, injected faults to `python-chaos-test`, the targets to `nfr-specification` and `slo-definition`.
 
----
+## Fixed rules
 
-## Tool Standard: locust (Python-native) or k6 (black-box) — Both Run OUTSIDE the Target
+A request does not change these, whoever makes it. Do the work as the rules require, say where it differs from what was asked and why, and never offer to switch a rule off.
 
-Two sanctioned open-source generators, chosen per the job — **never a paid SaaS tier**, per
-CLAUDE.md's frugality constraint:
-
-| Tool | Style | Use when |
+| # | Rule | Reason |
 |---|---|---|
-| **locust** (MIT) | Python `User`/`@task` behavior classes, `HttpUser`, weighted tasks | The journey mix is complex or maintained by the same team that writes the FastAPI service — user behavior reads as ordinary Python and lives beside the app it exercises |
-| **k6** (Grafana Labs, Apache-2.0) | JS scenarios, `thresholds` DSL as a hard pass/fail exit code | A pure black-box rate gate is wanted, or one load tool is shared across a polyglot (Go/Node/Python) estate |
+| L1 | **Two tiers.** An **indicative** check in the throwaway kind cluster of the end-to-end run: it catches a regression between runs and **proves nothing about capacity**. A **verdict** against the stated targets only in the product's **designated performance environment**, approved by the product owner per product, sized (workers, replicas, pool) and loaded with data as the requirements state | One shared node that also runs the generator cannot measure capacity; a verdict is only as true as its environment (SRE) |
+| L2 | **By default the test refuses any target that is neither the run's own throwaway cluster nor the designated environment: never shared staging, production, a tenant environment or any other undesignated system.** Load goes to another system, staging or production included, only to verify something and only with the product owner's **signed impact statement** of exactly where it runs and what its impact is; the test refuses otherwise, and refuses a run that would exceed it | Load takes a shared system away from everyone and leaves data behind; only the product owner can accept that |
+| L3 | **Load starts only through `run-load-test.sh`** (the make targets), never `k6 run`. The address comes from the run marker, the designation record or the signed statement, never from a variable | A wrong variable must not aim load at a real environment |
+| L4 | **The profile is derived from the NFR row and the SLO rows, by id.** Numbers the sources do not give are recorded with who decided them. No invented target, no default presented as a fact | A threshold nobody agreed to verifies nothing |
+| L5 | **A rate target is tested with the open model** (arrival-rate executors). locust users, `constant_throughput` included, wait for each answer: a closed model | A closed model sends less when the service slows and understates latency (coordinated omission) |
+| L6 | **Thresholds mirror the SLI**: its good statuses are declared to k6; latency is judged at the SLO's percentile on good answers only. Never an average. **uvicorn's own 503 counts as the SLI defines it** (a 5xx is bad), and is reported apart from the application's 5xx | k6 counts every status outside 200 to 399 as failed; hiding the server's shedding hides a configuration fault |
+| L7 | **429 inside the limiter's design is not a failure.** The profile states **workers × replicas** and the per-process limit; steady load keeps each subject within **one process's** rate, and any 429 there fails its own threshold. The overload check drives one subject past the per-process rate times the processes, where 429 with `Retry-After` is right | The in-memory limiter counts per process: 429 appears only above the total, and unevenly |
+| L8 | **Every rule is a threshold.** A bare `check()` is not a gate | `check()` never changes k6's exit status |
+| L9 | **k6's exit status is read, never masked**: 99 is a crossed threshold. No pipe, `|| true` or `continue-on-error`. Exit 0 alone is not a pass | A script that throws in every iteration exits 0 |
+| L10 | **A run that dropped iterations or saturated its generator is INVALID, not passed**, and INVALID outranks FAIL | The stated load was never offered |
+| L11 | **Zero retries.** A second run is a new result | `test-pyramid` |
+| L12 | **Never on a pull request.** Indicative: nightly inside the end-to-end run, and by hand. Verdict: before a release, finished before publication. Always through a make target | Slow suites stay out of the pull-request check; a `release:` trigger runs too late |
+| L13 | **No stored credential.** Indicative: none at all. Designated environment, or a system under a statement: short-lived tokens the product owner approved, never a standing `LOAD_TEST_TOKEN` | A standing token is a standing way to overload something |
+| L14 | **Test data only in the environment under test; third parties are stand-ins; nothing is pushed into any monitoring system.** The service is observed through the environment's own Prometheus, each query pinned to the run: pool in use, event-loop lag, the container's CPU and memory | `test-fixture-design`; a fixed window counts other traffic |
+| L15 | **One load tool: k6**, pinned (v2.4.0, AGPL-3.0, a separate program). No locust, no vegeta. A paid service only with the product owner's approval | One gate to keep true; frugality |
+| L16 | **A load-test report** under `artifacts/<product>/quality/test-reports/`, approved by the product owner, for every run put forward as evidence | A green job is not an approval |
 
-**Whichever tool, it runs entirely OUTSIDE the target — a separate process driving HTTP at the
-`uvicorn`-served binary it never imports, exactly like `curl`.** locust being written in Python is
-*not* a departure from the black-box rule: it is still an external client, never in-process with the
-service under test. Do not reach for a third tool — `locust` and `k6` between them cover Python-
-native ergonomics and cross-stack uniformity; adding one more duplicates mature tooling for no gain.
-Full comparison, locust class structure, and the distributed-run mechanic:
-`references/locust-load-profiles.md`.
+Every product size follows all sixteen. **Lean** may have only the indicative tier until a performance environment is approved; it never skips load testing and never treats a shared environment as its performance environment.
 
----
+## What every answer states
 
-## Environment Standard: `staging`, Not an Ephemeral Testcontainer
+**Keep the answer as short as the question.** State, **in words**, each rule above that bears on it; do not only follow it or point at a file.
 
-`python-integration-test` runs against a throwaway `testcontainers-python` Postgres/Redpanda started
-per test session — correct there, since it proves the code's *behavior* against a real dependency,
-which a single shared container does fine. **Load testing proves *capacity*, and a shared-machine
-container on a CI runner cannot produce a meaningful capacity number** — host scheduler contention
-corrupts the exact latency/throughput being measured. This skill runs against **`staging`** instead
-(`environment-config`'s purpose-built "full-stack soak" environment): same chart, same image digest
-(Environment Parity), reduced sizing declared in every report and never mistaken for a production
-guarantee, one synthetic load-test tenant identity, never a real customer's physically-isolated
-production stamp, and never production itself. Because tenants are **physically isolated**, a load
-run's synthetic tenant exercises one dedicated stamp end to end — its saturation cannot bleed into
-another tenant's, and the capacity number is per-stamp, exactly the unit that matters for sizing.
+1. **Whenever a run or a result is mentioned:** which tier it is. For the indicative tier say that it **proves nothing about capacity**; a verdict needs the designated performance environment the product owner approved. A run under an impact statement is a **verification**, not a capacity verdict.
+2. **Whenever an environment is mentioned:** by default never shared staging, production, a tenant environment or any other undesignated system; another system only with the product owner's **signed impact statement** of exactly where the load runs and what its impact will be; and the test itself **refuses** otherwise (run marker, signed unexpired designation whose id the environment serves, or the signed statement).
+3. **Whenever numbers are mentioned:** the profile comes from the NFR row and the SLO rows, **named by id**; name which numbers were judgement calls and who decides them. With no stated target, say there is nothing to verify and ask for it.
+4. **Whenever the workload is described:** the open (arrival-rate) model, and why: a closed model (locust's users) slows its own load when the service slows, so it understates latency.
+5. **Whenever errors, 429 or 503 appear:** a 429 within the limiter's design is not unavailability; it begins only above the per-process rate times **workers × replicas**, so steady load keeps each subject within one process's rate and the overload check must exceed the total. uvicorn's own 503 at `--limit-concurrency` counts against the SLI like any 5xx, is told apart from the application's 5xx, and is never added to the good statuses.
+6. **Whenever a gate or pipeline is discussed:** a crossed threshold makes k6 exit **99**, which must not be masked; a `check()` alone cannot fail a run; exit 0 alone is not a pass.
+7. **Whenever a result is judged:** dropped iterations or a saturated generator make the run **INVALID**, not passed, and say why: the intended load was never offered (too few virtual users, or the service slowed until they ran out, as an exhausted pool does), so the numbers describe a lighter test. **No retries**.
+8. **Whenever slowness is diagnosed:** pool exhaustion shows as latency with no error unless the service sets an acquire timeout (the service's decision, `python-service-layer`); a blocked event loop shows in the lag probe; process metrics are Linux-only and several workers need multiprocess mode.
+9. **Whenever timing is discussed:** never on a pull request; indicative nightly in the end-to-end run; verdict before publication.
+10. **What is refused or replaced, by name, with the reason:** staging or production without a signed statement, `k6 run` by hand, a stored token, locust, a paid service without approval, a retry, an average, pushing metrics to shared monitoring.
+11. **Whenever the report is mentioned:** an artifact the product owner approves, saying what the run does not prove.
+12. **Whenever credentials are mentioned:** both halves: the indicative tier needs **no stored credential at all**; the designated environment, and a system under a statement, use a **short-lived token the product owner approves**, never a standing secret.
+13. **Only where they arise:** k6 is the one tool, v2.4.0, AGPL-3.0; what lean changes.
+14. **One line on what was run.** Anything not run (GitHub Actions, a real designated environment, a Python service in a real kind cluster, a long soak, Gunicorn) is called unverified.
 
----
+## Procedure
 
-## Load-Profile Standard: Ramp, Soak, Spike — Sized to This Platform's Traffic Shape
+1. Read the NFR specification, the SLO record, the test strategy, the rate-limit configuration, the Dockerfile and chart (workers, replicas, `--limit-concurrency`, pool size), the tenancy decision, `sdlc-config.json`, any `tests/load/`, and whether a designation record exists.
+2. Derive the profile: read `./references/targets-to-profile.md`, then fill `tests/load/profile.json` from `./templates/profile.md`, `server` block included.
+3. Decide the tiers: read `./references/tiers-and-safety.md`. With no approved performance environment, plan the indicative tier only and put the designation to the product owner (`./templates/designation-record.md`).
+4. Copy `./scripts/run-load-test.sh`, `./scripts/validate-python-load-tests.sh` and `./scripts/check-python-profile.sh` to `tests/load/` unchanged, and the files of `./templates/k6-scripts.md`; write `journey.js`. Read `./references/gate-and-verdict.md` before touching a threshold.
+5. Set up the test subjects (`issue-subjects.sh`); ask the service's owner for the saturation metrics (`./templates/saturation-metrics.md`) if they are missing.
+6. Add the make targets and suite lines from `./templates/make-targets.md` and the workflow from `./templates/workflows.md`; read `./references/when-it-runs.md`.
+7. Run `make load-validate`; fix every FAIL, judge each WARN, and run it again until clean.
+8. Run `make load-indicative`; see the gate fail once for the expected reason, then pass.
+9. Where a designation exists, run `make load-verdict`; a verification elsewhere only with `make load-verify` and the signed statement. Read the service's measurements as `./references/python-saturation.md` says.
+10. Draft the report with `./scripts/write-load-report.sh <result files>` and `./scripts/sort-server-errors.sh <k6 summaries>`, complete it from `./templates/load-test-report.md`, and put it to the product owner.
+11. Tick `./resources/checklist.md`; go back to step 7 after any change. Answer with the statements above.
 
-Real traffic is bursty, not a smooth ramp: `estate-scanner`'s discovery sweeps enqueue thousands of
-documents in seconds, absorbed as a burst by the `aiokafka` pipeline, while `ClassifyDataAsset` sees
-low, steady interactive volume. Every profile is parameterized against that shape:
+Worked and run (k6 v2.4.0 against a FastAPI lab service; FastAPI 0.165.0, uvicorn 0.54.0, asyncpg 0.32.0, Python 3.15.2, PostgreSQL 17.12): `./examples/01-lean-seed-library.md` (indicative tier only, a regression), `./examples/02-standard-harbour-berths.md` (two processes, a limiter not multiplied, a verdict), `./examples/03-enterprise-orchard-cooperative.md` (pool exhaustion INVALID, then FAIL, then PASS; a signed statement on staging).
 
-| Profile | Shape | This platform's parameters |
-|---|---|---|
-| **Smoke** | 1 user, ~1 min | Fast CI pre-check; every change |
-| **Ramp** | Closed-model climb past capacity | 0→50 users over 2 min, hold 5 min, 50→500 over 5 min until SLO breach |
-| **Soak** | Open-model sustained, hours | 30 req/s sync + 500 docs/min pipeline feed, held 2 hours |
-| **Spike** | Sudden batch burst | 30 req/s baseline + a 10,000-document burst in under 60s |
+## Gotchas
 
-Traffic is always a journey mix (`GET /v1/data-assets` list, `GET …/{id}` detail,
-`PATCH …/{id}/classification` the SLO-gated command), never one endpoint hammered with one payload —
-that measures a cache, not the system. Full locust profile code, the workload-model reasoning, and
-the worked DataAsset-API load test: `references/locust-load-profiles.md`.
+- **The profile copies `python-middleware`'s 10 a second as the subject's limit.** *Reason:* each process has its own buckets; seen: four workers accepted 219 where 121 were allowed. *Instead:* the per-process rate times workers times replicas; `check-python-profile.sh`.
+- **"503s under load, so the app is failing."** *Reason:* uvicorn answers 503 itself at `--limit-concurrency`, counting idle keep-alive connections too; seen: 252 of 324, none reached the app. *Instead:* `sortServerError`; raise the limit above the connections the load needs.
+- **Adding 503 to `good_statuses` "because it is deliberate shedding".** *Reason:* the SLI counts a 5xx as bad. *Instead:* report it apart; an SLO change is `slo-definition`'s.
+- **"Latency doubled but there are no errors, so the database is fine."** *Reason:* `acquire()` waits forever by default; seen: p(95) 2,198 ms, zero errors, pool 2 of 2. *Instead:* read `db_pool_in_use`; recommend an acquire timeout to the service's owner.
+- **Raising virtual users until drops stop, then reading the old run.** *Reason:* it offered less load. *Instead:* INVALID; run again.
+- **One `/metrics` scrape of a multi-worker service.** *Reason:* it describes one worker; seen: 215, 131, 132 on successive scrapes. *Instead:* multiprocess mode, or one process per container.
+- **`asyncio` debug mode in a measured run "to see slow callbacks".** *Reason:* its checks are too expensive for a measurement. *Instead:* the lag probe.
+- **locust with `constant_throughput` "for an open model".** *Reason:* each user still waits for its answer. *Instead:* k6's arrival-rate executors.
+- **"The kind run passed, so we meet the p95 target."** *Reason:* the indicative tier judges no target. *Instead:* say indicative, and what a verdict needs.
+- **"Staging is fine, the product owner said so in chat."** *Reason:* the test refuses a staging host without a signed statement. *Instead:* the statement file, signed.
+- **`LOAD_TEST_TOKEN` in repository secrets; `make load-verdict | tee log`.** *Reason:* a standing credential; a pipe reports 0 for a run that exited 99. *Instead:* per-run tokens; leave the status alone.
+- **Proposing 50 users or 30 requests a second "as sensible defaults".** *Reason:* no source gives them. *Instead:* the NFR's number, or a named person's decision.
 
----
+## Output
 
-## Closed vs. Open Workload Model — A Deliberate Choice, Not a Default
+| File | When to open it |
+|---|---|
+| `./references/targets-to-profile.md` | Deriving a profile; workers, replicas and the per-process limiter; open versus closed; test types |
+| `./references/gate-and-verdict.md` | Thresholds, 429, the server's own 503, exit statuses, INVALID, what a pass means |
+| `./references/tiers-and-safety.md` | Where load may go; the guards; credentials; what each tier does not prove |
+| `./references/python-saturation.md` | 503 sources, pool exhaustion, event-loop lag, runtime metrics, Prometheus queries for a run |
+| `./references/when-it-runs.md` | Triggers, the release gate, pull requests |
+| `./templates/profile.md` | Writing `tests/load/profile.json` |
+| `./templates/k6-scripts.md` | The k6 files and the Python `journey.js` |
+| `./templates/designation-record.md` | The designation record, the marker, the test subjects, the signed impact statement |
+| `./templates/make-targets.md` | Make targets; attaching the indicative tier to the end-to-end environment |
+| `./templates/workflows.md` | The verdict workflow; additions to the nightly workflow |
+| `./templates/saturation-metrics.md` | Pool and event-loop metrics the service should export |
+| `./templates/load-test-report.md` | Reporting a run |
+| `./scripts/run-load-test.sh` | Copied to the product; the only way a load test starts |
+| `./scripts/validate-python-load-tests.sh` | Before hand-off, after every edit |
+| `./scripts/check-python-profile.sh` | With the validator: workers, replicas, the per-process limiter, subjects |
+| `./scripts/write-load-report.sh`, `./scripts/sort-server-errors.sh` | Drafting the report from result files and k6 summaries |
+| `./resources/checklist.md` | Before answering |
 
-A **closed** model (a fixed pool of users, each waiting for its response before sending the next
-request) lets offered load quietly drop when the service slows — tail latency is understated
-(*coordinated omission*), because real users don't wait politely for a slow server. An **open** model
-issues requests at a declared arrival rate regardless of response time, like independent real users.
-**Use the open model for every profile whose question is "does it hold an SLO at N req/s"** (Soak,
-Spike's baseline); **use the closed model only for Ramp**, where letting offered load throttle
-naturally is the mechanism that finds the break.
-
-This is where locust and k6 diverge sharply, and it must not be glossed. **locust is closed-model by
-construction** — a `User` sleeps `wait_time` between tasks, so it is naturally a Ramp/closed tool; to
-approximate an open arrival-rate model it needs a custom `LoadTestShape` or `constant_throughput`
-pacing, covered in `references/locust-load-profiles.md`. **k6's `constant-arrival-rate`/
-`ramping-arrival-rate` executors are open-model out of the box.** Pick the tool that matches the
-profile's model, or configure locust explicitly for the open case — never let the default stand
-unexamined on a rate-based SLO claim. Full reasoning: `references/criteria-and-analysis.md`.
-
----
-
-## SLO-Based Pass/Fail Gate: `slo-definition`'s Real Numbers, Not Invented Ones
-
-Every pass threshold is copied from `slo-definition` (which formalizes `nfr-specification`'s stated
-requirements), never independently derived: **availability 99.5%** (error rate < 0.005), **latency
-99.5% of ClassifyDataAsset requests under 800ms**, **pipeline freshness 99% within 15 min**,
-**consumer correctness 99.9%**. Report **percentiles (P95/P99), never the mean** — an average across
-a shedding population hides the exact tail the SLO is written against. The two async SLOs (freshness,
-correctness) are verified post-drain via PromQL against series `prometheus-metrics-design` already
-computes — no synchronous load request waits 15 minutes for a classification. A passing P99 against
-the real deployed system in `staging` **is** that system's end-to-end P99 — the loop
-`python-performance-test`'s in-process benchmark deliberately leaves open closes here. Full gate,
-result-reading discipline, backpressure assertions, and capacity findings:
-`references/criteria-and-analysis.md`.
-
----
-
-## Backpressure Under Organic Overload — Prove Graceful Degradation
-
-A load test must prove the service **degrades gracefully** under its own request *volume* — sheds
-fast (`python-middleware`'s rate limiter, `429` with `Retry-After`) or a Circuit Breaker opens on a
-saturating dependency (the `asyncpg` pool) — rather than collapsing or silently queuing coroutines
-until the event loop stalls and memory grows unbounded. This is organic-overload verification,
-**distinct from `python-chaos-test`**, which proves the same patterns under a deliberately injected
-`toxiproxy` fault at normal volume — complementary, neither a substitute. The Ramp/Spike profiles
-assert `429`s rise as offered load exceeds the limiter's rate, the saturated path fails fast rather
-than queuing into climbing latency, and error rate/P99 return to baseline once load subsides. Full
-assertions: `references/criteria-and-analysis.md`.
-
----
-
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| SLOs gated on real numbers | Thresholds copied from `slo-definition`; breach fails the run | Invented targets, or numbers drifting from the SLO document |
-| Percentiles, not the mean | P95/P99 reported and gated | Averages reported; the shedding tail hidden |
-| Generator runs outside the target | locust/k6 as an external client process | Load logic imported in-process with the FastAPI app |
-| Workload model chosen deliberately | Open model for rate SLOs; closed only to find the break; locust configured explicitly for the open case | Closed-model default left unexamined on a rate claim (coordinated omission) |
-| Environment correct | `staging`, production-shaped, sized and declared, per-stamp | A testcontainer or a laptop; non-representative capacity claim |
-| Async SLOs verified | Freshness/correctness via PromQL post-drain | Only sync endpoints tested; `aiokafka` pipeline lag ignored |
-| Backpressure proven, distinct from chaos | `429`/breaker engages under organic volume with recovery | Total collapse or silent queuing; conflated with chaos testing |
-| Realistic traffic mix | Journey-mix endpoints and payload variety | One endpoint, one payload |
-| Frugal tooling | Self-hosted locust/k6 | A paid SaaS load platform |
-
----
-
-## Anti-Patterns
-
-- **Reporting the mean** — hides the P99 tail the SLO is written against.
-- **A closed-model generator on a rate-based SLO claim** — coordinated omission understates real tail latency; locust needs explicit open-model configuration to make this claim honestly.
-- **Load-testing a testcontainer or a laptop** — numbers describe host contention, not capacity.
-- **Load-testing production** — physically-isolated real tenants become the blast radius; `staging` exists to absorb this.
-- **Inventing SLO numbers instead of copying `slo-definition`'s** — proves nothing an operator agreed to.
-- **Conflating this with `python-chaos-test`** — organic-overload and injected-fault are complementary, not interchangeable.
-- **Ignoring the async half** — a green sync run with an undrained `aiokafka` burst is a failing system on a delay timer.
-- **One locust process for serious load** — one process is capped by a single core under the GIL; see `references/locust-load-profiles.md`.
-
----
-
-## Output Format
-
-- **`load/locustfile.py`** (or `load/scenarios/{smoke,ramp,soak,spike}.js` for k6) — the generator
-  definitions, journey-mix traffic, SLO-derived pass criteria, `429` + `Retry-After` backpressure
-  checks. Executor/shape model chosen per the rule above, never defaulted without stating why.
-- **`load/verify-async-slos.sh`** — PromQL freshness/correctness check, run post-drain against
-  `staging`'s Prometheus, polling `pipeline_consumer_lag` to baseline (condition-based, never a fixed
-  sleep). Exits non-zero on either SLO miss.
-- **CI wiring** — Smoke in the fast PR loop; Ramp/Soak/Spike on a nightly/pre-release/on-demand
-  cadence, never per-PR. Runs `verify-async-slos.sh` after the load step; either failure blocks release.
-- **`artifacts/<product>/quality/test-reports/load-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — one entry per run: run id, profile, `staging` sizing, P95/P99
-  and error rate per gate, backpressure outcome. Reviewable-by-the-user, a pointer into the observability
-  stack, never a duplicate data dump.
+In the product: `tests/load/` (`profile.json`, `designation.json` once approved, `statements/<id>.json`, `lib/gate.js`, `journey.js`, the test-type scripts, `issue-subjects.sh`, `indicative-suites.conf`, `load-e2e.conf`, the three scripts), the `load-*` make targets, `.github/workflows/load-verdict.yml` where a designation exists, and one report per evidenced run.

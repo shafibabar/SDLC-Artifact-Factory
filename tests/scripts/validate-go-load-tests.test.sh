@@ -3,7 +3,10 @@
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
-SCRIPT="$REPO_ROOT/skills/go-load-test/scripts/validate-go-load-tests.sh"
+# LOAD_TEST_SKILL=python-load-test runs the same cases against that skill's copy (tests/scripts/python-load-*.test.sh).
+SKILL="${LOAD_TEST_SKILL:-go-load-test}"
+VALIDATOR="validate-${SKILL%-load-test}-load-tests.sh"
+SCRIPT="$REPO_ROOT/skills/$SKILL/scripts/$VALIDATOR"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 FAILURES=0
@@ -183,10 +186,36 @@ mkdir -p "$TMP/other-wf/.github/workflows"
 printf 'on:\n  pull_request:\njobs:\n  ci:\n    steps:\n      - run: make ci\n' > "$TMP/other-wf/.github/workflows/ci.yml"
 check "a workflow that runs no load test is not read" 2 "nothing was checked" "$TMP/other-wf"
 
+# The validator skips itself and any copy of itself, whatever the copy is called (its own rule texts name
+# k6 run, locust and staging), and skips Python virtual environments.
+mkdir -p "$TMP/self-copy/tests/load"
+cp "$SCRIPT" "$TMP/self-copy/tests/load/validate-load-tests.sh"
+cp "$SCRIPT" "$TMP/self-copy/tests/load/check-everything.sh"
+printf '%s\n' "$GOOD_MK" > "$TMP/self-copy/Makefile"
+check "a copy of the validator under another name is not a finding" 0 ": 1 file\(s\) checked: 0 FAIL, 0 WARN" "$TMP/self-copy"
+printf '\n# changed\n' >> "$TMP/self-copy/tests/load/check-everything.sh"
+check "an altered copy is read like any other script" 1 "FAIL .*check-everything.sh" "$TMP/self-copy"
+mkdir -p "$TMP/venvs/.venv/lib/site/tests/load" "$TMP/venvs/env-3/lib/site/load"
+printf '%s\n' "$GOOD_MK" > "$TMP/venvs/Makefile"
+printf 'load:\n\tk6 run --out influxdb=http://staging.internal tests/load/soak.js || true\n' > "$TMP/venvs/.venv/lib/site/tests/load/run.sh"
+printf 'home = /usr/bin\n' > "$TMP/venvs/env-3/pyvenv.cfg"
+printf 'import http from "k6/http";\nexport default function () { http.get("https://staging.internal/x"); }\n' > "$TMP/venvs/env-3/lib/site/load/x.js"
+check "Python virtual environments are skipped (.venv and any folder with pyvenv.cfg)" 0 ": 1 file\(s\) checked: 0 FAIL, 0 WARN" "$TMP/venvs"
+file_case locustfile "FAIL TOOL .*locust" 1 "tests/load/locustfile.py" 'from locust import HttpUser, task'
+file_case locust-dependency "FAIL TOOL .*pyproject.toml:3: locust among the dependencies" 1 "pyproject.toml" '[project]
+name = "x"
+dependencies = ["fastapi==0.165.0", "locust>=2.0"]'
+file_case locust-requirement "FAIL TOOL .*requirements-dev.txt" 1 "requirements-dev.txt" 'pytest==9.0.1
+locust==2.40.0'
+mkdir -p "$TMP/no-locust"
+printf '[project]\nname = "x"\ndescription = "we replaced locust with k6"\ndependencies = ["fastapi==0.165.0"]\n' > "$TMP/no-locust/pyproject.toml"
+printf '%s\n' "$GOOD_MK" > "$TMP/no-locust/Makefile"
+check "a word in a description is not a dependency" 0 ": 1 file\(s\) checked: 0 FAIL" "$TMP/no-locust"
+
 # The shipped scripts, templates and examples must satisfy the validator.
-python3 -I - "$REPO_ROOT/skills/go-load-test" "$TMP/shipped" <<'PY'
+python3 -I - "$REPO_ROOT/skills/$SKILL" "$TMP/shipped" "$VALIDATOR" <<'PY'
 import os, re, shutil, sys
-skill, out = sys.argv[1:]
+skill, out, validator = sys.argv[1:]
 count = 0
 for folder in ("templates", "examples"):
     for name in sorted(os.listdir(os.path.join(skill, folder))):
@@ -198,7 +227,7 @@ for folder in ("templates", "examples"):
             count += 1
 assert count >= 15, f"only {count} shipped blocks extracted"
 os.makedirs(os.path.join(out, "scripts", "tests", "load"))
-for script in ("run-load-test.sh", "validate-go-load-tests.sh", "write-load-report.sh"):
+for script in ("run-load-test.sh", validator, "write-load-report.sh"):
     shutil.copy(os.path.join(skill, "scripts", script), os.path.join(out, "scripts", "tests", "load", script))
 PY
 check "shipped scripts, templates and examples are clean" 0 ": 0 FAIL, 0 WARN" "$TMP/shipped"

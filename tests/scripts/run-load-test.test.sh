@@ -5,7 +5,8 @@
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
-SCRIPT="$REPO_ROOT/skills/go-load-test/scripts/run-load-test.sh"
+# LOAD_TEST_SKILL=python-load-test runs the same cases against that skill's copy (tests/scripts/python-load-*.test.sh).
+SCRIPT="$REPO_ROOT/skills/${LOAD_TEST_SKILL:-go-load-test}/scripts/run-load-test.sh"
 TMP="$(cd "$(mktemp -d)" && pwd -P)"
 SERVER_PID=""
 trap '[ -z "$SERVER_PID" ] || kill "$SERVER_PID" 2>/dev/null; rm -rf "$TMP"' EXIT
@@ -349,6 +350,11 @@ ok = (r["verdict"] == "PASS" and r["nfr"]["id"] == "NFR-PERF-01" and r["slo"]["l
       and r["target"]["designation"]["approved_by"] == "Product owner" and r["shape"]["decided_by"] and r["started"].endswith("Z")
       and len(r["thresholds"]) == 3 and r["subjects"] == 4)
 sys.exit(0 if ok else 1)
+PY
+expect "what a verdict does not prove names no single language's skills" python3 -I - "$TMP/out/average-load-result.json" <<'PY'
+import json, sys
+lines = json.load(open(sys.argv[1]))["does_not_prove"]
+sys.exit(0 if not any("go-" in l or "python-" in l for l in lines) and any("product's language" in l for l in lines) else 1)
 PY
 run "k6 exit 99 is FAIL" 1 "== FAIL: .*\(k6 exit 99\).*crossed: http_req_duration.*p\(95\)<400" FAKE_K6_SUMMARY=fail FAKE_K6_EXIT=99 -- "${V[@]}" --designation "$TMP/record.json"
 run "dropped iterations are INVALID, not passed" 4 "== INVALID.*7 iterations were dropped" FAKE_K6_SUMMARY=dropped FAKE_K6_EXIT=99 -- "${V[@]}" --designation "$TMP/record.json"

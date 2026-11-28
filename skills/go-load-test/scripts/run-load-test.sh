@@ -72,7 +72,7 @@ NOT_PROVEN = {
     "verdict": [
         "The rolling SLO window: one run shows the targets held at this load for this run's length, not for 28 days.",
         "Production itself: the result holds for the sizing and data recorded in the designation, nothing larger.",
-        "Faults injected on purpose (go-chaos-test) and speed of a single function (go-performance-test).",
+        "Faults injected on purpose and the speed of a single function: the chaos-test and performance-test skills of the product's language.",
     ],
     "verification": [
         "Capacity: this run went to a system named in an impact statement, not a designated performance environment. "

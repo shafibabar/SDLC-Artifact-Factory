@@ -20,25 +20,45 @@
 # secrets reference), GAUGEFN (increase, rate or irate on something that is
 # not a counter), OUTPUT (a deprecated k6 output), PUSH (metrics or annotations
 # sent to a monitoring system), PAID (a paid load service), TOOL (a load tool
-# other than k6). WARN rules: UNPINNED (k6 image or action without a pinned
+# other than k6, a locustfile.py included, or locust among a Python product's
+# dependencies). WARN rules: UNPINNED (k6 image or action without a pinned
 # version), SUMMARYEXPORT, NOALWAYS (results not uploaded after a failure).
 # Exit 0 = no FAIL (each WARN needs judgement); 1 = at least one FAIL;
 # 2 = usage, a missing path, or nothing to check.
+# It skips itself and any copy of itself, whatever the copy is called, and
+# Python virtual environments (any folder holding a pyvenv.cfg).
 set -uo pipefail
 if [ "$#" -eq 0 ]; then
-  echo "usage: validate-go-load-tests.sh <product-root-or-path>..." >&2
+  echo "usage: $(basename "$0") <product-root-or-path>..." >&2
   exit 2
 fi
-exec python3 -I - "$@" << 'PY'
+exec python3 -I - "$0" "$@" << 'PY'
 import json, os, re, sys
 
+SELF = sys.argv[1]
+TOOL_NAME = os.path.basename(SELF)[:-3] if SELF.endswith(".sh") else os.path.basename(SELF)
+
+
+def program(text):
+    # Everything from `set -uo pipefail` down: the part every copy of this validator shares.
+    start = text.find("\nset -uo pipefail\n")
+    return text[start:] if start >= 0 else None
+
+
+try:
+    OWN_PROGRAM = program(open(SELF, encoding="utf-8", errors="replace").read())
+except OSError:
+    OWN_PROGRAM = None
+SKIP_DIRS = {".git", "vendor", "node_modules", "e2e-evidence", "load-evidence", "load-baseline", ".venv", "venv", ".tox", ".nox",
+             "__pycache__", ".mypy_cache", ".pytest_cache", "site-packages"}
+
 found = []
-for arg in sys.argv[1:]:
+for arg in sys.argv[2:]:
     if os.path.isfile(arg):
         found.append(arg)
     elif os.path.isdir(arg):
         for base, dirs, names in os.walk(arg):
-            dirs[:] = sorted(d for d in dirs if d not in {".git", "vendor", "node_modules", "e2e-evidence", "load-evidence", "load-baseline"})
+            dirs[:] = sorted(d for d in dirs if d not in SKIP_DIRS and not os.path.isfile(os.path.join(base, d, "pyvenv.cfg")))
             found += [os.path.join(base, n) for n in sorted(names)]
     else:
         print(f"ERROR: no such path: {arg}")
@@ -234,10 +254,23 @@ def check_workflow(path, raw):
         report("WARN", "NOALWAYS", path, 1, "results are not uploaded after a failure: add if: ${{ always() }} to the upload step")
 
 
+PY_DEPENDENCY = re.compile(r"^\s*locust(?:[\[<>=~!;\s]|$)|[\"']locust(?:[\[<>=~!;\s\"']|$)", re.M | re.I)
+
 for path in found:
     name = os.path.basename(path)
     lower = path.replace(os.sep, "/").lower()
-    if name == "validate-go-load-tests.sh":
+    if name.endswith(".sh") and OWN_PROGRAM and program(read(path)) == OWN_PROGRAM:
+        continue  # this validator, or a copy of it under another name: its own rule texts are not findings
+    if name == "locustfile.py" or (name.endswith(".py") and re.search(r"^\s*(from\s+locust\b|import\s+locust\b)", read(path), re.M)):
+        checked += 1
+        report("FAIL", "TOOL", path, 1, "locust: k6 is the one load tool; the k6 scripts drive a Python service from outside")
+        continue
+    if name in ("pyproject.toml", "setup.cfg", "Pipfile") or re.fullmatch(r"requirements[\w.\-]*\.(txt|in)", name):
+        raw = read(path)
+        m = PY_DEPENDENCY.search(raw)
+        if m:
+            checked += 1
+            report("FAIL", "TOOL", path, line_of(raw, m.start()), "locust among the dependencies: k6 is the one load tool")
         continue
     if name.endswith(".js") and in_load_folder(path):
         checked += 1
@@ -287,6 +320,6 @@ for path in found:
 if checked == 0:
     print("ERROR: nothing was checked: no load/ folder, load line or load workflow under the given paths")
     sys.exit(2)
-print(f"validate-go-load-tests: {checked} file(s) checked: {fails} FAIL, {warns} WARN")
+print(f"{TOOL_NAME}: {checked} file(s) checked: {fails} FAIL, {warns} WARN")
 sys.exit(1 if fails else 0)
 PY
