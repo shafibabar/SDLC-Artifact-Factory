@@ -39,11 +39,11 @@ check "refuses to overwrite" '! "$SCAFFOLD" acme US-9 "Again" >/dev/null 2>&1'
 
 ERR="$("$SCAFFOLD" acme US-44 "No map" 2>&1)"; RC=$?
 check "refuses a story with no example map" \
-  '[ "$RC" -eq 1 ] && echo "$ERR" | grep -q "example-maps/US-44.md" && [ ! -e artifacts/acme/ideate/acceptance-criteria/US-44.md ]' "rc $RC: $ERR"
+  '[ "$RC" -eq 1 ] && echo "$ERR" | grep "example-maps/US-44.md" >/dev/null && [ ! -e artifacts/acme/ideate/acceptance-criteria/US-44.md ]' "rc $RC: $ERR"
 mkmap US-45 not-ready
 ERR="$("$SCAFFOLD" acme US-45 "Not ready" 2>&1)"; RC=$?
 check "refuses a map that is not ready" \
-  '[ "$RC" -eq 1 ] && echo "$ERR" | grep -qi "not ready" && [ ! -e artifacts/acme/ideate/acceptance-criteria/US-45.md ]' "rc $RC: $ERR"
+  '[ "$RC" -eq 1 ] && echo "$ERR" | grep -i "not ready" >/dev/null && [ ! -e artifacts/acme/ideate/acceptance-criteria/US-45.md ]' "rc $RC: $ERR"
 
 "$SCAFFOLD" acme US-9 >/dev/null 2>&1; RC=$?
 check "missing title exits 2 with usage" '[ "$RC" -eq 2 ]' "rc $RC"

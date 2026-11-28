@@ -138,6 +138,21 @@ flags("P9", 'a quoted replacement ${x/"a"/"b"}', 'new="${ROW/"$3"/"$4"}"')
 quiet("an unquoted replacement", 'new="${ROW/$old/$new}"')
 quiet("cut and rejoin", 'new="${ROW%%"$3"*}$4${ROW#*"$3"}"')
 
+# --- P10 grep -q on a pipe under pipefail ---------------------------------------
+PF = "set -uo pipefail\n"
+check("P10: echo piped to grep -q under pipefail is flagged",
+      rules(PF + 'if echo "$out" | grep -q "x"; then :; fi') == ["P10"])
+check("P10: printf piped to grep -qF under pipefail is flagged",
+      rules(PF + "printf '%s\\n' \"$out\" | grep -qF -- \"$sub\"") == ["P10"])
+check("P10: a command piped to grep -Eq under pipefail is flagged",
+      rules("set -euo pipefail\nrun_it file.md | grep -Eq 'FAIL'") == ["P10"])
+check("P10: a finding carries the right line", [f["line"] for f in P.lint_text(PF + "echo a\necho x | grep -q x\n")] == [3])
+quiet("grep -q on a pipe without pipefail", 'if echo "$out" | grep -q "x"; then :; fi')
+quiet("grep to /dev/null under pipefail", PF + 'if echo "$out" | grep "x" >/dev/null; then :; fi')
+quiet("grep -q with a here-string under pipefail", PF + 'if grep -qF -- "$sub" <<<"$out"; then :; fi')
+quiet("grep -q on a file under pipefail", PF + 'if [ -f f ] || grep -q x f; then :; fi')
+quiet("pipefail mentioned only in a comment", '# set -o pipefail is not used here\necho x | grep -q x')
+
 # --- what is not shell --------------------------------------------------------
 quiet("a here-document body (embedded Python)", """python3 - "$1" <<'PY'
 import re

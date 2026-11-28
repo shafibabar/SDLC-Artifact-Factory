@@ -23,7 +23,7 @@ else
   _fail "validate-access-control-model: a fresh scaffold with empty tables fails" "got exit $EXIT_CODE"
 fi
 
-if echo "$OUTPUT" | grep -q "3 check(s) failed" && echo "$OUTPUT" | grep -q "PASS: frontmatter has 'name'"; then
+if echo "$OUTPUT" | grep "3 check(s) failed" >/dev/null && echo "$OUTPUT" | grep "PASS: frontmatter has 'name'" >/dev/null; then
   _pass "validate-access-control-model: fails exactly the 3 empty tables, not the correct frontmatter"
 else
   _fail "validate-access-control-model: fails exactly the 3 empty tables, not the correct frontmatter" "expected 3 failures and passing frontmatter checks"
@@ -76,7 +76,7 @@ summary: Access-control model fixture missing only its created field.
 EOF
 
 OUTPUT2="$("$VALIDATE" "$SCRATCH_DIR/missing-field.md" 2>&1)"
-if echo "$OUTPUT2" | grep -q "FAIL: frontmatter has 'created'" && echo "$OUTPUT2" | grep -q "1 check(s) failed"; then
+if echo "$OUTPUT2" | grep "FAIL: frontmatter has 'created'" >/dev/null && echo "$OUTPUT2" | grep "1 check(s) failed" >/dev/null; then
   _pass "validate-access-control-model: catches a missing frontmatter field without false-failing the complete tables"
 else
   _fail "validate-access-control-model: catches a missing frontmatter field without false-failing the complete tables" "expected exactly 1 failure naming the missing 'created' field"

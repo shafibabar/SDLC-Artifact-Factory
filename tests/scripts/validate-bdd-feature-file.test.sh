@@ -28,7 +28,7 @@ PY
 for pair in kerbside:US-4 shelfmark:US-12 paygate:US-31; do
   p="${pair%:*}"; s="${pair#*:}"
   OUTPUT="$("$VALIDATE" "artifacts/$p/implement/features/$s.feature" 2>&1)"; RC=$?
-  if [ "$RC" -eq 0 ] && ! echo "$OUTPUT" | grep -q "^WARN"; then
+  if [ "$RC" -eq 0 ] && ! echo "$OUTPUT" | grep "^WARN" >/dev/null; then
     _pass "validate-bdd-feature-file: shipped example $p passes cleanly"
   else
     _fail "validate-bdd-feature-file: shipped example $p passes cleanly" "exit $RC: $(echo "$OUTPUT" | grep -E '^(FAIL|WARN)' | head -3)"
@@ -44,7 +44,7 @@ case_() {
   cp good.feature "$BASE"
   python3 -c "import re,sys; p=sys.argv[1]; t=open(p).read(); $edit; open(p,'w').write(t)" "$BASE"
   out="$("$VALIDATE" "$BASE" 2>&1)"; rc=$?
-  if [ "$rc" -eq "$want" ] && echo "$out" | grep -qE "$pattern"; then
+  if [ "$rc" -eq "$want" ] && echo "$out" | grep -E "$pattern" >/dev/null; then
     _pass "validate-bdd-feature-file: $name"
   else
     _fail "validate-bdd-feature-file: $name" "exit $rc (wanted $want); $(echo "$out" | grep -E '^(FAIL|WARN)' | head -3)"
@@ -55,7 +55,7 @@ OK="0 check\(s\) failed"
 # L8: the blank template must fail.
 cp "$SKILL/templates/feature-file.feature" "$BASE"
 OUTPUT="$("$VALIDATE" "$BASE" 2>&1)"; RC=$?
-if [ "$RC" -eq 1 ] && echo "$OUTPUT" | grep -q "FAIL: no unfilled placeholder"; then
+if [ "$RC" -eq 1 ] && echo "$OUTPUT" | grep "FAIL: no unfilled placeholder" >/dev/null; then
   _pass "validate-bdd-feature-file: the blank template fails (L8)"
 else
   _fail "validate-bdd-feature-file: the blank template fails (L8)" "exit $RC"
@@ -115,7 +115,7 @@ cp good.feature "$BASE"
 # Missing criteria file fails traceability rather than passing silently.
 mkdir -p lone && cp good.feature lone/US-12.feature
 OUTPUT="$("$VALIDATE" lone/US-12.feature 2>&1)"
-if echo "$OUTPUT" | grep -q "FAIL: the criteria file exists" \
+if echo "$OUTPUT" | grep "FAIL: the criteria file exists" >/dev/null \
    && "$VALIDATE" lone/US-12.feature artifacts/shelfmark/ideate/acceptance-criteria/US-12.md >/dev/null 2>&1; then
   _pass "validate-bdd-feature-file: no criteria file fails; an explicit criteria path is used"
 else
@@ -126,8 +126,8 @@ fi
 OUTPUT="$("$VALIDATE" --product artifacts/shelfmark --must US-12 2>&1)"; RC1=$?
 cp artifacts/shelfmark/ideate/acceptance-criteria/US-12.md artifacts/shelfmark/ideate/acceptance-criteria/US-13.md
 OUTPUT2="$("$VALIDATE" --product artifacts/shelfmark --must US-12,US-14 2>&1)"; RC2=$?
-if [ "$RC1" -eq 0 ] && [ "$RC2" -eq 1 ] && echo "$OUTPUT2" | grep -q "US-13 has criteria, so it needs" \
-   && echo "$OUTPUT2" | grep -q "Must Have US-14 has a criteria file"; then
+if [ "$RC1" -eq 0 ] && [ "$RC2" -eq 1 ] && echo "$OUTPUT2" | grep "US-13 has criteria, so it needs" >/dev/null \
+   && echo "$OUTPUT2" | grep "Must Have US-14 has a criteria file" >/dev/null; then
   _pass "validate-bdd-feature-file: --product finds stories with no feature file or no criteria"
 else
   _fail "validate-bdd-feature-file: --product finds stories with no feature file or no criteria" "exits $RC1/$RC2"

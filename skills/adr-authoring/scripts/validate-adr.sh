@@ -41,28 +41,28 @@ CONTENT="$(cat "$FILE")"
 FRONTMATTER="$(printf '%s\n' "$CONTENT" | sed -n '/^---$/,/^---$/p' | sed '1d;$d')"
 
 for field in name version phase owner created summary adr-id title status deciders; do
-  if printf '%s\n' "$FRONTMATTER" | grep -qE "^${field}:"; then
+  if printf '%s\n' "$FRONTMATTER" | grep -E "^${field}:" >/dev/null; then
     _check "frontmatter has '$field'" 1
   else
     _check "frontmatter has '$field'" 0
   fi
 done
 
-if printf '%s\n' "$CONTENT" | grep -qE '^\*\*Trade-off:\*\*'; then
+if printf '%s\n' "$CONTENT" | grep -E '^\*\*Trade-off:\*\*' >/dev/null; then
   _check "Rationale has a **Trade-off:** line" 1
 else
   _check "Rationale has a **Trade-off:** line" 0
 fi
 
 for subsection in "### Positive" "### Negative / Trade-offs" "### Risks"; do
-  if printf '%s\n' "$CONTENT" | grep -qF "$subsection"; then
+  if printf '%s\n' "$CONTENT" | grep -F "$subsection" >/dev/null; then
     _check "Consequences has '$subsection'" 1
   else
     _check "Consequences has '$subsection'" 0
   fi
 done
 
-if printf '%s\n' "$CONTENT" | grep -qE '^## Related ADRs'; then
+if printf '%s\n' "$CONTENT" | grep -E '^## Related ADRs' >/dev/null; then
   _check "Related ADRs section present" 1
 else
   _check "Related ADRs section present" 0

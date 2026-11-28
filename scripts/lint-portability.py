@@ -26,6 +26,12 @@ does not catch them.
                       numfmt, stat -c, date -d, find -printf, head -n -N,
                       mktemp --suffix, cp --parents, ln -r, du -b, xargs -d
   P9 quoted-replace   ${x/"a"/"b"} — Bash 3.2 keeps the replacement's quotes (SILENT)
+  P10 pipe-race       `… | grep -q` in a script that sets `pipefail`: grep -q
+                      exits at the first match, the writer can die on the closed
+                      pipe, and the match then counts as a failure. Not a
+                      Linux/macOS difference: a timing race on both, seen on
+                      the macOS CI runner (#1512). Write `| grep … >/dev/null`
+                      or `grep -q … <<<"$text"`.
 
 What it reads: every `*.sh` under skills/, scripts/, tests/, hooks/, commands/
 and .claude/. Comment lines and the bodies of here-documents are skipped (a
@@ -65,6 +71,7 @@ RULES = {
     "P7": "bash-4",
     "P8": "gnu-command",
     "P9": "quoted-replace",
+    "P10": "pipe-race",
 }
 
 # A command word: at the start, or after a pipe, list operator, subshell or `$(`.
@@ -111,6 +118,9 @@ _GNU_CMD = re.compile(
     r"|\bxargs\s+(?:-\S+\s+)*-d\b"
 )
 _QUOTED_REPLACE = re.compile(r"\$\{[A-Za-z_][A-Za-z_0-9]*//?[^}]*/\"[^}]*\"\}")
+
+_PIPEFAIL = re.compile(r"^\s*set\s+(?:-\S+\s+)*-[A-Za-z]*o\s+pipefail\b|^\s*set\s+.*-o\s+pipefail\b", re.M)
+_PIPE_GREP_Q = re.compile(r"(?<!\|)\|\s*[ef]?grep\s+(?:-[A-Za-z]+\s+)*-[A-Za-z]*q")
 
 _HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z_0-9]*)\1")
 _SUPPRESS = re.compile(r"#.*\bportable-ok:\s*\S")
@@ -169,9 +179,13 @@ def lint_text(text: str) -> list[dict]:
     def add(rule, number, message):
         findings.append({"rule": rule, "line": number, "message": message})
 
+    pipefail = bool(_PIPEFAIL.search(text))
     for number, code, suppressed in shell_lines(text):
         if suppressed:
             continue
+        if pipefail and _PIPE_GREP_Q.search(code):
+            add("P10", number, "`| grep -q` under pipefail can fail on a closed pipe although the text "
+                               "matched; use `| grep … >/dev/null` or `grep -q … <<<\"$text\"`")
         if _SED_INPLACE.search(code):
             add("P1", number, "`sed -i` is not portable; write to a temporary file and move it back")
         if _SED.search(code):
@@ -241,7 +255,7 @@ def main(argv: list[str]) -> int:
         print("lint-portability summary:")
         print(f"  scripts clean  {len(files) - dirty}/{len(files)}")
         for rule, label in RULES.items():
-            print(f"  {rule} {label:<15} {counts[rule]}")
+            print(f"  {rule:<3} {label:<15} {counts[rule]}")
         print(f"  TOTAL          {total} finding(s)")
     else:
         print(f"lint-portability: {len(files)} script(s) clean.")

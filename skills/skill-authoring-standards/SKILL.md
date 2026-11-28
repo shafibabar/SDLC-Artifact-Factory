@@ -10,7 +10,7 @@ description: >
   enterprise, writing evals under evals/<skill>/, or choosing a version bump.
   Consulted at the start of every skill-refactor session. Cross-cutting
   governance skill alongside glossary-management and methodology-review.
-version: 2.3.0
+version: 2.3.1
 phase: cross-cutting
 owner: factory-governance
 created: 2026-07-23

@@ -42,7 +42,7 @@ fi
 # frontmatter lacked name/version/phase/owner/created, so writing one with the
 # Write tool was DENIED.
 HOOK_OUT="$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Write','tool_input':{'file_path':'/p/'+sys.argv[1],'content':open(sys.argv[1]).read()}}))" "$OUT1" | "$REPO_ROOT/scripts/validate-artifact-structure.sh")"
-if echo "$HOOK_OUT" | grep -q '"permissionDecision": "deny"'; then
+if echo "$HOOK_OUT" | grep '"permissionDecision": "deny"' >/dev/null; then
   _fail "scaffold-adr: scaffolded ADR passes validate-artifact-structure" "$HOOK_OUT"
 else
   _pass "scaffold-adr: scaffolded ADR passes validate-artifact-structure"

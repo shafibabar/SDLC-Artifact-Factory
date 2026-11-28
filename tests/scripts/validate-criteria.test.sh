@@ -143,7 +143,7 @@ p = sys.argv[1]; t = open(p).read(); n = eval(sys.argv[2]); assert n != t, "edit
 open(p, "w").write(n)
 P
   OUT="$("$VALIDATE" "$GOOD" 2>&1)"; RC=$?
-  if [ "$RC" -eq 1 ] && echo "$OUT" | grep '^FAIL' | grep -qF -- "$2"; then _pass "validate-criteria: $1"
+  if [ "$RC" -eq 1 ] && echo "$OUT" | grep '^FAIL' | grep -F -- "$2" >/dev/null; then _pass "validate-criteria: $1"
   else _fail "validate-criteria: $1" "exit $RC; wanted FAIL containing '$2'; got: $(echo "$OUT" | grep FAIL | head -5)"; fi
 }
 badmap() { # label, expected, python expression editing the map
@@ -154,7 +154,7 @@ p = sys.argv[1]; t = open(p).read(); n = eval(sys.argv[2]); assert n != t, "edit
 open(p, "w").write(n)
 P
   OUT="$("$VALIDATE" "$GOOD" 2>&1)"; RC=$?
-  if [ "$RC" -eq 1 ] && echo "$OUT" | grep '^FAIL' | grep -qF -- "$2"; then _pass "validate-criteria: $1"
+  if [ "$RC" -eq 1 ] && echo "$OUT" | grep '^FAIL' | grep -F -- "$2" >/dev/null; then _pass "validate-criteria: $1"
   else _fail "validate-criteria: $1" "exit $RC; wanted FAIL containing '$2'; got: $(echo "$OUT" | grep FAIL | head -5)"; fi
 }
 
@@ -176,7 +176,7 @@ ok "a story written only in the rule format passes"
 
 # Templates must fail (L6)
 OUT="$("$VALIDATE" "$SKILL/templates/acceptance-criteria.md" 2>&1)"; RC=$?
-if [ "$RC" -eq 1 ] && echo "$OUT" | grep -q "FAIL: no unfilled"; then _pass "validate-criteria: the unfilled template fails"; else _fail "validate-criteria: the unfilled template fails" "exit $RC"; fi
+if [ "$RC" -eq 1 ] && echo "$OUT" | grep "FAIL: no unfilled" >/dev/null; then _pass "validate-criteria: the unfilled template fails"; else _fail "validate-criteria: the unfilled template fails" "exit $RC"; fi
 cp "$SKILL/templates/acceptance-criteria.md" "$GOOD"
 if ! "$VALIDATE" "$GOOD" >/dev/null 2>&1; then _pass "validate-criteria: the template copied to a story path fails"; else _fail "validate-criteria: the template copied to a story path fails" "passed"; fi
 : > "$GOOD"
@@ -207,7 +207,7 @@ bad "response time as a criterion" "quality target" 't.replace("Then the locker 
 bad "criterion outside the three angles" "sits under Happy, Negative or Edge" 't.replace("## Explicitly Out of Scope", "## Other\n\n### AC-US-7.9: Extra\n- From: R1 (R1.E1)\n\n## Explicitly Out of Scope")'
 write_map; write_good; sed_in_place 's/Then the locker stays shut/Then the database shows nothing/' "$GOOD"
 OUT="$("$VALIDATE" "$GOOD" 2>&1)"; RC=$?
-if [ "$RC" -eq 0 ] && echo "$OUT" | grep -q "^WARN: AC-US-7.3 says 'database'"; then _pass "validate-criteria: a technical word warns without failing"; else _fail "validate-criteria: a technical word warns without failing" "exit $RC"; fi
+if [ "$RC" -eq 0 ] && echo "$OUT" | grep "^WARN: AC-US-7.3 says 'database'" >/dev/null; then _pass "validate-criteria: a technical word warns without failing"; else _fail "validate-criteria: a technical word warns without failing" "exit $RC"; fi
 bad "assumption left in" "no assumption or unknown" 't.replace("Then the locker stays shut", "Then the outcome is unknown (Q-2)")'
 bad "old EM- reference" "names the story" 're.sub(r"- Example map: .*", "- Example map: EM-017", t)'
 bad "map of another story" "names the story" 't.replace("- Example map: ideate/example-maps/US-7.md", "- Example map: ideate/example-maps/US-8.md")'
@@ -218,11 +218,11 @@ badmap "map with an open question" "no open question" 't.replace("| answered | y
 
 write_map; write_good; rm "$MAP"
 OUT="$("$VALIDATE" "$GOOD" 2>&1)"; RC=$?
-if [ "$RC" -eq 1 ] && echo "$OUT" | grep -q "FAIL: the example map file exists"; then _pass "validate-criteria: a missing map file fails"; else _fail "validate-criteria: a missing map file fails" "exit $RC"; fi
+if [ "$RC" -eq 1 ] && echo "$OUT" | grep "FAIL: the example map file exists" >/dev/null; then _pass "validate-criteria: a missing map file fails"; else _fail "validate-criteria: a missing map file fails" "exit $RC"; fi
 
 write_map; write_good; cp "$GOOD" "$IDEATE/acceptance-criteria/US-7-slug.md"
 OUT="$("$VALIDATE" "$IDEATE/acceptance-criteria/US-7-slug.md" 2>&1)"
-if echo "$OUT" | grep -q "FAIL: file name is <story-id>.md"; then _pass "validate-criteria: a slugged file name fails"; else _fail "validate-criteria: a slugged file name fails" "no FAIL line"; fi
+if echo "$OUT" | grep "FAIL: file name is <story-id>.md" >/dev/null; then _pass "validate-criteria: a slugged file name fails"; else _fail "validate-criteria: a slugged file name fails" "no FAIL line"; fi
 
 # Every worked example in the skill passes against its own input map
 for ex in "$SKILL"/examples/*.md; do

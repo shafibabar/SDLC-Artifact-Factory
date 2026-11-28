@@ -42,7 +42,7 @@ _check() {
 FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$FILE" | sed '1d;$d')"
 
 for field in name product version phase created owner summary; do
-  if printf '%s\n' "$FRONTMATTER" | grep -qE "^${field}:"; then
+  if printf '%s\n' "$FRONTMATTER" | grep -E "^${field}:" >/dev/null; then
     _check "frontmatter has '$field'" 1
   else
     _check "frontmatter has '$field'" 0
@@ -68,7 +68,7 @@ _table_has_data() {
 }
 
 for section in "## Alert Inventory" "## Burn-Rate Policy Applied" "## Pipeline Leading Indicators" "## Routing and Inhibition" "## Review Log" "## Configuration Files"; do
-  if printf '%s\n' "$(_section "$section")" | grep -qE '.'; then
+  if printf '%s\n' "$(_section "$section")" | grep -E '.' >/dev/null; then
     _check "'$section' section present" 1
   else
     # A present-but-empty section still emits its own heading line; check
@@ -88,7 +88,7 @@ else
   _check "'## Review Log' table has at least one data row" 0
 fi
 
-if _section "## Review Log" | head -1 | grep -qi "Toil"; then
+if _section "## Review Log" | head -1 | grep -i "Toil" >/dev/null; then
   _check "'## Review Log' header has a Toil column" 1
 else
   _check "'## Review Log' header has a Toil column" 0
@@ -96,12 +96,12 @@ fi
 
 if _table_has_data "## Alert Inventory"; then
   ALERT_ROWS="$(_section "## Alert Inventory" | tail -n +3)"
-  if printf '%s\n' "$ALERT_ROWS" | grep -qiE '\bpage\b'; then
+  if printf '%s\n' "$ALERT_ROWS" | grep -iE '\bpage\b' >/dev/null; then
     _check "Alert Inventory has at least one page-severity alert" 1
   else
     _check "Alert Inventory has at least one page-severity alert" 0
   fi
-  if printf '%s\n' "$ALERT_ROWS" | grep -qiE '\bticket\b'; then
+  if printf '%s\n' "$ALERT_ROWS" | grep -iE '\bticket\b' >/dev/null; then
     _check "Alert Inventory has at least one ticket-severity alert" 1
   else
     _check "Alert Inventory has at least one ticket-severity alert" 0

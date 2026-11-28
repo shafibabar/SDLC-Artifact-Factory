@@ -23,13 +23,13 @@ FRESH="$("$SCAFFOLD" acme classification-pipeline)"
 OUTPUT="$("$VALIDATE" "$FRESH" 2>&1)"
 EXIT_CODE=$?
 
-if [ "$EXIT_CODE" -eq 1 ] && echo "$OUTPUT" | grep -q "8 check(s) failed"; then
+if [ "$EXIT_CODE" -eq 1 ] && echo "$OUTPUT" | grep "8 check(s) failed" >/dev/null; then
   _pass "validate-beta-program-design: a fresh scaffold fails exactly the 8 unfilled checks"
 else
   _fail "validate-beta-program-design: a fresh scaffold fails exactly the 8 unfilled checks" "exit $EXIT_CODE; $(echo "$OUTPUT" | grep FAIL)"
 fi
 
-if echo "$OUTPUT" | grep -q "PASS: Data Handling Statement says no control is relaxed"; then
+if echo "$OUTPUT" | grep "PASS: Data Handling Statement says no control is relaxed" >/dev/null; then
   _pass "validate-beta-program-design: does not false-fail the no-relaxation sentence on a fresh scaffold"
 else
   _fail "validate-beta-program-design: does not false-fail the no-relaxation sentence on a fresh scaffold" "expected PASS"
@@ -64,7 +64,7 @@ fi
 expect_one() {
   local label="$1" file="$2" pattern="$3"
   local out; out="$(run_validate "$file")"
-  if echo "$out" | grep -q "FAIL: $pattern" && echo "$out" | grep -q "1 check(s) failed"; then
+  if echo "$out" | grep "FAIL: $pattern" >/dev/null && echo "$out" | grep "1 check(s) failed" >/dev/null; then
     _pass "validate-beta-program-design: $label"
   else
     _fail "validate-beta-program-design: $label" "expected exactly one FAIL for '$pattern'; got: $(echo "$out" | grep FAIL)"

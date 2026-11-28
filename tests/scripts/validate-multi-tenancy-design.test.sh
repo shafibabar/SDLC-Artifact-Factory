@@ -15,7 +15,7 @@ expect() { # expect <label> <exit> [substring] -- <args...>
   local label="$1" want="$2" sub="$3"; shift 3
   local out code
   out="$("$VALIDATE" "$@" 2>&1)"; code=$?
-  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -qF -- "$sub"; }; then
+  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -F -- "$sub" >/dev/null; }; then
     _pass "validate-multi-tenancy-design: $label"
   else
     _fail "validate-multi-tenancy-design: $label" "exit $code; $(echo "$out" | grep -E 'FAIL|WARN' | head -5)"

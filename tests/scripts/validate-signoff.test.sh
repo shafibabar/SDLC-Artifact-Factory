@@ -28,13 +28,13 @@ else
   _fail "validate-signoff: a fresh scaffold with unfilled fields fails" "got exit $EXIT_CODE"
 fi
 
-if echo "$OUTPUT" | grep -q "5 check(s) failed"; then
+if echo "$OUTPUT" | grep "5 check(s) failed" >/dev/null; then
   _pass "validate-signoff: reports exactly 5 failed checks on a fresh scaffold"
 else
   _fail "validate-signoff: reports exactly 5 failed checks on a fresh scaffold" "expected '5 check(s) failed'; got: $(echo "$OUTPUT" | grep FAIL)"
 fi
 
-if echo "$OUTPUT" | grep -q "PASS: Sign-Off Criteria Checklist section present" && echo "$OUTPUT" | grep -q "PASS: checklist has at least one item"; then
+if echo "$OUTPUT" | grep "PASS: Sign-Off Criteria Checklist section present" >/dev/null && echo "$OUTPUT" | grep "PASS: checklist has at least one item" >/dev/null; then
   _pass "validate-signoff: does not false-fail the structural checks on a fresh scaffold"
 else
   _fail "validate-signoff: does not false-fail the structural checks on a fresh scaffold" "expected checklist checks to pass"
@@ -64,7 +64,7 @@ fi
 # A malformed Decision line must fail that specific check.
 cp full.md bad-decision.md
 set_decision bad-decision.md "MOSTLY GOOD TO GO"
-if run_validate bad-decision.md | grep -q "FAIL: Decision line names exactly one valid outcome"; then
+if run_validate bad-decision.md | grep "FAIL: Decision line names exactly one valid outcome" >/dev/null; then
   _pass "validate-signoff: catches a Decision line that isn't one of the three valid outcomes"
 else
   _fail "validate-signoff: catches a Decision line that isn't one of the three valid outcomes" "expected a FAIL line for the Decision check"
@@ -73,13 +73,13 @@ fi
 # Defect rule: a sign-off with the Critical line unchecked fails; a NO-GO with it unchecked does not.
 cp full.md critical.md
 sed_in_place 's/^- \[x\] Zero open Critical/- [ ] Zero open Critical/' critical.md
-if run_validate critical.md | grep -q "FAIL: no full or conditional sign-off while open Critical"; then
+if run_validate critical.md | grep "FAIL: no full or conditional sign-off while open Critical" >/dev/null; then
   _pass "validate-signoff: a full sign-off with open Critical defects fails"
 else
   _fail "validate-signoff: a full sign-off with open Critical defects fails" "expected the Critical check to fail"
 fi
 set_decision critical.md "NO-GO"
-if run_validate critical.md | grep -q "PASS: no full or conditional sign-off while open Critical"; then
+if run_validate critical.md | grep "PASS: no full or conditional sign-off while open Critical" >/dev/null; then
   _pass "validate-signoff: a no-go with open Critical defects passes the Critical check"
 else
   _fail "validate-signoff: a no-go with open Critical defects passes the Critical check" "expected PASS on a no-go"
@@ -90,7 +90,7 @@ cp "$FRESH" solo.md
 fill_two_party solo.md
 sed_in_place '/(customer representative)/d' solo.md
 set_decision solo.md "FULL SIGN-OFF"
-if run_validate solo.md | grep -q "FAIL: customer representative named, or a filled solo-operator Exception"; then
+if run_validate solo.md | grep "FAIL: customer representative named, or a filled solo-operator Exception" >/dev/null; then
   _pass "validate-signoff: no representative and an unfilled Exception fails"
 else
   _fail "validate-signoff: no representative and an unfilled Exception fails" "expected the authority check to fail"
@@ -116,7 +116,7 @@ else
   _fail "validate-signoff: a filled solo-operator Exception passes without a representative" "$("$VALIDATE" solo.md | grep FAIL)"
 fi
 sed_in_place 's/Independence level (ISTQB): none/Independence level (ISTQB): within team/' solo.md
-if run_validate solo.md | grep -q "FAIL: customer representative named, or a filled solo-operator Exception"; then
+if run_validate solo.md | grep "FAIL: customer representative named, or a filled solo-operator Exception" >/dev/null; then
   _pass "validate-signoff: an Exception that does not declare independence 'none' fails"
 else
   _fail "validate-signoff: an Exception that does not declare independence 'none' fails" "expected the authority check to fail"
@@ -132,20 +132,20 @@ else
   _fail "validate-signoff: a complete High condition passes" "$("$VALIDATE" cond.md | grep FAIL)"
 fi
 sed_in_place 's/ — re-test: UAT-4b//' cond.md
-if run_validate cond.md | grep -q "FAIL: every High condition names a workaround and a re-test"; then
+if run_validate cond.md | grep "FAIL: every High condition names a workaround and a re-test" >/dev/null; then
   _pass "validate-signoff: a High condition with no re-test fails"
 else
   _fail "validate-signoff: a High condition with no re-test fails" "expected the High check to fail"
 fi
 sed_in_place 's/ — target date: 2026-09-01//' cond.md
-if run_validate cond.md | grep -q "FAIL: every condition names an owner and a target date"; then
+if run_validate cond.md | grep "FAIL: every condition names an owner and a target date" >/dev/null; then
   _pass "validate-signoff: a condition with no target date fails"
 else
   _fail "validate-signoff: a condition with no target date fails" "expected the condition check to fail"
 fi
 cp full.md cond-empty.md
 set_decision cond-empty.md "CONDITIONAL SIGN-OFF"
-if run_validate cond-empty.md | grep -q "FAIL: every condition names an owner and a target date"; then
+if run_validate cond-empty.md | grep "FAIL: every condition names an owner and a target date" >/dev/null; then
   _pass "validate-signoff: a conditional sign-off with only the placeholder condition fails"
 else
   _fail "validate-signoff: a conditional sign-off with only the placeholder condition fails" "expected the condition check to fail"

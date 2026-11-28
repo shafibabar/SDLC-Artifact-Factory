@@ -14,7 +14,7 @@ cd "$SCRATCH_DIR"
 expect() { # expect <label> <file> <exit> [substring that must appear]
   local out code
   out="$("$VALIDATE" "$2" 2>&1)"; code=$?
-  if [ "$code" -eq "$3" ] && { [ -z "${4:-}" ] || echo "$out" | grep -qF -- "$4"; }; then
+  if [ "$code" -eq "$3" ] && { [ -z "${4:-}" ] || echo "$out" | grep -F -- "$4" >/dev/null; }; then
     _pass "validate-system-context: $1"
   else
     _fail "validate-system-context: $1" "exit $code; $(echo "$out" | grep -E 'FAIL|WARN' | head -5)"
