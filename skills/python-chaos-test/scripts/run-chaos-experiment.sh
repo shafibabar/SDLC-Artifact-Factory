@@ -652,7 +652,10 @@ paced = False  # did the probe ever keep its own pace for a whole window after r
 recovery_end = time.monotonic() + exp["recovery"]["within_seconds"]
 while time.monotonic() < recovery_end and not interrupted:
     probe_once("after")
-    recent = [g for p, t, g in samples if p == "after" and t >= time.monotonic() - window]
+    # The window ends at the newest sample, not at "now": probe_once sleeps after
+    # recording, so "now" would always push one sample out of a short window.
+    newest = max((t for p, t, g in samples if p == "after"), default=time.monotonic())
+    recent = [g for p, t, g in samples if p == "after" and t > newest - window]
     if len(recent) >= window * steady["probe_per_second"] * 0.8:
         paced = True
         if sum(recent) / len(recent) >= steady["objective"]:

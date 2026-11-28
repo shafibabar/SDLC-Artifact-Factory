@@ -106,7 +106,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if active and mode == "slow-after":
                 ever_faulted[0] = True
             if mode == "slow-after" and ever_faulted[0] and not active:
-                time.sleep(0.4)  # healthy (well under 800 ms) but too slow for the probe to keep 5 a second
+                time.sleep(0.7)  # healthy (under 800 ms) but too slow for the probe to keep 2 a second over a 2 s window
             if mode == "degrade" and active:
                 self.send_response(200)
                 self.send_header("X-Degraded", "stale")
@@ -174,7 +174,7 @@ import datetime, json, os, sys
 tmp, port = sys.argv[1], sys.argv[2]
 d = os.path.join(tmp, "p")
 steady = {"slo_id": "SLO-01", "sli": "share of window requests answered 200 in under 800 ms", "endpoint": "api", "path": "/v1/window",
-          "good_statuses": [200], "under_ms": 800, "objective": 0.99, "probe_per_second": 5, "window_seconds": 1}
+          "good_statuses": [200], "under_ms": 800, "objective": 0.99, "probe_per_second": 2, "window_seconds": 2}
 base = {"experiment_id": "toxic", "pattern": "graceful-degradation", "hypothesis": "users still get a window", "blast_radius": "the tides proxy",
         "steady_state": steady, "fault_seconds": 2, "abort": {"sli_below": 0.9, "over_seconds": 1, "max_seconds": 10},
         "recovery": {"within_seconds": 10},
