@@ -236,4 +236,4 @@ func TestSmoke_WritesAreRefused(t *testing.T) {
 
 - No: the suite runs in a throwaway kind cluster created for the run, at every product size, and never against a shared or dev environment, because journeys create and delete data and because Compose is a second description of the deployment that the charts do not keep in step.
 - Lean is already the small version: three releases, two journeys, one smoke test, about a minute.
-- Whether a lean product may ever use something lighter than a cluster is a decision for the product owner; until it is made, the cluster stands.
+- A lean product uses the full throwaway cluster, like every other size: the product owner decided on 2026-11-28 that there is no lighter variant.
