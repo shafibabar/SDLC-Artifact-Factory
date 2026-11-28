@@ -77,12 +77,13 @@ Every product size follows all sixteen. **Lean** may have only the indicative ti
 4. **Whenever the workload is described:** the open (arrival-rate) model, and why: a closed model slows its own load when the product slows, so it understates latency.
 5. **Whenever errors or 429 appear:** a 429 within the limiter's design is not unavailability; steady load stays within the per-subject limit and a 429 there fails a separate threshold; in the overload check 429 with `Retry-After` is the correct answer. k6 counts 429 as failed unless the expected statuses are declared.
 6. **Whenever a gate or pipeline is discussed:** a crossed threshold makes k6 exit **99**, which must not be masked; a `check()` alone cannot fail a run; exit 0 alone is not a pass.
-7. **Whenever a result is judged:** dropped iterations or a saturated generator make the run **INVALID**, not passed; **no retries**.
+7. **Whenever a result is judged:** dropped iterations or a saturated generator make the run **INVALID**, not passed, and say why in words: the generator ran out of virtual users (or CPU), so the intended load was never offered and the numbers describe a lighter test; the fix is more virtual users or a bigger generator, then a re-run. **No retries**.
 8. **Whenever timing is discussed:** never on a pull request; indicative nightly in the end-to-end run; verdict before publication.
 9. **What is refused or replaced, by name, with the reason** and the compliant version: staging, production, `k6 run` by hand, a stored token, vegeta or locust, a paid service without approval, a retry, an average, pushing metrics to shared monitoring.
 10. **Whenever the report is mentioned:** it is an artifact the product owner approves, and it says what the run does not prove.
-11. **Only where they arise:** k6 is the one tool, v2.4.0, AGPL-3.0; credentials (none stored; short-lived for the designated environment); what lean changes.
-12. **One line on what was run.** Anything not run (GitHub Actions, a real designated environment, a long soak, large data) is called unverified.
+11. **Whenever credentials or a token are mentioned:** say both halves in words: the indicative tier in the throwaway cluster needs **no stored credential at all**; the designated environment uses a **short-lived token the product owner approves** for the run, never a standing secret.
+12. **Only where they arise:** k6 is the one tool, v2.4.0, AGPL-3.0; what lean changes.
+13. **One line on what was run.** Anything not run (GitHub Actions, a real designated environment, a long soak, large data) is called unverified.
 
 ## Procedure
 
