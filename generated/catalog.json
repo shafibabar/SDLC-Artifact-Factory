@@ -8306,12 +8306,12 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "python-e2e-test",
         "owner": "test-strategist",
         "phase": "quality",
@@ -8319,27 +8319,61 @@
           "python-e2e-test-suite"
         ],
         "related": [
+          "acceptance-criteria",
+          "blue-green-deployment",
+          "cd-pipeline",
+          "ci-pipeline",
+          "disaster-recovery-plan",
+          "distributed-tracing-design",
+          "environment-config",
           "go-e2e-test",
-          "python-fastapi-handler",
+          "helm-chart",
+          "python-contract-test",
           "python-integration-test",
-          "uat-scenario"
+          "python-load-test",
+          "python-makefile",
+          "python-unit-test",
+          "react-e2e-testing",
+          "sdlc-config-management",
+          "test-fixture-design",
+          "test-pyramid",
+          "uat-plan"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/continuous-delivery-humble-farley.md",
+          "research/software-architecture/python-backend-development-halstead.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/github-actions-e2e-official-docs.md",
+          "research/testing/helm-official-docs.md",
+          "research/testing/httpx-guards-and-polling-official-docs.md",
+          "research/testing/kind-official-docs.md",
+          "research/testing/kubectl-official-docs.md",
+          "research/testing/opentelemetry-go-trace-context-official-docs.md",
+          "research/testing/opentelemetry-python-official-docs.md",
+          "research/testing/pytest-asyncio-official-docs.md",
+          "research/testing/pytest-e2e-mechanics-official-docs.md",
+          "research/testing/pytest-official-docs.md",
+          "research/testing/python-testing-with-pytest-okken.md",
+          "research/testing/respx-httpx-official-docs.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
-          "aiokafka",
           "ci",
           "e2e",
           "end-to-end",
-          "flakiness",
           "httpx",
+          "journey",
           "kind",
           "pytest",
           "python",
           "quality",
-          "quarantine"
+          "quarantine",
+          "smoke",
+          "trace-correlation"
         ],
-        "version": "1.1.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-31",
@@ -11339,8 +11373,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1287,
-    "edges_skill_sources": 383,
+    "edges_skill_related": 1302,
+    "edges_skill_sources": 400,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11352,20 +11386,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 111,
+    "research_files_cited": 114,
     "skills_with_assets": 6,
     "skills_with_contract_test": 124,
     "skills_with_domain": 190,
     "skills_with_evals": 65,
-    "skills_with_examples": 65,
+    "skills_with_examples": 66,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 64,
-    "skills_with_scripts": 58,
-    "skills_with_sources": 66,
+    "skills_with_resources": 65,
+    "skills_with_scripts": 59,
+    "skills_with_sources": 67,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 63
+    "skills_with_templates": 64
   },
   "edges": {
     "agent_produces": [
@@ -16592,11 +16626,43 @@
         "skill": "python-domain-model"
       },
       {
+        "related": "acceptance-criteria",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "blue-green-deployment",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "cd-pipeline",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "ci-pipeline",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "disaster-recovery-plan",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "distributed-tracing-design",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "environment-config",
+        "skill": "python-e2e-test"
+      },
+      {
         "related": "go-e2e-test",
         "skill": "python-e2e-test"
       },
       {
-        "related": "python-fastapi-handler",
+        "related": "helm-chart",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "python-contract-test",
         "skill": "python-e2e-test"
       },
       {
@@ -16604,7 +16670,35 @@
         "skill": "python-e2e-test"
       },
       {
-        "related": "uat-scenario",
+        "related": "python-load-test",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "python-makefile",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "python-unit-test",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "react-e2e-testing",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "sdlc-config-management",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "test-fixture-design",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "test-pyramid",
+        "skill": "python-e2e-test"
+      },
+      {
+        "related": "uat-plan",
         "skill": "python-e2e-test"
       },
       {
@@ -19400,6 +19494,74 @@
       {
         "skill": "python-contract-test",
         "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/devops-and-delivery/continuous-delivery-humble-farley.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/software-architecture/python-backend-development-halstead.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/github-actions-e2e-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/helm-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/httpx-guards-and-polling-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/kind-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/kubectl-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/opentelemetry-go-trace-context-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/opentelemetry-python-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/pytest-asyncio-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/pytest-e2e-mechanics-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/pytest-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/python-testing-with-pytest-okken.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/respx-httpx-official-docs.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "python-e2e-test",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "python-integration-test",
