@@ -142,14 +142,14 @@ Create and change them with Write and Edit so the manifest registers them; after
 - Accessibility checks target **WCAG 2.2**. (`test-pyramid`)
 - E2E journeys with **flakiness mitigation** (dynamic waits, deterministic seeding — never arbitrary sleeps). (`go-e2e-test`; Python: `python-e2e-test`)
 - **Test-trace correlation**: inject a test id so failures trace through the backend's OpenTelemetry spans.
-- **Performance gated** against regression (benchstat baselines); **load** is an indicative nightly check plus a verdict on the stated targets in a designated performance environment (`go-load-test`); **chaos** validates the resilience patterns already built (Circuit Breaker, Retry/Backoff, DLQ).
+- **Performance gated** against regression (benchstat baselines); **load** is an indicative nightly check plus a verdict on the stated targets in a designated performance environment (`go-load-test`); **chaos** proves each resilience pattern the product implements (Circuit Breaker, Retry/Backoff, timeout, bulkhead, degradation) by its defined behaviour under an injected fault, and names a missing pattern as missing (`go-chaos-test`).
 
 ### 8. Strict, actionable assertions
 - Failures state **expected vs actual** with context, so a red test is diagnosable without a debugger.
 
 ### 9. Frugal tooling
 - Contracts: the Pact Broker is self-hosted and open source; PactFlow or any paid service only with the user's approval. (`go-contract-test`)
-- Toxiproxy/app-level over chaos platforms; mutation periodically not per-PR; k6 only for load; never against shared staging, production or any undesignated system without the user's signed statement of exactly where and with what impact (`go-load-test`). Add heavier tooling only when a real problem justifies it (and record an ADR).
+- App-level and Toxiproxy faults first; Chaos Mesh only inside the run's throwaway cluster; mutation periodically not per-PR; k6 only for load; never load or chaos against shared staging, production or any undesignated system without the user's signed statement of exactly where and with what impact (`go-load-test`, `go-chaos-test`). Add heavier tooling only when a real problem justifies it (and record an ADR).
 
 ---
 
@@ -241,7 +241,7 @@ Escalate to the user — do not decide unilaterally — when:
 
 - An acceptance criterion is untestable as written (ambiguous, unmeasurable) — it goes back to the requirements-analyst with a concrete rewrite proposal, and the user arbitrates scope
 - A measured coverage or mutation result is above 90% and under 100% (ask for waiver review), a gate fails with no waiver possible or would need lowering to ship (gates are never lowered), a coverage exclusion needs approval, or a gate cannot be measured (a Go "no result" blocks the build; propose the code change or the exception)
-- Heavier tooling than the frugal default appears justified (a paid contract service such as PactFlow, chaos platform, paid load infrastructure) — budget decision, needs an ADR and the user's approval
+- Heavier tooling than the frugal default appears justified (a paid contract service such as PactFlow, a paid chaos platform, paid load infrastructure) — budget decision, needs an ADR and the user's approval
 - Chaos or load testing reveals an SLO cannot be met by the current architecture — the fix is upstream, not a relaxed test
 - A flaky test cannot be stabilised and quarantining it would hide a real defect
 
