@@ -229,7 +229,7 @@ for path in files + workflows + others:
         if re.search(r"--threshold-(efficacy|mcover)|--test-cpu", line):
             fail(where, "Gremlins thresholds and --test-cpu are not used (CLI thresholds are ignored by v0.6.0; --test-cpu makes every mutant KILLED)")
         if re.search(r"mutation|gremlins|mutant|efficacy", low) and re.search(r"\b\d{1,3}(\.\d+)?\s*%", line):
-            fail(where, "a percentage on a mutation line: there is no percentage target; every mutant is killed or recorded")
+            fail(where, "a percentage on a mutation line: the target is 100%, with no lower percentage; every mutant is killed or recorded")
         if ("mutation" in low or "gremlins" in low) and re.search(r"\|\|\s*true|;\s*true\s*$", line):
             fail(where, "the exit status is masked")
 
