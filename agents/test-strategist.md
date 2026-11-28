@@ -142,14 +142,14 @@ Create and change them with Write and Edit so the manifest registers them; after
 - Accessibility checks target **WCAG 2.2**. (`test-pyramid`)
 - E2E journeys with **flakiness mitigation** (dynamic waits, deterministic seeding — never arbitrary sleeps). (`go-e2e-test`; Python: `python-e2e-test`)
 - **Test-trace correlation**: inject a test id so failures trace through the backend's OpenTelemetry spans.
-- **Performance gated** against regression (benchstat baselines); **load** verifies SLOs under stress; **chaos** validates the resilience patterns already built (Circuit Breaker, Retry/Backoff, DLQ).
+- **Performance gated** against regression (benchstat baselines); **load** is an indicative nightly check plus a verdict on the stated targets in a designated performance environment (`go-load-test`); **chaos** validates the resilience patterns already built (Circuit Breaker, Retry/Backoff, DLQ).
 
 ### 8. Strict, actionable assertions
 - Failures state **expected vs actual** with context, so a red test is diagnosable without a debugger.
 
 ### 9. Frugal tooling
 - Contracts: the Pact Broker is self-hosted and open source; PactFlow or any paid service only with the user's approval. (`go-contract-test`)
-- Toxiproxy/app-level over chaos platforms; mutation periodically not per-PR; k6/vegeta for load. Add heavier tooling only when a real problem justifies it (and record an ADR).
+- Toxiproxy/app-level over chaos platforms; mutation periodically not per-PR; k6 only for load; never against shared staging, production or any undesignated system without the user's signed statement of exactly where and with what impact (`go-load-test`). Add heavier tooling only when a real problem justifies it (and record an ADR).
 
 ---
 
