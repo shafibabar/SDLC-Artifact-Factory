@@ -17,7 +17,7 @@ Work moved to another machine and another Claude account. Everything needed is i
 
 ## Status
 
-Done and merged into the wave branch (20 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **11 of 24 skills**:
+Done and merged into the wave branch (20 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **12 of 24 skills**:
 
 | Skill | Eval runs | Eval cost | Final |
 |---|---|---|---|
@@ -31,8 +31,9 @@ Done and merged into the wave branch (20 sub-issues, board status Done): setup (
 | python-unit-test | 2 | $6.24 | pass, +0.22 |
 | go-integration-test | 4 | $13.38 | pass, +0.56 |
 | python-integration-test | 2 | $6.98 | pass, +0.67 |
-| go-contract-test | 3 | $8.37 | pass, +1.00 |
-| **Total** | | **$93.24** | |
+| go-contract-test | 4 | $11.12 | pass, +0.89 (3.1.0, after the sign-in addition #1514) |
+| python-contract-test | 2 | $5.82 | pass, +1.00 |
+| **Total** | | **$101.81** | |
 
 Earlier chat and issue totals of $73.99, $87.90 and $98.37 were addition errors; $84.87 is the sum of the saved run results (which are gitignored and stay on the old machine).
 
@@ -40,7 +41,8 @@ Also done (2026-11-28): **#1510**, every script and test runs on stock macOS as 
 
 Remaining:
 
-1. **#1490** `python-contract-test` next: it must follow the contract decisions of 2026-11-28 in D048 (Pact for every direct service-to-service call, daily run, deployment check), which `go-contract-test` (#1489, done) already carries.
+0. **Working procedure per skill (product owner, 2026-11-28):** discovery of the current state by one subagent, research by a second only if required, then rebuild, separately authored evals, eval runs, CI on both systems, merge into the wave branch. The product owner has authorised continuing through the remaining skills in sequence under it.
+1. **#1491** `go-e2e-test` next, then #1492–#1502 in order. `python-contract-test` (#1490) is done; three questions from it await the product owner (the test-only token wrapper, the separate `pact_tests/` folder, `python-openapi-codegen`'s check level) and are listed on #1490. **#1512** (grep -q under pipefail) is unmerged pending the product owner's choice; its one failed re-run (`beta-program-design`) is a wording gap in that Wave 1 skill.
 2. **#1507** Python coverage gate lists test-support code (decided, option B); re-evaluate `python-unit-test`. Separate branch.
 3. **#1490–#1502** the other 13 skills: python-contract, go/python e2e, load, chaos, mutation, performance, react-component, react-e2e.
 4. **#1503** close-out: follow-ups recorded on #1450 and #1503 (including re-running evals for `test-pyramid`, `go-unit-test`, `mock-generation`, edited after they passed), then a PR from the wave branch to `main` for the product owner's review. Also for #1503: align `test-pyramid`, `ci-pipeline` and `cd-pipeline` with the daily Pact run and the `can-i-deploy` deployment check.

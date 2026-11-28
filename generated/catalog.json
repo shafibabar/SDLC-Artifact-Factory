@@ -5635,7 +5635,7 @@
           "pact-broker",
           "quality"
         ],
-        "version": "3.0.0"
+        "version": "3.1.0"
       },
       {
         "created": "2026-06-25",
@@ -8125,40 +8125,73 @@
         "dir": "skills/python-contract-test",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "python-contract-test",
         "owner": "test-strategist",
-        "phase": "quality",
+        "phase": "implement",
         "produces": [
           "python-contract-test"
         ],
         "related": [
           "api-contract-design",
+          "cd-pipeline",
+          "ci-pipeline",
+          "context-map-patterns",
           "event-schema-design",
           "go-contract-test",
-          "python-openapi-codegen"
+          "grpc-contract-design",
+          "integration-design",
+          "mock-generation",
+          "python-integration-test",
+          "python-makefile",
+          "python-openapi-codegen",
+          "python-project-structure",
+          "python-unit-test",
+          "react-api-client",
+          "react-component-testing",
+          "security-implementation",
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/python-backend-development-halstead.md",
+          "research/testing/contract-testing-in-action-cruz-prescott.md",
+          "research/testing/github-actions-official-docs.md",
+          "research/testing/jsonschema-official-docs.md",
+          "research/testing/oasdiff-official-docs.md",
+          "research/testing/openapi-conformance-python-official-docs.md",
+          "research/testing/pact-python-official-docs.md",
+          "research/testing/pytest-official-docs.md",
+          "research/testing/python-testing-with-pytest-okken.md",
+          "research/testing/respx-httpx-official-docs.md",
+          "research/testing/testing-web-apis-winteringham.md"
+        ],
         "status": "stable",
         "tags": [
+          "can-i-deploy",
           "consumer-driven",
           "contract-test",
           "event-schema",
-          "no-broker",
+          "implement",
+          "oasdiff",
           "openapi",
-          "pytest",
+          "openapi-core",
+          "pact",
+          "pact-broker",
+          "pact-python",
           "python",
           "quality",
-          "schema-conformance"
+          "respx"
         ],
-        "version": "1.1.0"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-31",
@@ -8847,7 +8880,7 @@
           "python",
           "starlette"
         ],
-        "version": "1.0.0"
+        "version": "1.0.1"
       },
       {
         "created": "2026-07-31",
@@ -11283,8 +11316,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1266,
-    "edges_skill_sources": 357,
+    "edges_skill_related": 1281,
+    "edges_skill_sources": 369,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11296,20 +11329,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 100,
+    "research_files_cited": 105,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 126,
+    "skills_with_contract_test": 125,
     "skills_with_domain": 190,
-    "skills_with_evals": 63,
-    "skills_with_examples": 63,
+    "skills_with_evals": 64,
+    "skills_with_examples": 64,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 62,
-    "skills_with_scripts": 56,
-    "skills_with_sources": 64,
+    "skills_with_resources": 63,
+    "skills_with_scripts": 57,
+    "skills_with_sources": 65,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 61
+    "skills_with_templates": 62
   },
   "edges": {
     "agent_produces": [
@@ -16416,6 +16449,18 @@
         "skill": "python-contract-test"
       },
       {
+        "related": "cd-pipeline",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "ci-pipeline",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "context-map-patterns",
+        "skill": "python-contract-test"
+      },
+      {
         "related": "event-schema-design",
         "skill": "python-contract-test"
       },
@@ -16424,7 +16469,55 @@
         "skill": "python-contract-test"
       },
       {
+        "related": "grpc-contract-design",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "integration-design",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "mock-generation",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "python-integration-test",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "python-makefile",
+        "skill": "python-contract-test"
+      },
+      {
         "related": "python-openapi-codegen",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "python-project-structure",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "python-unit-test",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "react-api-client",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "react-component-testing",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "security-implementation",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "test-fixture-design",
+        "skill": "python-contract-test"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "python-contract-test"
       },
       {
@@ -19156,6 +19249,54 @@
       {
         "skill": "pricing-and-packaging",
         "source": "research/product-strategy-and-gtm/the-mom-test-fitzpatrick.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/software-architecture/python-backend-development-halstead.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/contract-testing-in-action-cruz-prescott.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/github-actions-official-docs.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/jsonschema-official-docs.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/oasdiff-official-docs.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/openapi-conformance-python-official-docs.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/pact-python-official-docs.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/pytest-official-docs.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/python-testing-with-pytest-okken.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/respx-httpx-official-docs.md"
+      },
+      {
+        "skill": "python-contract-test",
+        "source": "research/testing/testing-web-apis-winteringham.md"
       },
       {
         "skill": "python-integration-test",
