@@ -13,7 +13,7 @@ description: >
   python mutation report; or "100% coverage, are we done", "is 60% mutation
   score enough", "only mutate the domain", "run mutation on every pull
   request". Produces mutation-report.
-version: 2.0.0
+version: 2.0.1
 phase: quality
 owner: test-strategist
 created: 2026-07-31
@@ -76,11 +76,11 @@ Verdicts: PASS (exit 0), WAIVER-NEEDED (3), FAIL (1), INVALID (2). Detail: `./re
 
 1. **The rule:** the target is 100%: every planted mutant is killed by a test or recorded individually with the reason it cannot be; 60%, or any lower target, is rejected.
 2. **The formula and who judges:** (killed + individually recorded) / all planted, as counts. Write the command out: the verdict reads `mutmut results --all true` (plain `--all` is refused by mutmut 3.8.1) plus each survivor's `mutmut show` diff, and fails on any uncaught mutant without a record line. `mutmut run` exits 0 with survivors, so its exit code is not the verdict, and neither are the summary line, `export-cicd-stats` or the badge (it counts timeouts as killed).
-3. **Waiver, in these words:** "more than 90% (not 'between 90%'): the product owner may waive after reviewing each uncaught mutant, `no tests` ones included, and recording comments; the target stays 100%; at 90% or below, no waiver." Given counts, work out the result now and the result once every checkable mutant is recorded, and say which side of 90% each falls.
+3. **Waiver, in these words:** "more than 90% (not 'between 90%'): the product owner may waive after reviewing each uncaught mutant, `no tests` ones included, and recording comments; the target stays 100%; at 90% or below, no waiver: the remaining mutants are killed or recorded before release." Given counts, work out the result now and the result once every checkable mutant is recorded, and say which side of 90% each falls.
 4. **Timed-out and type-checker-rejected mutants** count only once each is checked and recorded with a one-line reason; never automatically.
 5. **When it runs:** the full release run blocks and finishes before publication (the publish job needs it, never `release: published`); scheduled runs report only, may cover changed functions only, monthly or more often, never less.
 6. **Scope:** all product code (`source_paths = ["src/<pkg>"]`); anything left out is listed with a reason for the product owner's approval; generated code and test support under `tests/` are left out and listed.
-7. **Tool and its settings:** mutmut pinned to an exact version (`mutmut==3.8.1`, locked in `uv.lock`), never an unpinned `pip install mutmut`. Whenever `[tool.mutmut]` is shown, name the real keys: `source_paths` and `pytest_add_cli_args = ["--no-cov"]`; `paths_to_mutate` and `tests_dir` are deprecated (a string crashed the run), and `runner` and `backup` are silently ignored.
+7. **Tool and its settings:** mutmut pinned to an exact version (`mutmut==3.8.1`, locked in `uv.lock`), never an unpinned `pip install mutmut`. Whenever coverage flags or a failing mutmut run come up, say both halves: the coverage flags come out of `addopts` (the coverage gate runs its own command, so the floor is never lowered), and `pytest_add_cli_args = ["--no-cov"]` turns coverage off for mutmut. Whenever `[tool.mutmut]` is shown, name the real keys: `source_paths` and `pytest_add_cli_args = ["--no-cov"]`; `paths_to_mutate` and `tests_dir` are deprecated (a string crashed the run), and `runner` and `backup` are silently ignored.
 8. **The report** the product owner approves, with every recorded mutant and any waiver.
 9. **For a survivor:** whether an input tells it apart (then the parametrize row), or the proof it cannot (then the record line, never a pragma).
 10. **One line on what was run**; anything not run is called unverified.
