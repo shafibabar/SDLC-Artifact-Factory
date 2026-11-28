@@ -17,7 +17,7 @@ expect() { # expect <label> <exit> <substring> <file>
   local label="$1" want="$2" sub="$3" file="$4"
   local out code
   out="$("$VALIDATE" "$file" 2>&1)"; code=$?
-  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -qF -- "$sub"; }; then
+  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -F -- "$sub" >/dev/null; }; then
     _pass "validate-example-map: $label"
   else
     _fail "validate-example-map: $label" "exit $code; $(echo "$out" | grep -E 'FAIL|WARN' | head -5)"

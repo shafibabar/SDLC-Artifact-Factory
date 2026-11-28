@@ -15,7 +15,7 @@ expect() { # expect <label> <exit> <substring> <file>
   local label="$1" want="$2" sub="$3" file="$4"
   local out code
   out="$("$VALIDATE" "$file" 2>&1)"; code=$?
-  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -qF -- "$sub"; }; then
+  if [ "$code" -eq "$want" ] && { [ -z "$sub" ] || echo "$out" | grep -F -- "$sub" >/dev/null; }; then
     _pass "validate-architecture-evaluation: $label"
   else
     _fail "validate-architecture-evaluation: $label" "exit $code; $(echo "$out" | grep -E 'FAIL|WARN' | head -5)"
@@ -135,7 +135,7 @@ expect "a complete standard record passes" 0 "0 check(s) failed" good.md
 expect "a lean record with no high scenario passes" 0 "0 check(s) failed" lean-none.md
 expect "missing file is a usage error" 2 "" nosuch.md
 out="$("$VALIDATE" 2>&1)"; code=$?
-if [ "$code" -eq 2 ] && echo "$out" | grep -qF "Usage"; then
+if [ "$code" -eq 2 ] && echo "$out" | grep -F "Usage" >/dev/null; then
   _pass "validate-architecture-evaluation: no arguments is a usage error"
 else
   _fail "validate-architecture-evaluation: no arguments is a usage error" "exit $code"

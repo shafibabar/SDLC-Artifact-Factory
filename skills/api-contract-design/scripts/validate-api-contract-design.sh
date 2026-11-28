@@ -42,7 +42,7 @@ _check() {
 FRONTMATTER="$(sed -n '/^---$/,/^---$/p' "$FILE" | sed '1d;$d')"
 
 for field in name product service version phase created owner summary audience openapi-spec; do
-  if printf '%s\n' "$FRONTMATTER" | grep -qE "^${field}:"; then
+  if printf '%s\n' "$FRONTMATTER" | grep -E "^${field}:" >/dev/null; then
     _check "frontmatter has '$field'" 1
   else
     _check "frontmatter has '$field'" 0
@@ -66,7 +66,7 @@ ENDPOINTS_SECTION="$(awk '
 ' "$FILE")"
 ROW_COUNT="$(printf '%s\n' "$ENDPOINTS_SECTION" | grep -cE '^\|')"
 
-if [ "$ROW_COUNT" -gt 2 ] && ! printf '%s\n' "$ENDPOINTS_SECTION" | grep -qF '[GET/POST/PUT/PATCH/DELETE]'; then
+if [ "$ROW_COUNT" -gt 2 ] && ! printf '%s\n' "$ENDPOINTS_SECTION" | grep -F '[GET/POST/PUT/PATCH/DELETE]' >/dev/null; then
   _check "'## Endpoints' table has at least one real data row (not the unfilled placeholder)" 1
 else
   _check "'## Endpoints' table has at least one real data row (not the unfilled placeholder)" 0

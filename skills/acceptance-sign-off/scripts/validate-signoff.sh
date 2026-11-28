@@ -53,13 +53,13 @@ _block() {
 CONTENT="$(cat "$FILE")"
 
 # 1. Checklist present and populated.
-if printf '%s\n' "$CONTENT" | grep -qF '## Sign-Off Criteria Checklist'; then
+if printf '%s\n' "$CONTENT" | grep -F '## Sign-Off Criteria Checklist' >/dev/null; then
   _check "Sign-Off Criteria Checklist section present" 1
 else
   _check "Sign-Off Criteria Checklist section present" 0
 fi
 
-if _section "Sign-Off Criteria Checklist" | grep -qE '^\s*- \[[ xX]\]'; then
+if _section "Sign-Off Criteria Checklist" | grep -E '^\s*- \[[ xX]\]' >/dev/null; then
   _check "checklist has at least one item" 1
 else
   _check "checklist has at least one item" 0
@@ -69,21 +69,21 @@ fi
 EXCEPTION="$(_section "Exception: solo operator")"
 EXCEPTION_FILLED=0
 if [ -n "$EXCEPTION" ] \
-   && printf '%s\n' "$EXCEPTION" | grep -qE 'Independence level \(ISTQB\): *none' \
-   && ! printf '%s\n' "$EXCEPTION" | grep -qF '['; then
+   && printf '%s\n' "$EXCEPTION" | grep -E 'Independence level \(ISTQB\): *none' >/dev/null \
+   && ! printf '%s\n' "$EXCEPTION" | grep -F '[' >/dev/null; then
   EXCEPTION_FILLED=1
 fi
 
 AUTHORITY="$(_section "Sign-Off Authority")"
 PO_OK=0
-if printf '%s\n' "$AUTHORITY" | grep -F '(product owner)' | grep -qvF '[Name]'; then
+if printf '%s\n' "$AUTHORITY" | grep -F '(product owner)' | grep -vF '[Name]' >/dev/null; then
   PO_OK=1
 fi
 [ "$EXCEPTION_FILLED" = "1" ] && PO_OK=1
 _check "product owner named as sign-off authority (not the unfilled placeholder)" "$PO_OK"
 
 REP_OK=0
-if printf '%s\n' "$AUTHORITY" | grep -F '(customer representative)' | grep -qvF '[Name, role, company]'; then
+if printf '%s\n' "$AUTHORITY" | grep -F '(customer representative)' | grep -vF '[Name, role, company]' >/dev/null; then
   REP_OK=1
 fi
 [ "$EXCEPTION_FILLED" = "1" ] && REP_OK=1
@@ -100,7 +100,7 @@ fi
 # 4. Defect rule, hard edge: no sign-off while the Critical line is unchecked.
 CRITICAL_OK=1
 if [ "$DECISION" = "FULL SIGN-OFF" ] || [ "$DECISION" = "CONDITIONAL SIGN-OFF" ]; then
-  if _section "Sign-Off Criteria Checklist" | grep -qE '^\s*- \[ \] Zero open Critical'; then
+  if _section "Sign-Off Criteria Checklist" | grep -E '^\s*- \[ \] Zero open Critical' >/dev/null; then
     CRITICAL_OK=0
   fi
 fi
@@ -116,13 +116,13 @@ if [ "$DECISION" = "CONDITIONAL SIGN-OFF" ]; then
     HIGH_OK=0
   else
     while IFS= read -r line; do
-      if ! printf '%s' "$line" | grep -qi 'owner:' \
-         || ! printf '%s' "$line" | grep -qi 'target date:' \
-         || printf '%s' "$line" | grep -qF '[...]'; then
+      if ! printf '%s' "$line" | grep -i 'owner:' >/dev/null \
+         || ! printf '%s' "$line" | grep -i 'target date:' >/dev/null \
+         || printf '%s' "$line" | grep -F '[...]' >/dev/null; then
         COND_OK=0
       fi
-      if printf '%s' "$line" | grep -q 'High'; then
-        if ! printf '%s' "$line" | grep -qi 'workaround:' || ! printf '%s' "$line" | grep -qi 're-test:'; then
+      if printf '%s' "$line" | grep 'High' >/dev/null; then
+        if ! printf '%s' "$line" | grep -i 'workaround:' >/dev/null || ! printf '%s' "$line" | grep -i 're-test:' >/dev/null; then
           HIGH_OK=0
         fi
       fi
@@ -134,14 +134,14 @@ _check "every High condition names a workaround and a re-test (conditional only)
 
 # 6. Residual risk and rollout action stated.
 RESIDUAL="$(_section "Residual Risk" | grep -v '^\s*$')"
-if [ -n "$RESIDUAL" ] && ! printf '%s\n' "$RESIDUAL" | grep -qF '[What is knowingly accepted'; then
+if [ -n "$RESIDUAL" ] && ! printf '%s\n' "$RESIDUAL" | grep -F '[What is knowingly accepted' >/dev/null; then
   _check "Residual Risk is stated (not the unfilled placeholder)" 1
 else
   _check "Residual Risk is stated (not the unfilled placeholder)" 0
 fi
 
 ROLLOUT="$(_section "Rollout Action" | grep -v '^\s*$')"
-if [ -n "$ROLLOUT" ] && ! printf '%s\n' "$ROLLOUT" | grep -qF '[canary-deployment widen/hold/revert instruction'; then
+if [ -n "$ROLLOUT" ] && ! printf '%s\n' "$ROLLOUT" | grep -F '[canary-deployment widen/hold/revert instruction' >/dev/null; then
   _check "Rollout Action is stated (not the unfilled placeholder)" 1
 else
   _check "Rollout Action is stated (not the unfilled placeholder)" 0

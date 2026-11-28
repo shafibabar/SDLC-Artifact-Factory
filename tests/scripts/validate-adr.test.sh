@@ -70,13 +70,13 @@ else
   _fail "validate-adr: a structurally incomplete ADR exits 1" "got exit $EXIT_CODE"
 fi
 
-if echo "$OUTPUT" | grep -q "4 check(s) failed"; then
+if echo "$OUTPUT" | grep "4 check(s) failed" >/dev/null; then
   _pass "validate-adr: reports the correct count of failed checks (4)"
 else
   _fail "validate-adr: reports the correct count of failed checks (4)" "expected '4 check(s) failed' in output"
 fi
 
-if echo "$OUTPUT" | grep -q "FAIL: frontmatter has 'deciders'" && echo "$OUTPUT" | grep -q "FAIL: Rationale has a \*\*Trade-off:\*\* line" && echo "$OUTPUT" | grep -q "FAIL: Consequences has '### Negative / Trade-offs'" && echo "$OUTPUT" | grep -q "FAIL: Related ADRs section present"; then
+if echo "$OUTPUT" | grep "FAIL: frontmatter has 'deciders'" >/dev/null && echo "$OUTPUT" | grep "FAIL: Rationale has a \*\*Trade-off:\*\* line" >/dev/null && echo "$OUTPUT" | grep "FAIL: Consequences has '### Negative / Trade-offs'" >/dev/null && echo "$OUTPUT" | grep "FAIL: Related ADRs section present" >/dev/null; then
   _pass "validate-adr: names each specific failing check"
 else
   _fail "validate-adr: names each specific failing check" "one or more expected FAIL lines missing"

@@ -23,7 +23,7 @@ assert_exit1() {
 assert_output_contains() {
   local label="$1" pattern="$2"; shift 2
   local out; out="$(bash "$@" 2>&1)"
-  if echo "$out" | grep -q "$pattern"; then pass "$label"; else fail "$label — expected '$pattern' in output"; fi
+  if echo "$out" | grep "$pattern" >/dev/null; then pass "$label"; else fail "$label — expected '$pattern' in output"; fi
 }
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -151,17 +151,17 @@ make_skill "$D" "$GOOD_FM" "## Purpose
 
 Body content."
 out="$(SKILL_EVALS_DIR="$EV" bash "$SCRIPT" "$D/SKILL.md" 2>&1)"; rc=$?
-if echo "$out" | grep -q "WARN: rebuilt skill (has evals) has no ## Gotchas"; then pass "warns when a skill with evals has no ## Gotchas"; else fail "warns when a skill with evals has no ## Gotchas"; fi
+if echo "$out" | grep "WARN: rebuilt skill (has evals) has no ## Gotchas" >/dev/null; then pass "warns when a skill with evals has no ## Gotchas"; else fail "warns when a skill with evals has no ## Gotchas"; fi
 if [[ $rc -eq 0 ]]; then pass "the Gotchas warning does not fail the check"; else fail "the Gotchas warning does not fail the check"; fi
 make_skill "$D" "$GOOD_FM" "## Gotchas
 
 - **A trap.** Why. Instead."
 out="$(SKILL_EVALS_DIR="$EV" bash "$SCRIPT" "$D/SKILL.md" 2>&1)"
-if echo "$out" | grep -q "carries a ## Gotchas section"; then pass "passes when a skill with evals has ## Gotchas"; else fail "passes when a skill with evals has ## Gotchas"; fi
+if echo "$out" | grep "carries a ## Gotchas section" >/dev/null; then pass "passes when a skill with evals has ## Gotchas"; else fail "passes when a skill with evals has ## Gotchas"; fi
 D2="$SCRATCH/no-evals-skill"
 make_skill "$D2" "$GOOD_FM" "Body content."
 out="$(SKILL_EVALS_DIR="$EV" bash "$SCRIPT" "$D2/SKILL.md" 2>&1)"
-if echo "$out" | grep -q "Gotchas"; then fail "skips the Gotchas check for a skill with no evals"; else pass "skips the Gotchas check for a skill with no evals"; fi
+if echo "$out" | grep "Gotchas" >/dev/null; then fail "skips the Gotchas check for a skill with no evals"; else pass "skips the Gotchas check for a skill with no evals"; fi
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
 rm -rf "$SCRATCH"

@@ -155,7 +155,7 @@ smoke_test_script "tdd-gate" '{"cwd":"'"$P"'","tool_input":{"file_path":"src/a/P
 # a payload too large for a command-line argument is still checked
 BIG="$SCRATCH_DIR/big.json"
 python3 -c 'import json,sys; print(json.dumps({"tool_input":{"file_path":sys.argv[1],"content":"x = 1\n"*100000}}))' "$P/src/shop/big.py" > "$BIG"
-if "$REPO_ROOT/scripts/tdd-gate.sh" < "$BIG" | grep -q '"permissionDecision": "deny"'; then
+if "$REPO_ROOT/scripts/tdd-gate.sh" < "$BIG" | grep '"permissionDecision": "deny"' >/dev/null; then
   _pass "scripts/tdd-gate (large payload denied)"
 else
   _fail "scripts/tdd-gate" "large payload was not denied"

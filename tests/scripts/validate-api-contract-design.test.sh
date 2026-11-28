@@ -23,7 +23,7 @@ else
   _fail "validate-api-contract-design: a fresh scaffold with only the placeholder row fails" "got exit $EXIT_CODE"
 fi
 
-if echo "$OUTPUT" | grep -q "1 check(s) failed" && echo "$OUTPUT" | grep -q "PASS: frontmatter has 'openapi-spec'"; then
+if echo "$OUTPUT" | grep "1 check(s) failed" >/dev/null && echo "$OUTPUT" | grep "PASS: frontmatter has 'openapi-spec'" >/dev/null; then
   _pass "validate-api-contract-design: fails exactly the placeholder-row check, not the correct frontmatter"
 else
   _fail "validate-api-contract-design: fails exactly the placeholder-row check, not the correct frontmatter" "expected 1 failure and passing frontmatter checks"
@@ -42,7 +42,7 @@ fi
 # specific check without regressing the others.
 sed_in_place '/## Consumer Registry/,$d' "$FRESH"
 OUTPUT2="$("$VALIDATE" "$FRESH" 2>&1)"
-if echo "$OUTPUT2" | grep -q "FAIL: '## Consumer Registry' section present" && echo "$OUTPUT2" | grep -q "1 check(s) failed"; then
+if echo "$OUTPUT2" | grep "FAIL: '## Consumer Registry' section present" >/dev/null && echo "$OUTPUT2" | grep "1 check(s) failed" >/dev/null; then
   _pass "validate-api-contract-design: catches a missing Output Format section without false-failing the filled Endpoints table"
 else
   _fail "validate-api-contract-design: catches a missing Output Format section without false-failing the filled Endpoints table" "expected exactly 1 failure naming the missing section"

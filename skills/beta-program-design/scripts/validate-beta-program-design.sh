@@ -50,26 +50,26 @@ _field() {
 
 # A field is filled when it has text and no unfilled "[...]" placeholder.
 _filled() {
-  [ -n "$(printf '%s' "$1" | tr -d '[:space:]')" ] && ! printf '%s' "$1" | grep -q '\['
+  [ -n "$(printf '%s' "$1" | tr -d '[:space:]')" ] && ! printf '%s' "$1" | grep '\[' >/dev/null
 }
 
 # Stage: exactly one of the four values, not the placeholder listing all four.
 STAGE="$(_section "Stage" | awk 'NF {print; exit}')"
-printf '%s' "$STAGE" | grep -qE '^(Closed alpha|Closed beta|Open beta|GA)$'
+printf '%s' "$STAGE" | grep -E '^(Closed alpha|Closed beta|Open beta|GA)$' >/dev/null
 _check "Stage is a real value, not the unfilled placeholder" "$([ $? -eq 0 ] && echo 1 || echo 0)"
 
 # Participants: real content, neither the summary nor the table-row placeholder.
 PARTICIPANTS="$(_section "Participants")"
 if [ -n "$(printf '%s' "$PARTICIPANTS" | tr -d '[:space:]')" ] \
-   && ! printf '%s' "$PARTICIPANTS" | grep -qF '[Names, companies' \
-   && ! printf '%s' "$PARTICIPANTS" | grep -qF '[name, company]'; then
+   && ! printf '%s' "$PARTICIPANTS" | grep -F '[Names, companies' >/dev/null \
+   && ! printf '%s' "$PARTICIPANTS" | grep -F '[name, company]' >/dev/null; then
   _check "Participants section is filled in (not the unfilled placeholder)" 1
 else
   _check "Participants section is filled in (not the unfilled placeholder)" 0
 fi
 
 # Data handling: the no-relaxation statement, and the product's own frameworks.
-if _section "Data Handling Statement" | grep -q '^No control is relaxed'; then
+if _section "Data Handling Statement" | grep '^No control is relaxed' >/dev/null; then
   _check "Data Handling Statement says no control is relaxed for the beta" 1
 else
   _check "Data Handling Statement says no control is relaxed for the beta" 0
@@ -94,12 +94,12 @@ done
 
 # Decision: one valid value; a Pivot names its suspect hypothesis.
 DECISION="$(_field "Graduation Record" "Decision: ")"
-printf '%s' "$DECISION" | grep -qE '^(Pending|Advance|Extend|Remediate|Pivot)$'
+printf '%s' "$DECISION" | grep -E '^(Pending|Advance|Extend|Remediate|Pivot)$' >/dev/null
 _check "Graduation Record decision is Pending, Advance, Extend, Remediate or Pivot" "$([ $? -eq 0 ] && echo 1 || echo 0)"
 
 HYPOTHESIS="$(_field "Graduation Record" "Suspect hypothesis: ")"
 if [ "$DECISION" != "Pivot" ] \
-   || { _filled "$HYPOTHESIS" && printf '%s' "$HYPOTHESIS" | grep -qiE '^(segment|problem|solution|process)'; }; then
+   || { _filled "$HYPOTHESIS" && printf '%s' "$HYPOTHESIS" | grep -iE '^(segment|problem|solution|process)' >/dev/null; }; then
   _check "a Pivot names its suspect hypothesis (segment, problem, solution or process)" 1
 else
   _check "a Pivot names its suspect hypothesis (segment, problem, solution or process)" 0
