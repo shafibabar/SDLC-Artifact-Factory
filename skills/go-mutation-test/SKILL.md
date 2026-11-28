@@ -11,7 +11,7 @@ description: >
   make mutation, the mutation workflow, the mutation report; or "100% coverage,
   are we done", "is 60% mutation score enough", "run mutation on every pull
   request", "Gremlins says 100% efficacy". Produces mutation-report.
-version: 3.0.1
+version: 3.0.2
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -75,7 +75,7 @@ Verdicts: PASS (exit 0), WAIVER-NEEDED (3), FAIL (1), INVALID (2). Detail: `./re
 **Keep the answer as short as the question, within any length the user sets.** Answer the user's own points first, one by one, each with its rule in words; add a point below only where the question touches it, never a general tour of the method. Do not only follow a rule or point at a file.
 
 1. **The rule:** every planted mutant is killed by a test or recorded individually with the reason it cannot be; there is no percentage target, and 60% (or any other figure) is rejected.
-2. **The formula and who judges:** (killed + individually recorded) / all planted mutants, as counts, read by the verdict script from the JSON report Gremlins writes with `--output`; neither Gremlins' efficacy, its thresholds nor its exit code is the verdict, because efficacy leaves timed-out mutants out and counts non-compiling ones as killed, and a threshold of 100 fails even a perfect run.
+2. **The formula and who judges:** (killed + individually recorded) / all planted mutants, as counts. Say both halves of the check in words, naming the flag: Gremlins writes its JSON report only when run with `--output`, and the verdict script reads that report and fails on every lived, not-covered, timed-out or not-viable mutant that has no record line; neither Gremlins' efficacy, its thresholds nor its exit code is the verdict, because efficacy leaves timed-out mutants out and counts non-compiling ones as killed, and a threshold of 100 fails even a perfect run.
 3. **Waiver:** only for a result above 90% and under 100%, after the product owner reviews each uncaught mutant and records comments; at 90% or below none.
 4. **Timed-out and not-viable mutants** count only once each is checked and recorded with a one-line reason; never automatically.
 5. **When it runs:** the full release run blocks and finishes before publication (the publish job needs it, never `release: published`); scheduled runs report only, may cover changed code only, monthly or more often, never less.
