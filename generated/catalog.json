@@ -5727,14 +5727,14 @@
         "dir": "skills/go-e2e-test",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "go-e2e-test",
         "owner": "test-strategist",
         "phase": "quality",
@@ -5742,33 +5742,56 @@
           "go-e2e-test-suite"
         ],
         "related": [
+          "acceptance-criteria",
+          "blue-green-deployment",
           "cd-pipeline",
           "ci-pipeline",
           "disaster-recovery-plan",
           "distributed-tracing-design",
           "environment-config",
           "go-integration-test",
+          "go-load-test",
+          "go-makefile",
           "go-unit-test",
           "helm-chart",
-          "multi-tenancy-design",
+          "python-e2e-test",
           "react-e2e-testing",
+          "sdlc-config-management",
+          "test-fixture-design",
           "test-pyramid",
-          "user-journey-mapping"
+          "uat-plan"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/cloud-native-devops-kubernetes-arundel-domingus.md",
+          "research/devops-and-delivery/continuous-delivery-humble-farley.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/testing/agile-testing-crispin-gregory.md",
+          "research/testing/github-actions-e2e-official-docs.md",
+          "research/testing/github-actions-official-docs.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/helm-official-docs.md",
+          "research/testing/kind-official-docs.md",
+          "research/testing/kubectl-official-docs.md",
+          "research/testing/opentelemetry-go-trace-context-official-docs.md",
+          "research/testing/testing-vv-dictionary-quigley.md",
+          "research/testing/testing-web-apis-winteringham.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
           "ci",
           "e2e",
-          "ephemeral-environment",
-          "flakiness",
+          "end-to-end",
           "go",
+          "helm",
+          "journey",
           "kind",
           "quality",
           "quarantine",
-          "shift-right"
+          "smoke",
+          "trace-correlation"
         ],
-        "version": "2.1.1"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -11316,8 +11339,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1281,
-    "edges_skill_sources": 369,
+    "edges_skill_related": 1287,
+    "edges_skill_sources": 383,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11329,20 +11352,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 105,
+    "research_files_cited": 111,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 125,
+    "skills_with_contract_test": 124,
     "skills_with_domain": 190,
-    "skills_with_evals": 64,
-    "skills_with_examples": 64,
+    "skills_with_evals": 65,
+    "skills_with_examples": 65,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 63,
-    "skills_with_scripts": 57,
-    "skills_with_sources": 65,
+    "skills_with_resources": 64,
+    "skills_with_scripts": 58,
+    "skills_with_sources": 66,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 62
+    "skills_with_templates": 63
   },
   "edges": {
     "agent_produces": [
@@ -15049,6 +15072,14 @@
         "skill": "go-domain-model"
       },
       {
+        "related": "acceptance-criteria",
+        "skill": "go-e2e-test"
+      },
+      {
+        "related": "blue-green-deployment",
+        "skill": "go-e2e-test"
+      },
+      {
         "related": "cd-pipeline",
         "skill": "go-e2e-test"
       },
@@ -15073,6 +15104,14 @@
         "skill": "go-e2e-test"
       },
       {
+        "related": "go-load-test",
+        "skill": "go-e2e-test"
+      },
+      {
+        "related": "go-makefile",
+        "skill": "go-e2e-test"
+      },
+      {
         "related": "go-unit-test",
         "skill": "go-e2e-test"
       },
@@ -15081,7 +15120,7 @@
         "skill": "go-e2e-test"
       },
       {
-        "related": "multi-tenancy-design",
+        "related": "python-e2e-test",
         "skill": "go-e2e-test"
       },
       {
@@ -15089,11 +15128,19 @@
         "skill": "go-e2e-test"
       },
       {
+        "related": "sdlc-config-management",
+        "skill": "go-e2e-test"
+      },
+      {
+        "related": "test-fixture-design",
+        "skill": "go-e2e-test"
+      },
+      {
         "related": "test-pyramid",
         "skill": "go-e2e-test"
       },
       {
-        "related": "user-journey-mapping",
+        "related": "uat-plan",
         "skill": "go-e2e-test"
       },
       {
@@ -18881,6 +18928,62 @@
       {
         "skill": "go-contract-test",
         "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/devops-and-delivery/cloud-native-devops-kubernetes-arundel-domingus.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/devops-and-delivery/continuous-delivery-humble-farley.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/agile-testing-crispin-gregory.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/github-actions-e2e-official-docs.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/github-actions-official-docs.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/helm-official-docs.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/kind-official-docs.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/kubectl-official-docs.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/opentelemetry-go-trace-context-official-docs.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/testing-vv-dictionary-quigley.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/testing-web-apis-winteringham.md"
+      },
+      {
+        "skill": "go-e2e-test",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "go-integration-test",
