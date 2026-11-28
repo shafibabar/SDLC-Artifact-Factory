@@ -82,10 +82,10 @@ Detail, the integration-design numbers and the event-driven rows: `./references/
 
 ## What every answer states
 
-**Keep the answer as short as the question.** State, **in words**, each point below that bears on it; do not only follow it or point at a file.
+**Keep the answer as short as the question, within any length the user sets.** Answer the user's own points first, one by one, each with its rule in words; add a point below only where the question touches it, never a general tour of the method. Do not only follow a rule or point at a file.
 
 1. **Where it runs:** by default only the run's own throwaway kind cluster; any other system, staging and production included, only under the product owner's **signed chaos statement** (where, which faults, blast radius, abort conditions, impact), and the runner **refuses** otherwise, with nothing injected.
-2. **Chaos Mesh only inside the throwaway cluster** (privileged daemon, host PID); application-level and Toxiproxy faults first.
+2. **Chaos Mesh only inside the throwaway cluster** (privileged daemon, host PID); application-level and Toxiproxy faults first; **a lean product may run cluster-level faults such as a pod kill there too**.
 3. **The steady-state hypothesis on the SLO's output metric**, named by its id and worded as the SLO defines it, measured before injection.
 4. **Each pattern's measurable assertion** from the table, never "it failed fast". For a breaker say the threshold **as configured** (the integration design's number, which a library default such as gobreaker's may differ from) and each state in words: open at the threshold, failing fast with the dependency receiving no calls, half-open after the reset, closed on success, reopened by a half-open failure. For a deadlock say the experiment drives **the lock order the shipped code uses**, never locks the test invents.
 5. **The abort conditions as numbers**, and that the fault is removed on every path and its **removal verified**.
