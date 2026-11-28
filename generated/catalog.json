@@ -6295,14 +6295,14 @@
         "dir": "skills/go-mutation-test",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "go-mutation-test",
         "owner": "test-strategist",
         "phase": "quality",
@@ -6310,24 +6310,41 @@
           "mutation-report"
         ],
         "related": [
+          "cd-pipeline",
+          "ci-pipeline",
+          "glossary-management",
+          "go-e2e-test",
           "go-makefile",
           "go-unit-test",
+          "mock-generation",
+          "python-mutation-test",
           "sdlc-config-management",
           "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/testing/github-actions-official-docs.md",
+          "research/testing/go-coverage-official-docs.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/gremlins-official-docs.md",
+          "research/testing/software-testing-craftsman-jorgensen.md",
+          "research/testing/testing-vv-dictionary-quigley.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
           "coverage",
+          "equivalent-mutant",
           "go",
           "gremlins",
-          "mutation-score",
+          "mutant-record",
           "mutation-testing",
           "quality",
+          "release-gate",
           "survived-mutant",
-          "test-quality"
+          "timed-out",
+          "waiver"
         ],
-        "version": "2.2.0"
+        "version": "3.0.5"
       },
       {
         "created": "2026-06-25",
@@ -11469,8 +11486,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1345,
-    "edges_skill_sources": 445,
+    "edges_skill_related": 1351,
+    "edges_skill_sources": 452,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11484,18 +11501,18 @@
     "commands_with_test": 15,
     "research_files_cited": 127,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 119,
+    "skills_with_contract_test": 118,
     "skills_with_domain": 190,
-    "skills_with_evals": 70,
-    "skills_with_examples": 70,
+    "skills_with_evals": 71,
+    "skills_with_examples": 71,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 69,
-    "skills_with_scripts": 63,
-    "skills_with_sources": 71,
+    "skills_with_resources": 70,
+    "skills_with_scripts": 64,
+    "skills_with_sources": 72,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 68
+    "skills_with_templates": 69
   },
   "edges": {
     "agent_produces": [
@@ -15666,11 +15683,35 @@
         "skill": "go-mongodb-repository"
       },
       {
+        "related": "cd-pipeline",
+        "skill": "go-mutation-test"
+      },
+      {
+        "related": "ci-pipeline",
+        "skill": "go-mutation-test"
+      },
+      {
+        "related": "glossary-management",
+        "skill": "go-mutation-test"
+      },
+      {
+        "related": "go-e2e-test",
+        "skill": "go-mutation-test"
+      },
+      {
         "related": "go-makefile",
         "skill": "go-mutation-test"
       },
       {
         "related": "go-unit-test",
+        "skill": "go-mutation-test"
+      },
+      {
+        "related": "mock-generation",
+        "skill": "go-mutation-test"
+      },
+      {
+        "related": "python-mutation-test",
         "skill": "go-mutation-test"
       },
       {
@@ -19470,6 +19511,34 @@
       {
         "skill": "go-load-test",
         "source": "research/testing/load-test-method-official-docs.md"
+      },
+      {
+        "skill": "go-mutation-test",
+        "source": "research/testing/github-actions-official-docs.md"
+      },
+      {
+        "skill": "go-mutation-test",
+        "source": "research/testing/go-coverage-official-docs.md"
+      },
+      {
+        "skill": "go-mutation-test",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "go-mutation-test",
+        "source": "research/testing/gremlins-official-docs.md"
+      },
+      {
+        "skill": "go-mutation-test",
+        "source": "research/testing/software-testing-craftsman-jorgensen.md"
+      },
+      {
+        "skill": "go-mutation-test",
+        "source": "research/testing/testing-vv-dictionary-quigley.md"
+      },
+      {
+        "skill": "go-mutation-test",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "go-repository-pattern",

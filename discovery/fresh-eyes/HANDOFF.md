@@ -17,7 +17,7 @@ Work moved to another machine and another Claude account. Everything needed is i
 
 ## Status
 
-Done and merged into the wave branch (20 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **18 of 24 skills**:
+Done and merged into the wave branch (21 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **19 of 24 skills**:
 
 | Skill | Eval runs | Eval cost | Final |
 |---|---|---|---|
@@ -39,7 +39,8 @@ Done and merged into the wave branch (20 sub-issues, board status Done): setup (
 | python-load-test | 2 | $5.79 | pass, +0.67 |
 | go-chaos-test | 2 | $5.67 | pass, +0.78 (one grader changed after freeze, logged) |
 | python-chaos-test | 3 | $8.65 | pass, +0.56 |
-| **Total** | | **$146.22** | |
+| go-mutation-test | 6 | $16.66 | pass, +1.00 |
+| **Total** | | **$162.88** | |
 
 Earlier chat and issue totals of $73.99, $87.90 and $98.37 were addition errors; $84.87 is the sum of the saved run results (which are gitignored and stay on the old machine).
 
@@ -48,7 +49,7 @@ Also done (2026-11-28): **#1510**, every script and test runs on stock macOS as 
 Remaining:
 
 0. **Working procedure per skill (product owner, 2026-11-28):** discovery of the current state by one subagent, research by a second only if required, then rebuild, separately authored evals, eval runs, CI on both systems, merge into the wave branch. The product owner has authorised continuing through the remaining skills in sequence under it.
-1. **#1497** `go-mutation-test` next, then #1498–#1502 in order. Eval spend outside the per-skill table: #1510 $5.67, #1512 $20.30, #1518 $3.96, `go-load-test` re-run on #1494 $2.75, `go-chaos-test` re-runs on #1496 $8.56. Lab briefs: no machine-wide cleanup. For #1503: the alignment lists on #1489–#1496, including `disaster-recovery-plan` (weekly production chaos), `ci-pipeline`, `go-concurrency-patterns`, and the missing circuit breaker, bulkhead and retry in both the Go and the Python build skills (a later wave).
+1. **#1498** `python-mutation-test` next (follows the D048 mutation decisions and the #1497 rebuild details), then #1499–#1502 in order. Eval spend outside the per-skill table: #1510 $5.67, #1512 $20.30, #1518 $3.96, `go-load-test` re-run on #1494 $2.75, `go-chaos-test` re-runs on #1496 $8.56. Lab briefs: no machine-wide cleanup. For #1503: the alignment lists on #1489–#1497 (for #1497: `test-pyramid` coverage-and-mutation-gates lines 32 and 70, `sdlc-config-management` cadence line 116, `go-performance-test` package-targeting lines), including `disaster-recovery-plan` (weekly production chaos), `ci-pipeline`, `go-concurrency-patterns`, and the missing circuit breaker, bulkhead and retry in both the Go and the Python build skills (a later wave).
 2. **#1507** Python coverage gate lists test-support code (decided, option B); re-evaluate `python-unit-test`. Separate branch.
 3. **#1490–#1502** the other 13 skills: python-contract, go/python e2e, load, chaos, mutation, performance, react-component, react-e2e.
 4. **#1503** close-out: follow-ups recorded on #1450 and #1503 (including re-running evals for `test-pyramid`, `go-unit-test`, `mock-generation`, edited after they passed), then a PR from the wave branch to `main` for the product owner's review. Also for #1503: align `test-pyramid`, `ci-pipeline` and `cd-pipeline` with the daily Pact run and the `can-i-deploy` deployment check.
