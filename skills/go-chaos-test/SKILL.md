@@ -1,154 +1,146 @@
 ---
 name: go-chaos-test
 description: >
-  This plugin's chaos-engineering standard for Go — deliberately injecting an
-  artificial, isolated fault (independent of load) to prove the resilience
-  patterns already built actually work: Circuit Breaker, Retry with backoff,
-  the Dead Letter Queue, idempotency, and graceful degradation. Covers the
-  hypothesis-driven experiment-design standard (steady-state definition,
-  blast-radius scoping, an exact automatic rollback trigger — references/
-  experiment-design-standard.md); the fault-injection catalogue for this
-  repo's actual stack — pod kill, Linkerd-layer network partition/latency via
-  Chaos Mesh, Postgres connection-pool exhaustion, Redpanda broker
-  unavailability, each with an exact experiment template
-  (references/fault-injection-catalogue.md); a full worked partial-deadlock/
-  livelock experiment that deliberately induces the one failure shape neither
-  `go test -race` nor the runtime deadlock detector catches, deferring to
-  go-concurrency-patterns' runbook for diagnosis rather than restating it
-  (references/deadlock-livelock-worked-experiment.md); and the safety-rail
-  standard — non-production/canary-scoped environments only, automatic abort
-  conditions wired to the same alerting stack, never a human watching a
-  dashboard (references/safety-rails-standard.md). Used by the
-  test-strategist during Quality.
-version: 2.1.0
+  Use when test-strategist or anyone writes, reviews, runs or fixes chaos or
+  fault-injection experiments for a Go service in the Quality phase: proving a
+  circuit breaker, retry with backoff and jitter, timeout and deadline
+  propagation, bulkhead, graceful degradation, load shedding or lock order
+  under an injected fault; a fault-injecting http.RoundTripper, a build-tagged
+  chaos hook, Toxiproxy toxics, Chaos Mesh PodChaos, NetworkChaos or Schedule
+  on kind; the steady-state hypothesis on the SLO, blast radius, abort
+  conditions and fault removal; the chaos run in the throwaway cluster (make
+  chaos), the signed chaos statement for any other system, PASS, FAIL,
+  REFUSED or INVALID, the chaos-experiment report; or "kill pods in
+  production", "run chaos on staging", "is one fast failure proof the breaker
+  works", "add chaos to the pull request". Produces chaos-experiment-suite.
+version: 3.0.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
-tags: [quality, chaos, resilience, toxiproxy, chaos-mesh, circuit-breaker, retry, dlq, fault-injection, blast-radius, deadlock, livelock]
-produces: go-chaos-test
+tags: [quality, go, chaos, fault-injection, resilience, circuit-breaker, retry, bulkhead, toxiproxy, chaos-mesh, kind, steady-state, abort]
+produces: chaos-experiment-suite
 domain: testing
 status: stable
-related: [go-load-test, go-concurrency-patterns, go-event-consumer, go-event-publisher, integration-design, canary-deployment, kubernetes-manifest, multi-tenancy-design, alerting-rules-design, glossary-management]
+related: [go-e2e-test, go-load-test, go-integration-test, integration-design, slo-definition, prometheus-metrics-design, test-pyramid, go-concurrency-patterns, go-middleware, go-error-handling, disaster-recovery-plan, ci-pipeline, go-makefile, python-chaos-test, test-fixture-design, glossary-management]
+sources:
+  - research/testing/chaos-engineering-method-official-docs.md
+  - research/testing/chaos-mesh-and-toxiproxy-details-official-docs.md
+  - research/testing/go-resilience-fault-injection-official-docs.md
+  - research/testing/toxiproxy-official-docs.md
+  - research/testing/chaos-mesh-official-docs.md
+  - research/testing/kind-official-docs.md
+  - research/testing/kubectl-official-docs.md
+  - research/testing/helm-official-docs.md
+  - research/testing/go-toolchain-official-docs.md
+  - research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md
+  - research/devops-and-delivery/devops-handbook-kim-humble-debois-willis.md
+  - research/software-architecture/building-microservices-newman.md
+  - research/software-architecture/concurrency-in-go-cox-buday.md
 ---
 
 # Go Chaos Test
 
 ## Purpose
 
-The system was built with resilience patterns — Circuit Breaker, Retry and Backoff, the Dead Letter Queue, idempotent consumers, graceful shutdown (`event-driven-patterns`, `integration-design`, `go-event-consumer`). Chaos testing proves those patterns **actually work** by deliberately injecting the failures they were designed to survive. An untested resilience pattern is a hope; a chaos-tested one is a guarantee. Authored and run by the test-strategist during Quality.
+This skill owns how a Go product's resilience patterns are proven under a deliberately injected fault: a dependency that answers late, fails or vanishes; a pod killed; a network cut. `test-strategist` authors and runs it. An experiment states a steady state on the product's own SLI before anything is injected, injects one fault, and tries to disprove that users keep getting what the SLO promises (Principles of Chaos Engineering; Netflix's ChAP). Each pattern is then proven by its defined behaviour, measured, never by "it failed fast once". Most of the rest is about where a fault may go: a chaos experiment is an attempt to break something. The patterns' definitions and thresholds belong to `integration-design`; their code to the Go build skills; the throwaway cluster to `go-e2e-test`; load as the stressor to `go-load-test`; DLQ, idempotency and 429 behaviour to `go-integration-test`.
 
-**Boundary against `go-load-test`:** this skill injects a **specific, isolated fault** — a killed pod, a severed network link, an exhausted pool — independent of request volume; `go-load-test`'s `references/backpressure-and-reporting-standard.md` proves the same patterns engage when the system's own **traffic volume** is the stressor instead, no injected fault. A system can pass one and fail the other; neither substitutes for the other, and the boundary statement in that file is authoritative — read it before assuming overlap.
+## Fixed rules
 
----
+A request does not change these, whoever makes it. Do the work as the rules require, say where it differs from what was asked and why, and never offer to switch a rule off.
 
-## Hypothesis-Driven Experiment Design
-
-Every experiment states four things, in order, **before** the fault is injected: a measurable **steady state** pulled from real telemetry; a falsifiable **hypothesis** naming the exact pattern and expected behavior; an explicit **blast-radius scope** (one canary pod, one tenant — never the whole fleet on a first run); and an exact, automatic **rollback trigger** (e.g. `abort if error_rate > 5% OR steady-state breach sustained > 60s`). Full standard, the four-part test-header convention, and the blast-radius scoping table: `references/experiment-design-standard.md`.
-
----
-
-## Fault-Injection Catalogue
-
-Two tool tiers, chosen for the narrowest thing that produces the fault: **toxiproxy + app-level fault decorators** for a dependency call itself misbehaving from inside the test process (already this skill's frugal default — see the worked Circuit Breaker example below); **Chaos Mesh** (CNCF, open-source, one Helm chart) for infrastructure-level faults no in-process tool can produce — a pod dying, a network link severing beneath Linkerd. Four fault types, one exact experiment template each:
-
-| Fault | Tool | Proves |
+| # | Rule | Reason |
 |---|---|---|
-| **Pod kill** | Chaos Mesh `PodChaos` | PDB + readiness probe + Linkerd retry mask a single pod's death from callers |
-| **Linkerd-layer network partition/latency** | Chaos Mesh `NetworkChaos` (below the mesh proxy, doesn't fight Linkerd) | Circuit Breaker opens on an unreachable/slow downstream instead of hanging on an mTLS handshake |
-| **Postgres connection-pool exhaustion** | App-level (hold every `pgxpool.Pool` connection deliberately) | Pool exhaustion fails fast via the breaker, never queues unbounded or deadlocks |
-| **Redpanda broker unavailability** | Chaos Mesh `PodChaos` on the broker | Outbox relay backs off without loss (`go-event-publisher`); consumer retries and resumes from its committed offset (`go-event-consumer`) — cross-referenced, not restated |
+| C1 | **Where: by default only the run's own throwaway kind cluster** (`go-e2e-test`'s environment). Any other system (a designated environment, staging, production) only with the product owner's **signed chaos statement** of exactly where, which faults and their limits, the blast radius, the abort conditions and the impact; the runner **refuses** otherwise, with nothing injected, and refuses an experiment beyond what was signed | A fault on a shared system is an incident for everyone on it; only the product owner can accept that, case by case |
+| C2 | **The privileged injector (Chaos Mesh) only inside the throwaway cluster.** Its daemon runs with host PID, privileged and host mounts, and the chart creates ClusterRoles even when namespaced | Equivalent to root on every node it runs on |
+| C3 | **Application-level and proxy faults first**: a fault-injecting `RoundTripper` or a build-tagged hook, then Toxiproxy. Cluster faults (pod kill, network) in the throwaway cluster at every product size | The narrowest tool that produces the fault is the most deterministic |
+| C4 | **No standing production chaos.** Experiments run on a schedule in the throwaway cluster; a production experiment needs a signed statement each time | Decision of 2026-11-28 |
+| C5 | **The steady state is the SLO's own SLI, written before injection** (the share of requests answered good under the threshold, exactly as `slo-definition` defines it; never "p99 < 800ms"), measured from outside, and it must hold before the fault or the run is INVALID | An output the user sees, not an internal (POC); no baseline, no result |
+| C6 | **A pattern is proven only by a measurable assertion of its defined behaviour**, against the product's own configured thresholds (`integration-design`): table below. Every fault's injection error is checked and the fault confirmed active | One fast failure proves no breaker (seen: the old test passed with a breaker that could never open) |
+| C7 | **Abort conditions are numbers set before injection** (SLI below x over y seconds, z seconds in all); the abort removes the fault and ends the experiment | A threshold chosen while watching is no rail |
+| C8 | **The fault is always removed, on pass, failure, abort and interruption, and its removal verified** (Toxiproxy no longer lists the toxic; the Chaos Mesh object is gone) | A left fault poisons every later test |
+| C9 | **Verdicts: PASS, FAIL, REFUSED, INVALID.** A fault never confirmed active, or a steady state that did not hold before it, is INVALID, never passed | An experiment that injected nothing proves nothing |
+| C10 | **No retries.** One run, one result | `test-pyramid`: zero retries below end-to-end |
+| C11 | **Every chaos file carries `//go:build chaos`**; chaos never runs in `make ci` or on a pull request; it starts only through `run-chaos-experiment.sh` | W3-D10; the address comes from the run marker or the statement, never from a variable |
+| C12 | **Test what the product implements, and name a missing pattern as missing.** Do not invent a breaker for the product; building it is a gap for the Go build skills | Decision of 2026-11-28 |
+| C13 | **DLQ, idempotency and 429 are proven in `go-integration-test`**; here they are only confirmed to hold while a fault is active | W3-D23 |
+| C14 | **A chaos-experiment report** under `artifacts/<product>/quality/test-reports/`, approved by the product owner | D048.5 |
 
-Full YAML/Go templates, exact assertions, and why Chaos Mesh over Litmus: `references/fault-injection-catalogue.md`.
+Every product size follows all fourteen; size changes how many experiments, never which rules.
 
----
+## What each pattern must show
 
-## Toxiproxy — Network Fault Injection (In-Process)
-
-Toxiproxy (Shopify, open-source) sits between the service and a dependency it dials, injecting latency, drops, or timeouts the app-level fault decorators below can't reach because the fault is genuinely on the wire, not in application code:
-
-```go
-func TestCircuitBreaker_OpensOnDatabaseLatency(t *testing.T) {
-    stack := startStack(t)
-    requireSteadyState(t, stack)
-    _ = stack.dbProxy.AddToxic("latency", "latency", "downstream", 1.0, toxiproxy.Attributes{"latency": 5000})
-    t.Cleanup(func() { _ = stack.dbProxy.RemoveToxic("latency") })
-
-    start := time.Now()
-    err := classify(t, stack, sampleCmd)
-    require.ErrorIs(t, err, ErrServiceUnavailable)          // fails fast, not after 5s
-    require.Less(t, time.Since(start), 1*time.Second)
-
-    stack.dbProxy.RemoveToxic("latency")
-    requireEventualSteadyState(t, stack, 30*time.Second)    // recovers after the fault clears
-}
-```
-
-The assertion that matters is **fail-fast + recover**. Every `AddToxic` pairs with a `t.Cleanup` removal — a leaked toxic poisons every later test in the run.
-
----
-
-## The Patterns to Validate
-
-| Pattern | Fault injected | Expected behaviour |
+| Pattern | Assertion (thresholds read from the product's config) | Fails on |
 |---|---|---|
-| **Circuit Breaker** | Dependency latency/errors, pool exhaustion | Opens → fails fast → half-opens → closes on recovery |
-| **Retry + Backoff** | Transient dependency error | Retries with backoff; succeeds on a later attempt |
-| **Dead Letter Queue** | Poison message / persistent failure | Exhausts retries → routes to DLQ → partition keeps flowing |
-| **Idempotent consumer** | Duplicate / redelivered event | Processed exactly once (dedup holds under redelivery) |
-| **Graceful shutdown** | SIGTERM mid-request / mid-batch | In-flight work drains; no dropped requests/events |
-| **Broker outage** | Redpanda broker killed | Outbox retains events; consumer resumes from offset; both recover |
-| **Pod / network resilience** | Pod kill, Linkerd-layer partition | PDB + retry mask it; breaker opens on unreachable downstream |
-| **Partial deadlock / livelock** | Artificial opposite-order lock contention (build-tag-gated, never production code) | Flat elevated goroutine count + idle CPU (deadlock) or pegged CPU (livelock) detected automatically within a timeout — the only place in the toolchain that notices either, since neither `-race` nor the runtime deadlock detector catches a partial deadlock or livelock (`go-concurrency-patterns`' Deadlock/Livelock/Starvation section) |
+| Circuit breaker | Closed below the threshold; open at exactly it; while open every call fails fast and the dependency counts **zero** calls; half-open after the reset (not before) and admits one probe; a failed probe reopens; a good probe closes | No threshold; one-call tests |
+| Retry | Exactly the attempt cap reaches the dependency; each wait within its doubling cap, with jitter; a permanent answer is tried once; the caller's deadline stops it; a dependency that stays down receives at most threshold × attempts | No bound; a retry storm |
+| Timeout | The call returns by the caller's deadline with `context.DeadlineExceeded`, and the dependency sees its request end then | A deadline not propagated |
+| Bulkhead | One downstream's full pool refuses at once; another downstream is still served | A shared pool |
+| Degradation, shedding | The answer the SLI counts: 200 under the threshold, marked degraded; over the limit, 503 with `Retry-After` at once | No fallback; no limit |
+| Lock order | Moves in both directions under contention all complete; a partial deadlock shows as progress stopped with goroutines flat and CPU idle, a livelock with CPU pegged | An inverted order |
 
-Full worked deadlock/livelock experiment — steady state, fault-injection mechanism, detection loop, and the explicit handoff to `go-concurrency-patterns`' incident-response runbook for diagnosis rather than a restatement of it: `references/deadlock-livelock-worked-experiment.md`.
+Detail, the integration-design numbers and the event-driven rows: `./references/patterns-and-assertions.md`.
 
----
+## What every answer states
 
-## Safety Rails
+**Keep the answer as short as the question.** State, **in words**, each point below that bears on it; do not only follow it or point at a file.
 
-Two mandatory, independent rails on every experiment above: **environment restriction** — first run always against an isolated/ephemeral stack or a canary-scoped slice (`canary-deployment`'s existing weighted-traffic + SLO-burn-gate mechanism, aimed at an injected fault instead of a new release), never unscoped production; and **automatic abort** — the rollback trigger fires from a Prometheus alert + watcher loop (Chaos Mesh experiments) or in-process polling (toxiproxy/app-level experiments), never a human who happens to be watching a dashboard. Full staged-environment table and the abort-wiring YAML: `references/safety-rails-standard.md`.
+1. **Where it runs:** by default only the run's own throwaway kind cluster; any other system, staging and production included, only under the product owner's **signed chaos statement** (where, which faults, blast radius, abort conditions, impact), and the runner **refuses** otherwise, with nothing injected.
+2. **Chaos Mesh only inside the throwaway cluster** (privileged daemon, host PID); application-level and Toxiproxy faults first.
+3. **The steady-state hypothesis on the SLO's output metric**, named by its id and worded as the SLO defines it, measured before injection.
+4. **Each pattern's measurable assertion** from the table, never "it failed fast". For a breaker say the threshold **as configured** (the integration design's number, which a library default such as gobreaker's may differ from) and each state in words: open at the threshold, failing fast with the dependency receiving no calls, half-open after the reset, closed on success, reopened by a half-open failure. For a deadlock say the experiment drives **the lock order the shipped code uses**, never locks the test invents.
+5. **The abort conditions as numbers**, and that the fault is removed on every path and its **removal verified**.
+6. **INVALID** when the fault was never confirmed active or the steady state did not hold before it; **no retries**.
+7. **Every chaos test file carries a build tag, so neither `make ci` nor the coverage gate compiles it** (say both); never on a pull request; scheduled in the throwaway cluster, no standing production chaos.
+8. **A pattern the product lacks is named as missing**, not built in the test.
+9. **The report is an artifact the product owner approves**, and says what the run does not prove.
+10. **One line on what was run**; anything not run is called unverified.
 
----
+## Procedure
 
-## Quality Criteria
+1. Read the SLO record, `integration-design`'s inventory for each downstream, the product's client code (which patterns exist, with which settings), the test strategy and `sdlc-config.json`. List each pattern as present (with its settings) or **missing**.
+2. Plan: read `./references/where-it-runs.md`. Default target: the throwaway cluster. Any other system: draft `./templates/chaos-statement.md` for the product owner to sign; until signed, plan nothing there.
+3. Write one experiment definition per hypothesis from `./templates/experiment-definition.md`: steady state from the SLO, fault, blast radius, abort numbers. Read `./references/experiment-method.md` first.
+4. Copy the test support unchanged (`./templates/chaostest-package.md`); write the pattern tests from `./templates/pattern-tests.md` against the product's own client and config.
+5. Add Toxiproxy (`./templates/toxiproxy-setup.md`) and, for cluster faults, Chaos Mesh (`./templates/chaos-mesh-manifests.md`, `./references/chaos-mesh-on-kind.md`).
+6. Copy `./scripts/run-chaos-experiment.sh` and `./scripts/validate-go-chaos-tests.sh` to `tests/chaos/` unchanged; add the suite lines, make targets and workflow from `./templates/environment-and-make.md`.
+7. Run `./scripts/validate-go-chaos-tests.sh <product root>`; fix every FAIL, judge each WARN, and run it again until clean.
+8. Run `make chaos`. Break one pattern on purpose and see its experiment fail for that reason, then restore it. Confirm the cluster is gone.
+9. Write the report from `./templates/chaos-experiment-report.md` under `artifacts/<product>/quality/test-reports/` and put it to the product owner; a FAIL becomes a corrective action for the owning build skill.
+10. Tick `./resources/checklist.md`; after any change, go back to step 7.
 
-| Criterion | Pass | Fail |
-|---|---|---|
-| Four-part experiment header | Steady state + hypothesis + blast radius + rollback trigger, stated before injection | Any of the four missing or decided mid-experiment |
-| Hypothesis falsifiable | Names the exact pattern and expected state transition | "The system will struggle" — unfalsifiable |
-| Fail-fast + recover | Asserts containment AND recovery to steady state | Only checks it fails, not that it heals |
-| Blast radius bounded and escalated | One canary pod/tenant first; wider scope only after a clean pass | Whole fleet or all tenants on a first run |
-| Rollback trigger automatic | Wired to fire without a human watching (alert+watcher or in-process poll) | A person watching a dashboard is the only abort mechanism |
-| Right tool for the fault | Toxiproxy/app-level for in-process faults; Chaos Mesh only for infra-level faults it alone can produce | Chaos platform reached for where toxiproxy would do; or infra faults faked in-process |
-| Catalogue faults covered | Pod kill, Linkerd network partition/latency, pool exhaustion, broker unavailability each have a template | A stack-specific fault type with no experiment |
-| Deadlock/livelock covered | Build-tag-gated fault; automated goroutine-count/CPU detection; defers to the runbook for diagnosis | No concurrency-correctness experiment; or diagnosis steps restated instead of cross-referenced |
-| Tenant isolation tested | Fault in one tenant's stack verified not to reach another | Cross-tenant impact unverified |
-| Environment-scoped | Non-production or canary-scoped only, staged escalation | First run against unscoped production |
-| Leaked toxics/CRs cleaned up | Every `AddToxic`/Chaos Mesh CR paired with guaranteed removal | Poisoned later tests or an orphaned chaos CR left running |
-| Boundary against `go-load-test` respected | Injected, isolated fault only — no organic-overload testing duplicated here | Volume-ramp testing reinvented in this skill instead of cited |
+Worked: `./examples/01-lean-allotment-waitlist.md` (one downstream, no breaker: named missing), `./examples/02-standard-harbour-pilots.md` (the lab that was run: every pattern both ways, Toxiproxy and Chaos Mesh on kind), `./examples/03-enterprise-regional-bus-fares.md` (several downstreams, a signed statement for one production check).
 
----
+## Gotchas
 
-## Anti-Patterns
+- **One call with a latency toxic, asserting a fast error, as "the breaker test".** *Reason:* seen: it passed with a breaker whose threshold could never trip, because the attempt timeout alone returned a fast error. *Instead:* drive past the threshold and assert every state, counting calls at the dependency.
+- **`_, _ = proxy.AddToxic(...)`.** *Reason:* seen: a misspelt toxic type was refused (HTTP 400), nothing was injected, and the "service survives" test passed on a product with no fallback. *Instead:* `chaostest.AddToxic`, which marks the run INVALID.
+- **A breaker counting each retry.** *Reason:* `integration-design` nests retry inside the breaker, so one failed call is one breaker failure; counting attempts trips it three times too early. *Instead:* assert at the call level.
+- **Using gobreaker's default `ReadyToTrip`.** *Reason:* it trips after **more than** five failures; `integration-design` says at five. *Instead:* read the product's setting; the lab sets `>= 5`.
+- **An attempt timeout mapped to the caller's deadline error.** *Reason:* seen in the lab: `errors.Is(err, context.DeadlineExceeded)` was true for the dependency's own timeout, so the product surfaced it as the caller's. *Instead:* check `ctx.Err()` of the caller.
+- **A test with no deadline of its own around a retry.** *Reason:* seen: with the bound removed, the test hung instead of failing. *Instead:* bound every call (`callCtx`).
+- **`clusterScoped: false` for Chaos Mesh on kind.** *Reason:* seen with 2.8.8: the controller could not list RemoteCluster at cluster scope, its caches never synced and no experiment was injected. *Instead:* the chart's default scope, inside the throwaway cluster only, with every selector held to one namespace by the runner.
+- **`spec.scheduler` in a manifest.** *Reason:* removed in Chaos Mesh 2.0; seen: `strict decoding error: unknown field "spec.scheduler"`. *Instead:* a `Schedule` resource.
+- **`kubectl apply` of a chaos manifest by hand, or `go test -tags chaos` without `-count=1`.** *Reason:* nothing confirms, watches or removes the fault; a cached pass is not a run. *Instead:* the runner.
+- **"Staging is fine, the product owner said so in chat."** *Reason:* the runner refuses without the signed file. *Instead:* `./templates/chaos-statement.md`, signed.
 
-- **Random breakage without a hypothesis** — pulling cables to "see what happens" produces anecdotes; only a stated steady state and expected behaviour produce a pass/fail verdict.
-- **Asserting failure but not recovery** — half an experiment; the system must return to steady state once the fault clears.
-- **Unbounded blast radius** — running any experiment's first attempt against a shared or full-production environment converts a test into an incident.
-- **A rollback trigger decided while watching the experiment degrade** — not a safety rail; a post-hoc rationalization of however bad it was allowed to get.
-- **Reaching for Chaos Mesh where toxiproxy suffices** (or the reverse) — each tool tier exists because the other structurally cannot produce that fault; using the wrong one is either overkill or a fault that was never really injected.
-- **Restating the deadlock/livelock runbook's diagnostic steps here** — this skill proves detection works before an incident; the runbook diagnoses one. Cross-reference, never duplicate.
-- **Fixed sleeps around fault windows** — recovery is eventually consistent; poll for steady state with a deadline, exactly as in `go-e2e-test`.
-- **Leaving toxics or Chaos Mesh CRs behind** — a leaked fault poisons every later test or keeps degrading a canary after the experiment "ended."
+## Output
 
----
+| File | When to open it |
+|---|---|
+| `./references/where-it-runs.md` | Where a fault may go; the statement; the privileged injector; cadence; credentials and cost |
+| `./references/experiment-method.md` | Steady state, hypothesis, blast radius, abort, verdicts, what a pass means |
+| `./references/patterns-and-assertions.md` | Each pattern's assertion; missing patterns; DLQ, idempotency, 429; event-driven rows; deadlock and livelock |
+| `./references/chaos-mesh-on-kind.md` | Installing and using Chaos Mesh 2.8.8 in the throwaway cluster; what was observed |
+| `./templates/experiment-definition.md` | Writing `tests/chaos/experiments/<id>.json` |
+| `./templates/chaostest-package.md` | The fault-injecting `RoundTripper`, stand-in dependency and Toxiproxy helpers |
+| `./templates/pattern-tests.md` | The Go tests for each pattern and the build-tagged hook |
+| `./templates/toxiproxy-setup.md` | Toxiproxy in the throwaway cluster; the deployed experiment |
+| `./templates/chaos-mesh-manifests.md` | Chaos Mesh values, PodChaos, NetworkChaos, Schedule |
+| `./templates/environment-and-make.md` | Suite lines, the release line, make targets, the workflow |
+| `./templates/chaos-statement.md` | Any system other than the throwaway cluster |
+| `./templates/chaos-experiment-report.md` | Reporting a run |
+| `./scripts/run-chaos-experiment.sh` | Copied to the product; the only way an experiment starts |
+| `./scripts/validate-go-chaos-tests.sh` | Before hand-off, after every edit |
+| `./resources/checklist.md` | Before answering |
 
-## Output Format
-
-Every artifact below is reviewable by the user without IDE tooling and carries the four-part experiment header (`references/experiment-design-standard.md`) where applicable — this is a checkable engineering standard per file, not a folder listing:
-
-- **`tests/chaos/*_test.go`** — one hypothesis-driven experiment per pattern under test, each with the `EXPERIMENT`/`STEADY STATE`/`HYPOTHESIS`/`BLAST RADIUS`/`ROLLBACK` comment header immediately above its test function. Uses `requireSteadyState`/`requireEventualSteadyState` polling helpers, never a fixed `time.Sleep`. Every `t.Cleanup` guarantees toxic/fault removal on both pass and failure paths.
-- **`tests/chaos/toxiproxy.go`** — proxy setup and toxic helpers for in-process dependency faults; every `AddToxic` call site has a matching `t.Cleanup(RemoveToxic)` in the same function.
-- **`internal/test/faults/*.go`** — app-level fault-injecting decorators (the `faultyPublisher` shape) and the build-tag-gated (`//go:build chaos_deadlock`) contention-injection helpers for the deadlock/livelock experiment — never compiled into a production build.
-- **`chaos/*.yaml`** — Chaos Mesh `PodChaos`/`NetworkChaos` manifests, one per infrastructure-level experiment, each scoped by an explicit `labelSelectors`/`namespaces` block matching the experiment's stated blast radius — never a selector broader than the experiment's own header declares.
-- **`chaos/abort-rule-*.yaml`** — the `PrometheusRule` encoding each infrastructure experiment's exact rollback trigger, paired with the watcher script that deletes the Chaos Mesh CR on fire.
-- **`artifacts/<product>/quality/test-reports/resilience-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — a pointer, not a data dump: which patterns were validated, which experiments ran at which blast-radius stage, and any gaps found — the durable record is the experiment code and the telemetry it ran against, this file is the reviewable summary.
+In the product: `tests/chaos/` (the two scripts, `experiments/*.json`, `mesh/*.yaml`, `charts/toxiproxy/`, `chaos-mesh-values.yaml`, `chaos-e2e.conf`, `chaos-suites.conf`, `statements/<id>.json` for each signed statement), `internal/test/chaostest/`, `*_chaos_test.go` beside the code they prove, the `chaos*` make targets, `.github/workflows/chaos.yml`, and one report per run put forward as evidence.

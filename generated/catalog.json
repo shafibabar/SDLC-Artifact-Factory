@@ -114,6 +114,12 @@
         "cd-pipeline"
       ]
     },
+    "chaos-experiment-suite": {
+      "agents": [],
+      "skills": [
+        "go-chaos-test"
+      ]
+    },
     "ci-pipeline-workflow": {
       "agents": [
         "platform-engineer"
@@ -400,12 +406,6 @@
       ],
       "skills": [
         "go-performance-optimization"
-      ]
-    },
-    "go-chaos-test": {
-      "agents": [],
-      "skills": [
-        "go-chaos-test"
       ]
     },
     "go-composition-root": {
@@ -1760,9 +1760,9 @@
       "agents": [],
       "artifacts": [
         "acceptance-criteria-document",
+        "chaos-experiment-suite",
         "example-map",
         "gherkin-feature-file",
-        "go-chaos-test",
         "go-contract-test",
         "go-e2e-test-suite",
         "go-integration-test",
@@ -5439,49 +5439,70 @@
         "dir": "skills/go-chaos-test",
         "domain": "testing",
         "has_assets": false,
-        "has_contract_test": true,
-        "has_evals": false,
-        "has_examples": false,
+        "has_contract_test": false,
+        "has_evals": true,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "go-chaos-test",
         "owner": "test-strategist",
         "phase": "quality",
         "produces": [
-          "go-chaos-test"
+          "chaos-experiment-suite"
         ],
         "related": [
-          "alerting-rules-design",
-          "canary-deployment",
+          "ci-pipeline",
+          "disaster-recovery-plan",
           "glossary-management",
           "go-concurrency-patterns",
-          "go-event-consumer",
-          "go-event-publisher",
+          "go-e2e-test",
+          "go-error-handling",
+          "go-integration-test",
           "go-load-test",
+          "go-makefile",
+          "go-middleware",
           "integration-design",
-          "kubernetes-manifest",
-          "multi-tenancy-design"
+          "prometheus-metrics-design",
+          "python-chaos-test",
+          "slo-definition",
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/devops-handbook-kim-humble-debois-willis.md",
+          "research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md",
+          "research/software-architecture/building-microservices-newman.md",
+          "research/software-architecture/concurrency-in-go-cox-buday.md",
+          "research/testing/chaos-engineering-method-official-docs.md",
+          "research/testing/chaos-mesh-and-toxiproxy-details-official-docs.md",
+          "research/testing/chaos-mesh-official-docs.md",
+          "research/testing/go-resilience-fault-injection-official-docs.md",
+          "research/testing/go-toolchain-official-docs.md",
+          "research/testing/helm-official-docs.md",
+          "research/testing/kind-official-docs.md",
+          "research/testing/kubectl-official-docs.md",
+          "research/testing/toxiproxy-official-docs.md"
+        ],
         "status": "stable",
         "tags": [
-          "blast-radius",
+          "abort",
+          "bulkhead",
           "chaos",
           "chaos-mesh",
           "circuit-breaker",
-          "deadlock",
-          "dlq",
           "fault-injection",
-          "livelock",
+          "go",
+          "kind",
           "quality",
           "resilience",
           "retry",
+          "steady-state",
           "toxiproxy"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -11421,8 +11442,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1326,
-    "edges_skill_sources": 418,
+    "edges_skill_related": 1332,
+    "edges_skill_sources": 431,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11434,20 +11455,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 120,
+    "research_files_cited": 126,
     "skills_with_assets": 6,
-    "skills_with_contract_test": 121,
+    "skills_with_contract_test": 120,
     "skills_with_domain": 190,
-    "skills_with_evals": 68,
-    "skills_with_examples": 68,
+    "skills_with_evals": 69,
+    "skills_with_examples": 69,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 67,
-    "skills_with_scripts": 61,
-    "skills_with_sources": 69,
+    "skills_with_resources": 68,
+    "skills_with_scripts": 62,
+    "skills_with_sources": 70,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 66
+    "skills_with_templates": 67
   },
   "edges": {
     "agent_produces": [
@@ -12744,7 +12765,7 @@
         "skill": "go-amqp-publisher"
       },
       {
-        "artifact": "go-chaos-test",
+        "artifact": "chaos-experiment-suite",
         "skill": "go-chaos-test"
       },
       {
@@ -14926,11 +14947,11 @@
         "skill": "go-amqp-publisher"
       },
       {
-        "related": "alerting-rules-design",
+        "related": "ci-pipeline",
         "skill": "go-chaos-test"
       },
       {
-        "related": "canary-deployment",
+        "related": "disaster-recovery-plan",
         "skill": "go-chaos-test"
       },
       {
@@ -14942,11 +14963,15 @@
         "skill": "go-chaos-test"
       },
       {
-        "related": "go-event-consumer",
+        "related": "go-e2e-test",
         "skill": "go-chaos-test"
       },
       {
-        "related": "go-event-publisher",
+        "related": "go-error-handling",
+        "skill": "go-chaos-test"
+      },
+      {
+        "related": "go-integration-test",
         "skill": "go-chaos-test"
       },
       {
@@ -14954,15 +14979,35 @@
         "skill": "go-chaos-test"
       },
       {
+        "related": "go-makefile",
+        "skill": "go-chaos-test"
+      },
+      {
+        "related": "go-middleware",
+        "skill": "go-chaos-test"
+      },
+      {
         "related": "integration-design",
         "skill": "go-chaos-test"
       },
       {
-        "related": "kubernetes-manifest",
+        "related": "prometheus-metrics-design",
         "skill": "go-chaos-test"
       },
       {
-        "related": "multi-tenancy-design",
+        "related": "python-chaos-test",
+        "skill": "go-chaos-test"
+      },
+      {
+        "related": "slo-definition",
+        "skill": "go-chaos-test"
+      },
+      {
+        "related": "test-fixture-design",
+        "skill": "go-chaos-test"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "go-chaos-test"
       },
       {
@@ -19138,6 +19183,58 @@
       {
         "skill": "glossary-management",
         "source": "research/product-strategy-and-gtm/running-lean-maurya.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/devops-and-delivery/devops-handbook-kim-humble-debois-willis.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/software-architecture/building-microservices-newman.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/software-architecture/concurrency-in-go-cox-buday.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/chaos-engineering-method-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/chaos-mesh-and-toxiproxy-details-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/chaos-mesh-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/go-resilience-fault-injection-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/go-toolchain-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/helm-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/kind-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/kubectl-official-docs.md"
+      },
+      {
+        "skill": "go-chaos-test",
+        "source": "research/testing/toxiproxy-official-docs.md"
       },
       {
         "skill": "go-contract-test",
