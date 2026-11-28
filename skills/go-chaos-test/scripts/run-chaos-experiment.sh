@@ -591,13 +591,16 @@ if not removal["verified"]:
 print(f"   fault removed and verified: {removal['detail']}", flush=True)
 
 recovered = False
+paced = False  # did the probe ever keep its own pace for a whole window after removal?
 recovery_end = time.monotonic() + exp["recovery"]["within_seconds"]
 while time.monotonic() < recovery_end and not interrupted:
     probe_once("after")
     recent = [g for p, t, g in samples if p == "after" and t >= time.monotonic() - window]
-    if len(recent) >= window * steady["probe_per_second"] * 0.8 and sum(recent) / len(recent) >= steady["objective"]:
-        recovered = True
-        break
+    if len(recent) >= window * steady["probe_per_second"] * 0.8:
+        paced = True
+        if sum(recent) / len(recent) >= steady["objective"]:
+            recovered = True
+            break
 if interrupted:
     finish("INVALID", ["interrupted during recovery; the fault was already removed"], 130)
 
@@ -611,6 +614,11 @@ if aborted:
 elif during is None or during < steady["objective"]:
     reasons.append(f"{steady['sli']} was {'none' if during is None else f'{during:.3f}'} during the fault over {n} requests, "
                    f"below the objective {steady['objective']}")
+if not recovered and not paced and not reasons:
+    # A slow probe (a busy machine, a slow network) must not be read as a product that did not recover.
+    finish("INVALID", [f"after removing the fault the probe never kept its own pace of {steady['probe_per_second']} a second "
+                       f"for a whole {window} s window, so recovery could not be judged; lower probe_per_second or run on a "
+                       "less busy machine"], 4)
 if not recovered:
     reasons.append(f"the steady state did not return within {exp['recovery']['within_seconds']} s of removing the fault")
 if reasons:

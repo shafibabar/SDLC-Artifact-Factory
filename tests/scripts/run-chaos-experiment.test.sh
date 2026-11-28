@@ -56,9 +56,10 @@ chmod +x "$TMP/bin/kubectl" "$TMP/bin/go"
 
 # One server: the product's endpoint (good, bad, or bad while a fault is active), the Toxiproxy API and the statement marker.
 cat > "$TMP/server.py" <<'PY'
-import http.server, json, os, socketserver, sys
+import http.server, json, os, socketserver, sys, time
 folder = sys.argv[1]
 toxics = []
+ever_faulted = [False]
 
 def setting(name):
     path = os.path.join(folder, name)
@@ -79,6 +80,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if self.path == "/v1/window":
             mode = setting("mode")
             active = bool(toxics) or os.path.exists(os.path.join(folder, "state", "mesh"))
+            if active and mode == "slow-after":
+                ever_faulted[0] = True
+            if mode == "slow-after" and ever_faulted[0] and not active:
+                time.sleep(0.4)  # healthy (well under 800 ms) but too slow for the probe to keep 5 a second
             if mode == "degrade" and active:
                 self.send_response(200)
                 self.send_header("X-Degraded", "stale")
@@ -146,10 +151,10 @@ import datetime, json, os, sys
 tmp, port = sys.argv[1], sys.argv[2]
 d = os.path.join(tmp, "p")
 steady = {"slo_id": "SLO-01", "sli": "share of window requests answered 200 in under 800 ms", "endpoint": "api", "path": "/v1/window",
-          "good_statuses": [200], "under_ms": 800, "objective": 0.99, "probe_per_second": 20, "window_seconds": 1}
+          "good_statuses": [200], "under_ms": 800, "objective": 0.99, "probe_per_second": 5, "window_seconds": 1}
 base = {"experiment_id": "toxic", "pattern": "graceful-degradation", "hypothesis": "users still get a window", "blast_radius": "the tides proxy",
         "steady_state": steady, "fault_seconds": 2, "abort": {"sli_below": 0.9, "over_seconds": 1, "max_seconds": 10},
-        "recovery": {"within_seconds": 4},
+        "recovery": {"within_seconds": 10},
         "fault": {"tool": "toxiproxy", "endpoint": "toxiproxy", "proxy": "tides",
                   "toxic": {"name": "tides-latency", "type": "latency", "stream": "downstream", "attributes": {"latency": 2000}}}}
 def write(name, data):
@@ -266,6 +271,12 @@ echo good > "$TMP/mode"
 echo yes > "$TMP/delete-stuck"
 run "removal that cannot be verified" 5 "THE FAULT MAY STILL BE ACTIVE" "${CLUSTER[@]}" -- --experiment "$X/toxic.json"
 rm -f "$TMP/delete-stuck"
+# A healthy product answered too slowly for the probe's own pace after removal:
+# recovery cannot be judged, which is INVALID, never a FAIL of the product.
+echo slow-after > "$TMP/mode"
+run "a probe that cannot keep pace is INVALID" 4 "the probe never kept its own pace" "${CLUSTER[@]}" -- --experiment "$X/toxic.json"
+expect "no toxic left after the slow probe" no_toxic_left
+echo good > "$TMP/mode"
 python3 -I -c 'import urllib.request, sys; urllib.request.urlopen(urllib.request.Request(sys.argv[1], method="POST", data=b"{}"))' "http://127.0.0.1:$PORT/reset"
 
 # interruption while the fault is active

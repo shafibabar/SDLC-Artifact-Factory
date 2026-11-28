@@ -12,6 +12,8 @@ How it is measured: `run-chaos-experiment.sh` sends its own steady requests to t
 
 The steady state is measured **before** injection for `window_seconds`. If it does not reach the objective, the run is **INVALID** and nothing is injected: a fault cannot be blamed for a breach that was already there (run: a path that answered 404 gave `the steady state did not hold before injection ... nothing was injected`, exit 4).
 
+After removal the probe must keep its own pace (`probe_per_second`) for a whole window before recovery is judged. If it never does — a busy machine or a slow network, not the product — the run is **INVALID**, not a failed recovery: a slow probe must never be read as a product that did not recover. Keep `probe_per_second` modest (5 is the template's value); a shared CI machine was observed unable to sustain 20.
+
 ## 2. Hypothesis: users still get X when Y fails
 
 ChAP's form: "users should still be able to stream video when the bookmarks service fails". Write it the same way, naming the fault and the user's outcome: "Users still get a tide window, answered 200 in under 800 ms, while the tide tables answer 2 s late." A hypothesis that only predicts trouble ("the system will struggle") cannot fail, so it proves nothing.

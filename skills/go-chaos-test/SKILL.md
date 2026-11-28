@@ -87,10 +87,10 @@ Detail, the integration-design numbers and the event-driven rows: `./references/
 1. **Where it runs:** by default only the run's own throwaway kind cluster; any other system, staging and production included, only under the product owner's **signed chaos statement** (where, which faults, blast radius, abort conditions, impact), and the runner **refuses** otherwise, with nothing injected.
 2. **Chaos Mesh only inside the throwaway cluster** (privileged daemon, host PID); application-level and Toxiproxy faults first.
 3. **The steady-state hypothesis on the SLO's output metric**, named by its id and worded as the SLO defines it, measured before injection.
-4. **Each pattern's measurable assertion** from the table, never "it failed fast".
+4. **Each pattern's measurable assertion** from the table, never "it failed fast". For a breaker say the threshold **as configured** (the integration design's number, which a library default such as gobreaker's may differ from) and each state in words: open at the threshold, failing fast with the dependency receiving no calls, half-open after the reset, closed on success, reopened by a half-open failure. For a deadlock say the experiment drives **the lock order the shipped code uses**, never locks the test invents.
 5. **The abort conditions as numbers**, and that the fault is removed on every path and its **removal verified**.
 6. **INVALID** when the fault was never confirmed active or the steady state did not hold before it; **no retries**.
-7. **Never on a pull request**, never in `make ci`; scheduled in the throwaway cluster, no standing production chaos.
+7. **Every chaos test file carries a build tag, so neither `make ci` nor the coverage gate compiles it** (say both); never on a pull request; scheduled in the throwaway cluster, no standing production chaos.
 8. **A pattern the product lacks is named as missing**, not built in the test.
 9. **The report is an artifact the product owner approves**, and says what the run does not prove.
 10. **One line on what was run**; anything not run is called unverified.
