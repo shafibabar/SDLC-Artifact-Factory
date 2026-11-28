@@ -14,7 +14,7 @@ description: >
   report, or "can we load test staging / production / on every pull request",
   "does it meet the p95 target", "how many users can it take". Also the k6
   scripts and gate python-load-test reuses. Produces load-test-suite.
-version: 3.1.0
+version: 3.2.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25

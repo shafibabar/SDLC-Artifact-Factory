@@ -3,7 +3,8 @@
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
-SCRIPT="$REPO_ROOT/skills/go-load-test/scripts/write-load-report.sh"
+# LOAD_TEST_SKILL=python-load-test runs the same cases against that skill's copy (tests/scripts/python-load-*.test.sh).
+SCRIPT="$REPO_ROOT/skills/${LOAD_TEST_SKILL:-go-load-test}/scripts/write-load-report.sh"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 FAILURES=0

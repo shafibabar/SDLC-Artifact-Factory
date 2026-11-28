@@ -134,7 +134,7 @@ A run that dropped iterations or saturated its generator is invalid, not passed.
 
 - The rolling SLO window: one run shows the targets held at this load for this run's length, not for 28 days.
 - Production itself: the result holds for the sizing and data recorded in the designation, nothing larger.
-- Faults injected on purpose (go-chaos-test) and speed of a single function (go-performance-test).
+- Faults injected on purpose and the speed of a single function: the chaos-test and performance-test skills of the product's language.
 - [Add what is specific to this product and run.]
 
 The agent then completed "The product's own measurements" ("not read: the stand-in had no Prometheus"), the product-specific bullet and "Not run or unverified" (the two-hour soak; GitHub Actions), and put the report to the product owner.
