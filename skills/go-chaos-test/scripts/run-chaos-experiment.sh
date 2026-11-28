@@ -19,23 +19,30 @@
 #                window, the fault listed in it and within its limits, the
 #                abort conditions at least as strict, the marker served unless
 #                the statement says why it cannot be. Only Toxiproxy faults:
-#                Chaos Mesh and in-process Go tests run in the throwaway
-#                cluster only.
+#                Chaos Mesh, Go tests and pytest run in the throwaway cluster
+#                only.
 #
 # Fault tools: "toxiproxy" (a toxic through the Toxiproxy API), "chaos-mesh"
 # (a Chaos Mesh manifest, throwaway cluster only), "go-test" (a build-tagged
-# Go test that injects its own fault; it reports CHAOS-INVALID, CHAOS-REFUSED
-# and CHAOS-FAULT-LEFT lines that this script reads).
+# Go test that injects its own fault) and "pytest" (pytest tests marked chaos,
+# under tests/chaos/, that inject their own fault). Both test tools report
+# CHAOS-INVALID, CHAOS-REFUSED and CHAOS-FAULT-LEFT lines that this script
+# reads, and get CHAOS_EXPERIMENT_ID. pytest runs with the product's addopts
+# and PYTEST_ADDOPTS cleared, no cache and no rerun plugin; this script adds
+# --junitxml and reads it, because pytest exits 0 when every test skipped.
 #
 # Verdicts and exit statuses:
 #   0   PASS     steady state held before, the fault was confirmed active, the
 #                SLI held during it, the removal was verified, it recovered
 #   1   FAIL     the SLI fell below the objective during the fault, an abort
-#                condition fired, it did not recover, or the Go test failed
+#                condition fired, it did not recover, or a Go test or pytest
+#                test failed
 #   2   usage or configuration error; nothing was injected
 #   3   REFUSED  the target is not allowed; nothing was injected
 #   4   INVALID  proves nothing: the steady state did not hold before
-#                injection, or the fault was never confirmed active
+#                injection, the fault was never confirmed active, or the
+#                test tool ran no test (pytest: none collected, any skipped,
+#                or an error outside a test)
 #   5   the fault's removal could not be verified: it may still be active
 #   130 interrupted: the fault was removed (and the removal verified) first
 # Results go to <out>/<experiment id>-result.json; <out> is --out, else
@@ -43,7 +50,7 @@
 set -uo pipefail
 exec python3 -I - "$@" << 'PY'
 import datetime, ipaddress, json, os, re, shlex, signal, socket, subprocess, sys, time
-import urllib.error, urllib.parse, urllib.request
+import urllib.error, urllib.parse, urllib.request, xml.etree.ElementTree
 
 USAGE = "usage: run-chaos-experiment.sh --experiment <file.json> [--statement <file.json>] [--out <dir>]"
 MESH_KINDS = ("PodChaos", "NetworkChaos", "StressChaos", "HTTPChaos", "IOChaos", "TimeChaos", "DNSChaos")
@@ -104,10 +111,11 @@ for key in ("experiment_id", "pattern", "hypothesis", "blast_radius"):
         problems.append(f"{key}: missing")
 fault = exp.get("fault") if isinstance(exp.get("fault"), dict) else {}
 tool = fault.get("tool")
-if tool not in ("toxiproxy", "chaos-mesh", "go-test"):
-    problems.append("fault.tool: toxiproxy, chaos-mesh or go-test")
+TEST_TOOLS = ("go-test", "pytest")
+if tool not in ("toxiproxy", "chaos-mesh") + TEST_TOOLS:
+    problems.append("fault.tool: toxiproxy, chaos-mesh, go-test or pytest")
 steady = exp.get("steady_state") if isinstance(exp.get("steady_state"), dict) else None
-if tool != "go-test" or steady is not None:
+if tool not in TEST_TOOLS or steady is not None:
     steady = steady or {}
     for key in ("slo_id", "sli", "endpoint", "path"):
         if not text(steady.get(key)):
@@ -124,7 +132,7 @@ if tool != "go-test" or steady is not None:
 abort = exp.get("abort") if isinstance(exp.get("abort"), dict) else {}
 if not number(abort.get("max_seconds")):
     problems.append("abort.max_seconds: the hard bound on how long the fault may stay")
-if tool != "go-test":
+if tool not in TEST_TOOLS:
     if not (number(abort.get("sli_below")) and abort["sli_below"] <= 1):
         problems.append("abort.sli_below: the SLI below which the fault is removed at once")
     if not number(abort.get("over_seconds")):
@@ -156,6 +164,22 @@ if tool == "go-test":
             problems.append("fault.command: must carry -count=1 (a cached pass is not a run)")
         if re.search(r"--rerun-fails|-count[= ]([2-9]|\d\d)", command):
             problems.append("fault.command: an experiment is never retried")
+if tool == "pytest":
+    command = fault.get("command", "")
+    if not text(command) or not re.search(r"(^|\s)(-m\s+)?pytest(\s|$)", command):
+        problems.append("fault.command: a pytest command (pytest ..., python -m pytest ... or uv run pytest ...)")
+    else:
+        if not re.search(r"(^|\s)-m\s+[\"']?chaos\b", command) or re.search(r"\bnot\s+chaos\b", command):
+            problems.append("fault.command: must select the chaos marker (-m chaos)")
+        if not re.search(r"(^|\s)-p\s+no:cacheprovider\b", command):
+            problems.append("fault.command: must carry -p no:cacheprovider (no last-failed or stepwise narrowing)")
+        if not re.search(r"(^|\s)-p\s+no:rerunfailures\b", command):
+            problems.append("fault.command: must carry -p no:rerunfailures (an experiment is never retried)")
+        if not re.search(r"(^|\s)-o\s+[\"']?addopts=(\"\"|''|(?=[\s\"']|$))", command):
+            problems.append("fault.command: must carry -o addopts=\"\" (the product's addopts may not narrow or retry it)")
+        if re.search(r"--reruns\b|--lf\b|--last-failed\b|--ff\b|--failed-first\b|--sw\b|--stepwise\b|--count\b|--junit-?xml", command):
+            problems.append("fault.command: no --reruns, --lf, --ff, --sw, --count or --junitxml: one run of the whole "
+                            "selection, its report written where this script reads it")
 if problems:
     stop(2, "EXPERIMENT ERROR in " + args["experiment"] + ":\n  " + "\n  ".join(problems))
 exp_id = exp["experiment_id"]
@@ -237,7 +261,7 @@ if "statement" not in args:
 else:
     if tool != "toxiproxy":
         refuse(f"a {tool} fault runs only in the run's own throwaway cluster: Chaos Mesh's daemon is privileged "
-               "(host PID, host mounts) and an in-process Go test is not bounded by the statement; "
+               "(host PID, host mounts) and an in-process test (go test or pytest) is not bounded by the statement; "
                "on another system only a Toxiproxy fault the statement lists is allowed")
     st = load(args["statement"], "chaos statement")
     for key in ("statement_id", "product", "base_url", "toxiproxy_api", "purpose", "blast_radius", "how_to_stop",
@@ -435,7 +459,6 @@ def finish(verdict, reasons, code):
         reasons = reasons + [f"THE FAULT MAY STILL BE ACTIVE: its removal could not be verified ({removal['detail']}). "
                              "Remove it by hand now: " + how_to_remove]
         code = 5
-    out_dir = args.get("out") or os.path.join(os.environ.get("E2E_RESULTS_DIR", "chaos-evidence"), "chaos")
     os.makedirs(out_dir, exist_ok=True)
     phases = {}
     for phase in ("before", "during", "after"):
@@ -458,6 +481,7 @@ def finish(verdict, reasons, code):
 
 
 started_at = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+out_dir = args.get("out") or os.path.join(os.environ.get("E2E_RESULTS_DIR", "chaos-evidence"), "chaos")
 how_to_remove = ""
 manifest = None
 if tool == "chaos-mesh":
@@ -487,11 +511,19 @@ if tool == "chaos-mesh":
         stop(2, "MANIFEST ERROR in " + fault["manifest"] + ":\n  " + "\n  ".join(errors))
     how_to_remove = f"kubectl delete {manifest['kind']} {meta['name']} -n {meta['namespace']}"
 
-# ---------------------------------------------------------------- go-test
-if tool == "go-test":
-    env = dict(os.environ)
-    print(f"== chaos experiment {exp_id} (go test, {target['environment']})", flush=True)
-    child = subprocess.Popen(["/bin/bash", "-c", fault["command"]], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+# -------------------------------------------------------- go-test and pytest
+if tool in TEST_TOOLS:
+    env = dict(os.environ, CHAOS_EXPERIMENT_ID=exp_id)
+    command = fault["command"]
+    if tool == "pytest":
+        env.pop("PYTEST_ADDOPTS", None)
+        os.makedirs(out_dir, exist_ok=True)
+        junit = os.path.join(os.path.abspath(out_dir), f"{exp_id}-junit.xml")
+        if os.path.exists(junit):
+            os.remove(junit)
+        command += " --junitxml=" + shlex.quote(junit)
+    print(f"== chaos experiment {exp_id} ({tool}, {target['environment']})", flush=True)
+    child = subprocess.Popen(["/bin/bash", "-c", command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              text=True, env=env, start_new_session=True)
     lines = []
     for line in child.stdout:
@@ -509,17 +541,37 @@ if tool == "go-test":
         left = [n for n, p in (proxies or {}).items() if isinstance(p, dict) and p.get("toxics")] if listing == 200 else ["unknown"]
         removal.update(verified=not left, detail=f"Toxiproxy reset answered {status}; toxics left on: {left or 'none'}")
         injected = False
-    marks = lambda tag: re.findall(tag + r": (.*)", output)
+    marks = lambda tag: list(dict.fromkeys(m.strip() for m in re.findall(tag + r": (.*)", output)))
     if interrupted:
-        finish("INVALID", ["interrupted: the Go test was stopped; nothing is concluded"], 130)
+        finish("INVALID", [f"interrupted: the {tool} run was stopped; nothing is concluded"], 130)
     if marks("CHAOS-FAULT-LEFT"):
         removal.update(verified=False, detail="; ".join(marks("CHAOS-FAULT-LEFT")))
         how_to_remove = "reset the Toxiproxy of the run (POST /reset) or let the environment run delete the cluster"
-        finish("INVALID", ["the Go test could not verify its fault's removal"], 5)
+        finish("INVALID", [f"the {tool} run could not verify its fault's removal"], 5)
     if marks("CHAOS-REFUSED"):
         finish("REFUSED", marks("CHAOS-REFUSED"), 3)
     if marks("CHAOS-INVALID"):
         finish("INVALID", marks("CHAOS-INVALID"), 4)
+    if tool == "pytest":
+        # pytest's own report, not its exit status alone: 0 is also what an all-skipped run gives.
+        if child.returncode == 5:
+            finish("INVALID", ["pytest collected no test (exit 5): the selection matched nothing"], 4)
+        try:
+            suites = list(xml.etree.ElementTree.parse(junit).getroot().iter("testsuite"))
+            count = lambda key: sum(int(s.get(key, 0)) for s in suites)
+            tests, failed, errors, skipped = count("tests"), count("failures"), count("errors"), count("skipped")
+        except (OSError, ValueError, xml.etree.ElementTree.ParseError) as exc:
+            finish("INVALID", [f"pytest exited {child.returncode} and wrote no readable report ({exc}): nothing is concluded"], 4)
+        if child.returncode not in (0, 1):
+            finish("INVALID", [f"pytest exited {child.returncode} outside a test (2 = interrupted or a collection error, "
+                               "3 = internal error, 4 = usage error): nothing is concluded"], 4)
+        if failed or errors or child.returncode != 0:
+            finish("FAIL", [f"pytest: {failed} failed, {errors} error(s) of {tests}: a pattern assertion failed (see the output above)"], 1)
+        if tests == 0:
+            finish("INVALID", ["pytest ran no test: the selection matched nothing"], 4)
+        if skipped:
+            finish("INVALID", [f"pytest skipped {skipped} of {tests} test(s): a skipped experiment proves nothing"], 4)
+        finish("PASS", [f"every pattern assertion held ({tests} pytest test(s))"], 0)
     if child.returncode != 0:
         finish("FAIL", [f"go test exited {child.returncode}: a pattern assertion failed (see the output above)"], 1)
     if not [l for l in output.splitlines() if l.startswith("ok") and "[no tests to run]" not in l]:
@@ -595,7 +647,10 @@ paced = False  # did the probe ever keep its own pace for a whole window after r
 recovery_end = time.monotonic() + exp["recovery"]["within_seconds"]
 while time.monotonic() < recovery_end and not interrupted:
     probe_once("after")
-    recent = [g for p, t, g in samples if p == "after" and t >= time.monotonic() - window]
+    # The window ends at the newest sample, not at "now": probe_once sleeps after
+    # recording, so "now" would always push one sample out of a short window.
+    newest = max((t for p, t, g in samples if p == "after"), default=time.monotonic())
+    recent = [g for p, t, g in samples if p == "after" and t > newest - window]
     if len(recent) >= window * steady["probe_per_second"] * 0.8:
         paced = True
         if sum(recent) / len(recent) >= steady["objective"]:

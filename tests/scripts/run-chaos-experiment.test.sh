@@ -1,11 +1,13 @@
 #!/bin/bash
 # Synthetic-input test for go-chaos-test's runner and target guard. Needs no
-# Docker, Go, Toxiproxy, kubectl or cluster: kubectl and go are fakes on the
-# PATH, and one local HTTP server plays the product and the Toxiproxy API.
+# Docker, Go, pytest, Toxiproxy, kubectl or cluster: kubectl, go and pytest are
+# fakes on the PATH, and one local HTTP server plays the product and the
+# Toxiproxy API. CHAOS_TEST_SKILL=python-chaos-test runs the same cases against
+# python-chaos-test's copy (tests/scripts/python-chaos-runner.test.sh).
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/harness.sh"
-SCRIPT="$REPO_ROOT/skills/go-chaos-test/scripts/run-chaos-experiment.sh"
+SCRIPT="$REPO_ROOT/skills/${CHAOS_TEST_SKILL:-go-chaos-test}/scripts/run-chaos-experiment.sh"
 TMP="$(cd "$(mktemp -d)" && pwd -P)"
 SERVER_PID=""
 trap '[ -z "$SERVER_PID" ] || kill "$SERVER_PID" 2>/dev/null; rm -rf "$TMP"' EXIT
@@ -52,7 +54,28 @@ case "${FAKE_GO:-pass}" in
   none) echo "ok  	example.com/p/internal/tides	0.1s [no tests to run]"; exit 0 ;;
 esac
 SH
-chmod +x "$TMP/bin/kubectl" "$TMP/bin/go"
+cat > "$TMP/bin/pytest" <<'SH'
+#!/bin/bash
+# Fake pytest: records what it was given, prints what FAKE_PYTEST asks for, writes the JUnit report pytest would.
+junit=""
+for a in "$@"; do case "$a" in --junitxml=*) junit="${a#--junitxml=}" ;; esac; done
+printf 'args=%s\naddopts=%s\nexperiment=%s\n' "$*" "${PYTEST_ADDOPTS-unset}" "${CHAOS_EXPERIMENT_ID-unset}" > "$FAKE_DIR/pytest-seen"
+report() { [ -z "$junit" ] || printf '<?xml version="1.0"?><testsuites><testsuite name="pytest" tests="%s" failures="%s" errors="%s" skipped="%s"/></testsuites>\n' "$1" "$2" "$3" "$4" > "$junit"; }
+case "${FAKE_PYTEST:-pass}" in
+  pass) report 3 0 0 0; echo "3 passed in 4.1s"; exit 0 ;;
+  fail) report 3 1 0 0; echo "E   Failed: after 5 consecutive failed call(s) (threshold 5): breaker is closed, want opened"; echo "1 failed, 2 passed"; exit 1 ;;
+  invalid) report 1 1 0 0; echo "CHAOS-INVALID: adding toxic 'misspelt' to 'stations': Toxiproxy answered 400 (no fault was injected)"
+           echo "FAILED tests/chaos/test_x.py::test_t - CHAOS-INVALID: adding toxic 'misspelt' to 'stations': Toxiproxy answered 400 (no fault was injected)"; exit 1 ;;
+  refused) report 1 0 1 0; echo "CHAOS-REFUSED: a chaos experiment starts only through run-chaos-experiment.sh"; exit 1 ;;
+  left) report 1 0 1 0; echo "CHAOS-FAULT-LEFT: toxic 'stations-latency' is still listed on 'stations' after removal"; exit 1 ;;
+  none) report 0 0 0 0; echo "no tests ran in 0.01s"; exit 5 ;;
+  skipped) report 2 0 0 2; echo "2 skipped in 0.02s"; exit 0 ;;
+  someskipped) report 3 0 0 1; echo "2 passed, 1 skipped in 0.02s"; exit 0 ;;
+  collect) report 1 0 1 0; echo "ERROR collecting tests/chaos/test_x.py"; exit 2 ;;
+  noreport) echo "3 passed"; exit 0 ;;
+esac
+SH
+chmod +x "$TMP/bin/kubectl" "$TMP/bin/go" "$TMP/bin/pytest"
 
 # One server: the product's endpoint (good, bad, or bad while a fault is active), the Toxiproxy API and the statement marker.
 cat > "$TMP/server.py" <<'PY'
@@ -83,7 +106,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if active and mode == "slow-after":
                 ever_faulted[0] = True
             if mode == "slow-after" and ever_faulted[0] and not active:
-                time.sleep(0.4)  # healthy (well under 800 ms) but too slow for the probe to keep 5 a second
+                time.sleep(0.7)  # healthy (under 800 ms) but too slow for the probe to keep 2 a second over a 2 s window
             if mode == "degrade" and active:
                 self.send_response(200)
                 self.send_header("X-Degraded", "stale")
@@ -151,7 +174,7 @@ import datetime, json, os, sys
 tmp, port = sys.argv[1], sys.argv[2]
 d = os.path.join(tmp, "p")
 steady = {"slo_id": "SLO-01", "sli": "share of window requests answered 200 in under 800 ms", "endpoint": "api", "path": "/v1/window",
-          "good_statuses": [200], "under_ms": 800, "objective": 0.99, "probe_per_second": 5, "window_seconds": 1}
+          "good_statuses": [200], "under_ms": 800, "objective": 0.99, "probe_per_second": 2, "window_seconds": 2}
 base = {"experiment_id": "toxic", "pattern": "graceful-degradation", "hypothesis": "users still get a window", "blast_radius": "the tides proxy",
         "steady_state": steady, "fault_seconds": 2, "abort": {"sli_below": 0.9, "over_seconds": 1, "max_seconds": 10},
         "recovery": {"within_seconds": 10},
@@ -177,6 +200,14 @@ go = {"experiment_id": "patterns", "pattern": "circuit-breaker", "hypothesis": "
 write("go.json", go)
 write("go-cached.json", dict(go, fault={"tool": "go-test", "command": "go test -tags chaos ./internal/..."}))
 write("go-retried.json", dict(go, fault={"tool": "go-test", "command": "gotestsum --rerun-fails -- go test -tags chaos -count=1 ./..."}))
+pyc = "pytest tests/chaos -m chaos -p no:cacheprovider -p no:rerunfailures -o addopts=\"\" --tb=short"
+py = dict(go, experiment_id="py-patterns", fault={"tool": "pytest", "command": pyc, "reset_toxiproxy": "toxiproxy"})
+write("py.json", py)
+for name, command in (("py-cache", pyc.replace(" -p no:cacheprovider", "")), ("py-rerun", pyc.replace(" -p no:rerunfailures", "")),
+                      ("py-addopts", pyc.replace(' -o addopts=""', "")), ("py-nomarker", pyc.replace(" -m chaos", "")),
+                      ("py-notchaos", pyc.replace("-m chaos", '-m "not chaos"')), ("py-reruns", pyc + " --reruns 2"),
+                      ("py-notpytest", "make chaos")):
+    write(name + ".json", dict(py, fault={"tool": "pytest", "command": command}))
 now = datetime.datetime.now(datetime.timezone.utc)
 statement = {"statement_id": "verify-1", "product": "p", "base_url": f"http://127.0.0.1:{port}", "toxiproxy_api": f"http://127.0.0.1:{port}",
              "purpose": "verify the fallback", "blast_radius": "the tides proxy",
@@ -311,6 +342,33 @@ run "go test assertion fails" 1 "go test exited 1: a pattern assertion failed" "
 run "go test reports its fault never injected" 4 "^   adding toxic .*AddToxic: HTTP 400" "${CLUSTER[@]}" FAKE_GO=invalid -- --experiment "$X/go.json"
 run "go test reports a fault left" 5 "could not verify its fault's removal" "${CLUSTER[@]}" FAKE_GO=left -- --experiment "$X/go.json"
 run "go test that ran nothing" 4 "ran no test" "${CLUSTER[@]}" FAKE_GO=none -- --experiment "$X/go.json"
+
+# --- pytest
+run "pytest: no cache plugin switch" 2 "must carry -p no:cacheprovider" "${CLUSTER[@]}" -- --experiment "$X/py-cache.json"
+run "pytest: no rerun plugin switch" 2 "must carry -p no:rerunfailures" "${CLUSTER[@]}" -- --experiment "$X/py-rerun.json"
+run "pytest: addopts not cleared" 2 "must carry -o addopts" "${CLUSTER[@]}" -- --experiment "$X/py-addopts.json"
+run "pytest: no chaos marker" 2 "must select the chaos marker" "${CLUSTER[@]}" -- --experiment "$X/py-nomarker.json"
+run "pytest: everything but chaos" 2 "must select the chaos marker" "${CLUSTER[@]}" -- --experiment "$X/py-notchaos.json"
+run "pytest: retried" 2 "no --reruns" "${CLUSTER[@]}" -- --experiment "$X/py-reruns.json"
+run "pytest: not a pytest command" 2 "a pytest command" "${CLUSTER[@]}" -- --experiment "$X/py-notpytest.json"
+run "pytest: started by hand" 3 "REFUSED: E2E_RUN_ID and E2E_KUBECONFIG are not set" -- --experiment "$X/py.json"
+expect "pytest: nothing ran on a refusal" test ! -e "$TMP/pytest-seen"
+run "pytest passes" 0 "every pattern assertion held \(3 pytest test" "${CLUSTER[@]}" PYTEST_ADDOPTS="--reruns 3" -- --experiment "$X/py.json"
+expect "pytest: PYTEST_ADDOPTS cleared" grep -q "^addopts=unset$" "$TMP/pytest-seen"
+expect "pytest: CHAOS_EXPERIMENT_ID given" grep -q "^experiment=py-patterns$" "$TMP/pytest-seen"
+expect "pytest: the report goes where the runner reads it" grep -q -- "--junitxml=$TMP/out/py-patterns-junit.xml" "$TMP/pytest-seen"
+run "pytest assertion fails" 1 "pytest: 1 failed, 0 error\(s\) of 3" "${CLUSTER[@]}" FAKE_PYTEST=fail -- --experiment "$X/py.json"
+run "pytest reports its fault never injected" 4 "^   adding toxic 'misspelt'.*Toxiproxy answered 400" "${CLUSTER[@]}" FAKE_PYTEST=invalid -- --experiment "$X/py.json"
+run "pytest reports a refusal" 3 "== REFUSED.*" "${CLUSTER[@]}" FAKE_PYTEST=refused -- --experiment "$X/py.json"
+run "pytest reports a fault left" 5 "could not verify its fault's removal" "${CLUSTER[@]}" FAKE_PYTEST=left -- --experiment "$X/py.json"
+run "pytest collected nothing (exit 5)" 4 "pytest collected no test \(exit 5\)" "${CLUSTER[@]}" FAKE_PYTEST=none -- --experiment "$X/py.json"
+run "pytest skipped every test" 4 "pytest skipped 2 of 2 test\(s\)" "${CLUSTER[@]}" FAKE_PYTEST=skipped -- --experiment "$X/py.json"
+run "pytest skipped one test" 4 "pytest skipped 1 of 3 test\(s\)" "${CLUSTER[@]}" FAKE_PYTEST=someskipped -- --experiment "$X/py.json"
+run "pytest collection error" 4 "pytest exited 2 outside a test" "${CLUSTER[@]}" FAKE_PYTEST=collect -- --experiment "$X/py.json"
+run "pytest wrote no report" 4 "wrote no readable report" "${CLUSTER[@]}" FAKE_PYTEST=noreport -- --experiment "$X/py.json"
+rm -f "$TMP/pytest-seen"
+run "statement: pytest is refused outside the throwaway cluster" 3 "an in-process test \(go test or pytest\)" -- --experiment "$X/py.json" --statement "$X/statement.json"
+expect "pytest: nothing ran under a statement" test ! -e "$TMP/pytest-seen"
 
 # --- another system: only under the product owner's signed chaos statement
 rm -f "$TMP/posts"
