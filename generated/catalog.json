@@ -6047,12 +6047,12 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "go-load-test",
         "owner": "test-strategist",
         "phase": "quality",
@@ -6060,30 +6060,51 @@
           "load-test-suite"
         ],
         "related": [
+          "alerting-rules-design",
+          "cd-pipeline",
+          "ci-pipeline",
           "environment-config",
           "go-chaos-test",
+          "go-concurrency-patterns",
           "go-e2e-test",
+          "go-integration-test",
+          "go-makefile",
           "go-middleware",
           "go-performance-test",
-          "integration-design",
+          "nfr-specification",
           "prometheus-metrics-design",
-          "slo-definition"
+          "python-load-test",
+          "slo-definition",
+          "test-fixture-design",
+          "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/devops-and-delivery/continuous-delivery-humble-farley.md",
+          "research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md",
+          "research/software-architecture/concurrency-in-go-cox-buday.md",
+          "research/software-architecture/designing-data-intensive-applications-kleppmann.md",
+          "research/testing/github-actions-e2e-official-docs.md",
+          "research/testing/k6-gating-and-running-official-docs.md",
+          "research/testing/k6-official-docs.md",
+          "research/testing/kind-official-docs.md",
+          "research/testing/load-test-environment-official-docs.md",
+          "research/testing/load-test-method-official-docs.md"
+        ],
         "status": "stable",
         "tags": [
+          "arrival-rate",
           "backpressure",
-          "circuit-breaker",
           "go",
           "k6",
-          "latency",
           "load-test",
+          "nfr",
+          "performance-environment",
           "quality",
-          "shift-right",
+          "rate-limit",
           "slo",
-          "throughput"
+          "thresholds"
         ],
-        "version": "2.1.0"
+        "version": "3.0.0"
       },
       {
         "created": "2026-06-25",
@@ -11373,8 +11394,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1302,
-    "edges_skill_sources": 400,
+    "edges_skill_related": 1311,
+    "edges_skill_sources": 410,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11386,20 +11407,20 @@
     "agents_with_produces": 5,
     "agents_with_status": 5,
     "commands_with_test": 15,
-    "research_files_cited": 114,
+    "research_files_cited": 119,
     "skills_with_assets": 6,
     "skills_with_contract_test": 123,
     "skills_with_domain": 190,
     "skills_with_evals": 66,
-    "skills_with_examples": 66,
+    "skills_with_examples": 67,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 65,
-    "skills_with_scripts": 59,
-    "skills_with_sources": 67,
+    "skills_with_resources": 66,
+    "skills_with_scripts": 60,
+    "skills_with_sources": 68,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 64
+    "skills_with_templates": 65
   },
   "edges": {
     "agent_produces": [
@@ -15386,6 +15407,18 @@
         "skill": "go-integration-test"
       },
       {
+        "related": "alerting-rules-design",
+        "skill": "go-load-test"
+      },
+      {
+        "related": "cd-pipeline",
+        "skill": "go-load-test"
+      },
+      {
+        "related": "ci-pipeline",
+        "skill": "go-load-test"
+      },
+      {
         "related": "environment-config",
         "skill": "go-load-test"
       },
@@ -15394,7 +15427,19 @@
         "skill": "go-load-test"
       },
       {
+        "related": "go-concurrency-patterns",
+        "skill": "go-load-test"
+      },
+      {
         "related": "go-e2e-test",
+        "skill": "go-load-test"
+      },
+      {
+        "related": "go-integration-test",
+        "skill": "go-load-test"
+      },
+      {
+        "related": "go-makefile",
         "skill": "go-load-test"
       },
       {
@@ -15406,7 +15451,7 @@
         "skill": "go-load-test"
       },
       {
-        "related": "integration-design",
+        "related": "nfr-specification",
         "skill": "go-load-test"
       },
       {
@@ -15414,7 +15459,19 @@
         "skill": "go-load-test"
       },
       {
+        "related": "python-load-test",
+        "skill": "go-load-test"
+      },
+      {
         "related": "slo-definition",
+        "skill": "go-load-test"
+      },
+      {
+        "related": "test-fixture-design",
+        "skill": "go-load-test"
+      },
+      {
+        "related": "test-pyramid",
         "skill": "go-load-test"
       },
       {
@@ -19110,6 +19167,46 @@
       {
         "skill": "go-integration-test",
         "source": "research/testing/unit-testing-khorikov.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/devops-and-delivery/continuous-delivery-humble-farley.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/software-architecture/concurrency-in-go-cox-buday.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/software-architecture/designing-data-intensive-applications-kleppmann.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/testing/github-actions-e2e-official-docs.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/testing/k6-gating-and-running-official-docs.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/testing/k6-official-docs.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/testing/kind-official-docs.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/testing/load-test-environment-official-docs.md"
+      },
+      {
+        "skill": "go-load-test",
+        "source": "research/testing/load-test-method-official-docs.md"
       },
       {
         "skill": "go-repository-pattern",

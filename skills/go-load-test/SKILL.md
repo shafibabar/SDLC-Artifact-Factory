@@ -1,183 +1,141 @@
 ---
 name: go-load-test
 description: >
-  Teaches this plugin's system-level load-testing standard for Go services —
-  the shift-right proof that the deployed system holds up under real,
-  sustained pressure, distinct from go-performance-test's in-process
-  benchmark proxy. Covers the k6 tool standard (open-source, frugal, a
-  black-box external traffic generator — never ported to Go code); the
-  staging-environment standard, deliberately different from go-e2e-test's
-  ephemeral kind cluster (references/load-profile-standard.md, which also
-  covers ramp/soak/spike profiles with concrete parameters for the
-  data-estate platform's bursty, batch-driven traffic shape and the
-  open-vs-closed workload-model choice); the SLO-based pass/fail gate using
-  slo-definition's actual 800ms/99.5% latency-availability numbers and 99%
-  freshness/99.9% correctness targets, closing the real end-to-end p99 loop
-  go-performance-test's 5ms in-process budget deliberately deferred here
-  (references/slo-gate-standard.md); and the backpressure/Circuit-Breaker
-  verification standard proving graceful degradation (429 shedding, breaker
-  opening) under organic overload, distinct from go-chaos-test's injected-
-  fault verification of the same patterns, plus the result-reporting
-  standard wiring k6 output into the OpenTelemetry/Prometheus/Grafana stack
-  (references/backpressure-and-reporting-standard.md). Used by the
-  test-strategist during Quality.
-version: 2.1.0
+  Use when test-strategist, platform-engineer or anyone writes, reviews, runs
+  or fixes load tests for a Go service in the Quality phase: k6 scripts and
+  thresholds, deriving a load profile (rate, virtual users, run length, data)
+  from NFR-PERF rows and SLOs, the open arrival-rate model versus virtual
+  users and coordinated omission, dropped_iterations, smoke, average-load,
+  stress, soak, spike and breakpoint tests, 429 and the rate limiter under
+  load, backpressure and overload checks, k6 exit status 99, http_req_failed
+  and expected statuses, the nightly indicative load check in the kind
+  cluster (make load-indicative), the verdict run in a designated performance
+  environment (make load-verdict), the designation record, the load-test
+  report, or "can we load test staging / production / on every pull request",
+  "does it meet the p95 target", "how many users can it take". Also the k6
+  scripts and gate python-load-test reuses. Produces load-test-suite.
+version: 3.0.0
 phase: quality
 owner: test-strategist
 created: 2026-06-25
-tags: [quality, go, load-test, k6, slo, throughput, latency, backpressure, circuit-breaker, shift-right]
+tags: [quality, go, load-test, k6, slo, nfr, arrival-rate, thresholds, rate-limit, backpressure, performance-environment]
 produces: load-test-suite
 domain: testing
 status: stable
-related: [go-performance-test, go-chaos-test, slo-definition, prometheus-metrics-design, integration-design, go-middleware, environment-config, go-e2e-test]
+related: [go-e2e-test, go-performance-test, go-chaos-test, go-integration-test, nfr-specification, slo-definition, test-pyramid, test-fixture-design, go-middleware, prometheus-metrics-design, alerting-rules-design, environment-config, go-makefile, ci-pipeline, cd-pipeline, python-load-test, go-concurrency-patterns]
+sources:
+  - research/testing/k6-gating-and-running-official-docs.md
+  - research/testing/k6-official-docs.md
+  - research/testing/load-test-method-official-docs.md
+  - research/testing/load-test-environment-official-docs.md
+  - research/testing/kind-official-docs.md
+  - research/testing/github-actions-e2e-official-docs.md
+  - research/devops-and-delivery/site-reliability-engineering-beyer-jones-petoff-murphy.md
+  - research/devops-and-delivery/continuous-delivery-humble-farley.md
+  - research/software-architecture/concurrency-in-go-cox-buday.md
+  - research/software-architecture/designing-data-intensive-applications-kleppmann.md
 ---
 
 # Go Load Test
 
 ## Purpose
 
-Unit, integration, and even `go-performance-test`'s gated in-process benchmark say nothing about
-behaviour under real, sustained traffic against the fully deployed system. Load testing answers what
-those layers structurally cannot: real requests/sec, real p99 under network/mTLS/pool overhead, when
-the system starts shedding, and whether it holds the Service Level Objectives `slo-definition` set —
-the **shift-right** proof that closes the gap between "the handler's own logic is fast" and "the
-system holds up in production-like conditions." Authored and run by the test-strategist during Quality.
+This skill owns how a Go product is tested under load: requests driven at the **deployed** system from outside, judged against the targets the product stated. `test-strategist` authors and runs it; `platform-engineer` supplies the environments. A load test tries to slow a system down and its overload scenarios try to break one, so most of this skill is about two things: making it impossible to aim one at a shared environment, and making its verdict true. In-process benchmarks belong to `go-performance-test`, injected faults to `go-chaos-test`, the requirement and the objective to `nfr-specification` and `slo-definition`. The k6 scripts are language-neutral; `python-load-test` uses the same ones.
 
----
+## Fixed rules
 
-## Tool Standard: k6, Open-Source, a Black-Box External Generator
+A request does not change these, whoever makes it. Do the work as the rules require, say where it differs from what was asked and why, and never offer to switch a rule off.
 
-**k6** (Grafana Labs, Apache-2.0) is the default: its `thresholds` DSL turns a run into a pass/fail
-gate, not a report to interpret, and it is self-hosted — no k6 Cloud SaaS, per CLAUDE.md's frugality
-constraint. **k6 is scripted in JavaScript and that is not a departure from this plugin's Go-first
-stack** — it runs entirely outside the target service, like `curl`, driving traffic at a Go binary it
-never imports; the "Go" in this skill's scope names the *system under test*, never the generator's
-language. `vegeta` (Go-native, constant-rate) is a fine dev-time spot-check, not the CI-gated
-standard. Full comparison and frugality reasoning: `references/load-profile-standard.md`.
-
----
-
-## Environment Standard: `staging`, Deliberately Not `go-e2e-test`'s `kind` Cluster
-
-`go-e2e-test` runs its journeys against an ephemeral `kind` cluster — correct there, since it proves
-deployment *shape*, which a single-node, shared-machine cluster does fine. **Load testing proves
-*capacity*, and a shared-machine `kind` cluster cannot produce a meaningful capacity number** — host
-scheduler contention corrupts the exact thing being measured. This skill runs against **`staging`**
-instead — `environment-config`'s own environment, purpose-built for "full-stack soak: nightly
-e2e/load suites, SLO soak," "mirrors production topology at reduced sizing." Same chart, same digest
-(Environment Parity); reduced sizing declared in every report, never mistaken for a production
-guarantee; one `staging`, never production. Full comparison table: `references/load-profile-standard.md`.
-
----
-
-## Load-Profile Standard: Ramp, Soak, Spike — Sized to This Platform's Traffic Shape
-
-Real traffic here is bursty, not a smooth ramp: `estate-scanner`'s discovery sweeps enqueue
-thousands of documents in seconds, which the async pipeline absorbs as a burst, while
-`ClassifyDataAsset` sees low, steady interactive volume. Every profile is parameterized against that
-shape:
-
-| Profile | Shape | This platform's parameters |
+| # | Rule | Reason |
 |---|---|---|
-| **Smoke** | 1 VU, ~1 min | Fast CI pre-check; every change |
-| **Ramp** | Closed-model climb past capacity | 0→50 VUs/2min, hold 5min, 50→500/5min until breach |
-| **Soak** | Open-model sustained, hours | 30 req/s sync + 500 docs/min pipeline feed, held 2 hours |
-| **Spike** | Sudden batch burst | 30 req/s baseline + a 10,000-document burst in under 60s |
+| L1 | **Two tiers.** An **indicative** check in the throwaway kind cluster of `go-e2e-test`: it catches a regression between runs and **proves nothing about capacity**. A **verdict** against the stated targets only in the product's **designated performance environment**, approved by the product owner per product, sized and loaded with data as the requirements state | One shared node that also runs the generator cannot measure capacity (kind and runner documentation); a verdict is only as true as its environment (SRE) |
+| L2 | **The test refuses any target that is neither the run's own throwaway cluster nor the designated environment. Never shared staging, production or a tenant environment.** Overload ramps and bulk writes run only in those two places | It takes a shared environment away from everyone and leaves data behind |
+| L3 | **Load starts only through `run-load-test.sh`** (the make targets), never `k6 run`. The address comes from the run marker or the designation record, never from a variable or a flag | A wrong variable must not be able to aim load at a real environment |
+| L4 | **The profile is derived from the NFR row and the SLO rows, by id.** Numbers the sources do not give (run length, sample size, warm-up, users to rate, data volume, stress level) are recorded with who decided them. No invented target, no default presented as a fact | A threshold nobody agreed to verifies nothing |
+| L5 | **A rate target is tested with the open model** (arrival-rate executors). A closed model only where the real callers are a fixed pool, with the reason stated | A closed model sends less when the product slows and understates latency (coordinated omission) |
+| L6 | **Thresholds mirror the SLI**: the statuses it counts as good are declared to k6; latency is judged at the SLO's percentile, on good answers only. Never an average | k6 counts every status outside 200 to 399 as failed; an average hides the tail (SRE, Kleppmann) |
+| L7 | **429 inside the limiter's design is not a failure.** Steady load is spread over enough subjects to stay within the limit, and any 429 there fails its own threshold. A separate overload check drives one subject past the limit, where 429 with `Retry-After` is the right answer and anything else fails | One subject at the target rate measures the limiter, not the product |
+| L8 | **Every rule is a threshold.** A bare `check()` is not a gate | `check()` never changes k6's exit status |
+| L9 | **k6's exit status is read, never masked**: 99 is a crossed threshold. No pipe after the runner, no `continue-on-error`. Exit 0 alone is not a pass | A script that throws in every iteration exits 0 |
+| L10 | **A run that dropped iterations or saturated its generator is INVALID, not passed** | The stated load was never offered |
+| L11 | **Zero retries.** A second run is a new result | A load verdict that passes on the third try is not a pass (`test-pyramid`) |
+| L12 | **Never on a pull request.** Indicative: nightly inside the end-to-end environment run, and by hand. Verdict: before a release, finished before publication, or by hand. Always through a make target | Slow suites stay out of the pull-request check; a `release:` trigger runs too late |
+| L13 | **No stored credential.** Indicative: none at all. Verdict: short-lived tokens the product owner approved, never a standing secret | A standing token for a load tool is a standing way to overload something |
+| L14 | **Test data only in the environment under test; third parties are stand-ins; nothing is pushed into any monitoring system.** The product is observed by reading the environment's own Prometheus, each query pinned to the run | `test-fixture-design`; a fixed window counts other traffic |
+| L15 | **One load tool: k6**, pinned (v2.4.0, AGPL-3.0, run as a separate program). No vegeta, no locust. A paid load service or larger paid runner only with the product owner's approval | One gate to keep true; frugality |
+| L16 | **A load-test report** under `artifacts/<product>/quality/test-reports/`, approved by the product owner, for every run put forward as evidence | A green job is not an approval |
 
-Open-model executors (`constant-arrival-rate`/`ramping-arrival-rate`) answer "does it hold N req/s"
-(Soak, Spike's baseline); closed `ramping-vus` is used only for Ramp, where letting offered load
-throttle naturally finds the break. Traffic is always a journey mix, never one endpoint hammered with
-one payload. Full k6 structure and the workload-model reasoning: `references/load-profile-standard.md`.
+Every product size follows all sixteen. **Lean** may have only the indicative tier until a performance environment is approved; it never skips load testing and never borrows a shared environment.
 
----
+## What every answer states
 
-## SLO-Based Pass/Fail Gate: `slo-definition`'s Real Numbers, Not Invented Ones
+**Keep the answer as short as the question.** State, **in words**, each rule above that bears on it; do not only follow it or point at a file. Add nothing the request did not ask about beyond one line where it bears on the question.
 
-Every threshold is copied from `slo-definition`, never independently derived: **availability 99.5%**
-(`http_req_failed: rate<0.005`), **latency 99.5% under 800ms** (`http_req_duration: p(99.5)<800`),
-**pipeline freshness 99% within 15 min**, **consumer correctness 99.9%** — the latter two verified
-via PromQL against series `slo-definition`/`prometheus-metrics-design` already compute, post-drain,
-not as k6 thresholds. **This is the measurement `go-performance-test`'s `performance-budgets.md`
-deliberately deferred**: its 5ms handler-logic ceiling excludes network transit, the mTLS handshake,
-middleware, and the real Postgres round-trip by design, naming those "`go-load-test`'s call to make
-against real measured system behavior." A passing `p(99.5)<800` against the real deployed system in
-`staging` **is** that system p99 — the loop closes here. Full gate, CI job, async PromQL, and why one
-run's window differs from the rolling-28-day SLO claim: `references/slo-gate-standard.md`.
+1. **Whenever a run or a result is mentioned:** which tier it is. For the indicative tier say that it **proves nothing about capacity** and does not show a target is met; a verdict needs the designated performance environment the product owner approved.
+2. **Whenever an environment is mentioned:** never shared staging, production or a tenant environment, and that the test itself **refuses**: the address comes from the run marker or the signed, unexpired designation record whose id the environment serves back.
+3. **Whenever numbers are mentioned:** the profile comes from the NFR row and the SLO rows, **named by id**; name which numbers were judgement calls and who decides them. With no stated target, say there is nothing to verify and ask for it; do not supply one.
+4. **Whenever the workload is described:** the open (arrival-rate) model, and why: a closed model slows its own load when the product slows, so it understates latency.
+5. **Whenever errors or 429 appear:** a 429 within the limiter's design is not unavailability; steady load stays within the per-subject limit and a 429 there fails a separate threshold; in the overload check 429 with `Retry-After` is the correct answer. k6 counts 429 as failed unless the expected statuses are declared.
+6. **Whenever a gate or pipeline is discussed:** a crossed threshold makes k6 exit **99**, which must not be masked; a `check()` alone cannot fail a run; exit 0 alone is not a pass.
+7. **Whenever a result is judged:** dropped iterations or a saturated generator make the run **INVALID**, not passed; **no retries**.
+8. **Whenever timing is discussed:** never on a pull request; indicative nightly in the end-to-end run; verdict before publication.
+9. **What is refused or replaced, by name, with the reason** and the compliant version: staging, production, `k6 run` by hand, a stored token, vegeta or locust, a paid service without approval, a retry, an average, pushing metrics to shared monitoring.
+10. **Whenever the report is mentioned:** it is an artifact the product owner approves, and it says what the run does not prove.
+11. **Only where they arise:** k6 is the one tool, v2.4.0, AGPL-3.0; credentials (none stored; short-lived for the designated environment); what lean changes.
+12. **One line on what was run.** Anything not run (GitHub Actions, a real designated environment, a long soak, large data) is called unverified.
 
----
+## Procedure
 
-## Backpressure and Circuit-Breaker Verification
+1. Read the NFR specification, the SLO record, the test strategy, the rate-limit configuration, `sdlc-config.json`, any `tests/load/`, and whether a designation record exists.
+2. Derive the profile: read `./references/targets-to-profile.md`, then fill `tests/load/profile.json` from `./templates/profile.md`. Every number has a source id or a named decider.
+3. Decide the tiers: read `./references/tiers-and-safety.md`. With no approved performance environment, plan the indicative tier only and put the designation to the product owner (`./templates/designation-record.md`).
+4. Copy `./scripts/run-load-test.sh` and `./scripts/validate-go-load-tests.sh` to `tests/load/` unchanged, and the scripts from `./templates/k6-scripts.md`: `lib/gate.js` and the test-type scripts unchanged; write `journey.js`. Read `./references/gate-and-verdict.md` before touching a threshold.
+5. Set up the test subjects (`issue-subjects.sh` in `./templates/designation-record.md`).
+6. Add the make targets and the suite lines from `./templates/make-targets.md`; add the workflow from `./templates/workflows.md`. Read `./references/when-it-runs.md` for the release gate.
+7. Run `./scripts/validate-go-load-tests.sh <product root>`; fix every FAIL, judge each WARN, and run it again until clean.
+8. Run `make load-indicative`. See the gate fail once for the expected reason (slow the product, or break the expectation), then pass. Confirm the cluster is gone.
+9. Where a designation exists, run `make load-verdict`. Read the product's own measurements as `./references/observing-the-run.md` says.
+10. Draft the report with `./scripts/write-load-report.sh <result files>`, complete it from `./templates/load-test-report.md`, write it under `artifacts/<product>/quality/test-reports/`, and put it to the product owner.
+11. Tick `./resources/checklist.md`; go back to step 7 after any change. Answer with the statements above.
 
-A load test must prove the system **degrades gracefully** under organic overload — sheds load fast
-(`go-middleware`'s token-bucket `RateLimit`, `429` with `Retry-After`) or opens a Circuit Breaker
-(`integration-design`) on a saturating dependency — rather than collapsing or silently queuing until
-OOM. **This is distinct from `go-chaos-test`**, which proves the same patterns under a deliberately
-injected, isolated fault at normal volume; this skill proves they engage when the stressor is the
-system's own request *volume* — complementary, neither a substitute. Ramp/Spike assert: `429`s rise
-as offered load exceeds the limiter's rate, the saturated path fails fast rather than queuing into
-climbing latency, error rate and p99 return to baseline once load subsides, and memory does not grow
-unbounded across Soak. Full assertions and the two disqualifying failure shapes (total collapse,
-silent unbounded queuing): `references/backpressure-and-reporting-standard.md`.
+Worked and run (k6 v2.4.0, kind v0.33.0, Helm v4.3.2, Go 1.27.4): `./examples/01-lean-ski-lift-status.md` (indicative tier only), `./examples/02-standard-parcel-lockers.md` (a designated environment and a verdict, both ways), `./examples/03-enterprise-school-meals.md` (tenants, an invalid run, a breakpoint measurement, the release gate).
 
----
+## Gotchas
 
-## Result-Reporting Standard: Into the Observability Stack, Not a One-Off Report
+- **One token at the target rate.** *Reason:* the per-subject limiter answers 429; seen: 60% "failed" on a healthy service. *Instead:* enough subjects that each stays under the limit; the script refuses otherwise.
+- **`http_req_failed: rate<0.005` as "the availability SLO".** *Reason:* k6's default counts every 4xx as failed, the SLI does not. *Instead:* declare the SLI's good statuses with `expectedStatuses`.
+- **A `check()` for "sheds with 429".** *Reason:* seen: every check failed and k6 exited 0. *Instead:* thresholds on custom metrics.
+- **"k6 exited 0, so it passed."** *Reason:* seen: every iteration threw and k6 exited 0; `--no-thresholds` also exits 0. *Instead:* the runner's verdict, which needs requests, thresholds and a summary.
+- **`ramping-vus` to find the breaking point.** *Reason:* it throttles itself as the product slows; seen: p(99) 23 ms closed against 4,801 ms open for the same stall. *Instead:* `ramping-arrival-rate` with `abortOnFail`.
+- **Raising virtual users until drops stop, then reading the old run.** *Reason:* a run with dropped iterations offered less load. *Instead:* it is INVALID; run again.
+- **"The kind run passed, so we meet the p95 target."** *Reason:* the indicative tier judges no target. *Instead:* say indicative, and what a verdict needs.
+- **`BASE_URL` from the environment "for flexibility".** *Reason:* one wrong value aims overload at a real system; `127.0.0.1` alone proves nothing. *Instead:* the run marker or the designation record.
+- **`LOAD_TEST_TOKEN` in repository secrets.** *Reason:* a standing credential. *Instead:* tokens issued for the run and deleted after it.
+- **`make load-verdict | tee log`, `|| true`, `continue-on-error`.** *Reason:* seen: a pipe reported 0 for a run that exited 99. *Instead:* leave the status alone; results are already in files.
+- **`increase()` on a queue-depth or lag gauge.** *Reason:* Prometheus answers with a number and only a note. *Instead:* `max_over_time()` or `delta()`.
+- **A `[2h]` window "to cover the run".** *Reason:* it counts other traffic. *Instead:* pin the query to the run's start and end.
+- **Starting the first load line the moment the port opens.** *Reason:* seen: ten of ten smoke requests ended in `EOF`. *Instead:* the runner polls until the product answers.
+- **`--out experimental-prometheus-rw` into the environment's Prometheus.** *Reason:* deprecated in k6 v2.4.0, and it writes into monitoring others rely on. *Instead:* results in files; read the product's own metrics.
+- **Proposing 50 users, 30 requests a second or two hours "as sensible defaults".** *Reason:* no source gives them. *Instead:* the NFR's number, or a named person's decision in the profile.
 
-Results are plumbed into the **same** OpenTelemetry/Prometheus/Grafana stack that observes the
-product in production: k6's metrics stream to `staging`'s Prometheus via the native remote-write
-output, a reused Grafana dashboard overlays the client-side k6 view against the service's own RED
-recording rules and backpressure signals, and a Grafana annotation marks the run's window so a later
-reviewer sees "a load test happened here," not an anomaly. `artifacts/<product>/quality/test-reports/load-report.md` is a
-reviewable-by-the-user pointer (run id, dashboard link, verdict per gate) — never a second data copy.
-Full plumbing and dashboard contents: `references/backpressure-and-reporting-standard.md`.
+## Output
 
----
+| File | When to open it |
+|---|---|
+| `./references/targets-to-profile.md` | Deriving a profile; open versus closed; which test type; what the sources do not give |
+| `./references/gate-and-verdict.md` | Thresholds, 429, exit statuses, INVALID, the indicative comparison, what a pass means |
+| `./references/tiers-and-safety.md` | Where load may go; the guards; credentials; what each tier does not prove |
+| `./references/observing-the-run.md` | Reading the product's metrics for a run; asynchronous work |
+| `./references/when-it-runs.md` | Triggers, the release gate, pull requests |
+| `./templates/profile.md` | Writing `tests/load/profile.json` |
+| `./templates/k6-scripts.md` | The k6 files; which test type proves what |
+| `./templates/designation-record.md` | The designation record, the marker and the test subjects |
+| `./templates/make-targets.md` | Make targets; attaching the indicative tier to the end-to-end environment |
+| `./templates/workflows.md` | The verdict workflow; additions to the nightly workflow |
+| `./templates/load-test-report.md` | Reporting a run |
+| `./scripts/run-load-test.sh` | Copied to the product; the only way a load test starts |
+| `./scripts/validate-go-load-tests.sh` | Before hand-off, after every edit |
+| `./scripts/write-load-report.sh` | Drafting the report from result files |
+| `./resources/checklist.md` | Before answering |
 
-## Quality Criteria
-
-| Criterion | Pass | Fail |
-|---|---|---|
-| SLOs gated on real numbers | Thresholds copied from `slo-definition`; breach fails the run | Invented targets, or numbers drifting from the SLO document |
-| Percentile latency, real system p99 | p99.5 thresholded against the real deployed system; closes `go-performance-test`'s deferred proxy | Averages reported; only the in-process 5ms proxy ever checked |
-| Async SLOs verified | Freshness/correctness checked via PromQL post-drain | Only sync endpoints load-tested; pipeline lag ignored |
-| Environment correct | `staging`, production-shaped, sized and declared | `kind` cluster or a laptop; non-representative capacity claims |
-| Profile coverage, workload model | Smoke in CI; Ramp/Soak/Spike scheduled with real parameters; open-model for rate SLOs, closed only to find the break | Ad-hoc run; generic parameters; coordinated omission on a rate claim |
-| Backpressure proven, distinct from chaos | `429`/breaker engages under organic volume with recovery; not duplicating `go-chaos-test`'s injected-fault experiments | Total collapse or silent queuing; conflated with chaos testing |
-| Realistic traffic mix | Journey-mix endpoints and payload variety | One endpoint, one payload — measures a cache |
-| Results in the observability stack | k6 → Prometheus remote-write → Grafana + annotation | A static report nobody opens again |
-| Frugal tooling | Self-hosted k6/vegeta | A paid SaaS load platform |
-
----
-
-## Anti-Patterns
-
-- **Reporting averages** — hides the p99 tail the SLO is written against.
-- **Closed-model executors for a rate-based SLO claim** — coordinated omission understates real tail latency.
-- **Load-testing a shared-machine `kind` cluster, or a laptop** — numbers describe host contention, not system capacity.
-- **Load-testing production** — real tenants become the blast radius; `staging` exists to absorb this.
-- **Inventing SLO numbers instead of copying `slo-definition`'s** — proves nothing an operator agreed to.
-- **Treating this skill's job as `go-chaos-test`'s** — organic-overload and injected-fault are complementary, not interchangeable.
-- **A single heroic pre-launch run** — capacity regresses gradually; smoke in CI plus scheduled profiles catch drift.
-- **Ignoring the async half** — a green sync run with an undrained pipeline burst is a failing system on a delay timer.
-- **A one-off HTML report** — results that never reach Prometheus/Grafana are invisible next time.
-
----
-
-## Output Format
-
-- **`load/scenarios/{smoke,ramp,soak,spike}.js`** — k6 files, one per profile, each carrying the
-  `slo-definition`-derived `thresholds` and backpressure `check()`s (`429` + `Retry-After`, never a
-  bare status check). Journey-mix traffic. Executor model chosen per the rule in
-  `references/load-profile-standard.md`, never defaulted without stating why.
-- **`load/verify-async-slos.sh`** — PromQL freshness/correctness check, run post-drain against
-  `staging`'s Prometheus, polling `pipeline_consumer_lag` to baseline (condition-based, never a fixed
-  sleep). Exits non-zero on either SLO miss — same enforceability as k6's threshold exit code.
-- **`.github/workflows/load-smoke.yml`** — Smoke in the fast PR loop.
-- **`.github/workflows/load-gate.yml`** — Ramp/Soak/Spike on the nightly/pre-release/on-demand
-  cadence `go-e2e-test`'s CI-Placement standard establishes; never per-PR. Runs
-  `verify-async-slos.sh` after the k6 step; either failure blocks the release.
-- **Grafana `load-test` dashboard folder** (provisioned once, reused) — k6 percentiles over the
-  service's RED recording rules, `429` rate, `db_pool_in_use`, `pipeline_consumer_lag`, annotated
-  per run via the Annotations API.
-- **`artifacts/<product>/quality/test-reports/load-report.md`** (with the artifact frontmatter: name, version, phase, owner, created, summary) — one entry per run: run id, profile, `staging` sizing, dashboard
-  link, pass/fail per gate, backpressure outcome. A pointer into the stack, never a duplicate dump.
+In the product: `tests/load/` (`profile.json`, `designation.json` once approved, `lib/gate.js`, `journey.js`, one script per planned test type, `issue-subjects.sh`, `indicative-suites.conf`, `load-e2e.conf`, the two scripts), the `load-*` make targets, `.github/workflows/load-verdict.yml` where a designation exists, and one report per evidenced run.
