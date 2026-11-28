@@ -17,7 +17,7 @@ Work moved to another machine and another Claude account. Everything needed is i
 
 ## Status
 
-Done and merged into the wave branch (20 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **13 of 24 skills**:
+Done and merged into the wave branch (20 sub-issues, board status Done): setup (#1451, #1453, #1455), research (#1456–#1459, #1473, #1474), Python build-skill repair (#1477), and **14 of 24 skills**:
 
 | Skill | Eval runs | Eval cost | Final |
 |---|---|---|---|
@@ -34,7 +34,8 @@ Done and merged into the wave branch (20 sub-issues, board status Done): setup (
 | go-contract-test | 4 | $11.12 | pass, +0.89 (3.1.0, after the sign-in addition #1514) |
 | python-contract-test | 2 | $5.82 | pass, +1.00 |
 | go-e2e-test | 4 (1 invalid) | $10.52 | pass, +1.00 |
-| **Total** | | **$112.33** | |
+| python-e2e-test | 1 | $2.80 | pass, +1.00 |
+| **Total** | | **$115.13** | |
 
 Earlier chat and issue totals of $73.99, $87.90 and $98.37 were addition errors; $84.87 is the sum of the saved run results (which are gitignored and stay on the old machine).
 
@@ -43,7 +44,7 @@ Also done (2026-11-28): **#1510**, every script and test runs on stock macOS as 
 Remaining:
 
 0. **Working procedure per skill (product owner, 2026-11-28):** discovery of the current state by one subagent, research by a second only if required, then rebuild, separately authored evals, eval runs, CI on both systems, merge into the wave branch. The product owner has authorised continuing through the remaining skills in sequence under it.
-1. **#1492** `python-e2e-test` next: discovery and research are posted on the issue and its three research notes are written; the rebuild is the next step (it uses a drift-tested copy of `go-e2e-test`'s environment script and needs its own quarantine list file). Then #1493–#1502 in order. #1518 (`beta-program-design` 3.1.0) and #1512 are merged. Eval spend outside the per-skill table: #1510 $5.67, #1512 $20.30, #1518 $3.96.
+1. **#1493** `go-load-test` next: discovery is posted on the issue, the product owner's decision of 2026-11-28 (two tiers: an indicative check in the throwaway cluster and a verdict only in a designated performance environment; no load on staging; k6 only) is recorded there and still to be added to D048, and its research step was running at the time of writing (three notes under `research/testing/`: k6 gating and running, load-test method, load-test environment). Then #1494 `python-load-test` (same decision) and #1495–#1502 in order. Eval spend outside the per-skill table: #1510 $5.67, #1512 $20.30, #1518 $3.96. For #1503: `go-e2e-test`'s validator accepts `kind delete clusters --all` (`validate-go-e2e-tests.sh:188`) and should flag it.
 2. **#1507** Python coverage gate lists test-support code (decided, option B); re-evaluate `python-unit-test`. Separate branch.
 3. **#1490–#1502** the other 13 skills: python-contract, go/python e2e, load, chaos, mutation, performance, react-component, react-e2e.
 4. **#1503** close-out: follow-ups recorded on #1450 and #1503 (including re-running evals for `test-pyramid`, `go-unit-test`, `mock-generation`, edited after they passed), then a PR from the wave branch to `main` for the product owner's review. Also for #1503: align `test-pyramid`, `ci-pipeline` and `cd-pipeline` with the daily Pact run and the `can-i-deploy` deployment check.
