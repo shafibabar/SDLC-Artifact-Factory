@@ -11,7 +11,7 @@ description: >
   make mutation, the mutation workflow, the mutation report; or "100% coverage,
   are we done", "is 60% mutation score enough", "run mutation on every pull
   request", "Gremlins says 100% efficacy". Produces mutation-report.
-version: 3.0.4
+version: 3.0.5
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -76,7 +76,7 @@ Verdicts: PASS (exit 0), WAIVER-NEEDED (3), FAIL (1), INVALID (2). Detail: `./re
 
 1. **The rule:** the target is 100%: every planted mutant is killed by a test or recorded individually with the reason it cannot be; 60%, or any lower target, is rejected.
 2. **The formula and who judges:** (killed + individually recorded) / all planted, as counts. Write the flag out: Gremlins writes its JSON report only with `--output` (`gremlins unleash --output gremlins.json`); the verdict script reads that JSON and fails on any uncaught mutant without a record line. Gremlins' efficacy, thresholds and exit code are not the verdict: efficacy leaves timed-out and not-covered mutants out and counts non-compiling ones as killed, and a threshold of 100 fails a perfect run.
-3. **Waiver:** only for a result above 90% and under 100%, granted by the product owner after reviewing each uncaught mutant (not-covered ones included) and recording comments; the target stays 100%; at 90% or below none. Given counts, work out the result now and the result once every checkable mutant is recorded, and say which side of 90% each falls.
+3. **Waiver, in these words:** "more than 90% (not 'between 90%'): the product owner may waive after reviewing each uncaught mutant, not-covered ones included, and recording comments; the target stays 100%; at 90% or below, no waiver." Given counts, work out the result now and the result once every checkable mutant is recorded, and say which side of 90% each falls.
 4. **Timed-out and not-viable mutants** count only once each is checked and recorded with a one-line reason; never automatically.
 5. **When it runs:** the full release run blocks and finishes before publication (the publish job needs it, never `release: published`); scheduled runs report only, may cover changed code only, monthly or more often, never less.
 6. **Scope:** all product code; any package left out is listed with a reason for the product owner's approval; generated code and `internal/test/` are left out and listed.
