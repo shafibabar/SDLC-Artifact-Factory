@@ -50,7 +50,8 @@ esac
 SH
 chmod +x "$TMP/bin/k6" "$TMP/bin/kubectl"
 
-# The "environment": answers / and serves a designation marker read from a file; counts every other request.
+# The "environment": answers / and serves a designation marker read from a file (a JSON object as it is, any other
+# text as the designation id); with a URL in the file "redirect" it redirects the marker there. Counts every other request.
 cat > "$TMP/server.py" <<'PY'
 import http.server, json, os, socketserver, sys
 folder = sys.argv[1]
@@ -61,11 +62,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/.well-known/load-test-designation":
+            redirect = open(os.path.join(folder, "redirect")).read().strip()
+            if redirect:
+                self.send_response(302)
+                self.send_header("Location", redirect)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
             marker = open(os.path.join(folder, "marker")).read().strip()
             if not marker:
                 self.send_error(404)
                 return
-            body = json.dumps({"designation_id": marker}).encode()
+            body = (marker if marker.startswith("{") else json.dumps({"designation_id": marker})).encode()
         elif self.path == "/":
             body = b"ok"
         else:
@@ -90,6 +98,7 @@ with open(os.path.join(folder, "port"), "w") as handle:
 server.serve_forever()
 PY
 echo "perf-1" > "$TMP/marker"
+: > "$TMP/redirect"
 python3 -I "$TMP/server.py" "$TMP" &
 SERVER_PID=$!
 python3 -I - "$TMP/port" <<'PY'
@@ -169,6 +178,33 @@ variants = {
 }
 for name, change in variants.items():
     json.dump(dict(record, **change), open(os.path.join(tmp, name + ".json"), "w"))
+
+# Signed impact statements: load on another system, for verification only.
+now = datetime.datetime.now(datetime.timezone.utc)
+moment = lambda minutes: (now + datetime.timedelta(minutes=minutes)).strftime("%Y-%m-%dT%H:%M:%SZ")
+statement = {"statement_id": "verify-1", "product": "tide-tables", "base_url": f"http://127.0.0.1:{port}",
+             "purpose": "verify that the station-search fix holds at the Saturday peak",
+             "test_type": "average-load", "profile_limit": {"rate_per_second": 5, "peak_rate_per_second": 5, "duration_seconds": 60},
+             "data_written": "none: the journey only reads", "data_removal": "nothing to remove",
+             "impact": {"other_users": "searches may slow by up to 0.4 s for 1 minute", "other_teams": "none", "dependent_systems": "none",
+                        "third_parties": "none: the tide feed is a stand-in", "cost": "none"},
+             "how_to_stop": "Ctrl-C in the runner's terminal; k6 stops within a second", "watched_by": "test-strategist, at the terminal",
+             "window_start": moment(-60), "window_end": moment(120), "marker": "served",
+             "approved_by": "Product owner", "approved_on": day(0), "expires_on": day(1), "token_max_minutes": 60}
+other_side = "cannot be served: the staging gateway belongs to another team and serves no marker"
+impact_without_cost = {k: v for k, v in statement["impact"].items() if k != "cost"}
+statements = {
+    "stmt": {}, "stmt-staging": {"base_url": "https://api.staging.example.com", "marker": other_side},
+    "stmt-nopurpose": {"purpose": ""}, "stmt-noimpact": {"impact": impact_without_cost}, "stmt-unsigned": {"approved_by": ""},
+    "stmt-undated": {"approved_on": ""}, "stmt-expired": {"approved_on": day(-5), "expires_on": day(-1)},
+    "stmt-nolapse": {"expires_on": ""}, "stmt-once": {"expires_on": "", "single_use_run_id": "gh-4242"},
+    "stmt-otheraddress": {"base_url": "http://127.0.0.1:9"}, "stmt-smoke": {"test_type": "smoke"},
+    "stmt-rate": {"profile_limit": {"rate_per_second": 4, "peak_rate_per_second": 4, "duration_seconds": 60}},
+    "stmt-length": {"profile_limit": {"rate_per_second": 5, "peak_rate_per_second": 5, "duration_seconds": 20}},
+    "stmt-window": {"window_end": moment(0)}, "stmt-marker": {"marker": "not now"},
+}
+for name, change in statements.items():
+    json.dump(dict(statement, **change), open(os.path.join(tmp, name + ".json"), "w"))
 
 soon = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)).isoformat()
 late = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=90)).isoformat()
@@ -253,6 +289,45 @@ run "token with no expiry" 3 "REFUSED: .*states no expires_at" -- --tier verdict
 run "standing token" 3 "REFUSED: .*at most 60 minutes" -- --tier verdict --type average-load --subjects-cmd "$TMP/subjects-standing.sh" --designation "$TMP/record.json"
 run "token already expired" 3 "REFUSED: .*must be valid now" -- --tier verdict --type average-load --subjects-cmd "$TMP/subjects-expired.sh" --designation "$TMP/record.json"
 expect "k6 was not started" never_started
+# --- verdict tier: a signed impact statement for another system
+S=(--tier verdict --type average-load --subjects-cmd "$TMP/subjects.sh")
+run "staging without a statement is still refused" 3 "REFUSED: .*named like a shared staging or production.*only with.*signed impact statement" -- "${S[@]}" --designation "$TMP/staging.json"
+run "statement without a purpose" 3 "REFUSED: the impact statement has no purpose" -- "${S[@]}" --statement "$TMP/stmt-nopurpose.json"
+run "statement without the cost of its impact" 3 "REFUSED: .*no impact.cost" -- "${S[@]}" --statement "$TMP/stmt-noimpact.json"
+run "statement not signed" 3 "REFUSED: .*no approved_by: it carries no product-owner sign-off" -- "${S[@]}" --statement "$TMP/stmt-unsigned.json"
+run "statement with no date of sign-off" 3 "REFUSED: .*no approved_on: it carries no product-owner sign-off" -- "${S[@]}" --statement "$TMP/stmt-undated.json"
+run "expired statement" 3 "REFUSED: the impact statement expired on" -- "${S[@]}" --statement "$TMP/stmt-expired.json"
+run "statement that never lapses" 3 "REFUSED: .*neither expires_on nor single_use_run_id" -- "${S[@]}" --statement "$TMP/stmt-nolapse.json"
+run "single-use statement, another run" 3 "REFUSED: .*for run \"gh-4242\" only; this run is \"gh-1\"" LOAD_RUN_ID=gh-1 -- "${S[@]}" --statement "$TMP/stmt-once.json"
+run "statement for another test type" 3 "REFUSED: the impact statement allows the smoke test, not average-load" -- "${S[@]}" --statement "$TMP/stmt-smoke.json"
+run "profile above the statement's rate" 3 "REFUSED: the run's peak rate \(5, .*exceeds the 4" -- "${S[@]}" --statement "$TMP/stmt-rate.json"
+run "profile longer than the statement allows" 3 "REFUSED: the run's length in seconds \(35.0, .*exceeds the 20" -- "${S[@]}" --statement "$TMP/stmt-length.json"
+run "run that would not end inside the window" 3 "REFUSED: the run would not fit inside the statement's window" -- "${S[@]}" --statement "$TMP/stmt-window.json"
+run "marker field neither served nor explained" 3 "REFUSED: .*marker must be \"served\"" -- "${S[@]}" --statement "$TMP/stmt-marker.json"
+run "statement for another address than the designation" 3 "REFUSED: the designation names .*, the impact statement http://127.0.0.1:9: one run has one address" -- "${S[@]}" --designation "$TMP/record.json" --statement "$TMP/stmt-otheraddress.json"
+expect "nothing was started or requested" never_started
+run "statement whose system serves another marker" 3 "REFUSED: .*serves statement \"None\", the impact statement says \"verify-1\"" -- "${S[@]}" --statement "$TMP/stmt.json"
+printf 'http://api.staging.example.com/.well-known/load-test-designation' > "$TMP/redirect"
+run "a redirect off the stated host" 3 "REFUSED: .*answers its marker with a redirect to http://api.staging.example.com" -- "${S[@]}" --statement "$TMP/stmt.json"
+expect "nothing was started or requested" never_started
+: > "$TMP/redirect"
+printf '{"statement_id": "verify-1"}' > "$TMP/marker"
+run "statement with its marker served runs" 0 "== PASS: verdict average-load.*Verification under impact statement verify-1: .*not a capacity verdict" FAKE_K6_SUMMARY=pass -- "${S[@]}" --statement "$TMP/stmt.json"
+run "single-use statement, its own run" 0 "== PASS" LOAD_RUN_ID=gh-4242 FAKE_K6_SUMMARY=pass -- "${S[@]}" --statement "$TMP/stmt-once.json"
+echo "perf-1" > "$TMP/marker"
+run "statement-covered staging address runs" 0 "target https://api.staging.example.com .*== PASS: verdict average-load.*not a capacity verdict" FAKE_K6_SUMMARY=pass -- "${S[@]}" --statement "$TMP/stmt-staging.json"
+expect "k6 got the stated address and follows no redirect" python3 -I - "$TMP/k6-args" <<'PY'
+import sys
+args = open(sys.argv[1]).read().split("\n")
+sys.exit(0 if "LOAD_BASE_URL=https://api.staging.example.com" in args and args[args.index("--max-redirects") + 1] == "0" else 1)
+PY
+expect "the result records the statement verbatim and what it does not prove" python3 -I - "$TMP/out/average-load-result.json" "$TMP/stmt-staging.json" <<'PY'
+import json, sys
+r, signed = json.load(open(sys.argv[1])), json.load(open(sys.argv[2]))
+ok = (r["target"]["statement"] == signed and r["target"]["verification"] is True and "designation" not in r["target"]
+      and "not a designated environment" in r["target"]["environment"] and r["does_not_prove"][0].startswith("Capacity: this run went to a system named"))
+sys.exit(0 if ok else 1)
+PY
 run "subjects command writes nothing usable" 2 "did not write a JSON list" -- --tier verdict --type average-load --subjects-cmd "$TMP/subjects-empty.sh" --designation "$TMP/record.json"
 
 # --- verdict tier: reading k6's exit status and summary

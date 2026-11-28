@@ -7,6 +7,8 @@
 # output with Write to artifacts/<product>/quality/test-reports/ and completes
 # the two marked sections; the product owner approves it. Nothing is measured
 # or judged here: every number and verdict is copied from the result files.
+# A run under a signed impact statement gets the statement in the report,
+# field by field and verbatim, and is called a verification, not a verdict.
 # Exit 0 = report printed; 2 = usage, an unreadable file, or files that do not
 # belong to one run.
 set -uo pipefail
@@ -39,9 +41,15 @@ order = ["INVALID", "ABORTED", "FAIL", "INDICATIVE PASS", "MEASURED", "PASS"]
 overall = min((r["verdict"] for r in results), key=order.index)
 nfr, slo = first["nfr"], first["slo"]
 indicative = tier == "indicative"
+statement = first["target"].get("statement")
+verification = bool(first["target"].get("verification"))
 each = ", ".join(f"{r['type']} {r['verdict']}" for r in results)
-summary = (f"{'Indicative load check' if indicative else 'Load-test verdict'} for {product} at commit {first['commit'][:12]}: {each}."
-           + (" Proves nothing about capacity." if indicative else f" Targets from {nfr['id']}."))
+if verification:
+    summary = (f"Verification load run, not a capacity verdict, for {product} under impact statement {statement['statement_id']} "
+               f"at commit {first['commit'][:12]}: {each}.")
+else:
+    summary = (f"{'Indicative load check' if indicative else 'Load-test verdict'} for {product} at commit {first['commit'][:12]}: {each}."
+               + (" Proves nothing about capacity." if indicative else f" Targets from {nfr['id']}."))
 fmt = lambda v: f"{v:.2f}" if isinstance(v, float) else str(v)
 cell = lambda v: str(v).replace("|", "\\|").replace("\n", " ")
 
@@ -61,9 +69,12 @@ add(f"# Load Test Report: {product}, {date}")
 add("")
 add("## Verdict")
 add("")
-add(f"**{overall}** ({tier} tier). {each}.")
+add(f"**{overall}** ({tier} tier{', verification under signed impact statement ' + statement['statement_id'] if verification else ''}). {each}.")
 add("")
-if indicative:
+if verification:
+    add(f"**Verification only.** This run went to {first['target']['base_url']}, a system named in the impact statement the product owner "
+        "signed, not a designated performance environment. It is a result about that system at that time, not a capacity verdict.")
+elif indicative:
     add("**Indicative only.** This run was made in a throwaway kind cluster on the machine that also ran the load generator. "
         "It can show a change between two runs. It proves nothing about capacity and does not show that any stated target is met; "
         "that needs a verdict run in the product's designated performance environment.")
@@ -89,12 +100,48 @@ if designation:
     add(f"| Data (from the record) | {cell(designation['data'])} |")
     add(f"| Load generator (from the record) | {cell(designation.get('generator', ''))} |")
     add(f"| Tokens | issued for the run, at most {designation['token_max_minutes']} minutes, deleted after it |")
+elif verification:
+    add("| Designation record | none: a verification under the signed impact statement below, not a designated environment |")
 else:
     add("| Designation record | none: the indicative tier needs none and stores no credential |")
+if statement:
+    add(f"| Impact statement | {statement['statement_id']}: signed by {cell(statement['approved_by'])} on {statement['approved_on']}; see below |")
+    if not designation:
+        add(f"| Tokens | issued for the run, at most {statement['token_max_minutes']} minutes, deleted after it |")
 add(f"| Started / ended (UTC) | {first['started']} / {results[-1]['ended']} |")
 add(f"| Tool | {cell(first.get('k6', 'k6'))} |")
 add("| Retries | 0 |")
 add("")
+if statement:
+    impact = statement.get("impact") or {}
+    limit = statement.get("profile_limit") or {}
+    add("## Signed impact statement")
+    add("")
+    add("The product owner's statement of exactly where this load ran and what its impact was, recorded as signed.")
+    add("")
+    add("| Item | As signed |")
+    add("|---|---|")
+    for label, value in (
+        ("Id", statement.get("statement_id")), ("Address", statement.get("base_url")), ("Purpose", statement.get("purpose")),
+        ("Test type", statement.get("test_type")),
+        ("Profile allowed", f"rate {limit.get('rate_per_second')}/s, peak {limit.get('peak_rate_per_second')}/s, "
+                            f"at most {limit.get('duration_seconds')} seconds"),
+        ("Data written or touched", statement.get("data_written")), ("How it is removed", statement.get("data_removal")),
+        ("Other users", impact.get("other_users")), ("Other teams", impact.get("other_teams")),
+        ("Dependent systems", impact.get("dependent_systems")), ("Third parties", impact.get("third_parties")),
+        ("Cost", impact.get("cost")), ("How to stop it", statement.get("how_to_stop")), ("Watched by", statement.get("watched_by")),
+        ("Window", f"{statement.get('window_start')} to {statement.get('window_end')}"), ("Marker", statement.get("marker")),
+        ("Signed by", f"{statement.get('approved_by')} on {statement.get('approved_on')}"),
+        ("Lapses", f"expires {statement['expires_on']}" if statement.get("expires_on") else f"single run {statement.get('single_use_run_id')}"),
+    ):
+        add(f"| {label} | {cell(value)} |")
+    add("")
+    add("Verbatim:")
+    add("")
+    add("```json")
+    add(json.dumps(statement, indent=1, sort_keys=True))
+    add("```")
+    add("")
 add("## Targets and where they come from")
 add("")
 add("| Source | Id | What it states |")

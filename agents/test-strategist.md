@@ -149,7 +149,7 @@ Create and change them with Write and Edit so the manifest registers them; after
 
 ### 9. Frugal tooling
 - Contracts: the Pact Broker is self-hosted and open source; PactFlow or any paid service only with the user's approval. (`go-contract-test`)
-- Toxiproxy/app-level over chaos platforms; mutation periodically not per-PR; k6 only for load, never against shared staging or production (`go-load-test`). Add heavier tooling only when a real problem justifies it (and record an ADR).
+- Toxiproxy/app-level over chaos platforms; mutation periodically not per-PR; k6 only for load; never against shared staging, production or any undesignated system without the user's signed statement of exactly where and with what impact (`go-load-test`). Add heavier tooling only when a real problem justifies it (and record an ADR).
 
 ---
 

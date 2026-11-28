@@ -6,10 +6,10 @@ Self-contained. Read when placing load tests in the pipelines, when asked for a 
 |---|---|---|
 | Pull request | **Never** any load test, not even the smoke script | Slow suites stay out of the pull-request check (`test-pyramid`). The earlier "smoke on every pull request" aimed at staging and is gone. The commit stage stays fast and capacity tests are a later, automated stage (Humble and Farley) |
 | Nightly | The indicative tier, as the last lines of `E2E_SUITES` inside `make e2e` | The throwaway cluster already exists then; a red line turns the night's run red and its results are uploaded with the end-to-end evidence |
-| By hand | `make load-indicative` (its own throwaway cluster), or `make load-verdict` and `make load-verdict-one TYPE=...` | Checking a fix; stress, soak, spike and breakpoint runs |
+| By hand | `make load-indicative` (its own throwaway cluster), or `make load-verdict` and `make load-verdict-one TYPE=...`; `make load-verify` on another system under a signed impact statement | Checking a fix; stress, soak, spike and breakpoint runs; a verification the product owner signed for |
 | Before a release | `make load-verdict` as a job the publishing job needs | The verdict must be finished before publication. A `release:` trigger fires afterwards and cannot stop anything |
 | Scheduled verdict | Optional, where the designated environment is free | A dropped or late scheduled run is not a pass |
-| After a deployment to staging or production | **Nothing from this skill** | Those environments get read-only smoke tests (`go-e2e-test`) and their own SLO monitoring |
+| After a deployment to staging or production | **Nothing automatic from this skill.** A load run there only by hand, for verification, with the product owner's signed impact statement (`make load-verify`); the test refuses otherwise | Those environments get read-only smoke tests (`go-e2e-test`) and their own SLO monitoring; load on them takes them from others, which only the product owner can accept |
 
 Rules that hold everywhere:
 

@@ -1,9 +1,9 @@
 # Two Tiers, and Where Load May Go
 
-Self-contained. Read before deciding where a load test runs, when someone proposes staging, production or a shared cluster, when setting up the designated environment, or when asked what a result proves. Product-owner decisions of 2026-11-28 fix this page; each guard is enforced by `../scripts/run-load-test.sh` and was proven by a case that must be refused (run on 2026-11-28; the lab service received no request of the test in any refusal).
+Self-contained. Read before deciding where a load test runs, when someone proposes staging, production or a shared cluster, when setting up the designated environment, or when asked what a result proves. Product-owner decisions of 2026-11-28 fix this page (the rule on other systems as amended the same day: no load on any other system without a signed impact statement); each guard is enforced by `../scripts/run-load-test.sh` and was proven by a case that must be refused (run on 2026-11-28; the lab service received no request of the test in any refusal).
 
 ## Contents
-The danger; the two tiers; the indicative tier's guard; the verdict tier's guard; credentials; what each tier does not prove; data and third parties; tools and cost.
+The danger; the two tiers; the indicative tier's guard; the verdict tier's guard; load on any other system: the signed impact statement; credentials; what each tier does not prove; data and third parties; tools and cost.
 
 ## The danger
 
@@ -22,7 +22,7 @@ A load test is a deliberate attempt to slow a system down, and its overload and 
 
 Every product size has the indicative tier. A **lean** product may have only that tier until a performance environment is approved; it then states in its reports and release notes that no target was verified. Lean never means no load test, and never means a shared environment instead.
 
-**Refused, whatever the request:** shared staging, production, a tenant's environment, a colleague's cluster, anything reachable by an address someone typed. Overload ramps and bulk writes run only in the two places above.
+**Refused by default:** shared staging, production, a tenant's environment, a colleague's cluster, anything reachable by an address someone typed. Load goes to such a system only for verification and only with the product owner's signed impact statement (below); without one the test refuses, whatever the request.
 
 ## The indicative tier's guard
 
@@ -44,16 +44,28 @@ A loopback address alone proves nothing (a port-forward to staging is also on `1
 
 Three things must agree before any load is sent: a **record** in the repository naming the exact address, with the product owner's dated sign-off and an expiry; a **marker** the environment itself serves, with the same id; and **tokens** that expire within the limit the record sets. The files and every refusal message are in `../templates/designation-record.md`.
 
-Why three: the record is the approval; the marker ties the approval to the thing at the address, so a record copied elsewhere or an address that moved fails; the expiry makes an approval lapse instead of living on after the environment changed. The runner also refuses a host whose name contains a `staging`, `stage`, `prod`, `production` or `live` label. That name check catches an honest mistake only.
+Why three: the record is the approval; the marker ties the approval to the thing at the address, so a record copied elsewhere or an address that moved fails; the expiry makes an approval lapse instead of living on after the environment changed. The runner also refuses a host whose name contains a `staging`, `stage`, `stg`, `prod`, `production` or `live` label unless the run carries a signed impact statement for it. That name check catches an honest mistake only.
 
 The k6 scripts add a last layer: started with `k6 run` instead of the runner they throw `REFUSED` before a request (run: exit 107, with a staging address supplied by hand).
 
 What the guards do not cover: a person who deliberately serves the marker from another environment and signs the record. The guards stop mistakes, not intent.
 
+## Load on any other system: the signed impact statement
+
+By default load goes only to the run's own throwaway cluster or the designated environment. Another system, staging or production included, may take load **for verification only**, and only when the product owner signs an **impact statement**: a separate record, `tests/load/statements/<id>.json`, which the runner takes with `--statement` (template and refusals in `../templates/designation-record.md`). It is separate from the designation because it answers a different question: a designation approves an environment for repeated verdicts; a statement accepts one bounded impact on someone else's system, and a product owner reads and signs it on its own.
+
+The statement says, and the runner requires, each of: the exact address (scheme, host, port; nothing else; k6 follows no redirect in any run, so a redirect cannot carry load to another host); the purpose; the test type and the profile limit (rate, peak, length), which the run's profile may not exceed; data written or touched, and how it is removed; who and what is affected (other users, other teams, dependent systems, third parties, cost); how to stop the run and who watches it; the time window the whole run must fit in; the product owner's name and date of sign-off; and an expiry or a single-use run id. A statement that lacks a field, is unsigned, expired, for another address or another test type, or that the run's profile exceeds is refused before any request.
+
+**The marker stays** wherever the system can serve one: `/.well-known/load-test-designation` answers with the statement's id as `statement_id`. Where it cannot (a third party's system or a production system nobody here can change), the statement must say so in its `marker` field (`cannot be served: <why>`); the runner then skips that one check, the report prints the reason, and every other check still applies.
+
+**What such a run is:** it runs with `--tier verdict` and judges the same thresholds, but its result is a **verification**: a result about that system at that time, under whatever else it was carrying, **not a capacity verdict**, unless the same address is also the designated environment (both `--designation` and `--statement`, which must name one address). The report says so and records the statement verbatim.
+
+Run on 2026-11-28 with k6 v2.4.0 against a lab stand-in on loopback named `api.staging.localhost` (names under `.localhost` are reserved for loopback, so the runner treats one that resolves only to loopback like `127.0.0.1`): the same address on a designation alone was refused (exit 3, no request reached the stand-in); a statement whose peak was below the profile's was refused (exit 3, no request); the signed statement ran, PASS (exit 0).
+
 ## Credentials
 
 - **Indicative tier:** none stored anywhere. Test identities are accepted only by the throwaway cluster's values file and vanish with the cluster. The workflow has no `secrets.` reference.
-- **Verdict tier:** one short-lived token per test subject, issued for the run through a mechanism the product owner approved, never a standing secret. The runner checks each token's stated expiry against the record's `token_max_minutes` and deletes the subjects file when k6 ends. The validator fails a workflow that reads `secrets.` and a subjects file committed to the repository.
+- **Verdict tier, and a system under an impact statement:** one short-lived token per test subject, issued for the run through a mechanism the product owner approved, never a standing secret. The runner checks each token's stated expiry against the `token_max_minutes` of the record and of the statement and deletes the subjects file when k6 ends. The validator fails a workflow that reads `secrets.` and a subjects file committed to the repository.
 
 ## What each tier does not prove
 
@@ -65,6 +77,7 @@ What the guards do not cover: a person who deliberately serves the marker from a
 
 - Test data exists only in the environment under test: created through the public API or that environment's seed job, in the volume the NFR states. Nothing is written to a shared system (`test-fixture-design`, rule F7).
 - The throwaway cluster is deleted with its data. In the designated environment, the designation record's `data` field says how data is reset between runs; a soak that fills tables is followed by that reset.
+- On a system under an impact statement, the statement's `data_written`, `data_removal` and `impact.third_parties` say what the run writes, how it is removed and which real third parties it reaches; the run writes nothing the statement does not name.
 - Every third party is a stand-in in both tiers. Where load must not leave the environment, an egress NetworkPolicy enforces it only if the cluster's network plugin enforces policies (Kubernetes documentation); whether kind's default plugin does was not checked.
 
 ## Tools and cost

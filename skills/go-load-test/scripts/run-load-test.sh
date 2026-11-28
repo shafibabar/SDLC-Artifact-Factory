@@ -1,11 +1,12 @@
 #!/bin/bash
 # run-load-test.sh --tier indicative|verdict --type <test type> --subjects-cmd <command>
-#                  [--endpoint <name>] [--designation <file>] [--dir <tests/load>]
-#                  [--out <dir>] [--previous <result.json>]
+#                  [--endpoint <name>] [--designation <file>] [--statement <file>]
+#                  [--dir <tests/load>] [--out <dir>] [--previous <result.json>]
 #
 # The only way a load test starts. It checks where the load would go, refuses
-# anything that is neither this run's own throwaway cluster nor the product's
-# designated performance environment, runs k6 once (no retry), and turns k6's
+# anything that is neither this run's own throwaway cluster, the product's
+# designated performance environment, nor a system named in an impact
+# statement the product owner signed, runs k6 once (no retry), and turns k6's
 # exit status and summary into one verdict.
 #
 #   indicative  the target is read from the run marker of the cluster that
@@ -14,12 +15,21 @@
 #   verdict     the target is the base_url of the designation record
 #               (--designation): signed off, not expired, and the environment
 #               itself must answer with the same designation id.
+#               With --statement (a signed impact statement) the target is the
+#               statement's base_url: every field present, signed, not expired
+#               (or its single_use_run_id equal to LOAD_RUN_ID), inside its time
+#               window, the run's profile within the statement's limits, and the
+#               marker served unless the statement says why it cannot be. Such a
+#               run is a verification of that system at that time, not a
+#               capacity verdict unless --designation names the same address.
+#               A host named like staging or production is refused without a
+#               statement. k6 follows no redirect in a statement run.
 #
 # --subjects-cmd writes the test subjects to the file named by
 # LOAD_SUBJECTS_FILE (a JSON list of {"id","token"[,"expires_at"]}); it gets
 # LOAD_TIER and LOAD_BASE_URL. The file is created for the run and deleted
 # after it. In the verdict tier every token must expire within the
-# designation's token_max_minutes.
+# token_max_minutes of the designation and of the statement.
 #
 # Verdicts and exit statuses:
 #   0   PASS (verdict tier), INDICATIVE PASS, or MEASURED (breakpoint)
@@ -34,14 +44,15 @@
 # --out, else $E2E_RESULTS_DIR/load, else load-evidence/load.
 # Environment: LOAD_K6 (default k6), LOAD_K6_VERSION (default v2.4.0),
 # LOAD_RUNNER_CLASS (a label for the machine, kept with the result so that two
-# indicative runs are compared only on the same class of runner).
+# indicative runs are compared only on the same class of runner), LOAD_RUN_ID
+# (this run's id, for a statement signed for a single run).
 set -uo pipefail
 exec python3 -I - "$@" << 'PY'
-import datetime, hashlib, ipaddress, json, os, re, resource, secrets, shlex, signal, subprocess, sys, tempfile, time
+import datetime, hashlib, ipaddress, json, os, re, resource, secrets, shlex, signal, socket, subprocess, sys, tempfile, time
 import urllib.error, urllib.parse, urllib.request
 
 USAGE = ("usage: run-load-test.sh --tier indicative|verdict --type <test type> --subjects-cmd <command> "
-         "[--endpoint <name>] [--designation <file>] [--dir <tests/load>] [--out <dir>] [--previous <result.json>]")
+         "[--endpoint <name>] [--designation <file>] [--statement <file>] [--dir <tests/load>] [--out <dir>] [--previous <result.json>]")
 TYPES = {
     "indicative": ["smoke", "average-load", "overload"],
     "verdict": ["smoke", "average-load", "stress", "soak", "spike", "breakpoint", "overload"],
@@ -63,6 +74,12 @@ NOT_PROVEN = {
         "Production itself: the result holds for the sizing and data recorded in the designation, nothing larger.",
         "Faults injected on purpose (go-chaos-test) and speed of a single function (go-performance-test).",
     ],
+    "verification": [
+        "Capacity: this run went to a system named in an impact statement, not a designated performance environment. "
+        "It is a result about that system at that time, not a capacity verdict.",
+        "Any other time: the system's own traffic, sizing and data were whatever they were inside the statement's window.",
+        "The rolling SLO window: one run shows the targets held at this load for this run's length, not for 28 days.",
+    ],
 }
 
 
@@ -78,7 +95,7 @@ def refuse(message):
 args, argv = {}, sys.argv[1:]
 while argv:
     flag = argv.pop(0)
-    if flag not in ("--tier", "--type", "--subjects-cmd", "--endpoint", "--designation", "--dir", "--out", "--previous") or not argv:
+    if flag not in ("--tier", "--type", "--subjects-cmd", "--endpoint", "--designation", "--statement", "--dir", "--out", "--previous") or not argv:
         stop(2, USAGE)
     args[flag[2:]] = argv.pop(0)
 tier, kind = args.get("tier"), args.get("type")
@@ -153,6 +170,20 @@ def loopback(host):
         return False
 
 
+def stays_local(host):
+    """An address whose traffic never leaves this machine: a loopback address, or a name under .localhost
+    (reserved for loopback, RFC 6761) that resolves to loopback addresses only."""
+    if loopback(host):
+        return True
+    if not (host.lower() == "localhost" or host.lower().endswith(".localhost")):
+        return False
+    try:
+        found = {info[4][0] for info in socket.getaddrinfo(host, None)}
+    except OSError:
+        return False
+    return bool(found) and all(loopback(address.split("%")[0]) for address in found)
+
+
 def run_tool(command):
     try:
         done = subprocess.run(command, capture_output=True, text=True, timeout=60)
@@ -167,8 +198,8 @@ def run_tool(command):
 
 
 if tier == "indicative":
-    if "designation" in args:
-        stop(2, "ERROR: --designation belongs to the verdict tier")
+    if "designation" in args or "statement" in args:
+        stop(2, "ERROR: --designation or --statement belongs to the verdict tier")
     run_id, kubeconfig, endpoint = os.environ.get("E2E_RUN_ID", ""), os.environ.get("E2E_KUBECONFIG", ""), args.get("endpoint", "")
     if not endpoint:
         stop(2, "ERROR: the indicative tier needs --endpoint <name from E2E_ENDPOINTS>")
@@ -215,51 +246,145 @@ if tier == "indicative":
         stop(4, f"INVALID: {base_url} gave no HTTP answer within 60 seconds ({last}); nothing was measured")
     target.update(environment=f"throwaway kind cluster e2e-{run_id}, created and deleted by this run", run_id=run_id, endpoint=endpoint)
 else:
-    if "designation" not in args:
-        refuse("the verdict tier needs --designation <record>: a verdict is given only in the product's designated performance environment")
-    try:
-        record = json.load(open(args["designation"], encoding="utf-8"))
-    except (OSError, ValueError) as exc:
-        refuse(f"cannot read the designation record {args['designation']}: {exc}")
-    for key in ("designation_id", "product", "base_url", "approved_by", "approved_on", "expires_on", "sizing", "data", "generator"):
-        if not text(record.get(key)):
-            refuse(f"the designation record has no {key}" + (": it carries no product-owner sign-off" if key.startswith("approved") else ""))
-    if not isinstance(record.get("test_types"), list) or not number(record.get("token_max_minutes")):
-        refuse("the designation record must list test_types and set token_max_minutes")
+    record = statement = None
+    if "designation" not in args and "statement" not in args:
+        refuse("the verdict tier needs --designation <record>: a verdict is given only in the product's designated performance environment "
+               "(another system only with --statement, the product owner's signed impact statement for it)")
     today = datetime.datetime.now(datetime.timezone.utc).date()
-    try:
-        approved, expires = (datetime.date.fromisoformat(record[k]) for k in ("approved_on", "expires_on"))
-    except ValueError:
-        refuse("approved_on and expires_on must be dates (yyyy-mm-dd)")
-    if approved > today:
-        refuse(f"the designation is dated {approved}, which is in the future")
-    if expires < today:
-        refuse(f"the designation expired on {expires}; the product owner has to renew it")
-    if kind not in record["test_types"]:
-        refuse(f"the designation does not allow the {kind} test (allowed: {', '.join(record['test_types'])})")
-    url = urllib.parse.urlsplit(record["base_url"])
-    host = url.hostname or ""
-    if url.scheme not in ("https", "http") or not host or url.path not in ("", "/") or url.query or url.username:
-        refuse(f"base_url \"{record['base_url']}\" must be scheme://host[:port] with nothing after it")
-    if url.scheme == "http" and not loopback(host):
+
+    def read_record(path, what):
+        try:
+            data = json.load(open(path, encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            refuse(f"cannot read the {what} {path}: {exc}")
+        if not isinstance(data, dict):
+            refuse(f"the {what} {path} is not a JSON object")
+        return data
+
+    def signed_dates(data, what):
+        try:
+            approved = datetime.date.fromisoformat(data["approved_on"])
+            expires = datetime.date.fromisoformat(data["expires_on"]) if data.get("expires_on") else None
+        except ValueError:
+            refuse(f"approved_on and expires_on of the {what} must be dates (yyyy-mm-dd)")
+        if approved > today:
+            refuse(f"the {what} is dated {approved}, which is in the future")
+        if expires is not None and expires < today:
+            refuse(f"the {what} expired on {expires}; the product owner has to renew it")
+
+    def exact_address(raw, what):
+        url = urllib.parse.urlsplit(raw)
+        if url.scheme not in ("https", "http") or not url.hostname or url.path not in ("", "/") or url.query or url.fragment or url.username:
+            refuse(f"base_url \"{raw}\" of the {what} must be scheme://host[:port] with nothing after it")
+        return url
+
+    if "designation" in args:
+        record = read_record(args["designation"], "designation record")
+        for key in ("designation_id", "product", "base_url", "approved_by", "approved_on", "expires_on", "sizing", "data", "generator"):
+            if not text(record.get(key)):
+                refuse(f"the designation record has no {key}" + (": it carries no product-owner sign-off" if key.startswith("approved") else ""))
+        if not isinstance(record.get("test_types"), list) or not number(record.get("token_max_minutes")):
+            refuse("the designation record must list test_types and set token_max_minutes")
+        signed_dates(record, "designation")
+        if kind not in record["test_types"]:
+            refuse(f"the designation does not allow the {kind} test (allowed: {', '.join(record['test_types'])})")
+        exact_address(record["base_url"], "designation record")
+
+    if "statement" in args:
+        # The product owner's signed impact statement: exactly where the load goes and what it does there.
+        statement = read_record(args["statement"], "impact statement")
+        for key in ("statement_id", "product", "base_url", "purpose", "test_type", "data_written", "data_removal", "how_to_stop",
+                    "watched_by", "window_start", "window_end", "marker", "approved_by", "approved_on"):
+            if not text(statement.get(key)):
+                refuse(f"the impact statement has no {key}" + (": it carries no product-owner sign-off" if key.startswith("approved") else ""))
+        impact = statement.get("impact")
+        for key in ("other_users", "other_teams", "dependent_systems", "third_parties", "cost"):
+            if not isinstance(impact, dict) or not text(impact.get(key)):
+                refuse(f"the impact statement has no impact.{key}: it must say who and what the load affects (\"none\" where nothing)")
+        limit = statement.get("profile_limit")
+        for key in ("rate_per_second", "peak_rate_per_second", "duration_seconds"):
+            if not isinstance(limit, dict) or not number(limit.get(key)):
+                refuse(f"the impact statement has no profile_limit.{key}: it must state the rate, the peak and the length it allows")
+        if not number(statement.get("token_max_minutes")):
+            refuse("the impact statement has no token_max_minutes")
+        if not (statement["marker"] == "served" or re.fullmatch(r"cannot be served: .{10,}", statement["marker"])):
+            refuse("the impact statement's marker must be \"served\", or \"cannot be served: <why>\" for a system nobody here can change")
+        if not text(statement.get("expires_on")) and not text(statement.get("single_use_run_id")):
+            refuse("the impact statement has neither expires_on nor single_use_run_id: a signed statement must lapse")
+        signed_dates(statement, "impact statement")
+        if text(statement.get("single_use_run_id")) and statement["single_use_run_id"] != os.environ.get("LOAD_RUN_ID", ""):
+            refuse(f"the impact statement is for run \"{statement['single_use_run_id']}\" only; this run is "
+                   f"\"{os.environ.get('LOAD_RUN_ID', '')}\" (LOAD_RUN_ID)")
+        if statement["test_type"] != kind:
+            refuse(f"the impact statement allows the {statement['test_type']} test, not {kind}")
+        exact_address(statement["base_url"], "impact statement")
+        # What the run would send, from its profile entry: every rate against the peak, the held rate against the rate,
+        # and the sum of every length against the duration (a sum is never shorter than the run).
+        rates = [v for k, v in shape.items() if k.endswith("rate_per_second") and number(v)]
+        peak = max(rates) if rates else shape.get("iterations", 0)  # a smoke run sends at most its iterations
+        held = shape.get("recovery_rate_per_second") if kind == "spike" else shape.get("rate_per_second", peak)
+        units = {"ms": 0.001, "s": 1, "m": 60, "h": 3600}
+        length = sum(float(v) if k == "seconds" and number(v) else sum(float(n) * units[u] for n, u in re.findall(r"(\d+(?:\.\d+)?)(ms|s|m|h)", v))
+                     for k, v in shape.items() if k == "seconds" or (isinstance(v, str) and re.fullmatch(r"(\d+(\.\d+)?(ms|s|m|h))+", v)))
+        for name, run_value, allowed in (("peak rate", peak, limit["peak_rate_per_second"]), ("rate", held, limit["rate_per_second"]),
+                                         ("length in seconds", length, limit["duration_seconds"])):
+            if not number(run_value) or run_value > allowed:
+                refuse(f"the run's {name} ({run_value}, from profile.json {tier}.{kind}) exceeds the {allowed} the impact statement allows")
+        try:
+            start, end = (datetime.datetime.fromisoformat(statement[k].replace("Z", "+00:00")) for k in ("window_start", "window_end"))
+            if start.tzinfo is None or end.tzinfo is None:
+                raise ValueError("no time zone")
+        except ValueError:
+            refuse("window_start and window_end must be date-times with a time zone (yyyy-mm-ddThh:mm:ssZ)")
+        now = datetime.datetime.now(datetime.timezone.utc)
+        if now < start or now + datetime.timedelta(seconds=length) > end:
+            refuse(f"the run would not fit inside the statement's window ({start.isoformat()} to {end.isoformat()}); "
+                   f"it is {now.strftime('%Y-%m-%dT%H:%M:%SZ')} and the run takes up to {length:.0f} seconds")
+
+    url = exact_address((statement or record)["base_url"], "impact statement" if statement else "designation record")
+    host = url.hostname
+    base_url = f"{url.scheme}://{url.netloc}"
+    if record and statement and urllib.parse.urlsplit(record["base_url"]).netloc.lower() != url.netloc.lower():
+        refuse(f"the designation names {record['base_url']}, the impact statement {statement['base_url']}: one run has one address")
+    if url.scheme == "http" and not stays_local(host):
         refuse("base_url must be https: the run carries tokens")
     shared = [label for label in re.split(r"[.\-_]", host.lower()) if re.fullmatch(r"(staging|stage|stg|prod|production|live)\d*", label)]
-    if shared:
-        refuse(f"\"{host}\" is named like a shared staging or production environment ({shared[0]}); load never goes there, "
-               "whatever the record says")
-    base_url = f"{url.scheme}://{url.netloc}"
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), type("NoRedirect", (urllib.request.HTTPRedirectHandler,), {
-        "redirect_request": lambda self, *a, **k: None})())
-    try:
-        with opener.open(base_url + "/.well-known/load-test-designation", timeout=15) as answer:
-            served = json.loads(answer.read(65536).decode("utf-8")).get("designation_id")
-    except (OSError, ValueError, AttributeError, urllib.error.URLError) as exc:
-        refuse(f"{base_url} does not serve a designation marker ({exc}); it is not the designated environment")
-    if served != record["designation_id"]:
-        refuse(f"{base_url} serves designation \"{served}\", the record says \"{record['designation_id']}\"")
-    target.update(environment=f"designated performance environment {record['designation_id']}",
-                  designation={k: record[k] for k in ("designation_id", "product", "base_url", "approved_by", "approved_on",
-                                                       "expires_on", "sizing", "data", "generator", "test_types", "token_max_minutes")})
+    if shared and not statement:
+        refuse(f"\"{host}\" is named like a shared staging or production environment ({shared[0]}); load goes there only with "
+               "the product owner's signed impact statement for it (--statement), never on a designation alone")
+    wanted_ids = {}
+    if record:
+        wanted_ids["designation_id"] = record["designation_id"]
+    if statement and statement["marker"] == "served":
+        wanted_ids["statement_id"] = statement["statement_id"]
+    if wanted_ids:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), type("NoRedirect", (urllib.request.HTTPRedirectHandler,), {
+            "redirect_request": lambda self, *a, **k: None})())
+        try:
+            with opener.open(base_url + "/.well-known/load-test-designation", timeout=15) as answer:
+                served = json.loads(answer.read(65536).decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if 300 <= exc.code < 400:
+                refuse(f"{base_url} answers its marker with a redirect to {exc.headers.get('Location')}: load goes only to the stated address")
+            refuse(f"{base_url} does not serve a designation marker ({exc}); it is not the "
+                   + ("designated environment" if record else "system the impact statement names"))
+        except (OSError, ValueError, AttributeError, urllib.error.URLError) as exc:
+            refuse(f"{base_url} does not serve a designation marker ({exc}); it is not the "
+                   + ("designated environment" if record else "system the impact statement names"))
+        for key, want in wanted_ids.items():
+            got = served.get(key) if isinstance(served, dict) else None
+            if got != want:
+                refuse(f"{base_url} serves {key.split('_')[0]} \"{got}\", the {'record' if key == 'designation_id' else 'impact statement'} says \"{want}\"")
+    if record:
+        target.update(environment=f"designated performance environment {record['designation_id']}",
+                      designation={k: record[k] for k in ("designation_id", "product", "base_url", "approved_by", "approved_on",
+                                                           "expires_on", "sizing", "data", "generator", "test_types", "token_max_minutes")})
+    if statement:
+        if not record:
+            target.update(environment=f"{host}, named in impact statement {statement['statement_id']}: a verification, not a designated environment")
+        target["statement"] = statement  # verbatim, as the product owner signed it
+        target["verification"] = not record
+    token_limit = min(d["token_max_minutes"] for d in (record, statement) if d)
 target["base_url"] = base_url
 
 # ------------------------------------------------------------------- k6
@@ -311,7 +436,7 @@ except (OSError, ValueError, AssertionError, AttributeError):
 os.chmod(subjects_file, 0o600)
 if tier == "verdict":
     now = datetime.datetime.now(datetime.timezone.utc)
-    latest = now + datetime.timedelta(minutes=record["token_max_minutes"])
+    latest = now + datetime.timedelta(minutes=token_limit)
     for subject in subjects:
         try:
             raw = subject["expires_at"]
@@ -325,11 +450,13 @@ if tier == "verdict":
         if expiry <= now or expiry > latest:
             cleanup()
             refuse(f"the token of subject \"{subject['id']}\" expires {expiry.isoformat()}: it must be valid now and for at most "
-                   f"{record['token_max_minutes']} minutes, the limit the product owner approved")
+                   f"{token_limit} minutes, the limit the product owner approved")
 
 nonce = secrets.token_hex(16)
 proof = hashlib.sha256(f"{nonce}|{tier}|{base_url}".encode()).hexdigest()
-command = k6 + ["run", "--quiet"]
+# Every run, in every tier: load goes to the approved address only; a redirect is
+# answered, never followed, so it cannot carry load to another host.
+command = k6 + ["run", "--quiet", "--max-redirects", "0"]
 for name, value in (("LOAD_TIER", tier), ("LOAD_TYPE", kind), ("LOAD_BASE_URL", base_url), ("LOAD_NONCE", nonce),
                     ("LOAD_TARGET_PROOF", proof), ("LOAD_SUBJECTS_FILE", subjects_file), ("LOAD_SUMMARY", summary_path)):
     command += ["-e", f"{name}={value}"]
@@ -449,7 +576,8 @@ result = {
     "latency": metrics.get(latency, metrics.get("http_req_duration", {})).get("values", {}), "latency_metric": latency,
     "validity": {"dropped_iterations": int(dropped), "generator_cpu_share": round(cpu_share, 3), "generator_cpus": cores,
                  "retries": 0},
-    "comparable_on": comparable_on, "comparison": comparison, "does_not_prove": NOT_PROVEN[tier],
+    "comparable_on": comparable_on, "comparison": comparison,
+    "does_not_prove": NOT_PROVEN["verification" if target.get("verification") else tier],
     "summary_file": summary_path,
 }
 with open(result_path, "w", encoding="utf-8") as handle:
@@ -459,5 +587,8 @@ for reason in reasons:
     print(f"   {reason}")
 if tier == "indicative":
     print("   Indicative only: this run proves nothing about capacity or about any stated target.")
+if target.get("verification"):
+    print(f"   Verification under impact statement {target['statement']['statement_id']}: a result about {base_url} "
+          "at this time, not a capacity verdict.")
 sys.exit({"PASS": 0, "INDICATIVE PASS": 0, "MEASURED": 0, "FAIL": 1, "INVALID": 4, "ABORTED": 130}[verdict])
 PY

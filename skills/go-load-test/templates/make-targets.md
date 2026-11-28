@@ -7,7 +7,7 @@ None of these is a prerequisite of `ci`. A load test never runs in `make ci` or 
 ### `Makefile`
 
 ```makefile
-.PHONY: load-indicative load-verdict load-verdict-one load-validate
+.PHONY: load-indicative load-verdict load-verdict-one load-verify load-validate
 
 LOAD_RUN := ./tests/load/run-load-test.sh --subjects-cmd ./tests/load/issue-subjects.sh
 LOAD_VERDICT := $(LOAD_RUN) --tier verdict --designation tests/load/designation.json
@@ -23,6 +23,9 @@ load-verdict: ## Verdict against the stated targets, in the designated performan
 load-verdict-one: ## One test type in the designated environment: make load-verdict-one TYPE=soak
 	$(LOAD_VERDICT) --type $(TYPE)
 
+load-verify: ## Verification on another system, only under a signed impact statement: make load-verify STATEMENT=tests/load/statements/<id>.json TYPE=smoke
+	$(LOAD_RUN) --tier verdict --statement $(STATEMENT) --type $(TYPE)
+
 load-validate: ## Text checks on the load tests and what runs them
 	./tests/load/validate-go-load-tests.sh .
 ```
@@ -32,6 +35,7 @@ load-validate: ## Text checks on the load tests and what runs them
 | `load-indicative` | A developer; the nightly run does the same lines inside `make e2e` | Needs Docker, kind, Helm 4, kubectl and k6 v2.4.0 |
 | `load-verdict` | The release workflow, or a person, before a release | Needs the designation record and `LOAD_TOKEN_CMD`. Smoke first: a broken script stops the run in seconds |
 | `load-verdict-one` | A person, for stress, soak, spike or breakpoint | Each must be listed in the designation record |
+| `load-verify` | A person, by hand, inside the statement's window | Load on any system other than the throwaway cluster or the designated environment, for verification only. The runner refuses without the product owner's signed impact statement for that exact address, and refuses a run that would exceed it. The result is not a capacity verdict |
 | `load-validate` | Before hand-off and in `make ci` if wanted: it runs nothing | Copy `validate-go-load-tests.sh` next to the runner |
 
 No line ends in `|| true`, starts with `-`, or pipes the runner into another command: each would replace the exit status that says a threshold was crossed.

@@ -52,6 +52,20 @@ write("indicative", tier="indicative", verdict="INDICATIVE PASS", target=target,
                   "tolerance_percent": 30, "outcome": "within tolerance"},
       does_not_prove=["Capacity, and whether any stated target (NFR or SLO) is met: this tier never shows either."])
 write("othercommit", commit="ffff456789abcdef0123456789abcdef01234567")
+statement = {"statement_id": "verify-search-1", "product": "parcel-lockers", "base_url": "https://api.staging.lockers.example",
+             "purpose": "verify the pickup-code fix holds at the evening peak", "test_type": "average-load",
+             "profile_limit": {"rate_per_second": 24, "peak_rate_per_second": 24, "duration_seconds": 180},
+             "data_written": "none: lookups only", "data_removal": "nothing to remove",
+             "impact": {"other_users": "testers on staging may see lookups slow for 3 minutes", "other_teams": "courier app team, told on 2026-11-27",
+                        "dependent_systems": "none", "third_parties": "none: the SMS gateway is a stand-in", "cost": "none"},
+             "how_to_stop": "Ctrl-C in the runner's terminal", "watched_by": "test-strategist and the staging on-call",
+             "window_start": "2026-11-28T04:00:00Z", "window_end": "2026-11-28T05:00:00Z",
+             "marker": "cannot be served: the staging gateway belongs to another team", "token_max_minutes": 30,
+             "approved_by": "Product owner", "approved_on": "2026-11-27", "single_use_run_id": "gh-4242"}
+write("verification", target={"tier": "verdict", "base_url": "https://api.staging.lockers.example", "verification": True,
+                              "environment": "api.staging.lockers.example, named in impact statement verify-search-1: a verification, not a designated environment",
+                              "statement": statement},
+      does_not_prove=["Capacity: this run went to a system named in an impact statement, not a designated performance environment."])
 open(os.path.join(tmp, "notresult.json"), "w").write('{"verdict": "PASS"}')
 open(os.path.join(tmp, "broken.json"), "w").write("{")
 PY
@@ -84,6 +98,9 @@ check "the worst verdict leads, a crossed threshold is marked" 0 "\*\*FAIL\*\* \
 check "an invalid run outranks a failed one" 0 "\*\*INVALID\*\* \(verdict tier\).*stress: 7 iterations were dropped.*\| stress \| 7 \| 40.0% of 4 \| INVALID \|" "$TMP/fail.json" "$TMP/invalid.json"
 check "an indicative report says what it does not prove" 0 "\*\*INDICATIVE PASS\*\* \(indicative tier\).*\*\*Indicative only.\*\*.*proves nothing about capacity.*Designation record \| none.*Comparison with the previous run.*now 1.89 ms, previous 1.87 ms, change 1.2% \(tolerance 30%\). Outcome: within tolerance" "$TMP/indicative.json"
 check "the summary of an indicative report says so too" 0 "summary: Indicative load check for parcel-lockers[^\n]*Proves nothing about capacity\." "$TMP/indicative.json"
+check "a verification report records the signed statement" 0 "\*\*PASS\*\* \(verdict tier, verification under signed impact statement verify-search-1\).*\*\*Verification only.\*\*.*not a capacity verdict.*\| Designation record \| none: a verification.*\| Impact statement \| verify-search-1: signed by Product owner on 2026-11-27.*\| Tokens \| issued for the run, at most 30 minutes.*## Signed impact statement.*\| Address \| https://api.staging.lockers.example \|.*\| Purpose \| verify the pickup-code fix.*\| Profile allowed \| rate 24/s, peak 24/s, at most 180 seconds \|.*\| Other teams \| courier app team.*\| Cost \| none \|.*\| How to stop it \| Ctrl-C.*\| Marker \| cannot be served: .*\| Signed by \| Product owner on 2026-11-27 \|.*\| Lapses \| single run gh-4242 \|.*Verbatim:\n\n.{3}json\n\{\n \"approved_by\": \"Product owner\".*\"statement_id\": \"verify-search-1\"" "$TMP/verification.json"
+check "the summary of a verification report says it is not a capacity verdict" 0 "summary: Verification load run, not a capacity verdict, for parcel-lockers under impact statement verify-search-1 at commit 0123456789ab: average-load PASS\.\n" "$TMP/verification.json"
+check "a designation report has no impact statement" 0 "\A(?!.*Signed impact statement)" "$TMP/pass.json"
 check "a verdict report has no comparison section" 0 "\A(?!.*Comparison with the previous run)" "$TMP/pass.json"
 check "approval is left to the product owner" 0 "## Approval\n\n\| Product owner \| Decision \| Date \| Comments \|\n\|---\|---\|---\|---\|\n\| \| approved / rejected \| \| \|\s*\Z" "$TMP/pass.json"
 

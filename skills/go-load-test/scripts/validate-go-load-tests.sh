@@ -8,7 +8,10 @@
 # nothing: it finds the known dangerous mistakes, it does not prove a test good.
 #
 # FAIL rules: TARGET (an address written into a script, a load line or a
-# workflow; a designation that names a staging or production host), NOGUARD (a
+# workflow; a designation that names a staging or production host which no
+# signed impact statement in the product covers), STATEMENT (an impact
+# statement without a field the runner requires or without the product owner's
+# sign-off), NOGUARD (a
 # k6 script that does not go through lib/gate.js), DIRECTK6 (k6 started without
 # run-load-test.sh), CHECKONLY (check() with no threshold on checks), CLOSED (a
 # closed-model executor outside the smoke test with no stated reason), NODROP
@@ -82,6 +85,33 @@ def in_load_folder(path):
 
 def shared_host(host):
     return any(SHARED.match(label) for label in re.split(r"[.\-_]", host.lower()))
+
+
+def address(raw):
+    url = re.match(r"^(https?)://([^/?#]+)", str(raw or "").strip(), re.I)
+    return f"{url.group(1)}://{url.group(2)}".lower() if url else ""
+
+
+SIGNED_TEXT = lambda v: isinstance(v, str) and v.strip() and not re.search(r"<[^>]*>|\bTBD\b|\bTODO\b", v)
+STATEMENT_FIELDS = ("statement_id", "product", "base_url", "purpose", "test_type", "profile_limit", "data_written", "data_removal",
+                    "impact", "how_to_stop", "watched_by", "window_start", "window_end", "marker", "token_max_minutes",
+                    "approved_by", "approved_on")
+
+
+def read_json(path):
+    try:
+        return json.loads(open(path, encoding="utf-8", errors="replace").read())
+    except (OSError, ValueError):
+        return None
+
+
+# Addresses covered by a signed impact statement anywhere in the given paths: load may go there for verification.
+covered = set()
+for path in found:
+    if path.endswith(".json") and in_load_folder(path):
+        data = read_json(path)
+        if isinstance(data, dict) and "statement_id" in data and SIGNED_TEXT(data.get("approved_by")) and SIGNED_TEXT(data.get("approved_on")):
+            covered.add(address(data.get("base_url")))
 
 
 def check_queries(path, text):
@@ -218,11 +248,20 @@ for path in found:
             data = json.loads(raw)
         except ValueError:
             continue
+        if isinstance(data, dict) and "statement_id" in data:
+            missing = [key for key in STATEMENT_FIELDS if key not in data or data[key] in ("", None, {}, [])]
+            if missing:
+                report("FAIL", "STATEMENT", path, 1, f"the impact statement has no {', '.join(missing)}: the runner refuses it")
+            if not (SIGNED_TEXT(data.get("approved_by")) and SIGNED_TEXT(data.get("approved_on"))):
+                report("FAIL", "STATEMENT", path, 1, "the impact statement carries no product-owner sign-off (approved_by, approved_on)")
+            if not data.get("expires_on") and not data.get("single_use_run_id"):
+                report("FAIL", "STATEMENT", path, 1, "the impact statement has neither expires_on nor single_use_run_id: it must lapse")
         if isinstance(data, dict) and "base_url" in data:
             checked += 1
             host = re.sub(r"^https?://", "", str(data.get("base_url"))).split("/")[0].split(":")[0]
-            if shared_host(host):
-                report("FAIL", "TARGET", path, 1, f"base_url {data['base_url']} names a shared staging or production host: load never goes there")
+            if shared_host(host) and address(data.get("base_url")) not in covered:
+                report("FAIL", "TARGET", path, 1, f"base_url {data['base_url']} names a shared staging or production host and no signed "
+                       "impact statement covers that address: load goes there only with the product owner's signed statement")
         if isinstance(data, list) and data and all(isinstance(e, dict) and "token" in e for e in data):
             checked += 1
             report("FAIL", "CREDENTIALS", path, 1, "a subjects file with tokens is stored in the repository: tokens are issued for one run and deleted after it")

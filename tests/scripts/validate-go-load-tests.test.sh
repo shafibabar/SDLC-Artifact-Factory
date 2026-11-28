@@ -89,6 +89,22 @@ file_case subjects-in-repo "FAIL CREDENTIALS .*subjects file" 1 "tests/load/subj
 file_case staging-designation "FAIL TARGET .*shared staging or production" 1 "tests/load/designation.json" '{"designation_id": "x", "base_url": "https://api.staging.example.com"}'
 file_case production-designation "FAIL TARGET" 1 "tests/load/designation.json" '{"designation_id": "x", "base_url": "https://prod-eu.example.com:8443"}'
 file_case clean-designation ": 0 FAIL" 0 "tests/load/designation.json" '{"designation_id": "x", "base_url": "https://perf.lockers.example"}'
+STATEMENT='{"statement_id": "verify-1", "product": "x", "base_url": "https://api.staging.example.com", "purpose": "verify the search fix",
+ "test_type": "smoke", "profile_limit": {"rate_per_second": 1, "peak_rate_per_second": 10, "duration_seconds": 30},
+ "data_written": "none", "data_removal": "nothing to remove",
+ "impact": {"other_users": "none", "other_teams": "none", "dependent_systems": "none", "third_parties": "none", "cost": "none"},
+ "how_to_stop": "Ctrl-C", "watched_by": "test-strategist", "window_start": "2026-12-01T09:00:00Z", "window_end": "2026-12-01T10:00:00Z",
+ "marker": "served", "token_max_minutes": 30, "approved_by": "Product owner", "approved_on": "2026-11-28", "expires_on": "2026-12-02"}'
+file_case covered-staging ": 0 FAIL, 0 WARN" 0 "tests/load/statements/verify-1.json" "$STATEMENT"
+mkdir -p "$TMP/covered-designation/tests/load/statements"
+printf '%s\n' "$STATEMENT" > "$TMP/covered-designation/tests/load/statements/verify-1.json"
+file_case covered-designation ": 0 FAIL" 0 "tests/load/designation.json" '{"designation_id": "x", "base_url": "https://api.staging.example.com"}'
+file_case uncovered-staging "FAIL TARGET .*no signed impact statement covers that address" 1 "tests/load/statements/verify-1.json" "$(printf '%s\n' "$STATEMENT" | sed 's/"approved_by": "Product owner"/"approved_by": ""/')"
+file_case unsigned-statement "FAIL STATEMENT .*no product-owner sign-off" 1 "tests/load/statements/verify-2.json" "$(printf '%s\n' "$STATEMENT" | sed 's/"approved_by": "Product owner"/"approved_by": "<product owner>"/')"
+file_case statement-missing-impact "FAIL STATEMENT .*has no impact" 1 "tests/load/statements/verify-3.json" "$(printf '%s\n' "$STATEMENT" | sed 's/"impact": {[^}]*},//')"
+mkdir -p "$TMP/other-address/tests/load/statements"
+printf '%s\n' "$STATEMENT" > "$TMP/other-address/tests/load/statements/verify-1.json"
+file_case other-address "FAIL TARGET .*prod-eu.example.com" 1 "tests/load/designation.json" '{"designation_id": "x", "base_url": "https://prod-eu.example.com"}'
 file_case increase-on-gauge "FAIL GAUGEFN .*pipeline_dlq_depth" 1 "tests/load/verify-async-slos.sh" '#!/bin/bash
 QUERY="1 - sum(increase(pipeline_dlq_depth[2h])) / sum(increase(pipeline_documents_processed_total[2h]))"'
 file_case rate-on-gauge "FAIL GAUGEFN .*db_pool_in_use" 1 "tests/load/queries.promql" 'rate(db_pool_in_use[5m])'

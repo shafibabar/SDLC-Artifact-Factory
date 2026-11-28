@@ -16,7 +16,9 @@ Copy and tick before hand-off.
 - [ ] No address is written into a script, a make line or a workflow; none is read from a variable
 - [ ] The designation record has the exact address, sign-off, expiry, sizing, data, generator, test types and token lifetime
 - [ ] The designated environment, and only it, serves the designation marker
-- [ ] Nothing aims at shared staging, production or a tenant environment
+- [ ] Nothing aims at shared staging, production, a tenant environment or any other undesignated system without the product owner's signed impact statement for that exact address
+- [ ] Each impact statement names the address, purpose, test type and profile limit, data and its removal, who and what is affected, how to stop it and who watches, the window, the sign-off and an expiry or single run; its marker is served, or the statement says why it cannot be
+- [ ] A run under a statement is reported as a verification, not a capacity verdict, with the statement recorded verbatim
 
 ## Gate
 - [ ] `lib/gate.js` and the test-type scripts are copied unchanged; only `journey.js` is the product's
@@ -28,7 +30,7 @@ Copy and tick before hand-off.
 
 ## Credentials, data, monitoring
 - [ ] No stored credential: no `secrets.`, no token file in the repository
-- [ ] Verdict-tier tokens state an expiry within the record's limit
+- [ ] Verdict-tier tokens state an expiry within the limit of the record and of any statement
 - [ ] Test data exists only in the environment under test; third parties are stand-ins
 - [ ] Nothing is pushed to any monitoring system; queries read the environment's own Prometheus, pinned to the run
 - [ ] `rate()` and `increase()` only on counters; `max_over_time()` or `delta()` on gauges
