@@ -12,3 +12,6 @@ evals/**/results/
 # scripts/memory/bootstrap.sh on first run.
 .sdlc-memory/.venv/
 .sdlc-memory/index.db
+
+# macOS Finder metadata
+.DS_Store

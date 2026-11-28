@@ -17,7 +17,7 @@ description: >
   in, deciding whether a stage can graduate, or deciding between extending
   and pivoting. Used by the requirements-analyst agent in Customer
   Validation; written to customer-validation/beta-program/<slug>.md.
-version: 3.0.0
+version: 3.1.0
 phase: customer-validation
 owner: requirements-analyst
 created: 2026-07-20
@@ -45,6 +45,21 @@ The phase name is Steve Blank's (*The Four Steps to the Epiphany*): Customer Dis
 | Owned here | Owned elsewhere |
 |---|---|
 | Program shape and stages; participant screening; the beta agreement; feedback cadence; graduation criteria and **graduation records** | The launch plan's Stage 1: `gtm-strategy` (the plan; this is its execution) · the design-partner cohort: `stakeholder-mapping` · UAT scope and exit criteria: `uat-plan` · capture and severity: `feedback-template` · **the defect rule and the one sign-off per release**: `acceptance-sign-off` · operating the canary and flags: `platform-engineer` |
+
+## What every answer states
+
+**Keep the answer as short as was asked.** State only the items below that the question touches, each **in words**, even when pointing at a template, a reference or an example.
+
+1. **A stage that missed its bar:** say it did not graduate and which of the four dimensions failed; name the **suspect hypothesis first** (segment, problem, solution or process) with the evidence for it; then the decision. Say that **extend** is right only when the hypothesis holds and the stage needs more time or coverage, and that a requested feature is an opportunity to examine, not a fix for missing pain.
+2. **A pivot:** name the canvas block the hypothesis lives in and say `business-model-canvas` is updated, not only this record (Maurya).
+3. **Graduation criteria made of quality metrics only:** refuse them and say why: Product/Market Fit shows in **retention**, not sign-ups (Maurya, *Running Lean*); a clean defect count with no retention or commitment is not Product/Market Fit evidence. Add activation and retention per cohort, as rates, with targets set before the stage; say that weekly use decaying while quality is green counts against graduating.
+4. **A sign-off per stage or per tenant:** the whole rule, every part, even when no sign-off exists yet: one `acceptance-sign-off` per release; each stage move is a graduation record, not a further sign-off; a failed graduation **re-opens Customer Validation**, meaning a **new UAT pass and a sign-off that supersedes the old one**, never an extra stage sign-off (before the sign-off exists, it keeps Customer Validation open); at enterprise each tenant's representative accepts for their own cohort inside the one sign-off.
+5. **Screening:** for each named candidate, the four earlyvangelist conditions (Blank) and the workaround **by name**; for a candidate downgraded or declined, the reason: no prior effort is goodwill, not pain, however enthusiastic.
+6. **Compliments and "they're happy":** name "loves the idea" and "I would use it" as compliments, not evidence (Fitzpatrick, *The Mom Test*); name the **commitment** asked of each participant (time on the calendar, an introduction, real data, a paid pilot); say the bar is observed use described in the past tense, checked outside the building (Blank).
+7. **GA and the chasm:** stages measure audience size over time; the chasm is buyer psychology across the adoption curve (Moore); a product can pass every stage and still sell only to visionaries, so it stays a separate check in `gtm-strategy`.
+8. **Data handling:** name the product's own frameworks from its `compliance-design`; say another product's frameworks are not imported, because they claim controls the product never designed for; say **beta relaxes no control** and answer each relaxation asked for by name, with the control that applies as at GA.
+9. **Repeatability and operations:** say it is its own graduation dimension, separate from satisfaction: the same documented steps for each participant without bespoke help (Blank's repeatability test), and the backstage running without the designer in the room (Stickdorn's Minimum Viable Service); an onboarding only the product owner can do fails it.
+10. **Decisions for the product owner:** participants, targets and dates need their approval.
 
 ## 1. Choose the Program Shape
 
