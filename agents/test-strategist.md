@@ -140,7 +140,7 @@ Create and change them with Write and Edit so the manifest registers them; after
 
 ### 7. Resilience and observability (shift-right)
 - Accessibility checks target **WCAG 2.2**. (`test-pyramid`)
-- E2E journeys with **flakiness mitigation** (dynamic waits, deterministic seeding — never arbitrary sleeps). (`go-e2e-test`)
+- E2E journeys with **flakiness mitigation** (dynamic waits, deterministic seeding — never arbitrary sleeps). (`go-e2e-test`; Python: `python-e2e-test`)
 - **Test-trace correlation**: inject a test id so failures trace through the backend's OpenTelemetry spans.
 - **Performance gated** against regression (benchstat baselines); **load** verifies SLOs under stress; **chaos** validates the resilience patterns already built (Circuit Breaker, Retry/Backoff, DLQ).
 
