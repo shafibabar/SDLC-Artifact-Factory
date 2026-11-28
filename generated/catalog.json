@@ -8980,12 +8980,12 @@
         "has_assets": false,
         "has_contract_test": true,
         "has_evals": false,
-        "has_examples": false,
+        "has_examples": true,
         "has_references": true,
-        "has_resources": false,
-        "has_scripts": false,
+        "has_resources": true,
+        "has_scripts": true,
         "has_steps": false,
-        "has_templates": false,
+        "has_templates": true,
         "name": "python-mutation-test",
         "owner": "test-strategist",
         "phase": "quality",
@@ -8993,25 +8993,39 @@
           "mutation-report"
         ],
         "related": [
+          "cd-pipeline",
+          "ci-pipeline",
           "go-mutation-test",
+          "python-makefile",
+          "python-project-structure",
           "python-unit-test",
+          "sdlc-config-management",
           "test-pyramid"
         ],
-        "sources": [],
+        "sources": [
+          "research/testing/github-actions-official-docs.md",
+          "research/testing/mutmut-official-docs.md",
+          "research/testing/pytest-official-docs.md",
+          "research/testing/python-testing-with-pytest-okken.md",
+          "research/testing/testing-vv-dictionary-quigley.md",
+          "research/testing/unit-testing-khorikov.md"
+        ],
         "status": "stable",
         "tags": [
-          "cosmic-ray",
           "coverage",
-          "mutation-score",
+          "equivalent-mutant",
+          "mutant-record",
           "mutation-testing",
           "mutmut",
           "pytest",
           "python",
           "quality",
+          "release-gate",
           "survived-mutant",
-          "test-quality"
+          "timeout",
+          "waiver"
         ],
-        "version": "1.2.1"
+        "version": "2.0.0"
       },
       {
         "created": "2026-07-31",
@@ -11486,8 +11500,8 @@
     "edges_agent_produces": 73,
     "edges_agent_skills": 189,
     "edges_skill_produces": 195,
-    "edges_skill_related": 1351,
-    "edges_skill_sources": 452,
+    "edges_skill_related": 1356,
+    "edges_skill_sources": 458,
     "hooks": 11,
     "orphan_skills": 0,
     "skills": 190,
@@ -11504,15 +11518,15 @@
     "skills_with_contract_test": 118,
     "skills_with_domain": 190,
     "skills_with_evals": 71,
-    "skills_with_examples": 71,
+    "skills_with_examples": 72,
     "skills_with_produces": 190,
     "skills_with_references": 186,
-    "skills_with_resources": 70,
-    "skills_with_scripts": 64,
-    "skills_with_sources": 72,
+    "skills_with_resources": 71,
+    "skills_with_scripts": 65,
+    "skills_with_sources": 73,
     "skills_with_status": 190,
     "skills_with_steps": 0,
-    "skills_with_templates": 69
+    "skills_with_templates": 70
   },
   "edges": {
     "agent_produces": [
@@ -17231,11 +17245,31 @@
         "skill": "python-mongodb-repository"
       },
       {
+        "related": "cd-pipeline",
+        "skill": "python-mutation-test"
+      },
+      {
+        "related": "ci-pipeline",
+        "skill": "python-mutation-test"
+      },
+      {
         "related": "go-mutation-test",
         "skill": "python-mutation-test"
       },
       {
+        "related": "python-makefile",
+        "skill": "python-mutation-test"
+      },
+      {
+        "related": "python-project-structure",
+        "skill": "python-mutation-test"
+      },
+      {
         "related": "python-unit-test",
+        "skill": "python-mutation-test"
+      },
+      {
+        "related": "sdlc-config-management",
         "skill": "python-mutation-test"
       },
       {
@@ -20111,6 +20145,30 @@
       {
         "skill": "python-load-test",
         "source": "research/testing/python-service-saturation-official-docs.md"
+      },
+      {
+        "skill": "python-mutation-test",
+        "source": "research/testing/github-actions-official-docs.md"
+      },
+      {
+        "skill": "python-mutation-test",
+        "source": "research/testing/mutmut-official-docs.md"
+      },
+      {
+        "skill": "python-mutation-test",
+        "source": "research/testing/pytest-official-docs.md"
+      },
+      {
+        "skill": "python-mutation-test",
+        "source": "research/testing/python-testing-with-pytest-okken.md"
+      },
+      {
+        "skill": "python-mutation-test",
+        "source": "research/testing/testing-vv-dictionary-quigley.md"
+      },
+      {
+        "skill": "python-mutation-test",
+        "source": "research/testing/unit-testing-khorikov.md"
       },
       {
         "skill": "python-unit-test",
