@@ -11,7 +11,7 @@ description: >
   make mutation, the mutation workflow, the mutation report; or "100% coverage,
   are we done", "is 60% mutation score enough", "run mutation on every pull
   request", "Gremlins says 100% efficacy". Produces mutation-report.
-version: 3.0.2
+version: 3.0.3
 phase: quality
 owner: test-strategist
 created: 2026-06-25
@@ -42,7 +42,7 @@ A request does not change these, whoever makes it. Do the work as the rules requ
 
 | # | Rule | Reason |
 |---|---|---|
-| M1 | **Every planted mutant is killed by a test, or recorded individually with the reason it cannot be** (the change does not alter behaviour). No percentage target: 60% is rejected, and so is any other | D048 B |
+| M1 | **Every planted mutant is killed by a test, or recorded individually with the reason it cannot be** (the change does not alter behaviour). The target is 100%; 60%, or any lower target, is rejected | D048 B |
 | M2 | **Result = (killed + individually recorded) / all planted**, from counts. Gremlins' efficacy and mutant coverage are never the verdict; its thresholds stay 0 | D048: tool scores are not used. Seen: efficacy 91.30% at 19/24 |
 | M3 | **Timed-out and compiler-rejected mutants count only once each is checked and recorded** with a one-line reason; never automatically | D048. Gremlins calls a non-compiling mutant KILLED; the runner rechecks every KILLED and TIMED OUT one |
 | M4 | **100% passes. More than 90% may be waived only after the product owner reviews every uncaught mutant and records comments; 90% or below, no waiver.** A waiver covers one result | D048 waivers |
@@ -74,9 +74,9 @@ Verdicts: PASS (exit 0), WAIVER-NEEDED (3), FAIL (1), INVALID (2). Detail: `./re
 
 **Keep the answer as short as the question, within any length the user sets.** Answer the user's own points first, one by one, each with its rule in words; add a point below only where the question touches it, never a general tour of the method. Do not only follow a rule or point at a file.
 
-1. **The rule:** every planted mutant is killed by a test or recorded individually with the reason it cannot be; there is no percentage target, and 60% (or any other figure) is rejected.
-2. **The formula and who judges:** (killed + individually recorded) / all planted mutants, as counts. Say both halves of the check in words, naming the flag: Gremlins writes its JSON report only when run with `--output`, and the verdict script reads that report and fails on every lived, not-covered, timed-out or not-viable mutant that has no record line; neither Gremlins' efficacy, its thresholds nor its exit code is the verdict, because efficacy leaves timed-out mutants out and counts non-compiling ones as killed, and a threshold of 100 fails even a perfect run.
-3. **Waiver:** only for a result above 90% and under 100%, after the product owner reviews each uncaught mutant and records comments; at 90% or below none.
+1. **The rule:** the target is 100%: every planted mutant is killed by a test or recorded individually with the reason it cannot be; 60%, or any lower target, is rejected.
+2. **The formula and who judges:** (killed + individually recorded) / all planted, as counts. A script reads the JSON report Gremlins writes with `--output` and fails on any uncaught mutant without a record line. Gremlins' efficacy, thresholds and exit code are not the verdict: efficacy leaves timed-out and not-covered mutants out and counts non-compiling ones as killed, and a threshold of 100 fails a perfect run.
+3. **Waiver:** only for a result above 90% and under 100%, granted by the product owner after reviewing each uncaught mutant (not-covered ones included) and recording comments; the target stays 100%; at 90% or below none. Given counts, work out the result now and the result once every checkable mutant is recorded, and say which side of 90% each falls.
 4. **Timed-out and not-viable mutants** count only once each is checked and recorded with a one-line reason; never automatically.
 5. **When it runs:** the full release run blocks and finishes before publication (the publish job needs it, never `release: published`); scheduled runs report only, may cover changed code only, monthly or more often, never less.
 6. **Scope:** all product code; any package left out is listed with a reason for the product owner's approval; generated code and `internal/test/` are left out and listed.
